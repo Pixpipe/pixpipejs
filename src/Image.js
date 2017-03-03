@@ -35,7 +35,7 @@ class Image {
       return;
     }
 
-    this._data = array.slice();
+    this._data = new Float32Array( array );
     this._width = width;
     this._heigth = height;
 
