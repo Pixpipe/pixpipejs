@@ -1,0 +1,31 @@
+{
+  "name": "pixpipejs",
+  "version": "0.1.0",
+  "description": "A image processing pipeline in Javascript",
+  "main": "src/pixpipe.js",
+  "moduleName": "pixpipe",
+  "moduleFormat": "umd",
+  "moduleBuildDir": "dist",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "rollup -c",
+    "doc": "documentation build -o ./doc/ -f html"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jonathanlurie/pixpipejs.git"
+  },
+  "keywords": [
+    "image",
+    "processing",
+    "javascript",
+    "web",
+    "browser"
+  ],
+  "author": "Jonathan Lurie",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/jonathanlurie/pixpipejs/issues"
+  },
+  "homepage": "https://github.com/jonathanlurie/pixpipejs#readme"
+}
