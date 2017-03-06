@@ -34,6 +34,7 @@ class Filter {
       return;
     }
 
+    // the category may not exist, we create it
     if( !(category in this._input) ){
       this._input[category] = [];
     }
@@ -52,6 +53,14 @@ class Filter {
     }else{
       return null;
     }
+
+  }
+
+
+  /**
+  * MUST be implement by the class that herit this
+  */
+  update(){
 
   }
 
