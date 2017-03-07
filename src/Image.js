@@ -23,7 +23,7 @@ class Image extends PixpipeObject{
     this._componentsPerPixel = 4; // RGBA
 
     // allocate the array if size is specified
-    if(options && width in options && height in options){
+    if(options && "width" in options && "height" in options){
 
       if( options.width > 0 && options.height > 0){
         this._width = options.width;
@@ -31,15 +31,17 @@ class Image extends PixpipeObject{
         this._data = new Float32Array( this._width * this._height * this._componentsPerPixel );
 
         // init the color if specified
-        if(color in options && options.color.length == 4 ){
+        if("color" in options && options.color.length == 4 ){
           var color = options.color;
 
-          for(var i=0; i<color.length-4; i+=4){
-            color[i] = color[0];
-            color[i + 1] = color[1];
-            color[i + 2] = color[2];
-            color[i + 3] = color[3];
+          for(var i=0; i<this._data.length; i+=4){
+            this._data[i] = color[0];
+            this._data[i + 1] = color[1];
+            this._data[i + 2] = color[2];
+            this._data[i + 3] = color[3];
           }
+
+          console.log(this._data);
         }
       }
     }
@@ -91,9 +93,6 @@ class Image extends PixpipeObject{
   }
 
 
-
-
-
   /**
   * @return {Number}
   */
@@ -101,9 +100,11 @@ class Image extends PixpipeObject{
     return this._width;
   }
 
+
   getHeight(){
     return this._height;
   }
+
 
   getData(){
     //return this._data.slice();  // return a copy

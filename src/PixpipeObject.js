@@ -52,12 +52,6 @@ class PixpipeObject {
   }
 
 
-  // some anti-messup protection
-  set _uuid(v){
-    console.warn("Changing the uuid manually is not allowed.");
-  }
-
-
   /**
   * Setter fo the name.
   * @param {String} n - name

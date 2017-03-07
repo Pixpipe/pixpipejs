@@ -219,14 +219,14 @@ class Image extends PixpipeObject{
         if("color" in options && options.color.length == 4 ){
           var color = options.color;
 
-          for(var i=0; i<this._data.length; i+=4){
+          for(var i=0; i<this._data.length-4; i+=4){
             this._data[i] = color[0];
             this._data[i + 1] = color[1];
             this._data[i + 2] = color[2];
             this._data[i + 3] = color[3];
           }
 
-          console.log(this._data);
+          console.log(this._data); 
         }
       }
     }
@@ -306,17 +306,26 @@ class Image extends PixpipeObject{
 class CanvasImageWriter extends Filter{
 
   /**
-  * @param {String} idOfParent - dom id of the future canvas' parent.
-  * (most likely the ID of a div)
+  * @param {String} id - dom id of the canvas element
   */
-  constructor( idOfParent){
+  constructor( idOfParent ){
     // call Filter constructor
     super();
 
-    // so that we can flush the content
-    this._parentId = idOfParent;
-    this._canvas = null;
-    this._ctx = null;
+    // creating a canvas element
+    this._canvas = document.createElement("canvas");
+    this._canvas.style = "image-rendering: pixelated;";
+
+    this._ctx = this._canvas.getContext('2d');
+
+    // not sure this is useful since the style is "pixelated"
+    // (does not seem to well super well with Firefox)
+    this._ctx.imageSmoothingEnabled = true;
+    this._ctx.mozImageSmoothingEnabled = false;
+    this._ctx.webkitImageSmoothingEnabled = false;
+    this._ctx.ctxmsImageSmoothingEnabled = false;
+
+    document.getElementById(idOfParent).appendChild(this._canvas);
   }
 
 
@@ -336,31 +345,6 @@ class CanvasImageWriter extends Filter{
 
 
   /**
-  * [PRIVATE]
-  * Initialize a new canvas object
-  */
-  _init(){
-    var parentElem = document.getElementById(this._parentId);
-    while (parentElem.firstChild) {
-        parentElem.removeChild(parentElem.firstChild);
-    }
-
-    // creating a canvas element
-    this._canvas = document.createElement("canvas");
-    this._canvas.style = "image-rendering: pixelated;";
-    this._ctx = this._canvas.getContext('2d');
-
-    // not sure this is useful since the style is "pixelated"
-    // (does not seem to well super well with Firefox)
-    this._ctx.imageSmoothingEnabled = true;
-    this._ctx.mozImageSmoothingEnabled = false;
-    this._ctx.webkitImageSmoothingEnabled = false;
-    this._ctx.ctxmsImageSmoothingEnabled = false;
-
-    document.getElementById(this._parentId).appendChild(this._canvas);
-  }
-
-  /**
   * Overwrite the generic (empty) method.
   */
   update(){
@@ -370,25 +354,20 @@ class CanvasImageWriter extends Filter{
     if(!this._isInputValid)
       return;
 
-    // build a new canvas
-    this._init();
-
     var image = this._input[0][0];
 
-    // resizing the canvas
     this._canvas.width = image.getWidth();
     this._canvas.height = image.getHeight();
 
     var canvasImageData = this._ctx.getImageData(0, 0, this._canvas.width, this._canvas.height);
     var canvasImageDataArray = canvasImageData.data;
 
-    // getting Image object data
     var originalImageDataArray = image.getData();
 
-    // copying the data into the canvas array (clamped uint8)
     originalImageDataArray.forEach( function(value, index){
       canvasImageDataArray[index] = value;
     });
+
     this._ctx.putImageData(canvasImageData, 0, 0);
   }
 
@@ -405,4 +384,3 @@ exports.CanvasImageWriter = CanvasImageWriter;
 Object.defineProperty(exports, '__esModule', { value: true });
 
 })));
-//# sourceMappingURL=pixpipe.js.map

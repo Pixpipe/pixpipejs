@@ -1,0 +1,25 @@
+<html>
+<head>
+  <title>Image To Canvas</title>
+
+  <script src="../dist/pixpipe.js"></script>
+</head>
+<body>
+
+  <div id="myDiv"></div>
+
+  <script>
+
+  // create an image
+  var myImage = new pixpipe.Image({width: 100, height: 250, color: [255, 128, 64, 255]})
+
+  // create a filter to write the image into a canvas
+  var imageToCanvasFilter = new pixpipe.CanvasImageWriter( "myDiv" );
+  imageToCanvasFilter.addInput( myImage );
+  imageToCanvasFilter.update();
+
+
+  </script>
+
+</body>
+</html>
