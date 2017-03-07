@@ -38,7 +38,7 @@ class Filter extends PixpipeObject {
   /**
   * Set an input, potentially associated to a category.
   * @param {Image} imageObject - instance of an image
-  * @param {Number}
+  * @param {Number} category - in case we want to get data from diferent categories.
   */
   addInput( imageObject, category=0){
 
@@ -49,10 +49,10 @@ class Filter extends PixpipeObject {
 
     // the category may not exist, we create it
     if( !(category in this._input) ){
-      this._input[category] = [];
+      this._input[category] = null;
     }
 
-    this._input[category].push( imageObject )
+    this._input[category] = imageObject ;
   }
 
 
@@ -69,6 +69,22 @@ class Filter extends PixpipeObject {
 
   }
 
+
+  /**
+  * [PRIVATE]
+  * should noly be used by the class that inherit Filter.
+  * This is just a wraper to not access the raw _output object.
+  * @param {Image} imageObject - instance of an image
+  * @param {Number} category - in case we want to get data from diferent categories.
+  */
+  _setOutput( data, category=0 ){
+    // the category may not exist, we create it
+    if( !(category in this._output) ){
+      this._output[category] = null;
+    }
+
+    this._output[category] = data ;
+  }
 
   /**
   * MUST be implemented by the class that inherit this.

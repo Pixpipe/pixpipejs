@@ -133,7 +133,7 @@ class Filter extends PixpipeObject {
   /**
   * Set an input, potentially associated to a category.
   * @param {Image} imageObject - instance of an image
-  * @param {Number}
+  * @param {Number} category - in case we want to get data from diferent categories.
   */
   addInput( imageObject, category=0){
 
@@ -144,10 +144,10 @@ class Filter extends PixpipeObject {
 
     // the category may not exist, we create it
     if( !(category in this._input) ){
-      this._input[category] = [];
+      this._input[category] = null;
     }
 
-    this._input[category].push( imageObject );
+    this._input[category] = imageObject ;
   }
 
 
@@ -164,6 +164,22 @@ class Filter extends PixpipeObject {
 
   }
 
+
+  /**
+  * [PRIVATE]
+  * should noly be used by the class that inherit Filter.
+  * This is just a wraper to not access the raw _output object.
+  * @param {Image} imageObject - instance of an image
+  * @param {Number} category - in case we want to get data from diferent categories.
+  */
+  _setOutput( data, category=0 ){
+    // the category may not exist, we create it
+    if( !(category in this._output) ){
+      this._output[category] = null;
+    }
+
+    this._output[category] = data ;
+  }
 
   /**
   * MUST be implemented by the class that inherit this.
@@ -186,20 +202,20 @@ class Filter extends PixpipeObject {
 } /* END class Filter */
 
 /**
-* Image class is one of the few base element of Pixpipejs.
+* Image2D class is one of the few base element of Pixpipejs.
 * It is always considered to be 4 channels (RGBA) and stored as a Float32Array
 * typed array.
 */
-class Image extends PixpipeObject{
+class Image2D extends PixpipeObject{
 
 
   /**
-  * Constructor of an Image instance. If no options, no array is allocated.
+  * Constructor of an Image2D instance. If no options, no array is allocated.
   * @param {Object} options - if present, must have options.width, options.height. Also options.color = [r, g, b, a] is possible but not mandatory, this sets the default color.
   */
   constructor( options=null ){
     super();
-    this._type = Image.TYPE();
+    this._type = Image2D.TYPE();
 
     // a rgba stored in a Float32Array (typed array)
     this._data = null;
@@ -244,36 +260,36 @@ class Image extends PixpipeObject{
 
 
   /**
-  * @return {Image} a deep copy instance of this Image
+  * @return {Image2D} a deep copy instance of this Image2D
   */
   clone(){
-    var cpImg = new Image();
+    var cpImg = new Image2D();
     cpImg.setData( this._data.slice(), this._width, this._height );
     return cpImg;
   }
 
 
   /**
-  *  Set the data to this image.
+  *  Set the data to this Image2D.
   * @param {Float32Array} array - 1D array of raw data stored as RGBARGBA...
-  * @param {Number} width - width of the image
-  * @param {Number} height - height of the image
+  * @param {Number} width - width of the Image2D
+  * @param {Number} height - height of the Image2D
   */
   setData( array, width, height ){
     // do not alloz to set a new internal array
     if( this._data ){
-      console.warn("Data can be set to an Image object only once. Cannot init the image.");
+      console.warn("Data can be set to an Image2D object only once. Cannot init the Image2D.");
       return;
     }
 
     if( array.length != width*height*this._componentsPerPixel){
-      console.warn("The array size does not match the width and height. Cannot init the image.");
+      console.warn("The array size does not match the width and height. Cannot init the Image2D.");
       return;
     }
 
     this._data = new Float32Array( array );
     this._width = width;
-    this._heigth = height;
+    this._height = height;
 
   }
 
@@ -296,10 +312,12 @@ class Image extends PixpipeObject{
     return this._data;  // return the actual array, editable!
   }
 
-} /* END of class Image */
+} /* END of class Image2D */
 
 /**
-*
+* CanvasImageWriter is a filter to output an instance of Image into a
+* HTML5 canvas element.
+* See examples/imageToCanvasFilter.html to see how it works.
 */
 
 
@@ -326,7 +344,7 @@ class CanvasImageWriter extends Filter{
   validateInput(){
 
     try{
-      this._isInputValid = this._input[0][0].isOfType( Image.TYPE() );
+      this._isInputValid = this._input[0].isOfType( Image2D.TYPE() );
     }catch(e){
       this._isInputValid = false;
       console.error("The input is not valid");
@@ -360,6 +378,7 @@ class CanvasImageWriter extends Filter{
     document.getElementById(this._parentId).appendChild(this._canvas);
   }
 
+
   /**
   * Overwrite the generic (empty) method.
   */
@@ -373,7 +392,7 @@ class CanvasImageWriter extends Filter{
     // build a new canvas
     this._init();
 
-    var image = this._input[0][0];
+    var image = this._input[0];
 
     // resizing the canvas
     this._canvas.width = image.getWidth();
@@ -390,17 +409,75 @@ class CanvasImageWriter extends Filter{
       canvasImageDataArray[index] = value;
     });
     this._ctx.putImageData(canvasImageData, 0, 0);
+
+
+
   }
-
-
-
 
 }
 
+/**
+*
+*/
+
+
+class UrlImageReader extends Filter {
+
+  /**
+  * @param {String} url - path of the image to be loaded
+  * @param {function} callback - function to call when the image is loaded.
+  * The _this_ object will be in argument of this callback.
+  */
+  constructor( url, callback){
+    super();
+    
+    this._imageUrl = url;
+    this._onReadCallback = callback;
+  }
+
+
+  update(){
+    var that = this;
+
+    var img = new Image();
+    img.src = this._imageUrl;
+
+    img.onload = function() {
+      var tmpCanvas = document.createElement("canvas");
+      tmpCanvas.width = img.width;
+      tmpCanvas.height = img.height;
+      var canvasContext = tmpCanvas.getContext('2d');
+      canvasContext.drawImage(img, 0, 0);
+
+      //try{
+        var imageData = canvasContext.getImageData(0, 0, tmpCanvas.width, tmpCanvas.height);
+        var dataArray = imageData.data;
+        var img2D = new Image2D();
+        img2D.setData( dataArray, img.width, img.height);
+        console.log(img2D);
+
+        that._setOutput( img2D );
+
+        that._onReadCallback && that._onReadCallback( that );
+      /*}catch(e){
+        console.error("The server of the specified image URL does not allow Cross Origin data access. Pixpipe cannot create an Image2D object.");
+
+        console.error(e);
+      }*/
+
+    };
+
+
+  }
+
+
+} /* END of class UrlImageReader */
+
 exports.PixpipeObject = PixpipeObject;
 exports.Filter = Filter;
-exports.Image = Image;
+exports.Image2D = Image2D;
 exports.CanvasImageWriter = CanvasImageWriter;
+exports.UrlImageReader = UrlImageReader;
 
 Object.defineProperty(exports, '__esModule', { value: true });
 

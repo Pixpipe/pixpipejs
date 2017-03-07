@@ -1,20 +1,20 @@
 import { PixpipeObject } from './PixpipeObject.js';
 
 /**
-* Image class is one of the few base element of Pixpipejs.
+* Image2D class is one of the few base element of Pixpipejs.
 * It is always considered to be 4 channels (RGBA) and stored as a Float32Array
 * typed array.
 */
-class Image extends PixpipeObject{
+class Image2D extends PixpipeObject{
 
 
   /**
-  * Constructor of an Image instance. If no options, no array is allocated.
+  * Constructor of an Image2D instance. If no options, no array is allocated.
   * @param {Object} options - if present, must have options.width, options.height. Also options.color = [r, g, b, a] is possible but not mandatory, this sets the default color.
   */
   constructor( options=null ){
     super();
-    this._type = Image.TYPE();
+    this._type = Image2D.TYPE();
 
     // a rgba stored in a Float32Array (typed array)
     this._data = null;
@@ -59,36 +59,36 @@ class Image extends PixpipeObject{
 
 
   /**
-  * @return {Image} a deep copy instance of this Image
+  * @return {Image2D} a deep copy instance of this Image2D
   */
   clone(){
-    var cpImg = new Image();
+    var cpImg = new Image2D();
     cpImg.setData( this._data.slice(), this._width, this._height );
     return cpImg;
   }
 
 
   /**
-  *  Set the data to this image.
+  *  Set the data to this Image2D.
   * @param {Float32Array} array - 1D array of raw data stored as RGBARGBA...
-  * @param {Number} width - width of the image
-  * @param {Number} height - height of the image
+  * @param {Number} width - width of the Image2D
+  * @param {Number} height - height of the Image2D
   */
   setData( array, width, height ){
     // do not alloz to set a new internal array
     if( this._data ){
-      console.warn("Data can be set to an Image object only once. Cannot init the image.");
+      console.warn("Data can be set to an Image2D object only once. Cannot init the Image2D.");
       return;
     }
 
     if( array.length != width*height*this._componentsPerPixel){
-      console.warn("The array size does not match the width and height. Cannot init the image.");
+      console.warn("The array size does not match the width and height. Cannot init the Image2D.");
       return;
     }
 
     this._data = new Float32Array( array );
     this._width = width;
-    this._heigth = height;
+    this._height = height;
 
   }
 
@@ -111,6 +111,6 @@ class Image extends PixpipeObject{
     return this._data;  // return the actual array, editable!
   }
 
-} /* END of class Image */
+} /* END of class Image2D */
 
-export { Image }
+export { Image2D }
