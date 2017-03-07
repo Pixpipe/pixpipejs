@@ -1,4 +1,6 @@
 
+import { PixpipeObject } from './PixpipeObject.js';
+
 /**
 * Filter is a base class and must be inherited to be used properly.
 * A filter takes one or more Image instances as input and returns one or more
@@ -7,9 +9,13 @@
 * Every input and output can be arranged by category, so that internaly, a filter
 * can use and output diferent kind of data.
 */
-class Filter {
+class Filter extends PixpipeObject {
 
   constructor(){
+    super();
+    this._type = Filter.TYPE();
+
+    this._isInputValid = false;
 
     this._input = {
       "0": []
@@ -21,6 +27,13 @@ class Filter {
 
   }
 
+
+  /**
+  * Hardcode the datatype
+  */
+  static TYPE(){
+    return "FILTER";
+  }
 
   /**
   * Set an input, potentially associated to a category.
@@ -58,11 +71,23 @@ class Filter {
 
 
   /**
-  * MUST be implement by the class that herit this
+  * MUST be implemented by the class that inherit this.
+  * MUST change the value of this._isInputValid
+  */
+  validateInput(){
+    console.warn("The update() method has not been written, input integrity are not checked.");
+  }
+
+
+  /**
+  * MUST be implemented by the class that inherit this.
+  * Launch the process.
   */
   update(){
-
+    console.error("The update() method has not been written, this filter is not valid.");
   }
 
 
 } /* END class Filter */
+
+export { Filter }

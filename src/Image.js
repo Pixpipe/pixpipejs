@@ -1,15 +1,20 @@
+import { PixpipeObject } from './PixpipeObject.js';
+
 /**
 * Image class is one of the few base element of Pixpipejs.
 * It is always considered to be 4 channels (RGBA) and stored as a Float32Array
 * typed array.
 */
-class Image {
+class Image extends PixpipeObject{
+
 
   /**
   * Constructor of an Image instance. If no options, no array is allocated.
   * @param {Object} options - if present, must have options.width, options.height. Also options.color = [r, g, b, a] is possible but not mandatory, this sets the default color.
   */
   constructor( options=null ){
+    super();
+    this._type = Image.TYPE();
 
     // a rgba stored in a Float32Array (typed array)
     this._data = null;
@@ -39,6 +44,25 @@ class Image {
       }
     }
 
+
+  }
+
+
+  /**
+  * Hardcode the datatype
+  */
+  static TYPE(){
+    return "IMAGE2D";
+  }
+
+
+  /**
+  * @return {Image} a deep copy instance of this Image
+  */
+  clone(){
+    var cpImg = new Image();
+    cpImg.setData( this._data.slice(), this._width, this._height );
+    return cpImg;
   }
 
 
