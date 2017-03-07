@@ -1,9 +1,11 @@
 /**
-*
+* CanvasImageWriter is a filter to output an instance of Image into a
+* HTML5 canvas element.
+* See examples/imageToCanvasFilter.html to see how it works.
 */
 
 
-import { Image } from './Image.js';
+import { Image2D } from './Image2D.js';
 import { Filter } from './Filter.js';
 
 class CanvasImageWriter extends Filter{
@@ -29,7 +31,7 @@ class CanvasImageWriter extends Filter{
   validateInput(){
 
     try{
-      this._isInputValid = this._input[0][0].isOfType( Image.TYPE() );
+      this._isInputValid = this._input[0].isOfType( Image2D.TYPE() );
     }catch(e){
       this._isInputValid = false;
       console.error("The input is not valid");
@@ -63,6 +65,7 @@ class CanvasImageWriter extends Filter{
     document.getElementById(this._parentId).appendChild(this._canvas);
   }
 
+
   /**
   * Overwrite the generic (empty) method.
   */
@@ -76,7 +79,7 @@ class CanvasImageWriter extends Filter{
     // build a new canvas
     this._init();
 
-    var image = this._input[0][0];
+    var image = this._input[0];
 
     // resizing the canvas
     this._canvas.width = image.getWidth();
@@ -93,10 +96,10 @@ class CanvasImageWriter extends Filter{
       canvasImageDataArray[index] = value;
     });
     this._ctx.putImageData(canvasImageData, 0, 0);
+
+
+
   }
-
-
-
 
 }
 
