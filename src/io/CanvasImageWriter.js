@@ -32,25 +32,12 @@ class CanvasImageWriter extends Filter{
     // call Filter constructor
     super();
 
+    this._inputValidator[ 0 ] = Image2D.TYPE();
+
     // so that we can flush the content
     this._parentId = idOfParent;
     this._canvas = null;
     this._ctx = null;
-  }
-
-
-  /**
-  * Overloaded validation method.
-  */
-  validateInput(){
-
-    try{
-      this._isInputValid = this._input[0].isOfType( Image2D.TYPE() );
-    }catch(e){
-      this._isInputValid = false;
-      console.error("The input is not valid");
-    }
-
   }
 
 
@@ -84,10 +71,9 @@ class CanvasImageWriter extends Filter{
   * Overwrite the generic (empty) method.
   */
   update(){
-    this.validateInput();
 
     // abort if invalid input
-    if(!this._isInputValid)
+    if(!this.hasValidInput())
       return;
 
     // build a new canvas

@@ -6,7 +6,7 @@ The concept of *pipeline* implies that the output of a `Filter` can be used as i
 # Motivations
 To make image processing:
 - accessible, using just a web browser and a text pad
-- with no othen dependency than `pixpipe.js`
+- with no other dependency than `pixpipe.js`
 - with no required compilation or system fuss
 - modular
 - generic enough to use different kind of data/datasource
@@ -19,3 +19,8 @@ The plan is to add more image processing filters and tools, like *FFT*, or *wave
 
 # License
 MIT - See [LICENSE file](LICENSE).
+
+
+# Todo
+## doc for dev
+- how to make _inputValidator (Filter) and when to call validateInput

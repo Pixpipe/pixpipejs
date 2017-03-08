@@ -21,7 +21,7 @@ class Filter extends PixpipeObject {
     super();
     this._type = Filter.TYPE();
 
-    this._isInputValid = false;
+    this._inputValidator = {};
 
     this._input = {
       "0": []
@@ -109,11 +109,21 @@ class Filter extends PixpipeObject {
 
 
   /**
-  * MUST be implemented by the class that inherit this.
-  * MUST change the value of this._isInputValid
+  * Validate the input data using a model defined in _inputValidator.
+  * Every class that implement Filter must implement their own _inputValidator.
+  * Not mandatory to use, still a good practice.
   */
-  validateInput(){
-    console.warn("The update() method has not been written, input integrity are not checked.");
+  hasValidInput(){
+    var that = this;
+    var inputCategories = Object.keys( this._inputValidator );
+
+    var valid = true;
+
+    inputCategories.forEach( function(key){
+      valid = valid && that._getInput( key ).isOfType( that._inputValidator[ key ] )
+    });
+
+    return valid;
   }
 
 

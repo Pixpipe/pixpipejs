@@ -124,7 +124,7 @@ class Filter extends PixpipeObject {
     super();
     this._type = Filter.TYPE();
 
-    this._isInputValid = false;
+    this._inputValidator = {};
 
     this._input = {
       "0": []
@@ -212,11 +212,21 @@ class Filter extends PixpipeObject {
 
 
   /**
-  * MUST be implemented by the class that inherit this.
-  * MUST change the value of this._isInputValid
+  * Validate the input data using a model defined in _inputValidator.
+  * Every class that implement Filter must implement their own _inputValidator.
+  * Not mandatory to use, still a good practice.
   */
-  validateInput(){
-    console.warn("The update() method has not been written, input integrity are not checked.");
+  hasValidInput(){
+    var that = this;
+    var inputCategories = Object.keys( this._inputValidator );
+
+    var valid = true;
+
+    inputCategories.forEach( function(key){
+      valid = valid && that._getInput( key ).isOfType( that._inputValidator[ key ] );
+    });
+
+    return valid;
   }
 
 
@@ -382,25 +392,12 @@ class CanvasImageWriter extends Filter{
     // call Filter constructor
     super();
 
+    this._inputValidator[ 0 ] = Image2D.TYPE();
+
     // so that we can flush the content
     this._parentId = idOfParent;
     this._canvas = null;
     this._ctx = null;
-  }
-
-
-  /**
-  * Overloaded validation method.
-  */
-  validateInput(){
-
-    try{
-      this._isInputValid = this._input[0].isOfType( Image2D.TYPE() );
-    }catch(e){
-      this._isInputValid = false;
-      console.error("The input is not valid");
-    }
-
   }
 
 
@@ -434,10 +431,9 @@ class CanvasImageWriter extends Filter{
   * Overwrite the generic (empty) method.
   */
   update(){
-    this.validateInput();
 
     // abort if invalid input
-    if(!this._isInputValid)
+    if(!this.hasValidInput())
       return;
 
     // build a new canvas
@@ -524,8 +520,6 @@ class UrlImageReader extends Filter {
         var dataArray = imageData.data;
         var img2D = new Image2D();
         img2D.setData( dataArray, img.width, img.height);
-        console.log(img2D);
-
         that._setOutput( img2D );
 
         that._onReadCallback && that._onReadCallback( that );
@@ -580,9 +574,10 @@ class FileImageReader extends Filter {
 
 
   /**
-  *
+  * Overload the default method because HTML5 File is not a Pixpipe type
   */
-  validateInput(){
+  hasValidInput(){
+    var valid = false;
     var file = this._getInput();
 
     if (file && file.type.match( this._allowedTypes )) {
@@ -590,6 +585,8 @@ class FileImageReader extends Filter {
     }else{
       console.error("The file must be an image (jpg/png). The type " + file.type + " is not compatible with FileImageReader.");
     }
+
+    return valid;
   }
 
 
@@ -597,9 +594,8 @@ class FileImageReader extends Filter {
   * Run the reading
   */
   update(){
-    this.validateInput();
 
-    if(! this._isInputValid)
+    if(! this.hasValidInput)
       return
 
     var that = this;
