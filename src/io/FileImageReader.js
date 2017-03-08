@@ -38,9 +38,10 @@ class FileImageReader extends Filter {
 
 
   /**
-  *
+  * Overload the default method because HTML5 File is not a Pixpipe type
   */
-  validateInput(){
+  hasValidInput(){
+    var valid = false;
     var file = this._getInput();
 
     if (file && file.type.match( this._allowedTypes )) {
@@ -48,6 +49,8 @@ class FileImageReader extends Filter {
     }else{
       console.error("The file must be an image (jpg/png). The type " + file.type + " is not compatible with FileImageReader.");
     }
+
+    return valid;
   }
 
 
@@ -55,9 +58,8 @@ class FileImageReader extends Filter {
   * Run the reading
   */
   update(){
-    this.validateInput();
 
-    if(! this._isInputValid)
+    if(! this.hasValidInput)
       return
 
     var that = this;

@@ -59,8 +59,6 @@ class UrlImageReader extends Filter {
         var dataArray = imageData.data;
         var img2D = new Image2D();
         img2D.setData( dataArray, img.width, img.height);
-        console.log(img2D);
-
         that._setOutput( img2D );
 
         that._onReadCallback && that._onReadCallback( that );
