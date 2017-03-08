@@ -311,7 +311,7 @@ class Image2D extends PixpipeObject{
   */
   clone(){
     var cpImg = new Image2D();
-    cpImg.setData( this._data.slice(), this._width, this._height );
+    cpImg.setData( this._data, this._width, this._height );
     return cpImg;
   }
 
@@ -342,24 +342,139 @@ class Image2D extends PixpipeObject{
 
 
   /**
-  * @return {Number}
+  * @return {Number} the width of the Image2D
   */
   getWidth(){
     return this._width;
   }
 
 
+  /**
+  * @return {Number} the height of the Image2D
+  */
   getHeight(){
     return this._height;
   }
 
 
+  /**
+  * @return {Number} the number of components per pixel
+  */
+  getComponentsPerPixel(){
+    return this._componentsPerPixel;
+  }
+
+
+  /**
+  * @return {Float32Array} the original data, dont mess up with this one.
+  * in case of doubt, use  getDataCopy()
+  */
   getData(){
     //return this._data.slice();  // return a copy
     return this._data;  // return the actual array, editable!
   }
 
+
+  /**
+  * @return {Float32Array} a deep copy of the data
+  */
+  getDataCopy(){
+    return this._data.slice();
+  }
+
+
+  /**
+  * Compute the (x, y) position from a position in a 1D array.
+  * @param {Number} i - the index of a pixel. This has nothing to do with
+  * the number of components per pixel.
+  * @return {Object} coordinate as {x, y}
+  */
+  get2dPositionFrom1dIndex( i ){
+    return {
+      x: i % this._width,
+      y: Math.floor(i / this._width)
+    }
+  }
+
 } /* END of class Image2D */
+
+/*
+* Author   Jonathan Lurie - http://me.jonahanlurie.fr
+* License  MIT
+* Link      https://github.com/jonathanlurie/pixpipejs
+* Lab       MCIN - Montreal Neurological Institute
+*/
+
+/**
+* ImageToImageFilter is not to be used as-is but rather as a base class for any
+* filter that input a single Image2D and output a single Image2D.
+* This class does not overload the update() method.
+*/
+class ImageToImageFilter extends Filter {
+
+  constructor(){
+    super();
+    this._inputValidator[ 0 ] = Image2D.TYPE();
+
+    // will be a copy of the input Image2D buffer
+    this._inputBuffer = null;
+  }
+
+} /* END class ImageToImageFilter */
+
+/*
+* Author   Jonathan Lurie - http://me.jonahanlurie.fr
+* License  MIT
+* Link      https://github.com/jonathanlurie/pixpipejs
+* Lab       MCIN - Montreal Neurological Institute
+*/
+
+/**
+* PixelWiseImageFilter is not supposed to be use as is and is just to
+* be inherited by other filters.
+* This class does not overload the update() method.
+*/
+class PixelWiseImageFilter extends ImageToImageFilter{
+
+  constructor(){
+    super();
+
+  }
+
+
+  /**
+  * [PRIVATE]
+  * generic function for painting row, colum or whole
+  * @param {Number} firstPixel - Index of the first pixel in 1D array
+  * @param {Number} lastPixel - Index of the last pixel in 1D array
+  * @param {Number} increment - jump gap from a pixel to another (in a 1D style)
+  * @param {function} cb - callback of what to do for each pixel to be processed. Called with 2 args: 2D position {x, y} and color {r, g, b, a}
+  */
+  _forEachPixelOfSuch(firstPixel, lastPixel, increment, cb ){
+    var inputImage2D = this._getInput();
+    var inputBuffer = this._inputBuffer;
+    var componentPerPixel = inputImage2D.getComponentsPerPixel();
+
+    var currentColor = null;
+
+    for(var p=firstPixel; p<lastPixel; p+=increment ){
+      var firstCompoPos1D = p * componentPerPixel;
+      var position2D = inputImage2D.get2dPositionFrom1dIndex(p);
+      currentColor = inputBuffer.slice(firstCompoPos1D, firstCompoPos1D + componentPerPixel);
+
+      var newColor = cb( position2D, currentColor);
+
+      if(newColor && newColor.length == componentPerPixel){
+        for(var i=0; i<componentPerPixel; i++){
+          inputBuffer[firstCompoPos1D + i] = newColor[i];
+        }
+      }
+
+    }
+  }
+
+
+} /* END of class PixelWiseImageFilter */
 
 /*
 * Author   Jonathan Lurie - http://me.jonahanlurie.fr
@@ -524,7 +639,7 @@ class UrlImageReader extends Filter {
 
         that._onReadCallback && that._onReadCallback( that );
       }catch(e){
-        console.error("The server of the specified image URL does not allow Cross Origin data access. Pixpipe cannot create an Image2D object.");
+        //console.error("The server of the specified image URL does not allow Cross Origin data access. Pixpipe cannot create an Image2D object.");
 
         console.error(e);
       }
@@ -629,16 +744,62 @@ class FileImageReader extends Filter {
 
 } /* END of class UrlImageReader */
 
-// filters - processing of Images2D
+/*
+* Author   Jonathan Lurie - http://me.jonahanlurie.fr
+* License  MIT
+* Link      https://github.com/jonathanlurie/pixpipejs
+* Lab       MCIN - Montreal Neurological Institute
+*/
+
+/**
+*
+*/
+class ForEachPixelImageFilter extends PixelWiseImageFilter {
+
+  /**
+  * @param {function} cb - callback of what to do for each pixel
+  */
+  constructor( cb = null ){
+    super();
+    this._perPixelCallback = cb;
+  }
+
+
+  /**
+  * Run the filter
+  */
+  update(){
+    if( ! this.hasValidInput())
+      return;
+
+    var inputImage2D = this._getInput();
+    var firstPixel = 0;
+    var lastPixel = inputImage2D.getWidth() * inputImage2D.getHeight();
+    var increment = 1;
+
+    this._inputBuffer = inputImage2D.getDataCopy();
+
+    this._forEachPixelOfSuch(firstPixel, lastPixel, increment, this._perPixelCallback );
+
+    // building the output
+    var img2D = new Image2D();
+    img2D.setData( this._inputBuffer, inputImage2D.getWidth(), inputImage2D.getHeight());
+    this._setOutput( img2D );
+  }
+
+} /* END class ForEachPixelImageFilter */
 
 // filters - processing of Image3D
 
 exports.PixpipeObject = PixpipeObject;
 exports.Filter = Filter;
 exports.Image2D = Image2D;
+exports.ImageToImageFilter = ImageToImageFilter;
+exports.PixelWiseImageFilter = PixelWiseImageFilter;
 exports.CanvasImageWriter = CanvasImageWriter;
 exports.UrlImageReader = UrlImageReader;
 exports.FileImageReader = FileImageReader;
+exports.ForEachPixelImageFilter = ForEachPixelImageFilter;
 
 Object.defineProperty(exports, '__esModule', { value: true });
 
