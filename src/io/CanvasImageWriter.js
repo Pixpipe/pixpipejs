@@ -1,13 +1,27 @@
+/*
+* Author   Jonathan Lurie - http://me.jonahanlurie.fr
+* License  MIT
+* Link      https://github.com/jonathanlurie/pixpipejs
+* Lab       MCIN - Montreal Neurological Institute
+*/
+
+import { Image2D } from '../core/Image2D.js';
+import { Filter } from '../core/Filter.js';
+
 /**
 * CanvasImageWriter is a filter to output an instance of Image into a
 * HTML5 canvas element.
-* See examples/imageToCanvasFilter.html to see how it works.
+* usage: examples/imageToCanvasFilter.html
+*
+* @example
+// create an image
+* var myImage = new pixpipe.Image2D({width: 100, height: 250, color: [255, 128, 64, 255]})
+*
+* // create a filter to write the image into a canvas
+* var imageToCanvasFilter = new pixpipe.CanvasImageWriter( "myDiv" );
+* imageToCanvasFilter.addInput( myImage );
+* imageToCanvasFilter.update();
 */
-
-
-import { Image2D } from './Image2D.js';
-import { Filter } from './Filter.js';
-
 class CanvasImageWriter extends Filter{
 
   /**

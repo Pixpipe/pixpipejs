@@ -1,31 +1,50 @@
-/**
-*
+/*
+* Author   Jonathan Lurie - http://me.jonahanlurie.fr
+* License  MIT
+* Link      https://github.com/jonathanlurie/pixpipejs
+* Lab       MCIN - Montreal Neurological Institute
 */
 
+import { Image2D } from '../core/Image2D.js';
+import { Filter } from '../core/Filter.js';
 
-import { Image2D } from './Image2D.js';
-import { Filter } from './Filter.js';
 
+/**
+* An instance of UrlImageReader takes an image URL as input and
+* returns an Image2D as output. Use the regular `addInput()` and `getOuput()`
+* with no argument for that.
+* Reading a file from URL takes an AJAX request, which is asynchronous. For this
+* reason, what happens next, once the Image2D is created must take place in the
+* callback defined in the constructor.
+*
+* Usage: examples/urlToImage2D.html
+*
+* @example
+* var url2ImgFilter = new pixpipe.UrlImageReader( ... );
+* url2ImgFilter.addInput( "images/sd.jpg" );
+* url2ImgFilter.update();
+*/
 class UrlImageReader extends Filter {
 
   /**
-  * @param {String} url - path of the image to be loaded
   * @param {function} callback - function to call when the image is loaded.
   * The _this_ object will be in argument of this callback.
   */
-  constructor( url, callback){
+  constructor( callback ){
     super();
-    
-    this._imageUrl = url;
+
     this._onReadCallback = callback;
   }
 
 
+  /**
+  * Run the reading
+  */
   update(){
     var that = this;
 
     var img = new Image();
-    img.src = this._imageUrl;
+    img.src = this._getInput();
 
     img.onload = function() {
       var tmpCanvas = document.createElement("canvas");
@@ -34,7 +53,8 @@ class UrlImageReader extends Filter {
       var canvasContext = tmpCanvas.getContext('2d');
       canvasContext.drawImage(img, 0, 0);
 
-      //try{
+      try{
+
         var imageData = canvasContext.getImageData(0, 0, tmpCanvas.width, tmpCanvas.height);
         var dataArray = imageData.data;
         var img2D = new Image2D();
@@ -44,11 +64,11 @@ class UrlImageReader extends Filter {
         that._setOutput( img2D );
 
         that._onReadCallback && that._onReadCallback( that );
-      /*}catch(e){
+      }catch(e){
         console.error("The server of the specified image URL does not allow Cross Origin data access. Pixpipe cannot create an Image2D object.");
 
         console.error(e);
-      }*/
+      }
 
     };
 

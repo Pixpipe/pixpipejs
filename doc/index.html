@@ -1,0 +1,1127 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset='utf-8' />
+  <title>Pixpipe.js  | Documentation</title>
+  <meta name='viewport' content='width=device-width,initial-scale=1'>
+  <link href='http://fonts.googleapis.com/css?family=Source+Sans+Pro:400,700|Source+Code+Pro:400,500,700' rel='stylesheet' type='text/css'>
+  <link href='assets/bass.css' type='text/css' rel='stylesheet' />
+  <link href='assets/style.css' type='text/css' rel='stylesheet' />
+  <link href='assets/github.css' type='text/css' rel='stylesheet' />
+</head>
+<body class='documentation'>
+  <div class='container'>
+    <div class='clearfix md-mxn2'>
+      <div class='fixed md-show fix-3 overflow-auto max-height-100'>
+        <div class='py1 px2'>
+          <h3 class='mb0 no-anchor'>Pixpipe.js</h3>
+          <div class='mb1'><code></code></div>
+          <input
+            placeholder='Filter'
+            id='filter-input'
+            class='col12 block field'
+            type='text' />
+          <div id='toc'>
+              <a
+                href='#Filter'
+                class='block bold'>
+                Filter
+              </a>
+                <a
+                  href='#Filter.TYPE'
+                  class='regular block'>
+                  .TYPE
+                </a>
+                <a
+                  href='#Filter._getInput'
+                  class='regular block'>
+                  #_getInput
+                </a>
+                <a
+                  href='#Filter._setOutput'
+                  class='regular block'>
+                  #_setOutput
+                </a>
+                <a
+                  href='#Filter.addInput'
+                  class='regular block'>
+                  #addInput
+                </a>
+                <a
+                  href='#Filter.getOutput'
+                  class='regular block'>
+                  #getOutput
+                </a>
+                <a
+                  href='#Filter.update'
+                  class='regular block'>
+                  #update
+                </a>
+                <a
+                  href='#Filter.validateInput'
+                  class='regular block'>
+                  #validateInput
+                </a>
+              <a
+                href='#CanvasImageWriter'
+                class='block bold'>
+                CanvasImageWriter
+              </a>
+                <a
+                  href='#CanvasImageWriter._init'
+                  class='regular block'>
+                  #_init
+                </a>
+                <a
+                  href='#CanvasImageWriter.constructor'
+                  class='regular block'>
+                  #constructor
+                </a>
+                <a
+                  href='#CanvasImageWriter.update'
+                  class='regular block'>
+                  #update
+                </a>
+                <a
+                  href='#CanvasImageWriter.validateInput'
+                  class='regular block'>
+                  #validateInput
+                </a>
+              <a
+                href='#Image2D'
+                class='block bold'>
+                Image2D
+              </a>
+                <a
+                  href='#Image2D.TYPE'
+                  class='regular block'>
+                  .TYPE
+                </a>
+                <a
+                  href='#Image2D.clone'
+                  class='regular block'>
+                  #clone
+                </a>
+                <a
+                  href='#Image2D.constructor'
+                  class='regular block'>
+                  #constructor
+                </a>
+                <a
+                  href='#Image2D.getWidth'
+                  class='regular block'>
+                  #getWidth
+                </a>
+                <a
+                  href='#Image2D.setData'
+                  class='regular block'>
+                  #setData
+                </a>
+              <a
+                href='#UrlImageReader'
+                class='block bold'>
+                UrlImageReader
+              </a>
+                <a
+                  href='#UrlImageReader.constructor'
+                  class='regular block'>
+                  #constructor
+                </a>
+                <a
+                  href='#UrlImageReader.update'
+                  class='regular block'>
+                  #update
+                </a>
+              <a
+                href='#FileImageReader'
+                class='block bold'>
+                FileImageReader
+              </a>
+                <a
+                  href='#FileImageReader.constructor'
+                  class='regular block'>
+                  #constructor
+                </a>
+                <a
+                  href='#FileImageReader.update'
+                  class='regular block'>
+                  #update
+                </a>
+                <a
+                  href='#FileImageReader.validateInput'
+                  class='regular block'>
+                  #validateInput
+                </a>
+              <a
+                href='#PixpipeObject'
+                class='block bold'>
+                PixpipeObject
+              </a>
+                <a
+                  href='#PixpipeObject.TYPE'
+                  class='regular block'>
+                  .TYPE
+                </a>
+                <a
+                  href='#PixpipeObject.getDescription'
+                  class='regular block'>
+                  #getDescription
+                </a>
+                <a
+                  href='#PixpipeObject.getName'
+                  class='regular block'>
+                  #getName
+                </a>
+                <a
+                  href='#PixpipeObject.getType'
+                  class='regular block'>
+                  #getType
+                </a>
+                <a
+                  href='#PixpipeObject.isOfType'
+                  class='regular block'>
+                  #isOfType
+                </a>
+                <a
+                  href='#PixpipeObject.setDescription'
+                  class='regular block'>
+                  #setDescription
+                </a>
+                <a
+                  href='#PixpipeObject.setName'
+                  class='regular block'>
+                  #setName
+                </a>
+                <a
+                  href='#PixpipeObject.uuid'
+                  class='regular block'>
+                  #uuid
+                </a>
+          </div>
+        </div>
+      </div>
+      <div class='fix-margin-3'>
+        <div class='px2'>
+<div class='py1'><section class='py2 clearfix'>
+  <h2 id='Filter' class='mt0'>
+    Filter<span class='gray'></span>
+  </h2>
+  <p>Filter is a base class and must be inherited to be used properly.
+A filter takes one or more Image instances as input and returns one or more
+instances of images as output.
+Every filter has a addInput(), a getOutput() and a update() methods.
+Every input and output can be arranged by category, so that internaly, a filter
+can use and output diferent kind of data.</p>
+
+      <h4>Static members</h4>
+        <div class='collapsible' id='Filter.TYPE'>
+          <a href='#Filter.TYPE'>
+            <code>
+              .TYPE<span class='gray'></span>
+            </code>
+            <div class='force-inline'>
+              <p>Hardcode the datatype</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2 m2'>
+            <section class='py2 clearfix'>
+              <h2 id='Filter.TYPE' class='mt0'>
+                TYPE<span class='gray'></span>
+              </h2>
+              <p>Hardcode the datatype</p>
+            
+            </section>
+          </div>
+        </div>
+      <h4>Instance members</h4>
+        <div class='collapsible' id='Filter._getInput'>
+          <a href='#Filter._getInput'>
+            <code>
+              #_getInput<span class='gray'>(category)</span>
+            </code>
+            <div class='force-inline'>
+              <p>[PRIVATE]
+should noly be used by the class that inherit Filter.</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2'>
+            <section class='py2 clearfix'>
+              <h2 id='Filter._getInput' class='mt0'>
+                _getInput<span class='gray'>(category)</span>
+              </h2>
+              <p>[PRIVATE]
+            should noly be used by the class that inherit Filter.</p>
+            
+                <h4>Parameters</h4>
+                <ul class='suppress-p-margin'>
+                    <li><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">Number</a></code> <strong>category</strong>
+                      :
+                      <div class='force-inline'>
+                        <p>in case we want to get data from different categories.</p>
+            
+                      </div>
+                    </li>
+                </ul>
+                  <h4>Returns</h4>
+                  <code><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a></code></code>
+                  :
+                  <div class='force-inline'>
+                    <p>or null if no input can be returned</p>
+            
+                  </div>
+            </section>
+          </div>
+        </div>
+        <div class='collapsible' id='Filter._setOutput'>
+          <a href='#Filter._setOutput'>
+            <code>
+              #_setOutput<span class='gray'>(imageObject, data, category)</span>
+            </code>
+            <div class='force-inline'>
+              <p>[PRIVATE]
+should noly be used by the class that inherit Filter.
+This is just a wraper to not access the raw _output object.</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2'>
+            <section class='py2 clearfix'>
+              <h2 id='Filter._setOutput' class='mt0'>
+                _setOutput<span class='gray'>(imageObject, data, category)</span>
+              </h2>
+              <p>[PRIVATE]
+            should noly be used by the class that inherit Filter.
+            This is just a wraper to not access the raw _output object.</p>
+            
+                <h4>Parameters</h4>
+                <ul class='suppress-p-margin'>
+                    <li><code><a href="#Image2D">Image2D</a></code> <strong>imageObject</strong>
+                      :
+                      <div class='force-inline'>
+                        <p>instance of an image</p>
+            
+                      </div>
+                    </li>
+                    <li> <strong>data</strong>
+                      :
+                      <div class='force-inline'>
+                        
+                      </div>
+                    </li>
+                    <li><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">Number</a></code> <strong>category</strong>
+                      :
+                      <div class='force-inline'>
+                        <p>in case we want to get data from different categories.</p>
+            
+                      </div>
+                    </li>
+                </ul>
+            </section>
+          </div>
+        </div>
+        <div class='collapsible' id='Filter.addInput'>
+          <a href='#Filter.addInput'>
+            <code>
+              #addInput<span class='gray'>(inputObject, category)</span>
+            </code>
+            <div class='force-inline'>
+              <p>Set an input, potentially associated to a category.</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2'>
+            <section class='py2 clearfix'>
+              <h2 id='Filter.addInput' class='mt0'>
+                addInput<span class='gray'>(inputObject, category)</span>
+              </h2>
+              <p>Set an input, potentially associated to a category.</p>
+            
+                <h4>Parameters</h4>
+                <ul class='suppress-p-margin'>
+                    <li><code><a href="#Image2D">Image2D</a></code> <strong>inputObject</strong>
+                      :
+                      <div class='force-inline'>
+                        <p>most likely an instance of Image2D but can also be HTML5 File or Image3D</p>
+            
+                      </div>
+                    </li>
+                    <li><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">Number</a></code> <strong>category</strong>
+                      :
+                      <div class='force-inline'>
+                        <p>in case we want to get data from diferent categories.</p>
+            
+                      </div>
+                    </li>
+                </ul>
+            </section>
+          </div>
+        </div>
+        <div class='collapsible' id='Filter.getOutput'>
+          <a href='#Filter.getOutput'>
+            <code>
+              #getOutput<span class='gray'>(category)</span>
+            </code>
+            <div class='force-inline'>
+              <p>Return outputs from a category (default category: 0)</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2'>
+            <section class='py2 clearfix'>
+              <h2 id='Filter.getOutput' class='mt0'>
+                getOutput<span class='gray'>(category)</span>
+              </h2>
+              <p>Return outputs from a category (default category: 0)</p>
+            
+                <h4>Parameters</h4>
+                <ul class='suppress-p-margin'>
+                    <li><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">Number</a></code> <strong>category</strong>
+                      :
+                      <div class='force-inline'>
+                        <p>a category of output.</p>
+            
+                      </div>
+                    </li>
+                </ul>
+                  <h4>Returns</h4>
+                  <code><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a></code></code>
+                  :
+                  <div class='force-inline'>
+                    <p>or null if no output can be returned.</p>
+            
+                  </div>
+            </section>
+          </div>
+        </div>
+        <div class='collapsible' id='Filter.update'>
+          <a href='#Filter.update'>
+            <code>
+              #update<span class='gray'></span>
+            </code>
+            <div class='force-inline'>
+              <p>MUST be implemented by the class that inherit this.
+Launch the process.</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2'>
+            <section class='py2 clearfix'>
+              <h2 id='Filter.update' class='mt0'>
+                update<span class='gray'></span>
+              </h2>
+              <p>MUST be implemented by the class that inherit this.
+            Launch the process.</p>
+            
+            </section>
+          </div>
+        </div>
+        <div class='collapsible' id='Filter.validateInput'>
+          <a href='#Filter.validateInput'>
+            <code>
+              #validateInput<span class='gray'></span>
+            </code>
+            <div class='force-inline'>
+              <p>MUST be implemented by the class that inherit this.
+MUST change the value of this._isInputValid</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2'>
+            <section class='py2 clearfix'>
+              <h2 id='Filter.validateInput' class='mt0'>
+                validateInput<span class='gray'></span>
+              </h2>
+              <p>MUST be implemented by the class that inherit this.
+            MUST change the value of this._isInputValid</p>
+            
+            </section>
+          </div>
+        </div>
+</section>
+</div><div class='py1'><section class='py2 clearfix'>
+  <h2 id='CanvasImageWriter' class='mt0'>
+    CanvasImageWriter<span class='gray'>(idOfParent)</span>
+  </h2>
+  <p>CanvasImageWriter is a filter to output an instance of Image into a
+HTML5 canvas element.
+usage: examples/imageToCanvasFilter.html</p>
+
+    <h4>Parameters</h4>
+    <ul class='suppress-p-margin'>
+        <li> <strong>idOfParent</strong>
+          :
+          <div class='force-inline'>
+            
+          </div>
+        </li>
+    </ul>
+    <h4>Examples</h4>
+<pre class='overflow-auto'><span class="hljs-comment">// create an image</span>
+<span class="hljs-keyword">var</span> myImage = <span class="hljs-keyword">new</span> pixpipe.Image2D({width: <span class="hljs-number">100</span>, height: <span class="hljs-number">250</span>, color: [<span class="hljs-number">255</span>, <span class="hljs-number">128</span>, <span class="hljs-number">64</span>, <span class="hljs-number">255</span>]})
+
+<span class="hljs-comment">// create a filter to write the image into a canvas</span>
+<span class="hljs-keyword">var</span> imageToCanvasFilter = <span class="hljs-keyword">new</span> pixpipe.CanvasImageWriter( <span class="hljs-string">"myDiv"</span> );
+imageToCanvasFilter.addInput( myImage );
+imageToCanvasFilter.update();</pre>
+      <h4>Instance members</h4>
+        <div class='collapsible' id='CanvasImageWriter._init'>
+          <a href='#CanvasImageWriter._init'>
+            <code>
+              #_init<span class='gray'></span>
+            </code>
+            <div class='force-inline'>
+              <p>[PRIVATE]
+Initialize a new canvas object</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2'>
+            <section class='py2 clearfix'>
+              <h2 id='CanvasImageWriter._init' class='mt0'>
+                _init<span class='gray'></span>
+              </h2>
+              <p>[PRIVATE]
+            Initialize a new canvas object</p>
+            
+            </section>
+          </div>
+        </div>
+        <div class='collapsible' id='CanvasImageWriter.constructor'>
+          <a href='#CanvasImageWriter.constructor'>
+            <code>
+              #constructor<span class='gray'>(idOfParent)</span>
+            </code>
+            <div class='force-inline'>
+              
+            </div>
+          </a>
+          <div class='collapser border px2'>
+            <section class='py2 clearfix'>
+              <h2 id='CanvasImageWriter.constructor' class='mt0'>
+                constructor<span class='gray'>(idOfParent)</span>
+              </h2>
+              
+                <h4>Parameters</h4>
+                <ul class='suppress-p-margin'>
+                    <li><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a></code> <strong>idOfParent</strong>
+                      :
+                      <div class='force-inline'>
+                        <p>dom id of the future canvas&apos; parent.
+            (most likely the ID of a div)</p>
+            
+                      </div>
+                    </li>
+                </ul>
+            </section>
+          </div>
+        </div>
+        <div class='collapsible' id='CanvasImageWriter.update'>
+          <a href='#CanvasImageWriter.update'>
+            <code>
+              #update<span class='gray'></span>
+            </code>
+            <div class='force-inline'>
+              <p>Overwrite the generic (empty) method.</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2'>
+            <section class='py2 clearfix'>
+              <h2 id='CanvasImageWriter.update' class='mt0'>
+                update<span class='gray'></span>
+              </h2>
+              <p>Overwrite the generic (empty) method.</p>
+            
+            </section>
+          </div>
+        </div>
+        <div class='collapsible' id='CanvasImageWriter.validateInput'>
+          <a href='#CanvasImageWriter.validateInput'>
+            <code>
+              #validateInput<span class='gray'></span>
+            </code>
+            <div class='force-inline'>
+              <p>Overloaded validation method.</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2'>
+            <section class='py2 clearfix'>
+              <h2 id='CanvasImageWriter.validateInput' class='mt0'>
+                validateInput<span class='gray'></span>
+              </h2>
+              <p>Overloaded validation method.</p>
+            
+            </section>
+          </div>
+        </div>
+</section>
+</div><div class='py1'><section class='py2 clearfix'>
+  <h2 id='Image2D' class='mt0'>
+    Image2D<span class='gray'>(options)</span>
+  </h2>
+  <p>Image2D class is one of the few base element of Pixpipejs.
+It is always considered to be 4 channels (RGBA) and stored as a Float32Array
+typed array.</p>
+
+    <h4>Parameters</h4>
+    <ul class='suppress-p-margin'>
+        <li> <strong>options</strong>
+            (default <code>null</code>)
+          :
+          <div class='force-inline'>
+            
+          </div>
+        </li>
+    </ul>
+      <h4>Static members</h4>
+        <div class='collapsible' id='Image2D.TYPE'>
+          <a href='#Image2D.TYPE'>
+            <code>
+              .TYPE<span class='gray'></span>
+            </code>
+            <div class='force-inline'>
+              <p>Hardcode the datatype</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2 m2'>
+            <section class='py2 clearfix'>
+              <h2 id='Image2D.TYPE' class='mt0'>
+                TYPE<span class='gray'></span>
+              </h2>
+              <p>Hardcode the datatype</p>
+            
+            </section>
+          </div>
+        </div>
+      <h4>Instance members</h4>
+        <div class='collapsible' id='Image2D.clone'>
+          <a href='#Image2D.clone'>
+            <code>
+              #clone<span class='gray'></span>
+            </code>
+            <div class='force-inline'>
+              
+            </div>
+          </a>
+          <div class='collapser border px2'>
+            <section class='py2 clearfix'>
+              <h2 id='Image2D.clone' class='mt0'>
+                clone<span class='gray'></span>
+              </h2>
+              
+                  <h4>Returns</h4>
+                  <code><code><a href="#Image2D">Image2D</a></code></code>
+                  :
+                  <div class='force-inline'>
+                    <p>a deep copy instance of this Image2D</p>
+            
+                  </div>
+            </section>
+          </div>
+        </div>
+        <div class='collapsible' id='Image2D.constructor'>
+          <a href='#Image2D.constructor'>
+            <code>
+              #constructor<span class='gray'>(options)</span>
+            </code>
+            <div class='force-inline'>
+              <p>Constructor of an Image2D instance. If no options, no array is allocated.</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2'>
+            <section class='py2 clearfix'>
+              <h2 id='Image2D.constructor' class='mt0'>
+                constructor<span class='gray'>(options)</span>
+              </h2>
+              <p>Constructor of an Image2D instance. If no options, no array is allocated.</p>
+            
+                <h4>Parameters</h4>
+                <ul class='suppress-p-margin'>
+                    <li><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a></code> <strong>options</strong>
+                      :
+                      <div class='force-inline'>
+                        <p>if present, must have options.width, options.height. Also options.color = [r, g, b, a] is possible but not mandatory, this sets the default color.</p>
+            
+                      </div>
+                    </li>
+                </ul>
+            </section>
+          </div>
+        </div>
+        <div class='collapsible' id='Image2D.getWidth'>
+          <a href='#Image2D.getWidth'>
+            <code>
+              #getWidth<span class='gray'></span>
+            </code>
+            <div class='force-inline'>
+              
+            </div>
+          </a>
+          <div class='collapser border px2'>
+            <section class='py2 clearfix'>
+              <h2 id='Image2D.getWidth' class='mt0'>
+                getWidth<span class='gray'></span>
+              </h2>
+              
+                  <h4>Returns</h4>
+                  <code><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">Number</a></code></code>
+                  
+                  <div class='force-inline'>
+                    
+                  </div>
+            </section>
+          </div>
+        </div>
+        <div class='collapsible' id='Image2D.setData'>
+          <a href='#Image2D.setData'>
+            <code>
+              #setData<span class='gray'>(array, width, height)</span>
+            </code>
+            <div class='force-inline'>
+              <p>Set the data to this Image2D.</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2'>
+            <section class='py2 clearfix'>
+              <h2 id='Image2D.setData' class='mt0'>
+                setData<span class='gray'>(array, width, height)</span>
+              </h2>
+              <p>Set the data to this Image2D.</p>
+            
+                <h4>Parameters</h4>
+                <ul class='suppress-p-margin'>
+                    <li><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Float32Array">Float32Array</a></code> <strong>array</strong>
+                      :
+                      <div class='force-inline'>
+                        <p>1D array of raw data stored as RGBARGBA...</p>
+            
+                      </div>
+                    </li>
+                    <li><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">Number</a></code> <strong>width</strong>
+                      :
+                      <div class='force-inline'>
+                        <p>width of the Image2D</p>
+            
+                      </div>
+                    </li>
+                    <li><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">Number</a></code> <strong>height</strong>
+                      :
+                      <div class='force-inline'>
+                        <p>height of the Image2D</p>
+            
+                      </div>
+                    </li>
+                </ul>
+            </section>
+          </div>
+        </div>
+</section>
+</div><div class='py1'><section class='py2 clearfix'>
+  <h2 id='UrlImageReader' class='mt0'>
+    UrlImageReader<span class='gray'>(callback)</span>
+  </h2>
+  <p>An instance of UrlImageReader takes an image URL as input and
+returns an Image2D as output. Use the regular <code>addInput()</code> and <code>getOuput()</code>
+with no argument for that.
+Reading a file from URL takes an AJAX request, which is asynchronous. For this
+reason, what happens next, once the Image2D is created must take place in the
+callback defined in the constructor.</p>
+<p>Usage: examples/urlToImage2D.html</p>
+
+    <h4>Parameters</h4>
+    <ul class='suppress-p-margin'>
+        <li> <strong>callback</strong>
+          :
+          <div class='force-inline'>
+            
+          </div>
+        </li>
+    </ul>
+    <h4>Examples</h4>
+<pre class='overflow-auto'><span class="hljs-keyword">var</span> url2ImgFilter = <span class="hljs-keyword">new</span> pixpipe.UrlImageReader( ... );
+url2ImgFilter.addInput( <span class="hljs-string">"images/sd.jpg"</span> );
+url2ImgFilter.update();</pre>
+      <h4>Instance members</h4>
+        <div class='collapsible' id='UrlImageReader.constructor'>
+          <a href='#UrlImageReader.constructor'>
+            <code>
+              #constructor<span class='gray'>(callback)</span>
+            </code>
+            <div class='force-inline'>
+              
+            </div>
+          </a>
+          <div class='collapser border px2'>
+            <section class='py2 clearfix'>
+              <h2 id='UrlImageReader.constructor' class='mt0'>
+                constructor<span class='gray'>(callback)</span>
+              </h2>
+              
+                <h4>Parameters</h4>
+                <ul class='suppress-p-margin'>
+                    <li><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function">function</a></code> <strong>callback</strong>
+                      :
+                      <div class='force-inline'>
+                        <p>function to call when the image is loaded.
+            The <em>this</em> object will be in argument of this callback.</p>
+            
+                      </div>
+                    </li>
+                </ul>
+            </section>
+          </div>
+        </div>
+        <div class='collapsible' id='UrlImageReader.update'>
+          <a href='#UrlImageReader.update'>
+            <code>
+              #update<span class='gray'></span>
+            </code>
+            <div class='force-inline'>
+              <p>Run the reading</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2'>
+            <section class='py2 clearfix'>
+              <h2 id='UrlImageReader.update' class='mt0'>
+                update<span class='gray'></span>
+              </h2>
+              <p>Run the reading</p>
+            
+            </section>
+          </div>
+        </div>
+</section>
+</div><div class='py1'><section class='py2 clearfix'>
+  <h2 id='FileImageReader' class='mt0'>
+    FileImageReader<span class='gray'>(callback)</span>
+  </h2>
+  <p>An instance of FileImageReader takes a HTML5 File object as input and
+returns an Image2D as output. The point is mainly to use it with a file dialog.
+Use the regular <code>addInput()</code> and <code>getOuput()</code> with no argument for that.
+Reading a local file is an asynchronous process. For this
+reason, what happens next, once the Image2D is created must take place in the
+callback defined in the constructor.</p>
+<p>Usage: examples/fileToImage2D.html</p>
+
+    <h4>Parameters</h4>
+    <ul class='suppress-p-margin'>
+        <li> <strong>callback</strong>
+          :
+          <div class='force-inline'>
+            
+          </div>
+        </li>
+    </ul>
+    <h4>Examples</h4>
+<pre class='overflow-auto'><span class="hljs-keyword">var</span> file2ImgFilter = <span class="hljs-keyword">new</span> pixpipe.file2ImgFilter( ... );
+file2ImgFilter.addInput( fileInput.files[<span class="hljs-number">0</span>] );
+file2ImgFilter.update();</pre>
+      <h4>Instance members</h4>
+        <div class='collapsible' id='FileImageReader.constructor'>
+          <a href='#FileImageReader.constructor'>
+            <code>
+              #constructor<span class='gray'>(callback)</span>
+            </code>
+            <div class='force-inline'>
+              
+            </div>
+          </a>
+          <div class='collapser border px2'>
+            <section class='py2 clearfix'>
+              <h2 id='FileImageReader.constructor' class='mt0'>
+                constructor<span class='gray'>(callback)</span>
+              </h2>
+              
+                <h4>Parameters</h4>
+                <ul class='suppress-p-margin'>
+                    <li><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function">function</a></code> <strong>callback</strong>
+                      :
+                      <div class='force-inline'>
+                        <p>function to call when the image is loaded.
+            The <em>this</em> object will be in argument of this callback.</p>
+            
+                      </div>
+                    </li>
+                </ul>
+            </section>
+          </div>
+        </div>
+        <div class='collapsible' id='FileImageReader.update'>
+          <a href='#FileImageReader.update'>
+            <code>
+              #update<span class='gray'></span>
+            </code>
+            <div class='force-inline'>
+              <p>Run the reading</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2'>
+            <section class='py2 clearfix'>
+              <h2 id='FileImageReader.update' class='mt0'>
+                update<span class='gray'></span>
+              </h2>
+              <p>Run the reading</p>
+            
+            </section>
+          </div>
+        </div>
+        <div class='collapsible' id='FileImageReader.validateInput'>
+          <a href='#FileImageReader.validateInput'>
+            <code>
+              #validateInput<span class='gray'></span>
+            </code>
+            <div class='force-inline'>
+              
+            </div>
+          </a>
+          <div class='collapser border px2'>
+            <section class='py2 clearfix'>
+              <h2 id='FileImageReader.validateInput' class='mt0'>
+                validateInput<span class='gray'></span>
+              </h2>
+              
+            </section>
+          </div>
+        </div>
+</section>
+</div><div class='py1'><section class='py2 clearfix'>
+  <h2 id='PixpipeObject' class='mt0'>
+    PixpipeObject<span class='gray'></span>
+  </h2>
+  <p>PixpipeObject is the base object of all. It creates a uuid and has few
+generic attributes like type, name and description. Not all these attributes
+always useful;</p>
+
+      <h4>Static members</h4>
+        <div class='collapsible' id='PixpipeObject.TYPE'>
+          <a href='#PixpipeObject.TYPE'>
+            <code>
+              .TYPE<span class='gray'></span>
+            </code>
+            <div class='force-inline'>
+              <p>Acces it like a static attribute.
+Must be overloaded.</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2 m2'>
+            <section class='py2 clearfix'>
+              <h2 id='PixpipeObject.TYPE' class='mt0'>
+                TYPE<span class='gray'></span>
+              </h2>
+              <p>Acces it like a static attribute.
+            Must be overloaded.</p>
+            
+            </section>
+          </div>
+        </div>
+      <h4>Instance members</h4>
+        <div class='collapsible' id='PixpipeObject.getDescription'>
+          <a href='#PixpipeObject.getDescription'>
+            <code>
+              #getDescription<span class='gray'></span>
+            </code>
+            <div class='force-inline'>
+              <p>Getter for the description</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2'>
+            <section class='py2 clearfix'>
+              <h2 id='PixpipeObject.getDescription' class='mt0'>
+                getDescription<span class='gray'></span>
+              </h2>
+              <p>Getter for the description</p>
+            
+                  <h4>Returns</h4>
+                  <code><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a></code></code>
+                  :
+                  <div class='force-inline'>
+                    <p>description</p>
+            
+                  </div>
+            </section>
+          </div>
+        </div>
+        <div class='collapsible' id='PixpipeObject.getName'>
+          <a href='#PixpipeObject.getName'>
+            <code>
+              #getName<span class='gray'></span>
+            </code>
+            <div class='force-inline'>
+              <p>Getter for the name</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2'>
+            <section class='py2 clearfix'>
+              <h2 id='PixpipeObject.getName' class='mt0'>
+                getName<span class='gray'></span>
+              </h2>
+              <p>Getter for the name</p>
+            
+                  <h4>Returns</h4>
+                  <code><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a></code></code>
+                  :
+                  <div class='force-inline'>
+                    <p>name</p>
+            
+                  </div>
+            </section>
+          </div>
+        </div>
+        <div class='collapsible' id='PixpipeObject.getType'>
+          <a href='#PixpipeObject.getType'>
+            <code>
+              #getType<span class='gray'></span>
+            </code>
+            <div class='force-inline'>
+              <p>Get type of object.</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2'>
+            <section class='py2 clearfix'>
+              <h2 id='PixpipeObject.getType' class='mt0'>
+                getType<span class='gray'></span>
+              </h2>
+              <p>Get type of object.</p>
+            
+                  <h4>Returns</h4>
+                  <code><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a></code></code>
+                  :
+                  <div class='force-inline'>
+                    <p>the type</p>
+            
+                  </div>
+            </section>
+          </div>
+        </div>
+        <div class='collapsible' id='PixpipeObject.isOfType'>
+          <a href='#PixpipeObject.isOfType'>
+            <code>
+              #isOfType<span class='gray'>(t)</span>
+            </code>
+            <div class='force-inline'>
+              <p>Compare a give type to the type of this object.</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2'>
+            <section class='py2 clearfix'>
+              <h2 id='PixpipeObject.isOfType' class='mt0'>
+                isOfType<span class='gray'>(t)</span>
+              </h2>
+              <p>Compare a give type to the type of this object.</p>
+            
+                <h4>Parameters</h4>
+                <ul class='suppress-p-margin'>
+                    <li><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a></code> <strong>t</strong>
+                      :
+                      <div class='force-inline'>
+                        <p>a type, better to call the static method of each object, like Image.TYPE()</p>
+            
+                      </div>
+                    </li>
+                </ul>
+            </section>
+          </div>
+        </div>
+        <div class='collapsible' id='PixpipeObject.setDescription'>
+          <a href='#PixpipeObject.setDescription'>
+            <code>
+              #setDescription<span class='gray'>(d)</span>
+            </code>
+            <div class='force-inline'>
+              <p>Setter fo the description.</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2'>
+            <section class='py2 clearfix'>
+              <h2 id='PixpipeObject.setDescription' class='mt0'>
+                setDescription<span class='gray'>(d)</span>
+              </h2>
+              <p>Setter fo the description.</p>
+            
+                <h4>Parameters</h4>
+                <ul class='suppress-p-margin'>
+                    <li><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a></code> <strong>d</strong>
+                      :
+                      <div class='force-inline'>
+                        <p>description</p>
+            
+                      </div>
+                    </li>
+                </ul>
+            </section>
+          </div>
+        </div>
+        <div class='collapsible' id='PixpipeObject.setName'>
+          <a href='#PixpipeObject.setName'>
+            <code>
+              #setName<span class='gray'>(n)</span>
+            </code>
+            <div class='force-inline'>
+              <p>Setter fo the name.</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2'>
+            <section class='py2 clearfix'>
+              <h2 id='PixpipeObject.setName' class='mt0'>
+                setName<span class='gray'>(n)</span>
+              </h2>
+              <p>Setter fo the name.</p>
+            
+                <h4>Parameters</h4>
+                <ul class='suppress-p-margin'>
+                    <li><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a></code> <strong>n</strong>
+                      :
+                      <div class='force-inline'>
+                        <p>name</p>
+            
+                      </div>
+                    </li>
+                </ul>
+            </section>
+          </div>
+        </div>
+        <div class='collapsible' id='PixpipeObject.uuid'>
+          <a href='#PixpipeObject.uuid'>
+            <code>
+              #uuid<span class='gray'></span>
+            </code>
+            <div class='force-inline'>
+              <p>Return a copy of the uuid</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2'>
+            <section class='py2 clearfix'>
+              <h2 id='PixpipeObject.uuid' class='mt0'>
+                uuid<span class='gray'></span>
+              </h2>
+              <p>Return a copy of the uuid</p>
+            
+            </section>
+          </div>
+        </div>
+</section>
+</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script src='assets/anchor.js'></script>
+  <script src='assets/site.js'></script>
+</body>
+</html>

@@ -9,7 +9,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "rollup -c",
-    "doc": "documentation build -o ./doc/ -f html"
+    "doc": "documentation dist/pixpipe.js --name Pixpipe.js -o ./doc/ -f html"
   },
   "repository": {
     "type": "git",

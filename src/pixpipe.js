@@ -1,8 +1,15 @@
 'use strict'
 
-export { PixpipeObject } from './PixpipeObject.js';
-export { Filter } from './Filter.js';
-export { Image2D } from './Image2D.js';
+// core classes
+export { PixpipeObject } from './core/PixpipeObject.js';
+export { Filter } from './core/Filter.js';
+export { Image2D } from './core/Image2D.js';
 
-export { CanvasImageWriter } from './CanvasImageWriter.js';
-export { UrlImageReader } from './UrlImageReader.js';
+// io - Readers and writers
+export { CanvasImageWriter } from './io/CanvasImageWriter.js';
+export { UrlImageReader } from './io/UrlImageReader.js';
+export { FileImageReader } from './io/FileImageReader.js';
+
+// filters - processing of Images2D
+
+// filters - processing of Image3D
