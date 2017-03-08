@@ -54,7 +54,6 @@ class UrlImageReader extends Filter {
       canvasContext.drawImage(img, 0, 0);
 
       try{
-
         var imageData = canvasContext.getImageData(0, 0, tmpCanvas.width, tmpCanvas.height);
         var dataArray = imageData.data;
         var img2D = new Image2D();
@@ -63,8 +62,6 @@ class UrlImageReader extends Filter {
 
         that._onReadCallback && that._onReadCallback( that );
       }catch(e){
-        console.error("The server of the specified image URL does not allow Cross Origin data access. Pixpipe cannot create an Image2D object.");
-
         console.error(e);
       }
 
