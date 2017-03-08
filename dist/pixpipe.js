@@ -4,6 +4,13 @@
 	(factory((global.pixpipe = global.pixpipe || {})));
 }(this, (function (exports) { 'use strict';
 
+/*
+* Author   Jonathan Lurie - http://me.jonahanlurie.fr
+* License  MIT
+* Link      https://github.com/jonathanlurie/pixpipejs
+* Lab       MCIN - Montreal Neurological Institute
+*/
+
 /**
 * PixpipeObject is the base object of all. It creates a uuid and has few
 * generic attributes like type, name and description. Not all these attributes
@@ -96,6 +103,13 @@ class PixpipeObject {
 
 }
 
+/*
+* Author   Jonathan Lurie - http://me.jonahanlurie.fr
+* License  MIT
+* Link      https://github.com/jonathanlurie/pixpipejs
+* Lab       MCIN - Montreal Neurological Institute
+*/
+
 /**
 * Filter is a base class and must be inherited to be used properly.
 * A filter takes one or more Image instances as input and returns one or more
@@ -132,10 +146,10 @@ class Filter extends PixpipeObject {
 
   /**
   * Set an input, potentially associated to a category.
-  * @param {Image} imageObject - instance of an image
+  * @param {Image2D} inputObject - most likely an instance of Image2D but can also be HTML5 File or Image3D
   * @param {Number} category - in case we want to get data from diferent categories.
   */
-  addInput( imageObject, category=0){
+  addInput( inputObject, category=0){
 
     if(category < 0 ){
       console.warn("A input cannot be of category inferior to zero");
@@ -147,13 +161,14 @@ class Filter extends PixpipeObject {
       this._input[category] = null;
     }
 
-    this._input[category] = imageObject ;
+    this._input[category] = inputObject ;
   }
 
 
   /**
   * Return outputs from a category (default category: 0)
   * @param {Number} category - a category of output.
+  * @return {Object} or null if no output can be returned.
   */
   getOutput( category=0 ){
     if( category in this._output ){
@@ -161,7 +176,6 @@ class Filter extends PixpipeObject {
     }else{
       return null;
     }
-
   }
 
 
@@ -169,8 +183,8 @@ class Filter extends PixpipeObject {
   * [PRIVATE]
   * should noly be used by the class that inherit Filter.
   * This is just a wraper to not access the raw _output object.
-  * @param {Image} imageObject - instance of an image
-  * @param {Number} category - in case we want to get data from diferent categories.
+  * @param {Image2D} imageObject - instance of an image
+  * @param {Number} category - in case we want to get data from different categories.
   */
   _setOutput( data, category=0 ){
     // the category may not exist, we create it
@@ -180,6 +194,22 @@ class Filter extends PixpipeObject {
 
     this._output[category] = data ;
   }
+
+
+  /**
+  * [PRIVATE]
+  * should noly be used by the class that inherit Filter.
+  * @param {Number} category - in case we want to get data from different categories.
+  * @return {Object} or null if no input can be returned
+  */
+  _getInput( category=0 ){
+    if( category in this._input ){
+      return this._input[ category ];
+    }else{
+      return null;
+    }
+  }
+
 
   /**
   * MUST be implemented by the class that inherit this.
@@ -200,6 +230,13 @@ class Filter extends PixpipeObject {
 
 
 } /* END class Filter */
+
+/*
+* Author   Jonathan Lurie - http://me.jonahanlurie.fr
+* License  MIT
+* Link      https://github.com/jonathanlurie/pixpipejs
+* Lab       MCIN - Montreal Neurological Institute
+*/
 
 /**
 * Image2D class is one of the few base element of Pixpipejs.
@@ -314,13 +351,27 @@ class Image2D extends PixpipeObject{
 
 } /* END of class Image2D */
 
+/*
+* Author   Jonathan Lurie - http://me.jonahanlurie.fr
+* License  MIT
+* Link      https://github.com/jonathanlurie/pixpipejs
+* Lab       MCIN - Montreal Neurological Institute
+*/
+
 /**
 * CanvasImageWriter is a filter to output an instance of Image into a
 * HTML5 canvas element.
-* See examples/imageToCanvasFilter.html to see how it works.
+* usage: examples/imageToCanvasFilter.html
+*
+* @example
+// create an image
+* var myImage = new pixpipe.Image2D({width: 100, height: 250, color: [255, 128, 64, 255]})
+*
+* // create a filter to write the image into a canvas
+* var imageToCanvasFilter = new pixpipe.CanvasImageWriter( "myDiv" );
+* imageToCanvasFilter.addInput( myImage );
+* imageToCanvasFilter.update();
 */
-
-
 class CanvasImageWriter extends Filter{
 
   /**
@@ -416,31 +467,49 @@ class CanvasImageWriter extends Filter{
 
 }
 
-/**
-*
+/*
+* Author   Jonathan Lurie - http://me.jonahanlurie.fr
+* License  MIT
+* Link      https://github.com/jonathanlurie/pixpipejs
+* Lab       MCIN - Montreal Neurological Institute
 */
 
-
+/**
+* An instance of UrlImageReader takes an image URL as input and
+* returns an Image2D as output. Use the regular `addInput()` and `getOuput()`
+* with no argument for that.
+* Reading a file from URL takes an AJAX request, which is asynchronous. For this
+* reason, what happens next, once the Image2D is created must take place in the
+* callback defined in the constructor.
+*
+* Usage: examples/urlToImage2D.html
+*
+* @example
+* var url2ImgFilter = new pixpipe.UrlImageReader( ... );
+* url2ImgFilter.addInput( "images/sd.jpg" );
+* url2ImgFilter.update();
+*/
 class UrlImageReader extends Filter {
 
   /**
-  * @param {String} url - path of the image to be loaded
   * @param {function} callback - function to call when the image is loaded.
   * The _this_ object will be in argument of this callback.
   */
-  constructor( url, callback){
+  constructor( callback ){
     super();
-    
-    this._imageUrl = url;
+
     this._onReadCallback = callback;
   }
 
 
+  /**
+  * Run the reading
+  */
   update(){
     var that = this;
 
     var img = new Image();
-    img.src = this._imageUrl;
+    img.src = this._getInput();
 
     img.onload = function() {
       var tmpCanvas = document.createElement("canvas");
@@ -449,7 +518,8 @@ class UrlImageReader extends Filter {
       var canvasContext = tmpCanvas.getContext('2d');
       canvasContext.drawImage(img, 0, 0);
 
-      //try{
+      try{
+
         var imageData = canvasContext.getImageData(0, 0, tmpCanvas.width, tmpCanvas.height);
         var dataArray = imageData.data;
         var img2D = new Image2D();
@@ -459,11 +529,11 @@ class UrlImageReader extends Filter {
         that._setOutput( img2D );
 
         that._onReadCallback && that._onReadCallback( that );
-      /*}catch(e){
+      }catch(e){
         console.error("The server of the specified image URL does not allow Cross Origin data access. Pixpipe cannot create an Image2D object.");
 
         console.error(e);
-      }*/
+      }
 
     };
 
@@ -473,11 +543,106 @@ class UrlImageReader extends Filter {
 
 } /* END of class UrlImageReader */
 
+/*
+* Author   Jonathan Lurie - http://me.jonahanlurie.fr
+* License  MIT
+* Link      https://github.com/jonathanlurie/pixpipejs
+* Lab       MCIN - Montreal Neurological Institute
+*/
+
+/**
+* An instance of FileImageReader takes a HTML5 File object as input and
+* returns an Image2D as output. The point is mainly to use it with a file dialog.
+* Use the regular `addInput()` and `getOuput()` with no argument for that.
+* Reading a local file is an asynchronous process. For this
+* reason, what happens next, once the Image2D is created must take place in the
+* callback defined in the constructor.
+*
+* Usage: examples/fileToImage2D.html
+*
+* @example
+* var file2ImgFilter = new pixpipe.file2ImgFilter( ... );
+* file2ImgFilter.addInput( fileInput.files[0] );
+* file2ImgFilter.update();
+*/
+class FileImageReader extends Filter {
+
+  /**
+  * @param {function} callback - function to call when the image is loaded.
+  * The _this_ object will be in argument of this callback.
+  */
+  constructor( callback){
+    super();
+
+    this._allowedTypes = /image.*/;
+    this._onReadCallback = callback;
+  }
+
+
+  /**
+  *
+  */
+  validateInput(){
+    var file = this._getInput();
+
+    if (file && file.type.match( this._allowedTypes )) {
+      this._isInputValid = true;
+    }else{
+      console.error("The file must be an image (jpg/png). The type " + file.type + " is not compatible with FileImageReader.");
+    }
+  }
+
+
+  /**
+  * Run the reading
+  */
+  update(){
+    this.validateInput();
+
+    if(! this._isInputValid)
+      return
+
+    var that = this;
+    var file = this._getInput();
+		var reader = new FileReader();
+
+		reader.onload = function(e) {
+
+			var img = new Image();
+			img.src = reader.result;
+      var tmpCanvas = document.createElement("canvas");
+      tmpCanvas.width = img.width;
+      tmpCanvas.height = img.height;
+      var canvasContext = tmpCanvas.getContext('2d');
+      canvasContext.drawImage(img, 0, 0);
+      var imageData = canvasContext.getImageData(0, 0, tmpCanvas.width, tmpCanvas.height);
+      var dataArray = imageData.data;
+
+      var img2D = new Image2D();
+      img2D.setData( dataArray, img.width, img.height);
+      console.log(img2D);
+      that._setOutput( img2D );
+
+      that._onReadCallback && that._onReadCallback( that );
+		};
+
+		reader.readAsDataURL( file );
+  }
+
+
+
+} /* END of class UrlImageReader */
+
+// filters - processing of Images2D
+
+// filters - processing of Image3D
+
 exports.PixpipeObject = PixpipeObject;
 exports.Filter = Filter;
 exports.Image2D = Image2D;
 exports.CanvasImageWriter = CanvasImageWriter;
 exports.UrlImageReader = UrlImageReader;
+exports.FileImageReader = FileImageReader;
 
 Object.defineProperty(exports, '__esModule', { value: true });
 

@@ -1,3 +1,9 @@
+/*
+* Author   Jonathan Lurie - http://me.jonahanlurie.fr
+* License  MIT
+* Link      https://github.com/jonathanlurie/pixpipejs
+* Lab       MCIN - Montreal Neurological Institute
+*/
 
 import { PixpipeObject } from './PixpipeObject.js';
 
@@ -37,10 +43,10 @@ class Filter extends PixpipeObject {
 
   /**
   * Set an input, potentially associated to a category.
-  * @param {Image} imageObject - instance of an image
+  * @param {Image2D} inputObject - most likely an instance of Image2D but can also be HTML5 File or Image3D
   * @param {Number} category - in case we want to get data from diferent categories.
   */
-  addInput( imageObject, category=0){
+  addInput( inputObject, category=0){
 
     if(category < 0 ){
       console.warn("A input cannot be of category inferior to zero");
@@ -52,13 +58,14 @@ class Filter extends PixpipeObject {
       this._input[category] = null;
     }
 
-    this._input[category] = imageObject ;
+    this._input[category] = inputObject ;
   }
 
 
   /**
   * Return outputs from a category (default category: 0)
   * @param {Number} category - a category of output.
+  * @return {Object} or null if no output can be returned.
   */
   getOutput( category=0 ){
     if( category in this._output ){
@@ -66,7 +73,6 @@ class Filter extends PixpipeObject {
     }else{
       return null;
     }
-
   }
 
 
@@ -74,8 +80,8 @@ class Filter extends PixpipeObject {
   * [PRIVATE]
   * should noly be used by the class that inherit Filter.
   * This is just a wraper to not access the raw _output object.
-  * @param {Image} imageObject - instance of an image
-  * @param {Number} category - in case we want to get data from diferent categories.
+  * @param {Image2D} imageObject - instance of an image
+  * @param {Number} category - in case we want to get data from different categories.
   */
   _setOutput( data, category=0 ){
     // the category may not exist, we create it
@@ -85,6 +91,22 @@ class Filter extends PixpipeObject {
 
     this._output[category] = data ;
   }
+
+
+  /**
+  * [PRIVATE]
+  * should noly be used by the class that inherit Filter.
+  * @param {Number} category - in case we want to get data from different categories.
+  * @return {Object} or null if no input can be returned
+  */
+  _getInput( category=0 ){
+    if( category in this._input ){
+      return this._input[ category ];
+    }else{
+      return null;
+    }
+  }
+
 
   /**
   * MUST be implemented by the class that inherit this.

@@ -15,7 +15,6 @@
 
   // The filter to read image from URL
   var url2ImgFilter = new pixpipe.UrlImageReader(
-    "images/sd.jpg",
 
     // the image is loaded...
     // here, filter = url2ImgFilter
@@ -29,6 +28,9 @@
 
     }
   );
+
+  // the input of this reader is a simple string url. Can be local of distant, but if distant, the server must allow CORS.
+  url2ImgFilter.addInput( "images/sd.jpg" );
 
   // Ask to fetch the image from URL
   url2ImgFilter.update();

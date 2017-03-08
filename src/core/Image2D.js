@@ -1,3 +1,10 @@
+/*
+* Author   Jonathan Lurie - http://me.jonahanlurie.fr
+* License  MIT
+* Link      https://github.com/jonathanlurie/pixpipejs
+* Lab       MCIN - Montreal Neurological Institute
+*/
+
 import { PixpipeObject } from './PixpipeObject.js';
 
 /**
