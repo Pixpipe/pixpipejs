@@ -18,39 +18,29 @@
 
     var fileInput = document.getElementById('fileInput');
 
-
     // create a filter to write the image into a canvas
-    var imageToCanvasFilter = new pixpipe.CanvasImageWriter( "myDiv" );
+    var imageToCanvasFilter = new pixpipe.CanvasImageWriter();
+    imageToCanvasFilter.setMetadata( "parentDivID", "myDiv" );
 
     // The filter to read image from URL
-    var file2ImgFilter = new pixpipe.FileImageReader(
+    var file2ImgFilter = new pixpipe.FileImageReader();
 
-      // the image is loaded...
-      // here, filter = url2ImgFilter
-      function(filter){
-
+    // the image is loaded...
+    // here, filter = url2ImgFilter
+    file2ImgFilter.on("imageLoaded", function( filter ){
         // use the output of the UrlImageReader as the input for CanvasImageWriter
         imageToCanvasFilter.addInput( filter.getOutput() );
-
         // actually copy the data from the Image2D into the inner HTML5 canvas
         imageToCanvasFilter.update();
-
-      }
-    );
-
+    });
 
     fileInput.addEventListener('change', function(e) {
 			var file = fileInput.files[0];
-
       // set the input, an HTML5 File object
       file2ImgFilter.addInput(file)
-
       // Ask to fetch the image from URL
       file2ImgFilter.update();
 		});
-
-
-
 
   }
   </script>

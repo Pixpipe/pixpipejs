@@ -23,6 +23,16 @@
             type='text' />
           <div id='toc'>
               <a
+                href='#PixelWiseImageFilter'
+                class='block bold'>
+                PixelWiseImageFilter
+              </a>
+                <a
+                  href='#PixelWiseImageFilter._forEachPixelOfSuch'
+                  class='regular block'>
+                  #_forEachPixelOfSuch
+                </a>
+              <a
                 href='#Filter'
                 class='block bold'>
                 Filter
@@ -53,14 +63,14 @@
                   #getOutput
                 </a>
                 <a
+                  href='#Filter.hasValidInput'
+                  class='regular block'>
+                  #hasValidInput
+                </a>
+                <a
                   href='#Filter.update'
                   class='regular block'>
                   #update
-                </a>
-                <a
-                  href='#Filter.validateInput'
-                  class='regular block'>
-                  #validateInput
                 </a>
               <a
                 href='#CanvasImageWriter'
@@ -81,11 +91,6 @@
                   href='#CanvasImageWriter.update'
                   class='regular block'>
                   #update
-                </a>
-                <a
-                  href='#CanvasImageWriter.validateInput'
-                  class='regular block'>
-                  #validateInput
                 </a>
               <a
                 href='#Image2D'
@@ -108,6 +113,31 @@
                   #constructor
                 </a>
                 <a
+                  href='#Image2D.get2dPositionFrom1dIndex'
+                  class='regular block'>
+                  #get2dPositionFrom1dIndex
+                </a>
+                <a
+                  href='#Image2D.getComponentsPerPixel'
+                  class='regular block'>
+                  #getComponentsPerPixel
+                </a>
+                <a
+                  href='#Image2D.getData'
+                  class='regular block'>
+                  #getData
+                </a>
+                <a
+                  href='#Image2D.getDataCopy'
+                  class='regular block'>
+                  #getDataCopy
+                </a>
+                <a
+                  href='#Image2D.getHeight'
+                  class='regular block'>
+                  #getHeight
+                </a>
+                <a
                   href='#Image2D.getWidth'
                   class='regular block'>
                   #getWidth
@@ -116,6 +146,41 @@
                   href='#Image2D.setData'
                   class='regular block'>
                   #setData
+                </a>
+              <a
+                href='#FileImageReader'
+                class='block bold'>
+                FileImageReader
+              </a>
+                <a
+                  href='#FileImageReader.constructor'
+                  class='regular block'>
+                  #constructor
+                </a>
+                <a
+                  href='#FileImageReader.hasValidInput'
+                  class='regular block'>
+                  #hasValidInput
+                </a>
+                <a
+                  href='#FileImageReader.update'
+                  class='regular block'>
+                  #update
+                </a>
+              <a
+                href='#ForEachPixelImageFilter'
+                class='block bold'>
+                ForEachPixelImageFilter
+              </a>
+                <a
+                  href='#ForEachPixelImageFilter.constructor'
+                  class='regular block'>
+                  #constructor
+                </a>
+                <a
+                  href='#ForEachPixelImageFilter.update'
+                  class='regular block'>
+                  #update
                 </a>
               <a
                 href='#UrlImageReader'
@@ -131,26 +196,6 @@
                   href='#UrlImageReader.update'
                   class='regular block'>
                   #update
-                </a>
-              <a
-                href='#FileImageReader'
-                class='block bold'>
-                FileImageReader
-              </a>
-                <a
-                  href='#FileImageReader.constructor'
-                  class='regular block'>
-                  #constructor
-                </a>
-                <a
-                  href='#FileImageReader.update'
-                  class='regular block'>
-                  #update
-                </a>
-                <a
-                  href='#FileImageReader.validateInput'
-                  class='regular block'>
-                  #validateInput
                 </a>
               <a
                 href='#PixpipeObject'
@@ -197,12 +242,80 @@
                   class='regular block'>
                   #uuid
                 </a>
+              <a
+                href='#ImageToImageFilter'
+                class='block bold'>
+                ImageToImageFilter
+              </a>
           </div>
         </div>
       </div>
       <div class='fix-margin-3'>
         <div class='px2'>
 <div class='py1'><section class='py2 clearfix'>
+  <h2 id='PixelWiseImageFilter' class='mt0'>
+    PixelWiseImageFilter<span class='gray'></span>
+  </h2>
+  <p>PixelWiseImageFilter is not supposed to be use as is and is just to
+be inherited by other filters.
+This class does not overload the update() method.</p>
+
+      <h4>Instance members</h4>
+        <div class='collapsible' id='PixelWiseImageFilter._forEachPixelOfSuch'>
+          <a href='#PixelWiseImageFilter._forEachPixelOfSuch'>
+            <code>
+              #_forEachPixelOfSuch<span class='gray'>(firstPixel, lastPixel, increment, cb)</span>
+            </code>
+            <div class='force-inline'>
+              <p>[PRIVATE]
+generic function for painting row, colum or whole</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2'>
+            <section class='py2 clearfix'>
+              <h2 id='PixelWiseImageFilter._forEachPixelOfSuch' class='mt0'>
+                _forEachPixelOfSuch<span class='gray'>(firstPixel, lastPixel, increment, cb)</span>
+              </h2>
+              <p>[PRIVATE]
+            generic function for painting row, colum or whole</p>
+            
+                <h4>Parameters</h4>
+                <ul class='suppress-p-margin'>
+                    <li><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">Number</a></code> <strong>firstPixel</strong>
+                      :
+                      <div class='force-inline'>
+                        <p>Index of the first pixel in 1D array</p>
+            
+                      </div>
+                    </li>
+                    <li><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">Number</a></code> <strong>lastPixel</strong>
+                      :
+                      <div class='force-inline'>
+                        <p>Index of the last pixel in 1D array</p>
+            
+                      </div>
+                    </li>
+                    <li><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">Number</a></code> <strong>increment</strong>
+                      :
+                      <div class='force-inline'>
+                        <p>jump gap from a pixel to another (in a 1D style)</p>
+            
+                      </div>
+                    </li>
+                    <li><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function">function</a></code> <strong>cb</strong>
+                      :
+                      <div class='force-inline'>
+                        <p>callback of what to do for each pixel to be processed. Called with 2 args: 2D position {x, y} and color {r, g, b, a}</p>
+            
+                      </div>
+                    </li>
+                </ul>
+            </section>
+          </div>
+        </div>
+</section>
+</div><div class='py1'><section class='py2 clearfix'>
   <h2 id='Filter' class='mt0'>
     Filter<span class='gray'></span>
   </h2>
@@ -395,6 +508,30 @@ This is just a wraper to not access the raw _output object.</p>
             </section>
           </div>
         </div>
+        <div class='collapsible' id='Filter.hasValidInput'>
+          <a href='#Filter.hasValidInput'>
+            <code>
+              #hasValidInput<span class='gray'></span>
+            </code>
+            <div class='force-inline'>
+              <p>Validate the input data using a model defined in _inputValidator.
+Every class that implement Filter must implement their own _inputValidator.
+Not mandatory to use, still a good practice.</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2'>
+            <section class='py2 clearfix'>
+              <h2 id='Filter.hasValidInput' class='mt0'>
+                hasValidInput<span class='gray'></span>
+              </h2>
+              <p>Validate the input data using a model defined in _inputValidator.
+            Every class that implement Filter must implement their own _inputValidator.
+            Not mandatory to use, still a good practice.</p>
+            
+            </section>
+          </div>
+        </div>
         <div class='collapsible' id='Filter.update'>
           <a href='#Filter.update'>
             <code>
@@ -413,28 +550,6 @@ Launch the process.</p>
               </h2>
               <p>MUST be implemented by the class that inherit this.
             Launch the process.</p>
-            
-            </section>
-          </div>
-        </div>
-        <div class='collapsible' id='Filter.validateInput'>
-          <a href='#Filter.validateInput'>
-            <code>
-              #validateInput<span class='gray'></span>
-            </code>
-            <div class='force-inline'>
-              <p>MUST be implemented by the class that inherit this.
-MUST change the value of this._isInputValid</p>
-
-            </div>
-          </a>
-          <div class='collapser border px2'>
-            <section class='py2 clearfix'>
-              <h2 id='Filter.validateInput' class='mt0'>
-                validateInput<span class='gray'></span>
-              </h2>
-              <p>MUST be implemented by the class that inherit this.
-            MUST change the value of this._isInputValid</p>
             
             </section>
           </div>
@@ -537,26 +652,6 @@ Initialize a new canvas object</p>
             </section>
           </div>
         </div>
-        <div class='collapsible' id='CanvasImageWriter.validateInput'>
-          <a href='#CanvasImageWriter.validateInput'>
-            <code>
-              #validateInput<span class='gray'></span>
-            </code>
-            <div class='force-inline'>
-              <p>Overloaded validation method.</p>
-
-            </div>
-          </a>
-          <div class='collapser border px2'>
-            <section class='py2 clearfix'>
-              <h2 id='CanvasImageWriter.validateInput' class='mt0'>
-                validateInput<span class='gray'></span>
-              </h2>
-              <p>Overloaded validation method.</p>
-            
-            </section>
-          </div>
-        </div>
 </section>
 </div><div class='py1'><section class='py2 clearfix'>
   <h2 id='Image2D' class='mt0'>
@@ -653,6 +748,145 @@ typed array.</p>
             </section>
           </div>
         </div>
+        <div class='collapsible' id='Image2D.get2dPositionFrom1dIndex'>
+          <a href='#Image2D.get2dPositionFrom1dIndex'>
+            <code>
+              #get2dPositionFrom1dIndex<span class='gray'>(i)</span>
+            </code>
+            <div class='force-inline'>
+              <p>Compute the (x, y) position from a position in a 1D array.</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2'>
+            <section class='py2 clearfix'>
+              <h2 id='Image2D.get2dPositionFrom1dIndex' class='mt0'>
+                get2dPositionFrom1dIndex<span class='gray'>(i)</span>
+              </h2>
+              <p>Compute the (x, y) position from a position in a 1D array.</p>
+            
+                <h4>Parameters</h4>
+                <ul class='suppress-p-margin'>
+                    <li><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">Number</a></code> <strong>i</strong>
+                      :
+                      <div class='force-inline'>
+                        <p>the index of a pixel. This has nothing to do with
+            the number of components per pixel.</p>
+            
+                      </div>
+                    </li>
+                </ul>
+                  <h4>Returns</h4>
+                  <code><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a></code></code>
+                  :
+                  <div class='force-inline'>
+                    <p>coordinate as {x, y}</p>
+            
+                  </div>
+            </section>
+          </div>
+        </div>
+        <div class='collapsible' id='Image2D.getComponentsPerPixel'>
+          <a href='#Image2D.getComponentsPerPixel'>
+            <code>
+              #getComponentsPerPixel<span class='gray'></span>
+            </code>
+            <div class='force-inline'>
+              
+            </div>
+          </a>
+          <div class='collapser border px2'>
+            <section class='py2 clearfix'>
+              <h2 id='Image2D.getComponentsPerPixel' class='mt0'>
+                getComponentsPerPixel<span class='gray'></span>
+              </h2>
+              
+                  <h4>Returns</h4>
+                  <code><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">Number</a></code></code>
+                  :
+                  <div class='force-inline'>
+                    <p>the number of components per pixel</p>
+            
+                  </div>
+            </section>
+          </div>
+        </div>
+        <div class='collapsible' id='Image2D.getData'>
+          <a href='#Image2D.getData'>
+            <code>
+              #getData<span class='gray'></span>
+            </code>
+            <div class='force-inline'>
+              
+            </div>
+          </a>
+          <div class='collapser border px2'>
+            <section class='py2 clearfix'>
+              <h2 id='Image2D.getData' class='mt0'>
+                getData<span class='gray'></span>
+              </h2>
+              
+                  <h4>Returns</h4>
+                  <code><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Float32Array">Float32Array</a></code></code>
+                  :
+                  <div class='force-inline'>
+                    <p>the original data, dont mess up with this one.
+            in case of doubt, use  getDataCopy()</p>
+            
+                  </div>
+            </section>
+          </div>
+        </div>
+        <div class='collapsible' id='Image2D.getDataCopy'>
+          <a href='#Image2D.getDataCopy'>
+            <code>
+              #getDataCopy<span class='gray'></span>
+            </code>
+            <div class='force-inline'>
+              
+            </div>
+          </a>
+          <div class='collapser border px2'>
+            <section class='py2 clearfix'>
+              <h2 id='Image2D.getDataCopy' class='mt0'>
+                getDataCopy<span class='gray'></span>
+              </h2>
+              
+                  <h4>Returns</h4>
+                  <code><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Float32Array">Float32Array</a></code></code>
+                  :
+                  <div class='force-inline'>
+                    <p>a deep copy of the data</p>
+            
+                  </div>
+            </section>
+          </div>
+        </div>
+        <div class='collapsible' id='Image2D.getHeight'>
+          <a href='#Image2D.getHeight'>
+            <code>
+              #getHeight<span class='gray'></span>
+            </code>
+            <div class='force-inline'>
+              
+            </div>
+          </a>
+          <div class='collapser border px2'>
+            <section class='py2 clearfix'>
+              <h2 id='Image2D.getHeight' class='mt0'>
+                getHeight<span class='gray'></span>
+              </h2>
+              
+                  <h4>Returns</h4>
+                  <code><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">Number</a></code></code>
+                  :
+                  <div class='force-inline'>
+                    <p>the height of the Image2D</p>
+            
+                  </div>
+            </section>
+          </div>
+        </div>
         <div class='collapsible' id='Image2D.getWidth'>
           <a href='#Image2D.getWidth'>
             <code>
@@ -670,9 +904,10 @@ typed array.</p>
               
                   <h4>Returns</h4>
                   <code><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">Number</a></code></code>
-                  
+                  :
                   <div class='force-inline'>
-                    
+                    <p>the width of the Image2D</p>
+            
                   </div>
             </section>
           </div>
@@ -718,6 +953,167 @@ typed array.</p>
                       </div>
                     </li>
                 </ul>
+            </section>
+          </div>
+        </div>
+</section>
+</div><div class='py1'><section class='py2 clearfix'>
+  <h2 id='FileImageReader' class='mt0'>
+    FileImageReader<span class='gray'>(callback)</span>
+  </h2>
+  <p>An instance of FileImageReader takes a HTML5 File object as input and
+returns an Image2D as output. The point is mainly to use it with a file dialog.
+Use the regular <code>addInput()</code> and <code>getOuput()</code> with no argument for that.
+Reading a local file is an asynchronous process. For this
+reason, what happens next, once the Image2D is created must take place in the
+callback defined in the constructor.</p>
+<p>Usage: examples/fileToImage2D.html</p>
+
+    <h4>Parameters</h4>
+    <ul class='suppress-p-margin'>
+        <li> <strong>callback</strong>
+          :
+          <div class='force-inline'>
+            
+          </div>
+        </li>
+    </ul>
+    <h4>Examples</h4>
+<pre class='overflow-auto'><span class="hljs-keyword">var</span> file2ImgFilter = <span class="hljs-keyword">new</span> pixpipe.file2ImgFilter( ... );
+file2ImgFilter.addInput( fileInput.files[<span class="hljs-number">0</span>] );
+file2ImgFilter.update();</pre>
+      <h4>Instance members</h4>
+        <div class='collapsible' id='FileImageReader.constructor'>
+          <a href='#FileImageReader.constructor'>
+            <code>
+              #constructor<span class='gray'>(callback)</span>
+            </code>
+            <div class='force-inline'>
+              
+            </div>
+          </a>
+          <div class='collapser border px2'>
+            <section class='py2 clearfix'>
+              <h2 id='FileImageReader.constructor' class='mt0'>
+                constructor<span class='gray'>(callback)</span>
+              </h2>
+              
+                <h4>Parameters</h4>
+                <ul class='suppress-p-margin'>
+                    <li><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function">function</a></code> <strong>callback</strong>
+                      :
+                      <div class='force-inline'>
+                        <p>function to call when the image is loaded.
+            The <em>this</em> object will be in argument of this callback.</p>
+            
+                      </div>
+                    </li>
+                </ul>
+            </section>
+          </div>
+        </div>
+        <div class='collapsible' id='FileImageReader.hasValidInput'>
+          <a href='#FileImageReader.hasValidInput'>
+            <code>
+              #hasValidInput<span class='gray'></span>
+            </code>
+            <div class='force-inline'>
+              <p>Overload the default method because HTML5 File is not a Pixpipe type</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2'>
+            <section class='py2 clearfix'>
+              <h2 id='FileImageReader.hasValidInput' class='mt0'>
+                hasValidInput<span class='gray'></span>
+              </h2>
+              <p>Overload the default method because HTML5 File is not a Pixpipe type</p>
+            
+            </section>
+          </div>
+        </div>
+        <div class='collapsible' id='FileImageReader.update'>
+          <a href='#FileImageReader.update'>
+            <code>
+              #update<span class='gray'></span>
+            </code>
+            <div class='force-inline'>
+              <p>Run the reading</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2'>
+            <section class='py2 clearfix'>
+              <h2 id='FileImageReader.update' class='mt0'>
+                update<span class='gray'></span>
+              </h2>
+              <p>Run the reading</p>
+            
+            </section>
+          </div>
+        </div>
+</section>
+</div><div class='py1'><section class='py2 clearfix'>
+  <h2 id='ForEachPixelImageFilter' class='mt0'>
+    ForEachPixelImageFilter<span class='gray'>(cb)</span>
+  </h2>
+  
+    <h4>Parameters</h4>
+    <ul class='suppress-p-margin'>
+        <li> <strong>cb</strong>
+            (default <code>null</code>)
+          :
+          <div class='force-inline'>
+            
+          </div>
+        </li>
+    </ul>
+      <h4>Instance members</h4>
+        <div class='collapsible' id='ForEachPixelImageFilter.constructor'>
+          <a href='#ForEachPixelImageFilter.constructor'>
+            <code>
+              #constructor<span class='gray'>(cb)</span>
+            </code>
+            <div class='force-inline'>
+              
+            </div>
+          </a>
+          <div class='collapser border px2'>
+            <section class='py2 clearfix'>
+              <h2 id='ForEachPixelImageFilter.constructor' class='mt0'>
+                constructor<span class='gray'>(cb)</span>
+              </h2>
+              
+                <h4>Parameters</h4>
+                <ul class='suppress-p-margin'>
+                    <li><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function">function</a></code> <strong>cb</strong>
+                      :
+                      <div class='force-inline'>
+                        <p>callback of what to do for each pixel</p>
+            
+                      </div>
+                    </li>
+                </ul>
+            </section>
+          </div>
+        </div>
+        <div class='collapsible' id='ForEachPixelImageFilter.update'>
+          <a href='#ForEachPixelImageFilter.update'>
+            <code>
+              #update<span class='gray'></span>
+            </code>
+            <div class='force-inline'>
+              <p>Run the filter</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2'>
+            <section class='py2 clearfix'>
+              <h2 id='ForEachPixelImageFilter.update' class='mt0'>
+                update<span class='gray'></span>
+              </h2>
+              <p>Run the filter</p>
+            
             </section>
           </div>
         </div>
@@ -794,100 +1190,6 @@ url2ImgFilter.update();</pre>
               </h2>
               <p>Run the reading</p>
             
-            </section>
-          </div>
-        </div>
-</section>
-</div><div class='py1'><section class='py2 clearfix'>
-  <h2 id='FileImageReader' class='mt0'>
-    FileImageReader<span class='gray'>(callback)</span>
-  </h2>
-  <p>An instance of FileImageReader takes a HTML5 File object as input and
-returns an Image2D as output. The point is mainly to use it with a file dialog.
-Use the regular <code>addInput()</code> and <code>getOuput()</code> with no argument for that.
-Reading a local file is an asynchronous process. For this
-reason, what happens next, once the Image2D is created must take place in the
-callback defined in the constructor.</p>
-<p>Usage: examples/fileToImage2D.html</p>
-
-    <h4>Parameters</h4>
-    <ul class='suppress-p-margin'>
-        <li> <strong>callback</strong>
-          :
-          <div class='force-inline'>
-            
-          </div>
-        </li>
-    </ul>
-    <h4>Examples</h4>
-<pre class='overflow-auto'><span class="hljs-keyword">var</span> file2ImgFilter = <span class="hljs-keyword">new</span> pixpipe.file2ImgFilter( ... );
-file2ImgFilter.addInput( fileInput.files[<span class="hljs-number">0</span>] );
-file2ImgFilter.update();</pre>
-      <h4>Instance members</h4>
-        <div class='collapsible' id='FileImageReader.constructor'>
-          <a href='#FileImageReader.constructor'>
-            <code>
-              #constructor<span class='gray'>(callback)</span>
-            </code>
-            <div class='force-inline'>
-              
-            </div>
-          </a>
-          <div class='collapser border px2'>
-            <section class='py2 clearfix'>
-              <h2 id='FileImageReader.constructor' class='mt0'>
-                constructor<span class='gray'>(callback)</span>
-              </h2>
-              
-                <h4>Parameters</h4>
-                <ul class='suppress-p-margin'>
-                    <li><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function">function</a></code> <strong>callback</strong>
-                      :
-                      <div class='force-inline'>
-                        <p>function to call when the image is loaded.
-            The <em>this</em> object will be in argument of this callback.</p>
-            
-                      </div>
-                    </li>
-                </ul>
-            </section>
-          </div>
-        </div>
-        <div class='collapsible' id='FileImageReader.update'>
-          <a href='#FileImageReader.update'>
-            <code>
-              #update<span class='gray'></span>
-            </code>
-            <div class='force-inline'>
-              <p>Run the reading</p>
-
-            </div>
-          </a>
-          <div class='collapser border px2'>
-            <section class='py2 clearfix'>
-              <h2 id='FileImageReader.update' class='mt0'>
-                update<span class='gray'></span>
-              </h2>
-              <p>Run the reading</p>
-            
-            </section>
-          </div>
-        </div>
-        <div class='collapsible' id='FileImageReader.validateInput'>
-          <a href='#FileImageReader.validateInput'>
-            <code>
-              #validateInput<span class='gray'></span>
-            </code>
-            <div class='force-inline'>
-              
-            </div>
-          </a>
-          <div class='collapser border px2'>
-            <section class='py2 clearfix'>
-              <h2 id='FileImageReader.validateInput' class='mt0'>
-                validateInput<span class='gray'></span>
-              </h2>
-              
             </section>
           </div>
         </div>
@@ -1115,6 +1417,15 @@ Must be overloaded.</p>
             </section>
           </div>
         </div>
+</section>
+</div><div class='py1'><section class='py2 clearfix'>
+  <h2 id='ImageToImageFilter' class='mt0'>
+    ImageToImageFilter<span class='gray'></span>
+  </h2>
+  <p>ImageToImageFilter is not to be used as-is but rather as a base class for any
+filter that input a single Image2D and output a single Image2D.
+This class does not overload the update() method.</p>
+
 </section>
 </div>
         </div>

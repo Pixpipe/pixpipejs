@@ -11,6 +11,7 @@ import { Filter } from '../core/Filter.js';
 /**
 * CanvasImageWriter is a filter to output an instance of Image into a
 * HTML5 canvas element.
+* The metadata "parentDivID" has to be set using `setMetadata("parentDivID", "whatever")`
 * usage: examples/imageToCanvasFilter.html
 *
 * @example
@@ -25,32 +26,19 @@ import { Filter } from '../core/Filter.js';
 class CanvasImageWriter extends Filter{
 
   /**
-  * @param {String} idOfParent - dom id of the future canvas' parent.
+  * @param {String} parentDivID - dom id of the future canvas' parent.
   * (most likely the ID of a div)
   */
-  constructor( idOfParent){
+  constructor( parentDivID){
     // call Filter constructor
     super();
 
+    this._inputValidator[ 0 ] = Image2D.TYPE();
+
     // so that we can flush the content
-    this._parentId = idOfParent;
+    this._parentId = parentDivID;
     this._canvas = null;
     this._ctx = null;
-  }
-
-
-  /**
-  * Overloaded validation method.
-  */
-  validateInput(){
-
-    try{
-      this._isInputValid = this._input[0].isOfType( Image2D.TYPE() );
-    }catch(e){
-      this._isInputValid = false;
-      console.error("The input is not valid");
-    }
-
   }
 
 
@@ -59,7 +47,8 @@ class CanvasImageWriter extends Filter{
   * Initialize a new canvas object
   */
   _init(){
-    var parentElem = document.getElementById(this._parentId);
+
+    var parentElem = document.getElementById( this.getMetadata("parentDivID") );
     while (parentElem.firstChild) {
         parentElem.removeChild(parentElem.firstChild);
     }
@@ -76,7 +65,7 @@ class CanvasImageWriter extends Filter{
     this._ctx.webkitImageSmoothingEnabled = false;
     this._ctx.ctxmsImageSmoothingEnabled = false;
 
-    document.getElementById(this._parentId).appendChild(this._canvas);
+    document.getElementById(this.getMetadata("parentDivID")).appendChild(this._canvas);
   }
 
 
@@ -84,11 +73,15 @@ class CanvasImageWriter extends Filter{
   * Overwrite the generic (empty) method.
   */
   update(){
-    this.validateInput();
 
     // abort if invalid input
-    if(!this._isInputValid)
+    if(!this.hasValidInput() )
       return;
+
+    if(!this.getMetadata("parentDivID")){
+      console.error("The parent DIV ID to place the canvas element was not specified. Unable to display anything.");
+      return;
+    }
 
     // build a new canvas
     this._init();

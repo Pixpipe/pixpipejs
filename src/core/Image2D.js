@@ -70,7 +70,7 @@ class Image2D extends PixpipeObject{
   */
   clone(){
     var cpImg = new Image2D();
-    cpImg.setData( this._data.slice(), this._width, this._height );
+    cpImg.setData( this._data, this._width, this._height );
     return cpImg;
   }
 
@@ -101,21 +101,58 @@ class Image2D extends PixpipeObject{
 
 
   /**
-  * @return {Number}
+  * @return {Number} the width of the Image2D
   */
   getWidth(){
     return this._width;
   }
 
 
+  /**
+  * @return {Number} the height of the Image2D
+  */
   getHeight(){
     return this._height;
   }
 
 
+  /**
+  * @return {Number} the number of components per pixel
+  */
+  getComponentsPerPixel(){
+    return this._componentsPerPixel;
+  }
+
+
+  /**
+  * @return {Float32Array} the original data, dont mess up with this one.
+  * in case of doubt, use  getDataCopy()
+  */
   getData(){
     //return this._data.slice();  // return a copy
     return this._data;  // return the actual array, editable!
+  }
+
+
+  /**
+  * @return {Float32Array} a deep copy of the data
+  */
+  getDataCopy(){
+    return this._data.slice();
+  }
+
+
+  /**
+  * Compute the (x, y) position from a position in a 1D array.
+  * @param {Number} i - the index of a pixel. This has nothing to do with
+  * the number of components per pixel.
+  * @return {Object} coordinate as {x, y}
+  */
+  get2dPositionFrom1dIndex( i ){
+    return {
+      x: i % this._width,
+      y: Math.floor(i / this._width)
+    }
   }
 
 } /* END of class Image2D */

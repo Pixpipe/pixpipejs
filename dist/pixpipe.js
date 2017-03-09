@@ -25,8 +25,10 @@ class PixpipeObject {
       return v.toString(16);
     });
 
-    this._name = null;
-    this._description = null;
+    // Metadata can be anything, a name, an ID, a description, a DOM element.
+    // everything that is not an input but rather a setting
+    this._metadata = {};
+
     this._type = PixpipeObject.TYPE();
   }
 
@@ -66,39 +68,35 @@ class PixpipeObject {
 
 
   /**
-  * Setter fo the name.
-  * @param {String} n - name
+  * Set a metadata using a pair of key and value.
+  * @param {String} key - the ID of the metadata
+  * @param {Object} value - can be a string, Number or Object
   */
-  setName( n ){
-    this._name = n;
+  setMetadata( key, value ){
+    if(typeof key === 'string' || key instanceof String){
+      this._metadata[ key ] = value;
+    }else{
+      console.warn("The given key must be a String Object.");
+    }
+
   }
 
 
   /**
-  * Getter for the name
-  * @return {String} name
+  * Retrieve a metadata using a key.
+  * @param {String} key - the ID of the metadata
+  * @return {Object} the metadata object - or null if non existent
   */
-  getName(){
-    return this._name;
+  getMetadata( key ){
+    if( key in this._metadata){
+      return this._metadata[ key ];
+    }else{
+      console.warn("The metadata with key: " + key + " doe not exist.");
+      return null;
+    }
   }
 
 
-  /**
-  * Setter fo the description.
-  * @param {String} d - description
-  */
-  setDescription( d ){
-    this._description = d;
-  }
-
-
-  /**
-  * Getter for the description
-  * @return {String} description
-  */
-  getDescription(){
-    return this._description;
-  }
 
 
 }
@@ -124,7 +122,10 @@ class Filter extends PixpipeObject {
     super();
     this._type = Filter.TYPE();
 
-    this._isInputValid = false;
+    // a bunch of event to be defined. Empty by default.
+    this._events = {};
+
+    this._inputValidator = {};
 
     this._input = {
       "0": []
@@ -212,11 +213,25 @@ class Filter extends PixpipeObject {
 
 
   /**
-  * MUST be implemented by the class that inherit this.
-  * MUST change the value of this._isInputValid
+  * Validate the input data using a model defined in _inputValidator.
+  * Every class that implement Filter must implement their own _inputValidator.
+  * Not mandatory to use, still a good practice.
   */
-  validateInput(){
-    console.warn("The update() method has not been written, input integrity are not checked.");
+  hasValidInput(){
+    var that = this;
+    var inputCategories = Object.keys( this._inputValidator );
+
+    var valid = true;
+
+    inputCategories.forEach( function(key){
+      valid = valid && that._getInput( key ).isOfType( that._inputValidator[ key ] );
+    });
+
+    if(!valid){
+      console.warn("The input is not valid.");
+    }
+
+    return valid;
   }
 
 
@@ -226,6 +241,14 @@ class Filter extends PixpipeObject {
   */
   update(){
     console.error("The update() method has not been written, this filter is not valid.");
+  }
+
+
+  /**
+  * Defines a callback. By defautl, no callback is called.
+  */
+  on(eventId, callback){
+    this._events[ eventId ] = callback;
   }
 
 
@@ -301,7 +324,7 @@ class Image2D extends PixpipeObject{
   */
   clone(){
     var cpImg = new Image2D();
-    cpImg.setData( this._data.slice(), this._width, this._height );
+    cpImg.setData( this._data, this._width, this._height );
     return cpImg;
   }
 
@@ -332,21 +355,58 @@ class Image2D extends PixpipeObject{
 
 
   /**
-  * @return {Number}
+  * @return {Number} the width of the Image2D
   */
   getWidth(){
     return this._width;
   }
 
 
+  /**
+  * @return {Number} the height of the Image2D
+  */
   getHeight(){
     return this._height;
   }
 
 
+  /**
+  * @return {Number} the number of components per pixel
+  */
+  getComponentsPerPixel(){
+    return this._componentsPerPixel;
+  }
+
+
+  /**
+  * @return {Float32Array} the original data, dont mess up with this one.
+  * in case of doubt, use  getDataCopy()
+  */
   getData(){
     //return this._data.slice();  // return a copy
     return this._data;  // return the actual array, editable!
+  }
+
+
+  /**
+  * @return {Float32Array} a deep copy of the data
+  */
+  getDataCopy(){
+    return this._data.slice();
+  }
+
+
+  /**
+  * Compute the (x, y) position from a position in a 1D array.
+  * @param {Number} i - the index of a pixel. This has nothing to do with
+  * the number of components per pixel.
+  * @return {Object} coordinate as {x, y}
+  */
+  get2dPositionFrom1dIndex( i ){
+    return {
+      x: i % this._width,
+      y: Math.floor(i / this._width)
+    }
   }
 
 } /* END of class Image2D */
@@ -359,8 +419,91 @@ class Image2D extends PixpipeObject{
 */
 
 /**
+* ImageToImageFilter is not to be used as-is but rather as a base class for any
+* filter that input a single Image2D and output a single Image2D.
+* This class does not overload the update() method.
+*/
+class ImageToImageFilter extends Filter {
+
+  constructor(){
+    super();
+    this._inputValidator[ 0 ] = Image2D.TYPE();
+
+    // will be a copy of the input Image2D buffer
+    this._inputBuffer = null;
+  }
+
+} /* END class ImageToImageFilter */
+
+/*
+* Author   Jonathan Lurie - http://me.jonahanlurie.fr
+* License  MIT
+* Link      https://github.com/jonathanlurie/pixpipejs
+* Lab       MCIN - Montreal Neurological Institute
+*/
+
+/**
+* PixelWiseImageFilter is not supposed to be use as is and is just to
+* be inherited by other filters.
+* This class does not overload the update() method.
+*/
+class PixelWiseImageFilter extends ImageToImageFilter{
+
+  constructor(){
+    super();
+  }
+
+
+  /**
+  * [PRIVATE]
+  * generic function for painting row, colum or whole
+  * @param {Number} firstPixel - Index of the first pixel in 1D array
+  * @param {Number} lastPixel - Index of the last pixel in 1D array
+  * @param {Number} increment - jump gap from a pixel to another (in a 1D style)
+  */
+  _forEachPixelOfSuch(firstPixel, lastPixel, increment ){
+    // abort if no callback per pixel
+    if( ! "pixel" in this._events){
+      console.warn("No function to apply per pixel was specified.");
+      return;
+    }
+
+    var inputImage2D = this._getInput();
+    var inputBuffer = this._inputBuffer;
+    var componentPerPixel = inputImage2D.getComponentsPerPixel();
+
+    var currentColor = null;
+
+    for(var p=firstPixel; p<lastPixel; p+=increment ){
+      var firstCompoPos1D = p * componentPerPixel;
+      var position2D = inputImage2D.get2dPositionFrom1dIndex(p);
+      currentColor = inputBuffer.slice(firstCompoPos1D, firstCompoPos1D + componentPerPixel);
+
+      var newColor = this._events.pixel( position2D, currentColor);
+
+      if(newColor && newColor.length == componentPerPixel){
+        for(var i=0; i<componentPerPixel; i++){
+          inputBuffer[firstCompoPos1D + i] = newColor[i];
+        }
+      }
+
+    }
+  }
+
+
+} /* END of class PixelWiseImageFilter */
+
+/*
+* Author   Jonathan Lurie - http://me.jonahanlurie.fr
+* License  MIT
+* Link      https://github.com/jonathanlurie/pixpipejs
+* Lab       MCIN - Montreal Neurological Institute
+*/
+
+/**
 * CanvasImageWriter is a filter to output an instance of Image into a
 * HTML5 canvas element.
+* The metadata "parentDivID" has to be set using `setMetadata("parentDivID", "whatever")`
 * usage: examples/imageToCanvasFilter.html
 *
 * @example
@@ -375,32 +518,19 @@ class Image2D extends PixpipeObject{
 class CanvasImageWriter extends Filter{
 
   /**
-  * @param {String} idOfParent - dom id of the future canvas' parent.
+  * @param {String} parentDivID - dom id of the future canvas' parent.
   * (most likely the ID of a div)
   */
-  constructor( idOfParent){
+  constructor( parentDivID){
     // call Filter constructor
     super();
 
+    this._inputValidator[ 0 ] = Image2D.TYPE();
+
     // so that we can flush the content
-    this._parentId = idOfParent;
+    this._parentId = parentDivID;
     this._canvas = null;
     this._ctx = null;
-  }
-
-
-  /**
-  * Overloaded validation method.
-  */
-  validateInput(){
-
-    try{
-      this._isInputValid = this._input[0].isOfType( Image2D.TYPE() );
-    }catch(e){
-      this._isInputValid = false;
-      console.error("The input is not valid");
-    }
-
   }
 
 
@@ -409,7 +539,8 @@ class CanvasImageWriter extends Filter{
   * Initialize a new canvas object
   */
   _init(){
-    var parentElem = document.getElementById(this._parentId);
+
+    var parentElem = document.getElementById( this.getMetadata("parentDivID") );
     while (parentElem.firstChild) {
         parentElem.removeChild(parentElem.firstChild);
     }
@@ -426,7 +557,7 @@ class CanvasImageWriter extends Filter{
     this._ctx.webkitImageSmoothingEnabled = false;
     this._ctx.ctxmsImageSmoothingEnabled = false;
 
-    document.getElementById(this._parentId).appendChild(this._canvas);
+    document.getElementById(this.getMetadata("parentDivID")).appendChild(this._canvas);
   }
 
 
@@ -434,11 +565,17 @@ class CanvasImageWriter extends Filter{
   * Overwrite the generic (empty) method.
   */
   update(){
-    this.validateInput();
+
+    console.log(this._metadata);
 
     // abort if invalid input
-    if(!this._isInputValid)
+    if(!this.hasValidInput() )
       return;
+
+    if(!this.getMetadata("parentDivID")){
+      console.error("The parent DIV ID to place the canvas element was not specified. Unable to display anything.");
+      return;
+    }
 
     // build a new canvas
     this._init();
@@ -480,7 +617,7 @@ class CanvasImageWriter extends Filter{
 * with no argument for that.
 * Reading a file from URL takes an AJAX request, which is asynchronous. For this
 * reason, what happens next, once the Image2D is created must take place in the
-* callback defined in the constructor.
+* callback defined by the event .on("imageLoaded", function(){ ... }).
 *
 * Usage: examples/urlToImage2D.html
 *
@@ -519,19 +656,16 @@ class UrlImageReader extends Filter {
       canvasContext.drawImage(img, 0, 0);
 
       try{
-
         var imageData = canvasContext.getImageData(0, 0, tmpCanvas.width, tmpCanvas.height);
         var dataArray = imageData.data;
         var img2D = new Image2D();
         img2D.setData( dataArray, img.width, img.height);
-        console.log(img2D);
-
         that._setOutput( img2D );
 
-        that._onReadCallback && that._onReadCallback( that );
+        if("imageLoaded" in that._events){
+          that._events.imageLoaded( that );
+        }
       }catch(e){
-        console.error("The server of the specified image URL does not allow Cross Origin data access. Pixpipe cannot create an Image2D object.");
-
         console.error(e);
       }
 
@@ -556,7 +690,9 @@ class UrlImageReader extends Filter {
 * Use the regular `addInput()` and `getOuput()` with no argument for that.
 * Reading a local file is an asynchronous process. For this
 * reason, what happens next, once the Image2D is created must take place in the
-* callback defined in the constructor.
+* callback defined by the event .on("imageLoaded", function(){ ... }).
+*
+*
 *
 * Usage: examples/fileToImage2D.html
 *
@@ -580,9 +716,10 @@ class FileImageReader extends Filter {
 
 
   /**
-  *
+  * Overload the default method because HTML5 File is not a Pixpipe type
   */
-  validateInput(){
+  hasValidInput(){
+    var valid = false;
     var file = this._getInput();
 
     if (file && file.type.match( this._allowedTypes )) {
@@ -590,6 +727,8 @@ class FileImageReader extends Filter {
     }else{
       console.error("The file must be an image (jpg/png). The type " + file.type + " is not compatible with FileImageReader.");
     }
+
+    return valid;
   }
 
 
@@ -597,9 +736,8 @@ class FileImageReader extends Filter {
   * Run the reading
   */
   update(){
-    this.validateInput();
 
-    if(! this._isInputValid)
+    if(! this.hasValidInput)
       return
 
     var that = this;
@@ -623,7 +761,9 @@ class FileImageReader extends Filter {
       console.log(img2D);
       that._setOutput( img2D );
 
-      that._onReadCallback && that._onReadCallback( that );
+      if("imageLoaded" in that._events){
+        that._events.imageLoaded( that );
+      }
 		};
 
 		reader.readAsDataURL( file );
@@ -633,16 +773,83 @@ class FileImageReader extends Filter {
 
 } /* END of class UrlImageReader */
 
-// filters - processing of Images2D
+/*
+* Author   Jonathan Lurie - http://me.jonahanlurie.fr
+* License  MIT
+* Link      https://github.com/jonathanlurie/pixpipejs
+* Lab       MCIN - Montreal Neurological Institute
+*/
+
+/**
+* A filter of type ForEachPixelImageFilter can perform a operation on evey pixel
+* of an Image2D with a simple interface. For this purpose, a per-pixel-callback
+* must be specified using method
+* .on( "pixel" , function( coord, color ){ ... })
+* where coord is of form {x, y} and color is of form [r, g, b, a] (with possibly)
+* a different number of components per pixel.
+* This callback must return, or null (original color not modified),
+* or a array of color (same dimension as the one in arguments).
+*
+* Usage: examples/forEachPixel.html
+*
+* @example
+* var forEachPixelFilter = new pixpipe.ForEachPixelImageFilter();
+* forEachPixelFilter.on( "pixel", function(position, color){
+*
+*     return [
+*       color[1], // red (takes the values from green)
+*       color[0], // green (takes the values from red)
+*       color[2] * 0.5, // blue get 50% darker
+*       255 // alpha, at max
+*     ]
+*
+*   }
+* );
+*
+*/
+class ForEachPixelImageFilter extends PixelWiseImageFilter {
+
+  constructor(){
+    super();
+  }
+
+
+  /**
+  * Run the filter
+  */
+  update(){
+        console.log("hello2");
+    if( ! this.hasValidInput())
+      return;
+
+    var inputImage2D = this._getInput();
+    var firstPixel = 0;
+    var lastPixel = inputImage2D.getWidth() * inputImage2D.getHeight();
+    var increment = 1;
+
+    this._inputBuffer = inputImage2D.getDataCopy();
+
+    this._forEachPixelOfSuch(firstPixel, lastPixel, increment );
+
+    // building the output
+    var img2D = new Image2D();
+    img2D.setData( this._inputBuffer, inputImage2D.getWidth(), inputImage2D.getHeight());
+    this._setOutput( img2D );
+  }
+
+} /* END class ForEachPixelImageFilter */
 
 // filters - processing of Image3D
 
 exports.PixpipeObject = PixpipeObject;
 exports.Filter = Filter;
 exports.Image2D = Image2D;
+exports.ImageToImageFilter = ImageToImageFilter;
+exports.PixelWiseImageFilter = PixelWiseImageFilter;
 exports.CanvasImageWriter = CanvasImageWriter;
 exports.UrlImageReader = UrlImageReader;
 exports.FileImageReader = FileImageReader;
+exports.ForEachPixelImageFilter = ForEachPixelImageFilter;
 
 Object.defineProperty(exports, '__esModule', { value: true });
 
