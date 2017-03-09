@@ -4,22 +4,29 @@
 
   <script src="../dist/pixpipe.js"></script>
 
-  <style>
-  canvas,
-  .smaller{
-    width: 50vw;
-    height: auto;
-  }
-  </style>
+  <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700,900" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+
 </head>
 <body>
+  <h1><span style="color: #ff91d7">Pixpipe</span>js</h1>
   <p>
-    <p>The original image</p>
+  This does the following :
+  <ul>
+    <li>opening a local image file, using <code>pixpipe.FileImageReader</code></li>
+    <li>apply a function to every pixel, using <code>pixpipe.ForEachPixelImageFilter</code></li>
+    <li>displaying it in a canvas using <code>pixpipe.CanvasImageWriter</code></li>
+  </ul>
+
+  </p>
+
+  <p>
+    <p>The original image:</p>
     <img class="smaller" src="images/sd.jpg"></img>
   </p>
 
   <p>
-    <p>The transformed image, with switched chanels</p>
+    <p>The transformed image, with switched chanels:</p>
     <div class="smaller" id="myDiv"></div>
   </p>
 
