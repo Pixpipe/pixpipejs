@@ -21,6 +21,9 @@ class Filter extends PixpipeObject {
     super();
     this._type = Filter.TYPE();
 
+    // a bunch of event to be defined. Empty by default.
+    this._events = {};
+
     this._inputValidator = {};
 
     this._input = {
@@ -123,6 +126,10 @@ class Filter extends PixpipeObject {
       valid = valid && that._getInput( key ).isOfType( that._inputValidator[ key ] )
     });
 
+    if(!valid){
+      console.warn("The input is not valid.");
+    }
+
     return valid;
   }
 
@@ -133,6 +140,14 @@ class Filter extends PixpipeObject {
   */
   update(){
     console.error("The update() method has not been written, this filter is not valid.");
+  }
+
+
+  /**
+  * Defines a callback. By defautl, no callback is called.
+  */
+  on(eventId, callback){
+    this._events[ eventId ] = callback;
   }
 
 

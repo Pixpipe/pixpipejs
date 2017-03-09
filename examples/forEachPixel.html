@@ -26,48 +26,45 @@
   <script>
 
   // create a filter to write the image into a canvas
-  var imageToCanvasFilter = new pixpipe.CanvasImageWriter( "myDiv" );
+  var imageToCanvasFilter = new pixpipe.CanvasImageWriter();
+  imageToCanvasFilter.setMetadata( "parentDivID", "myDiv" );
 
   // The filter to read image from URL
-  var url2ImgFilter = new pixpipe.UrlImageReader(
+  var url2ImgFilter = new pixpipe.UrlImageReader();
 
-    // the image is loaded...
-    // here, filter = url2ImgFilter
-    function(filter){
+  // the image is loaded...
+  // here, filter = url2ImgFilter
+  url2ImgFilter.on( "imageLoaded", function(filter){
 
-      var forEachPixelFilter = new pixpipe.ForEachPixelImageFilter(
+    var forEachPixelFilter = new pixpipe.ForEachPixelImageFilter();
 
-        // Apply this treatment to each pixel of the image.
-        // args:
-        //   position: 2D position of current pixel as an Object {x, y}
-        //   color: array of colors of the current pixel.
-        //
-        // Must return, or null to not modify the current color,
-        // or an array of the same size of color.
-        function(position, color){
+    // add the input input
+    forEachPixelFilter.addInput( url2ImgFilter.getOutput() );
 
-          return [
-            color[1], // red (takes the values from green)
-            color[0], // green (takes the values from red)
-            color[2] * 0.5, // blue get 50% darker
-            255 // alpha, at max
-          ]
+    // Apply this treatment to each pixel of the image.
+    // args:
+    //   position: 2D position of current pixel as an Object {x, y}
+    //   color: array of colors of the current pixel.
+    //
+    // Must return, or null to not modify the current color,
+    // or an array of the same size of color.
+    forEachPixelFilter.on( "pixel", function(position, color){
+      return [
+        color[1], // red (takes the values from green)
+        color[0], // green (takes the values from red)
+        color[2] * 0.5, // blue get 50% darker
+        255 // alpha, at max
+      ]
+    });
 
-        }
-      );
+    // run the filter
+    forEachPixelFilter.update();
 
-      //
-      forEachPixelFilter.addInput( url2ImgFilter.getOutput() );
-      forEachPixelFilter.update();
-
-
-      // use the output of the UrlImageReader as the input for CanvasImageWriter
-      imageToCanvasFilter.addInput( forEachPixelFilter.getOutput() );
-      // actually copy the data from the Image2D into the inner HTML5 canvas
-      imageToCanvasFilter.update();
-
-    }
-  );
+    // use the output of the UrlImageReader as the input for CanvasImageWriter
+    imageToCanvasFilter.addInput( forEachPixelFilter.getOutput() );
+    // actually copy the data from the Image2D into the inner HTML5 canvas
+    imageToCanvasFilter.update();
+  });
 
   // the input of this reader is a simple string url. Can be local of distant, but if distant, the server must allow CORS.
   url2ImgFilter.addInput( "images/sd.jpg" );

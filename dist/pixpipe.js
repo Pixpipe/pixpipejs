@@ -25,8 +25,10 @@ class PixpipeObject {
       return v.toString(16);
     });
 
-    this._name = null;
-    this._description = null;
+    // Metadata can be anything, a name, an ID, a description, a DOM element.
+    // everything that is not an input but rather a setting
+    this._metadata = {};
+
     this._type = PixpipeObject.TYPE();
   }
 
@@ -66,39 +68,35 @@ class PixpipeObject {
 
 
   /**
-  * Setter fo the name.
-  * @param {String} n - name
+  * Set a metadata using a pair of key and value.
+  * @param {String} key - the ID of the metadata
+  * @param {Object} value - can be a string, Number or Object
   */
-  setName( n ){
-    this._name = n;
+  setMetadata( key, value ){
+    if(typeof key === 'string' || key instanceof String){
+      this._metadata[ key ] = value;
+    }else{
+      console.warn("The given key must be a String Object.");
+    }
+
   }
 
 
   /**
-  * Getter for the name
-  * @return {String} name
+  * Retrieve a metadata using a key.
+  * @param {String} key - the ID of the metadata
+  * @return {Object} the metadata object - or null if non existent
   */
-  getName(){
-    return this._name;
+  getMetadata( key ){
+    if( key in this._metadata){
+      return this._metadata[ key ];
+    }else{
+      console.warn("The metadata with key: " + key + " doe not exist.");
+      return null;
+    }
   }
 
 
-  /**
-  * Setter fo the description.
-  * @param {String} d - description
-  */
-  setDescription( d ){
-    this._description = d;
-  }
-
-
-  /**
-  * Getter for the description
-  * @return {String} description
-  */
-  getDescription(){
-    return this._description;
-  }
 
 
 }
@@ -123,6 +121,9 @@ class Filter extends PixpipeObject {
   constructor(){
     super();
     this._type = Filter.TYPE();
+
+    // a bunch of event to be defined. Empty by default.
+    this._events = {};
 
     this._inputValidator = {};
 
@@ -226,6 +227,10 @@ class Filter extends PixpipeObject {
       valid = valid && that._getInput( key ).isOfType( that._inputValidator[ key ] );
     });
 
+    if(!valid){
+      console.warn("The input is not valid.");
+    }
+
     return valid;
   }
 
@@ -236,6 +241,14 @@ class Filter extends PixpipeObject {
   */
   update(){
     console.error("The update() method has not been written, this filter is not valid.");
+  }
+
+
+  /**
+  * Defines a callback. By defautl, no callback is called.
+  */
+  on(eventId, callback){
+    this._events[ eventId ] = callback;
   }
 
 
@@ -438,7 +451,6 @@ class PixelWiseImageFilter extends ImageToImageFilter{
 
   constructor(){
     super();
-
   }
 
 
@@ -448,9 +460,14 @@ class PixelWiseImageFilter extends ImageToImageFilter{
   * @param {Number} firstPixel - Index of the first pixel in 1D array
   * @param {Number} lastPixel - Index of the last pixel in 1D array
   * @param {Number} increment - jump gap from a pixel to another (in a 1D style)
-  * @param {function} cb - callback of what to do for each pixel to be processed. Called with 2 args: 2D position {x, y} and color {r, g, b, a}
   */
-  _forEachPixelOfSuch(firstPixel, lastPixel, increment, cb ){
+  _forEachPixelOfSuch(firstPixel, lastPixel, increment ){
+    // abort if no callback per pixel
+    if( ! "pixel" in this._events){
+      console.warn("No function to apply per pixel was specified.");
+      return;
+    }
+
     var inputImage2D = this._getInput();
     var inputBuffer = this._inputBuffer;
     var componentPerPixel = inputImage2D.getComponentsPerPixel();
@@ -462,7 +479,7 @@ class PixelWiseImageFilter extends ImageToImageFilter{
       var position2D = inputImage2D.get2dPositionFrom1dIndex(p);
       currentColor = inputBuffer.slice(firstCompoPos1D, firstCompoPos1D + componentPerPixel);
 
-      var newColor = cb( position2D, currentColor);
+      var newColor = this._events.pixel( position2D, currentColor);
 
       if(newColor && newColor.length == componentPerPixel){
         for(var i=0; i<componentPerPixel; i++){
@@ -486,6 +503,7 @@ class PixelWiseImageFilter extends ImageToImageFilter{
 /**
 * CanvasImageWriter is a filter to output an instance of Image into a
 * HTML5 canvas element.
+* The metadata "parentDivID" has to be set using `setMetadata("parentDivID", "whatever")`
 * usage: examples/imageToCanvasFilter.html
 *
 * @example
@@ -500,17 +518,17 @@ class PixelWiseImageFilter extends ImageToImageFilter{
 class CanvasImageWriter extends Filter{
 
   /**
-  * @param {String} idOfParent - dom id of the future canvas' parent.
+  * @param {String} parentDivID - dom id of the future canvas' parent.
   * (most likely the ID of a div)
   */
-  constructor( idOfParent){
+  constructor( parentDivID){
     // call Filter constructor
     super();
 
     this._inputValidator[ 0 ] = Image2D.TYPE();
 
     // so that we can flush the content
-    this._parentId = idOfParent;
+    this._parentId = parentDivID;
     this._canvas = null;
     this._ctx = null;
   }
@@ -521,7 +539,8 @@ class CanvasImageWriter extends Filter{
   * Initialize a new canvas object
   */
   _init(){
-    var parentElem = document.getElementById(this._parentId);
+
+    var parentElem = document.getElementById( this.getMetadata("parentDivID") );
     while (parentElem.firstChild) {
         parentElem.removeChild(parentElem.firstChild);
     }
@@ -538,7 +557,7 @@ class CanvasImageWriter extends Filter{
     this._ctx.webkitImageSmoothingEnabled = false;
     this._ctx.ctxmsImageSmoothingEnabled = false;
 
-    document.getElementById(this._parentId).appendChild(this._canvas);
+    document.getElementById(this.getMetadata("parentDivID")).appendChild(this._canvas);
   }
 
 
@@ -547,9 +566,16 @@ class CanvasImageWriter extends Filter{
   */
   update(){
 
+    console.log(this._metadata);
+
     // abort if invalid input
-    if(!this.hasValidInput())
+    if(!this.hasValidInput() )
       return;
+
+    if(!this.getMetadata("parentDivID")){
+      console.error("The parent DIV ID to place the canvas element was not specified. Unable to display anything.");
+      return;
+    }
 
     // build a new canvas
     this._init();
@@ -591,7 +617,7 @@ class CanvasImageWriter extends Filter{
 * with no argument for that.
 * Reading a file from URL takes an AJAX request, which is asynchronous. For this
 * reason, what happens next, once the Image2D is created must take place in the
-* callback defined in the constructor.
+* callback defined by the event .on("imageLoaded", function(){ ... }).
 *
 * Usage: examples/urlToImage2D.html
 *
@@ -630,17 +656,16 @@ class UrlImageReader extends Filter {
       canvasContext.drawImage(img, 0, 0);
 
       try{
-
         var imageData = canvasContext.getImageData(0, 0, tmpCanvas.width, tmpCanvas.height);
         var dataArray = imageData.data;
         var img2D = new Image2D();
         img2D.setData( dataArray, img.width, img.height);
         that._setOutput( img2D );
 
-        that._onReadCallback && that._onReadCallback( that );
+        if("imageLoaded" in that._events){
+          that._events.imageLoaded( that );
+        }
       }catch(e){
-        //console.error("The server of the specified image URL does not allow Cross Origin data access. Pixpipe cannot create an Image2D object.");
-
         console.error(e);
       }
 
@@ -665,7 +690,9 @@ class UrlImageReader extends Filter {
 * Use the regular `addInput()` and `getOuput()` with no argument for that.
 * Reading a local file is an asynchronous process. For this
 * reason, what happens next, once the Image2D is created must take place in the
-* callback defined in the constructor.
+* callback defined by the event .on("imageLoaded", function(){ ... }).
+*
+*
 *
 * Usage: examples/fileToImage2D.html
 *
@@ -734,7 +761,9 @@ class FileImageReader extends Filter {
       console.log(img2D);
       that._setOutput( img2D );
 
-      that._onReadCallback && that._onReadCallback( that );
+      if("imageLoaded" in that._events){
+        that._events.imageLoaded( that );
+      }
 		};
 
 		reader.readAsDataURL( file );
@@ -752,16 +781,36 @@ class FileImageReader extends Filter {
 */
 
 /**
+* A filter of type ForEachPixelImageFilter can perform a operation on evey pixel
+* of an Image2D with a simple interface. For this purpose, a per-pixel-callback
+* must be specified using method
+* .on( "pixel" , function( coord, color ){ ... })
+* where coord is of form {x, y} and color is of form [r, g, b, a] (with possibly)
+* a different number of components per pixel.
+* This callback must return, or null (original color not modified),
+* or a array of color (same dimension as the one in arguments).
+*
+* Usage: examples/forEachPixel.html
+*
+* @example
+* var forEachPixelFilter = new pixpipe.ForEachPixelImageFilter();
+* forEachPixelFilter.on( "pixel", function(position, color){
+*
+*     return [
+*       color[1], // red (takes the values from green)
+*       color[0], // green (takes the values from red)
+*       color[2] * 0.5, // blue get 50% darker
+*       255 // alpha, at max
+*     ]
+*
+*   }
+* );
 *
 */
 class ForEachPixelImageFilter extends PixelWiseImageFilter {
 
-  /**
-  * @param {function} cb - callback of what to do for each pixel
-  */
-  constructor( cb = null ){
+  constructor(){
     super();
-    this._perPixelCallback = cb;
   }
 
 
@@ -769,6 +818,7 @@ class ForEachPixelImageFilter extends PixelWiseImageFilter {
   * Run the filter
   */
   update(){
+        console.log("hello2");
     if( ! this.hasValidInput())
       return;
 
@@ -779,7 +829,7 @@ class ForEachPixelImageFilter extends PixelWiseImageFilter {
 
     this._inputBuffer = inputImage2D.getDataCopy();
 
-    this._forEachPixelOfSuch(firstPixel, lastPixel, increment, this._perPixelCallback );
+    this._forEachPixelOfSuch(firstPixel, lastPixel, increment );
 
     // building the output
     var img2D = new Image2D();
