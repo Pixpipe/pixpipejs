@@ -14,7 +14,9 @@ import { Filter } from '../core/Filter.js';
 * Use the regular `addInput()` and `getOuput()` with no argument for that.
 * Reading a local file is an asynchronous process. For this
 * reason, what happens next, once the Image2D is created must take place in the
-* callback defined in the constructor.
+* callback defined by the event .on("imageLoaded", function(){ ... }).
+*
+*
 *
 * Usage: examples/fileToImage2D.html
 *
@@ -38,9 +40,10 @@ class FileImageReader extends Filter {
 
 
   /**
-  *
+  * Overload the default method because HTML5 File is not a Pixpipe type
   */
-  validateInput(){
+  hasValidInput(){
+    var valid = false;
     var file = this._getInput();
 
     if (file && file.type.match( this._allowedTypes )) {
@@ -48,6 +51,8 @@ class FileImageReader extends Filter {
     }else{
       console.error("The file must be an image (jpg/png). The type " + file.type + " is not compatible with FileImageReader.");
     }
+
+    return valid;
   }
 
 
@@ -55,9 +60,8 @@ class FileImageReader extends Filter {
   * Run the reading
   */
   update(){
-    this.validateInput();
 
-    if(! this._isInputValid)
+    if(! this.hasValidInput)
       return
 
     var that = this;
@@ -81,7 +85,9 @@ class FileImageReader extends Filter {
       console.log(img2D);
       that._setOutput( img2D );
 
-      that._onReadCallback && that._onReadCallback( that );
+      if("imageLoaded" in that._events){
+        that._events.imageLoaded( that )
+      }
 		}
 
 		reader.readAsDataURL( file );

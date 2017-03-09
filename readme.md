@@ -3,6 +3,15 @@ Pixpipe.js is an attempt of building an image processing pipeline entirely in Ja
 
 The concept of *pipeline* implies that the output of a `Filter` can be used as input for the next one, like in *ITK*. In Pixpipe.js, this is done by using the `Filter`'s methods `addInput()` and `getOuput()`. Some `Filter` may have several *input* or *output* of different kinds.
 
+# Motivations
+To make image processing:
+- accessible, using just a web browser and a text pad
+- with no other dependency than `pixpipe.js`
+- with no required compilation or system fuss
+- modular
+- generic enough to use different kind of data/datasource
+- easy to contribute
+- well documented for both users and contributors.
 
 
 # The future of Pixpipe.js
@@ -10,3 +19,8 @@ The plan is to add more image processing filters and tools, like *FFT*, or *wave
 
 # License
 MIT - See [LICENSE file](LICENSE).
+
+
+# Todo
+## doc for dev
+- how to make _inputValidator (Filter) and when to call validateInput
