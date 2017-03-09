@@ -14,5 +14,8 @@ export { FileImageReader } from './io/FileImageReader.js';
 
 // filters - processing of Images2D
 export { ForEachPixelImageFilter } from './filter/ForEachPixelImageFilter.js';
+export { SpatialConvolutionFilter } from './filter/SpatialConvolutionFilter.js';
+
+
 
 // filters - processing of Image3D
