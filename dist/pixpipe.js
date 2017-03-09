@@ -355,6 +355,48 @@ class Image2D extends PixpipeObject{
 
 
   /**
+  * Modify the color of a given pixel.
+  * @param {Object} position - 2D position in form {x, y}
+  * @param {Array} color - color, must have the same numb of components per pix than the image
+  */
+  setPixel( position, color ){
+    if("x" in position && position.x >=0 && position.x < this._width &&
+       "y" in position && position.y >=0 && position.y < this._height &&
+       color.length == this._componentsPerPixel)
+    {
+
+      var pos1D = this.get1dIndexFrom2dPosition( position );
+
+      for(var i=0; i<this._componentsPerPixel; i++){
+        this._data[ pos1D + i] = color[i];
+      }
+
+    }else{
+      console.error("x and y position have to be within the image dimensions and color size must be the same as the original image.");
+    }
+  }
+
+
+  /**
+  * @return {Array} the color of the given pixel.
+  */
+  getPixel( position ){
+    if("x" in position && position.x >=0 && position.x < this._width &&
+       "y" in position && position.y >=0 && position.y < this._height)
+    {
+      var pos1D = this.get1dIndexFrom2dPosition( position );
+      var color = this._data.slice(pos1D, pos1D + this._componentsPerPixel);
+      return color;
+
+    }else{
+      console.log(position);
+      console.warn("The requested position is outside the image.");
+      return null;
+    }
+  }
+
+
+  /**
   * @return {Number} the width of the Image2D
   */
   getWidth(){
@@ -398,8 +440,8 @@ class Image2D extends PixpipeObject{
 
   /**
   * Compute the (x, y) position from a position in a 1D array.
-  * @param {Number} i - the index of a pixel. This has nothing to do with
-  * the number of components per pixel.
+  * This has nothing to do with the number of components per pixel.
+  * @param {Number} i - the index of a pixel.
   * @return {Object} coordinate as {x, y}
   */
   get2dPositionFrom1dIndex( i ){
@@ -407,6 +449,17 @@ class Image2D extends PixpipeObject{
       x: i % this._width,
       y: Math.floor(i / this._width)
     }
+  }
+
+
+  /**
+  * Compute the 1D index within the data buffer from a 2D position {x, y}.
+  * This has nothing to do with the number of components per pixel.
+  * @param {Object} position - 2D coord like {x, y}
+  * @return {Number} the 1D position within the buffer
+  */
+  get1dIndexFrom2dPosition( position ){
+    return (position.x + position.y*this._width);
   }
 
 } /* END of class Image2D */
@@ -565,8 +618,6 @@ class CanvasImageWriter extends Filter{
   * Overwrite the generic (empty) method.
   */
   update(){
-
-    console.log(this._metadata);
 
     // abort if invalid input
     if(!this.hasValidInput() )
@@ -818,7 +869,6 @@ class ForEachPixelImageFilter extends PixelWiseImageFilter {
   * Run the filter
   */
   update(){
-        console.log("hello2");
     if( ! this.hasValidInput())
       return;
 
@@ -839,6 +889,141 @@ class ForEachPixelImageFilter extends PixelWiseImageFilter {
 
 } /* END class ForEachPixelImageFilter */
 
+/*
+* Author   Jonathan Lurie - http://me.jonahanlurie.fr
+* License  MIT
+* Link      https://github.com/jonathanlurie/pixpipejs
+* Lab       MCIN - Montreal Neurological Institute
+*/
+
+/**
+* A filter of type ForEachRowImageFilter can perform a operation on evey pixel
+* of an Image2D, row by row with a simple interface. This is actually the
+* default behaviour of ForEachPixelImageFilter. This filter is especially
+* usefull for generative design or visual experiments using cellular automata.
+* For this purpose, a per-pixel-callback
+* must be specified using method
+* .on( "pixel" , function( coord, color ){ ... })
+* where coord is of form {x, y} and color is of form [r, g, b, a] (with possibly)
+* a different number of components per pixel.
+* This callback must return, or null (original color not modified),
+* or a array of color (same dimension as the one in arguments).
+*
+* Usage: examples/forEachPixel.html
+*
+* @example
+* var forEachPixelFilter = new pixpipe.ForEachPixelImageFilter();
+* forEachPixelFilter.on( "pixel", function(position, color){
+*
+*     return [
+*       color[1], // red (takes the values from green)
+*       color[0], // green (takes the values from red)
+*       color[2] * 0.5, // blue get 50% darker
+*       255 // alpha, at max
+*     ]
+*
+*   }
+* );
+*
+*/
+class ForEachRowImageFilter extends PixelWiseImageFilter {
+
+  constructor(){
+    super();
+  }
+
+
+  /**
+  * Run the filter
+  */
+  update(){
+    if( ! this.hasValidInput())
+      return;
+
+    var inputImage2D = this._getInput();
+    var firstPixel = 0;
+    var lastPixel = inputImage2D.getWidth() * inputImage2D.getHeight();
+    var increment = 1;
+
+    this._inputBuffer = inputImage2D.getDataCopy();
+
+    this._forEachPixelOfSuch(firstPixel, lastPixel, increment );
+
+    // building the output
+    var img2D = new Image2D();
+    img2D.setData( this._inputBuffer, inputImage2D.getWidth(), inputImage2D.getHeight());
+    this._setOutput( img2D );
+  }
+
+} /* END class ForEachRowImageFilter */
+
+/*
+* Author   Jonathan Lurie - http://me.jonahanlurie.fr
+* License  MIT
+* Link      https://github.com/jonathanlurie/pixpipejs
+* Lab       MCIN - Montreal Neurological Institute
+*/
+
+/**
+* A filter of type ForEachColumnImageFilter can perform a operation on evey pixel
+* of an Image2D, row by column with a simple interface. This filter is especially
+* usefull for generative design or visual experiments using cellular automata.
+* For this purpose, a per-pixel-callback
+* must be specified using method
+* .on( "pixel" , function( coord, color ){ ... })
+* where coord is of form {x, y} and color is of form [r, g, b, a] (with possibly)
+* a different number of components per pixel.
+* This callback must return, or null (original color not modified),
+* or a array of color (same dimension as the one in arguments).
+*
+* Usage: examples/forEachPixel.html
+*
+* @example
+* var forEachPixelFilter = new pixpipe.ForEachPixelImageFilter();
+* forEachPixelFilter.on( "pixel", function(position, color){
+*
+*     return [
+*       color[1], // red (takes the values from green)
+*       color[0], // green (takes the values from red)
+*       color[2] * 0.5, // blue get 50% darker
+*       255 // alpha, at max
+*     ]
+*
+*   }
+* );
+*
+*/
+class ForEachColumnImageFilter extends PixelWiseImageFilter {
+
+  constructor(){
+    super();
+  }
+
+
+  /**
+  * Run the filter
+  */
+  update(){
+    if( ! this.hasValidInput())
+      return;
+
+    var inputImage2D = this._getInput();
+    var firstPixel = 0;
+    var lastPixel = inputImage2D.getWidth() * inputImage2D.getHeight();
+    var increment = inputImage2D.getWidth();
+
+    this._inputBuffer = inputImage2D.getDataCopy();
+
+    this._forEachPixelOfSuch(firstPixel, lastPixel, increment );
+
+    // building the output
+    var img2D = new Image2D();
+    img2D.setData( this._inputBuffer, inputImage2D.getWidth(), inputImage2D.getHeight());
+    this._setOutput( img2D );
+  }
+
+} /* END class ForEachColumnImageFilter */
+
 // filters - processing of Image3D
 
 exports.PixpipeObject = PixpipeObject;
@@ -850,6 +1035,8 @@ exports.CanvasImageWriter = CanvasImageWriter;
 exports.UrlImageReader = UrlImageReader;
 exports.FileImageReader = FileImageReader;
 exports.ForEachPixelImageFilter = ForEachPixelImageFilter;
+exports.ForEachRowImageFilter = ForEachRowImageFilter;
+exports.ForEachColumnImageFilter = ForEachColumnImageFilter;
 
 Object.defineProperty(exports, '__esModule', { value: true });
 

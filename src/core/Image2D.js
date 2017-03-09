@@ -101,6 +101,47 @@ class Image2D extends PixpipeObject{
 
 
   /**
+  * Modify the color of a given pixel.
+  * @param {Object} position - 2D position in form {x, y}
+  * @param {Array} color - color, must have the same numb of components per pix than the image
+  */
+  setPixel( position, color ){
+    if("x" in position && position.x >=0 && position.x < this._width &&
+       "y" in position && position.y >=0 && position.y < this._height &&
+       color.length == this._componentsPerPixel)
+    {
+
+      var pos1D = this.get1dIndexFrom2dPosition( position );
+
+      for(var i=0; i<this._componentsPerPixel; i++){
+        this._data[ pos1D + i] = color[i];
+      }
+
+    }else{
+      console.error("x and y position have to be within the image dimensions and color size must be the same as the original image.");
+    }
+  }
+
+
+  /**
+  * @return {Array} the color of the given pixel.
+  */
+  getPixel( position ){
+    if("x" in position && position.x >=0 && position.x < this._width &&
+       "y" in position && position.y >=0 && position.y < this._height)
+    {
+      var pos1D = this.get1dIndexFrom2dPosition( position );
+      var color = this._data.slice(pos1D, pos1D + this._componentsPerPixel);
+      return color;
+
+    }else{
+      console.warn("The requested position is outside the image.");
+      return null;
+    }
+  }
+
+
+  /**
   * @return {Number} the width of the Image2D
   */
   getWidth(){
@@ -144,8 +185,8 @@ class Image2D extends PixpipeObject{
 
   /**
   * Compute the (x, y) position from a position in a 1D array.
-  * @param {Number} i - the index of a pixel. This has nothing to do with
-  * the number of components per pixel.
+  * This has nothing to do with the number of components per pixel.
+  * @param {Number} i - the index of a pixel.
   * @return {Object} coordinate as {x, y}
   */
   get2dPositionFrom1dIndex( i ){
@@ -153,6 +194,17 @@ class Image2D extends PixpipeObject{
       x: i % this._width,
       y: Math.floor(i / this._width)
     }
+  }
+
+
+  /**
+  * Compute the 1D index within the data buffer from a 2D position {x, y}.
+  * This has nothing to do with the number of components per pixel.
+  * @param {Object} position - 2D coord like {x, y}
+  * @return {Number} the 1D position within the buffer
+  */
+  get1dIndexFrom2dPosition( position ){
+    return (position.x + position.y*this._width);
   }
 
 } /* END of class Image2D */
