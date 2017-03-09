@@ -16,7 +16,6 @@ class PixelWiseImageFilter extends ImageToImageFilter{
 
   constructor(){
     super();
-
   }
 
 
@@ -26,9 +25,14 @@ class PixelWiseImageFilter extends ImageToImageFilter{
   * @param {Number} firstPixel - Index of the first pixel in 1D array
   * @param {Number} lastPixel - Index of the last pixel in 1D array
   * @param {Number} increment - jump gap from a pixel to another (in a 1D style)
-  * @param {function} cb - callback of what to do for each pixel to be processed. Called with 2 args: 2D position {x, y} and color {r, g, b, a}
   */
-  _forEachPixelOfSuch(firstPixel, lastPixel, increment, cb ){
+  _forEachPixelOfSuch(firstPixel, lastPixel, increment ){
+    // abort if no callback per pixel
+    if( ! "pixel" in this._events){
+      console.warn("No function to apply per pixel was specified.");
+      return;
+    }
+
     var inputImage2D = this._getInput();
     var inputBuffer = this._inputBuffer;
     var componentPerPixel = inputImage2D.getComponentsPerPixel();
@@ -40,7 +44,7 @@ class PixelWiseImageFilter extends ImageToImageFilter{
       var position2D = inputImage2D.get2dPositionFrom1dIndex(p);
       currentColor = inputBuffer.slice(firstCompoPos1D, firstCompoPos1D + componentPerPixel)
 
-      var newColor = cb( position2D, currentColor);
+      var newColor = this._events.pixel( position2D, currentColor);
 
       if(newColor && newColor.length == componentPerPixel){
         for(var i=0; i<componentPerPixel; i++){

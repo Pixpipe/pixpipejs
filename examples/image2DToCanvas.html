@@ -14,7 +14,8 @@
   var myImage = new pixpipe.Image2D({width: 100, height: 250, color: [255, 128, 64, 255]})
 
   // create a filter to write the image into a canvas
-  var imageToCanvasFilter = new pixpipe.CanvasImageWriter( "myDiv" );
+  var imageToCanvasFilter = new pixpipe.CanvasImageWriter( );
+  imageToCanvasFilter.setMetadata( "parentDivID", "myDiv" );
   imageToCanvasFilter.addInput( myImage );
   imageToCanvasFilter.update();
 

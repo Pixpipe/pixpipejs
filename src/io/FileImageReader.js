@@ -14,7 +14,9 @@ import { Filter } from '../core/Filter.js';
 * Use the regular `addInput()` and `getOuput()` with no argument for that.
 * Reading a local file is an asynchronous process. For this
 * reason, what happens next, once the Image2D is created must take place in the
-* callback defined in the constructor.
+* callback defined by the event .on("imageLoaded", function(){ ... }).
+*
+*
 *
 * Usage: examples/fileToImage2D.html
 *
@@ -83,7 +85,9 @@ class FileImageReader extends Filter {
       console.log(img2D);
       that._setOutput( img2D );
 
-      that._onReadCallback && that._onReadCallback( that );
+      if("imageLoaded" in that._events){
+        that._events.imageLoaded( that )
+      }
 		}
 
 		reader.readAsDataURL( file );

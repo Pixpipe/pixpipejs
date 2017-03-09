@@ -19,8 +19,10 @@ class PixpipeObject {
       return v.toString(16);
     });
 
-    this._name = null;
-    this._description = null;
+    // Metadata can be anything, a name, an ID, a description, a DOM element.
+    // everything that is not an input but rather a setting
+    this._metadata = {};
+
     this._type = PixpipeObject.TYPE();
   }
 
@@ -60,39 +62,35 @@ class PixpipeObject {
 
 
   /**
-  * Setter fo the name.
-  * @param {String} n - name
+  * Set a metadata using a pair of key and value.
+  * @param {String} key - the ID of the metadata
+  * @param {Object} value - can be a string, Number or Object
   */
-  setName( n ){
-    this._name = n;
+  setMetadata( key, value ){
+    if(typeof key === 'string' || key instanceof String){
+      this._metadata[ key ] = value;
+    }else{
+      console.warn("The given key must be a String Object.");
+    }
+
   }
 
 
   /**
-  * Getter for the name
-  * @return {String} name
+  * Retrieve a metadata using a key.
+  * @param {String} key - the ID of the metadata
+  * @return {Object} the metadata object - or null if non existent
   */
-  getName(){
-    return this._name;
+  getMetadata( key ){
+    if( key in this._metadata){
+      return this._metadata[ key ];
+    }else{
+      console.warn("The metadata with key: " + key + " doe not exist.");
+      return null;
+    }
   }
 
 
-  /**
-  * Setter fo the description.
-  * @param {String} d - description
-  */
-  setDescription( d ){
-    this._description = d;
-  }
-
-
-  /**
-  * Getter for the description
-  * @return {String} description
-  */
-  getDescription(){
-    return this._description;
-  }
 
 
 }

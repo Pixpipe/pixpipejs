@@ -15,7 +15,7 @@ import { Filter } from '../core/Filter.js';
 * with no argument for that.
 * Reading a file from URL takes an AJAX request, which is asynchronous. For this
 * reason, what happens next, once the Image2D is created must take place in the
-* callback defined in the constructor.
+* callback defined by the event .on("imageLoaded", function(){ ... }).
 *
 * Usage: examples/urlToImage2D.html
 *
@@ -60,7 +60,9 @@ class UrlImageReader extends Filter {
         img2D.setData( dataArray, img.width, img.height);
         that._setOutput( img2D );
 
-        that._onReadCallback && that._onReadCallback( that );
+        if("imageLoaded" in that._events){
+          that._events.imageLoaded( that )
+        }
       }catch(e){
         console.error(e);
       }
