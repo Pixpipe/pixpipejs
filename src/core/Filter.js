@@ -119,7 +119,6 @@ class Filter extends PixpipeObject {
   hasValidInput(){
     var that = this;
     var inputCategories = Object.keys( this._inputValidator );
-
     var valid = true;
 
     inputCategories.forEach( function(key){
@@ -131,6 +130,39 @@ class Filter extends PixpipeObject {
     }
 
     return valid;
+  }
+
+
+  /**
+  * Check if all input image have the same size.
+  * @return {Boolean} true is same size, false if not.
+  */
+  hasSameSizeInput(){
+    var that = this;
+    var inputCategories = Object.keys( this._inputValidator );
+    var sameSize = true;
+
+    var widths = [];
+    var heights = [];
+
+    inputCategories.forEach( function(key){
+      widths.push( that._getInput( key ).getWidth() );
+      heights.push( that._getInput( key ).getHeight() );
+    });
+
+    // if all input have the same size
+    if(widths.length){
+      widths.sort();
+      heights.sort();
+      sameSize = (widths[ 0 ] == widths[ widths.length -1 ] ) &&
+                 (heights[ 0 ] == heights[ heights.length -1 ] );
+
+      if( !sameSize ){
+        console.warn("Input image do not all have the same size. Filter not valid");
+      }
+    }
+
+    return sameSize;
   }
 
 

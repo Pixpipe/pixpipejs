@@ -18,7 +18,7 @@ export { FileImageReader } from './io/FileImageReader.js';
 export { ForEachPixelImageFilter } from './filter/ForEachPixelImageFilter.js';
 export { SpatialConvolutionFilter } from './filter/SpatialConvolutionFilter.js';
 export { ImageBlendExpressionFilter } from './filter/ImageBlendExpressionFilter.js';
-
+export { SpectralScaleImageFilter } from './filter/SpectralScaleImageFilter.js';
 
 
 

@@ -84,13 +84,17 @@ class Image2D extends PixpipeObject{
   * @param {Float32Array} array - 1D array of raw data stored as RGBARGBA...
   * @param {Number} width - width of the Image2D
   * @param {Number} height - height of the Image2D
+  * @param {Number} ncpp - number of components per pixel (default: 4)
+}
   */
-  setData( array, width, height ){
+  setData( array, width, height, ncpp=4 ){
     // do not alloz to set a new internal array
     if( this._data ){
       console.warn("Data can be set to an Image2D object only once. Cannot init the Image2D.");
       return;
     }
+
+    this._componentsPerPixel = ncpp;
 
     if( array.length != width*height*this._componentsPerPixel){
       console.warn("The array size does not match the width and height. Cannot init the Image2D.");

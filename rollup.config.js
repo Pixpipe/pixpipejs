@@ -11,8 +11,6 @@ export default {
   dest: config.moduleBuildDir + '/' + config.moduleName + '.js',
   plugins: [
     nodeResolve(),
-            commonjs({
-                     sourceMap: false
-            })
+    commonjs()
   ]
 };
