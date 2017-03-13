@@ -29,7 +29,7 @@
   },
   "homepage": "https://github.com/jonathanlurie/pixpipejs#readme",
   "dependencies": {
-    "mathjs": "^3.10.0"
+    "expr-eval": "^1.0.0"
   },
   "devDependencies": {
     "gulp": "^3.9.1",

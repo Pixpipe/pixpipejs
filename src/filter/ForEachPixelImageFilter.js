@@ -60,7 +60,7 @@ class ForEachPixelImageFilter extends PixelWiseImageFilter {
 
     // building the output
     var img2D = new Image2D();
-    img2D.setData( this._inputBuffer, inputImage2D.getWidth(), inputImage2D.getHeight());
+    img2D.setData( this._inputBuffer, inputImage2D.getWidth(), inputImage2D.getHeight(), inputImage2D.getComponentsPerPixel());
     this._setOutput( img2D );
   }
 
