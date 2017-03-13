@@ -28,11 +28,15 @@
     "url": "https://github.com/jonathanlurie/pixpipejs/issues"
   },
   "homepage": "https://github.com/jonathanlurie/pixpipejs#readme",
-  "dependencies": {},
+  "dependencies": {
+    "mathjs": "^3.10.0"
+  },
   "devDependencies": {
     "gulp": "^3.9.1",
     "gulp-rollup": "^2.11.0",
     "gulp-util": "^3.0.8",
-    "rollup": "^0.41.4"
+    "rollup": "^0.41.4",
+    "rollup-plugin-commonjs": "^8.0.2",
+    "rollup-plugin-node-resolve": "^2.0.0"
   }
 }

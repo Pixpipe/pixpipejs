@@ -78,6 +78,14 @@ class CanvasImageWriter extends Filter{
     if(!this.hasValidInput() )
       return;
 
+    var ncppSrc = image.getComponentsPerPixel();
+
+    // only Image2d with 1 or 4 bands can be displayed
+    if( ncppSrc != 1 || ncppSrc != 4){
+      console.warn("Cannot write Image in canvas if contains other than 1 or 4 bands.");
+      return;
+    }
+
     if(!this.getMetadata("parentDivID")){
       console.error("The parent DIV ID to place the canvas element was not specified. Unable to display anything.");
       return;
@@ -98,10 +106,26 @@ class CanvasImageWriter extends Filter{
     // getting Image object data
     var originalImageDataArray = image.getData();
 
-    // copying the data into the canvas array (clamped uint8)
-    originalImageDataArray.forEach( function(value, index){
-      canvasImageDataArray[index] = value;
-    });
+    if(ncppSrc == 4){
+      // copying the data into the canvas array (clamped uint8)
+      originalImageDataArray.forEach( function(value, index){
+        canvasImageDataArray[index] = value;
+      });
+
+    }else if(ncppSrc == 1){
+      originalImageDataArray.forEach( function(value, index){
+        canvasImageDataArray[index*4] = value;
+        canvasImageDataArray[index*4 + 1] = value;
+        canvasImageDataArray[index*4 + 2] = value;
+        canvasImageDataArray[index*4 + 3] = 255;
+      });
+
+    }else
+
+
+
+
+
     this._ctx.putImageData(canvasImageData, 0, 0);
 
 
