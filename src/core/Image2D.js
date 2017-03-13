@@ -27,7 +27,7 @@ class Image2D extends PixpipeObject{
     this._data = null;
     this._width = -1;
     this._height = -1;
-    this._componentsPerPixel = 4; // RGBA
+    this._componentsPerPixel = 4; // RGBA, by default
 
     // allocate the array if size is specified
     if(options && "width" in options && "height" in options){
@@ -35,21 +35,25 @@ class Image2D extends PixpipeObject{
       if( options.width > 0 && options.height > 0){
         this._width = options.width;
         this._height = options.height;
+
+        if("color" in options){
+          this._componentsPerPixel = options.color.length;
+        }
+
         this._data = new Float32Array( this._width * this._height * this._componentsPerPixel );
 
-        // init the color if specified
-        if("color" in options && options.color.length == 4 ){
+        // init with the given color
+        if("color" in options){
           var color = options.color;
-
-          for(var i=0; i<this._data.length; i+=4){
-            this._data[i] = color[0];
-            this._data[i + 1] = color[1];
-            this._data[i + 2] = color[2];
-            this._data[i + 3] = color[3];
+          for(var i=0; i<this._data.length; i++){
+            this._data[i] = color[i%this._componentsPerPixel];
           }
-
-          console.log(this._data);
+        }else{
+          this._data.fill(0);
         }
+
+
+
       }
     }
 

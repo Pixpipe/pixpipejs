@@ -1,5 +1,7 @@
 'use strict'
 
+//import mathjs from 'mathjs';
+
 // core classes
 export { PixpipeObject } from './core/PixpipeObject.js';
 export { Filter } from './core/Filter.js';
@@ -15,6 +17,8 @@ export { FileImageReader } from './io/FileImageReader.js';
 // filters - processing of Images2D
 export { ForEachPixelImageFilter } from './filter/ForEachPixelImageFilter.js';
 export { SpatialConvolutionFilter } from './filter/SpatialConvolutionFilter.js';
+export { ImageBlendExpressionFilter } from './filter/ImageBlendExpressionFilter.js';
+
 
 
 

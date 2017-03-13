@@ -281,7 +281,7 @@ class Image2D extends PixpipeObject{
     this._data = null;
     this._width = -1;
     this._height = -1;
-    this._componentsPerPixel = 4; // RGBA
+    this._componentsPerPixel = 4; // RGBA, by default
 
     // allocate the array if size is specified
     if(options && "width" in options && "height" in options){
@@ -289,21 +289,25 @@ class Image2D extends PixpipeObject{
       if( options.width > 0 && options.height > 0){
         this._width = options.width;
         this._height = options.height;
+
+        if("color" in options){
+          this._componentsPerPixel = options.color.length;
+        }
+
         this._data = new Float32Array( this._width * this._height * this._componentsPerPixel );
 
-        // init the color if specified
-        if("color" in options && options.color.length == 4 ){
+        // init with the given color
+        if("color" in options){
           var color = options.color;
-
-          for(var i=0; i<this._data.length; i+=4){
-            this._data[i] = color[0];
-            this._data[i + 1] = color[1];
-            this._data[i + 2] = color[2];
-            this._data[i + 3] = color[3];
+          for(var i=0; i<this._data.length; i++){
+            this._data[i] = color[i%this._componentsPerPixel];
           }
-
-          console.log(this._data);
+        }else{
+          this._data.fill(0);
         }
+
+
+
       }
     }
 
@@ -389,7 +393,6 @@ class Image2D extends PixpipeObject{
       return color;
 
     }else{
-      console.log(position);
       console.warn("The requested position is outside the image.");
       return null;
     }
@@ -897,132 +900,41 @@ class ForEachPixelImageFilter extends PixelWiseImageFilter {
 */
 
 /**
-* A filter of type ForEachRowImageFilter can perform a operation on evey pixel
-* of an Image2D, row by row with a simple interface. This is actually the
-* default behaviour of ForEachPixelImageFilter. This filter is especially
-* usefull for generative design or visual experiments using cellular automata.
-* For this purpose, a per-pixel-callback
-* must be specified using method
-* .on( "pixel" , function( coord, color ){ ... })
-* where coord is of form {x, y} and color is of form [r, g, b, a] (with possibly)
-* a different number of components per pixel.
-* This callback must return, or null (original color not modified),
-* or a array of color (same dimension as the one in arguments).
-*
-* Usage: examples/forEachPixel.html
-*
-* @example
-* var forEachPixelFilter = new pixpipe.ForEachPixelImageFilter();
-* forEachPixelFilter.on( "pixel", function(position, color){
-*
-*     return [
-*       color[1], // red (takes the values from green)
-*       color[0], // green (takes the values from red)
-*       color[2] * 0.5, // blue get 50% darker
-*       255 // alpha, at max
-*     ]
-*
-*   }
-* );
 *
 */
-class ForEachRowImageFilter extends PixelWiseImageFilter {
+class SpatialConvolutionFilter extends ImageToImageFilter {
+
+  constructor(){
+
+  }
+}
+
+//import mathjs from 'mathjs';
+
+class ImageBlendExpressionFilter extends ImageToImageFilter {
 
   constructor(){
     super();
+      
+    /*
+    // provide a scope
+    console.log('\nprovide a scope');
+    var node2 = mathjs.parse('x^a');
+    var code2 = node2.compile();
+    console.log(node2.toString());                    // "x ^ a"
+    var scope = {
+      x: 3,
+      a: 2
+    };
+    console.log(code2.eval(scope));
+
+    console.log(mathjs);
+    */
   }
 
 
-  /**
-  * Run the filter
-  */
-  update(){
-    if( ! this.hasValidInput())
-      return;
 
-    var inputImage2D = this._getInput();
-    var firstPixel = 0;
-    var lastPixel = inputImage2D.getWidth() * inputImage2D.getHeight();
-    var increment = 1;
-
-    this._inputBuffer = inputImage2D.getDataCopy();
-
-    this._forEachPixelOfSuch(firstPixel, lastPixel, increment );
-
-    // building the output
-    var img2D = new Image2D();
-    img2D.setData( this._inputBuffer, inputImage2D.getWidth(), inputImage2D.getHeight());
-    this._setOutput( img2D );
-  }
-
-} /* END class ForEachRowImageFilter */
-
-/*
-* Author   Jonathan Lurie - http://me.jonahanlurie.fr
-* License  MIT
-* Link      https://github.com/jonathanlurie/pixpipejs
-* Lab       MCIN - Montreal Neurological Institute
-*/
-
-/**
-* A filter of type ForEachColumnImageFilter can perform a operation on evey pixel
-* of an Image2D, row by column with a simple interface. This filter is especially
-* usefull for generative design or visual experiments using cellular automata.
-* For this purpose, a per-pixel-callback
-* must be specified using method
-* .on( "pixel" , function( coord, color ){ ... })
-* where coord is of form {x, y} and color is of form [r, g, b, a] (with possibly)
-* a different number of components per pixel.
-* This callback must return, or null (original color not modified),
-* or a array of color (same dimension as the one in arguments).
-*
-* Usage: examples/forEachPixel.html
-*
-* @example
-* var forEachPixelFilter = new pixpipe.ForEachPixelImageFilter();
-* forEachPixelFilter.on( "pixel", function(position, color){
-*
-*     return [
-*       color[1], // red (takes the values from green)
-*       color[0], // green (takes the values from red)
-*       color[2] * 0.5, // blue get 50% darker
-*       255 // alpha, at max
-*     ]
-*
-*   }
-* );
-*
-*/
-class ForEachColumnImageFilter extends PixelWiseImageFilter {
-
-  constructor(){
-    super();
-  }
-
-
-  /**
-  * Run the filter
-  */
-  update(){
-    if( ! this.hasValidInput())
-      return;
-
-    var inputImage2D = this._getInput();
-    var firstPixel = 0;
-    var lastPixel = inputImage2D.getWidth() * inputImage2D.getHeight();
-    var increment = inputImage2D.getWidth();
-
-    this._inputBuffer = inputImage2D.getDataCopy();
-
-    this._forEachPixelOfSuch(firstPixel, lastPixel, increment );
-
-    // building the output
-    var img2D = new Image2D();
-    img2D.setData( this._inputBuffer, inputImage2D.getWidth(), inputImage2D.getHeight());
-    this._setOutput( img2D );
-  }
-
-} /* END class ForEachColumnImageFilter */
+} /* END of class ImageBlendExpressionFilter */
 
 // filters - processing of Image3D
 
@@ -1035,8 +947,8 @@ exports.CanvasImageWriter = CanvasImageWriter;
 exports.UrlImageReader = UrlImageReader;
 exports.FileImageReader = FileImageReader;
 exports.ForEachPixelImageFilter = ForEachPixelImageFilter;
-exports.ForEachRowImageFilter = ForEachRowImageFilter;
-exports.ForEachColumnImageFilter = ForEachColumnImageFilter;
+exports.SpatialConvolutionFilter = SpatialConvolutionFilter;
+exports.ImageBlendExpressionFilter = ImageBlendExpressionFilter;
 
 Object.defineProperty(exports, '__esModule', { value: true });
 

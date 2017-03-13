@@ -5,7 +5,7 @@
 * Lab       MCIN - Montreal Neurological Institute
 */
 
-import { ImageToImageFilter } from './ImageToImageFilter.js';
+import { ImageToImageFilter } from '../core/ImageToImageFilter.js';
 
 /**
 *
