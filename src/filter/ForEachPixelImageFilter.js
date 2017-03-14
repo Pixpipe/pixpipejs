@@ -58,10 +58,31 @@ class ForEachPixelImageFilter extends PixelWiseImageFilter {
 
     this._forEachPixelOfSuch(firstPixel, lastPixel, increment );
 
+    // TODO : find a way NOT to replace the ouput pointer so that the following
+    // filter can use the same object when refreshed by the pipeline
+    /*
+    // maybe using this kind of thing:
+    var anObjType = Image2D;
+    var im = new anObjType();
+    console.log(im);
+    */
+
+    /*
     // building the output
     var img2D = new Image2D();
     img2D.setData( this._inputBuffer, inputImage2D.getWidth(), inputImage2D.getHeight(), inputImage2D.getComponentsPerPixel());
     this._setOutput( img2D );
+    */
+
+    var outputImg = this._setOutput2( Image2D );
+    console.log(outputImg);
+    outputImg.setData(
+      this._inputBuffer,
+      inputImage2D.getWidth(),
+      inputImage2D.getHeight(),
+      inputImage2D.getComponentsPerPixel()
+    );
+
   }
 
 } /* END class ForEachPixelImageFilter */
