@@ -6,6 +6,8 @@
 */
 
 import { PixpipeObject } from './PixpipeObject.js';
+import { Pipeline } from './Pipeline.js';
+
 
 /**
 * Filter is a base class and must be inherited to be used properly.
@@ -27,13 +29,15 @@ class Filter extends PixpipeObject {
     this._inputValidator = {};
 
     this._input = {
-      "0": []
+      //"0": []
     };
 
     this._output = {
-      "0" : []
+      //"0" : []
     };
 
+    // pipeline associated with this filter. Not mandatory.
+    this._pipeline = null;
   }
 
 
@@ -43,6 +47,7 @@ class Filter extends PixpipeObject {
   static TYPE(){
     return "FILTER";
   }
+
 
   /**
   * Set an input, potentially associated to a category.
@@ -62,6 +67,11 @@ class Filter extends PixpipeObject {
     }
 
     this._input[category] = inputObject ;
+
+    // add the pipeline object if defined
+    if( this._pipeline ){
+      inputObject.setPipeline( this._pipeline );
+    }
   }
 
 
@@ -93,6 +103,27 @@ class Filter extends PixpipeObject {
     }
 
     this._output[category] = data ;
+  }
+
+
+  /**
+  * Workaround to
+  */
+  _setOutput2( dataType, category=0 ){
+    var outputObject = null;
+
+    // the category may not exist, we create it
+    if( !(category in this._output) ){
+      var outputObject = new dataType();
+      this._output[category] = outputObject;
+    }else{
+      // TODO: if output object exists but is not from dataType: error!
+      outputObject = this._output[category];
+    }
+
+
+
+    return outputObject;
   }
 
 
@@ -181,6 +212,55 @@ class Filter extends PixpipeObject {
   on(eventId, callback){
     this._events[ eventId ] = callback;
   }
+
+
+  /**
+  * Associate a Pipeline instance to this filter. Not supposed to be called manually
+  * because it is automatically called-back when adding a filter to a pipeline.
+  * @param {Pipeline} p - Pipeline object.
+  */
+  setPipeline( p ){
+    // only if not already set.
+    if(!this._pipeline){
+      this._pipeline = p;
+
+      // set the pipeline to all input so that they can update the entire
+      // pipeline in case of modification
+      var inputCategories = Object.keys( this._inputValidator );
+      inputCategories.forEach( function(key){
+        widths.push( that._getInput( key ).setPipeline( p ) );
+      });
+
+    }
+  }
+
+
+  /**
+  * Update the whole pipeline due to an update in the filter
+  * (new input, new metadata)
+  */
+  _updatePipeline(){
+    if(this._pipeline){
+      this._pipeline.update();
+    }
+  }
+
+
+  /**
+  * @param {String} uuid - uuid to look for
+  * @return {Boolean} true if this filter uses an input with such uuid
+  */
+  hasInputWithUuid( uuid ){
+    var found = false;
+
+    var inputCategories = Object.keys( this._inputValidator );
+    inputCategories.forEach( function(key){
+      found = found | that._getInput( key ).setPipeline( p ) ;
+    });
+
+    return found;
+  }
+
 
 
 } /* END class Filter */

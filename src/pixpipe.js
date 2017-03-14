@@ -16,10 +16,9 @@ export { FileImageReader } from './io/FileImageReader.js';
 
 // filters - processing of Images2D
 export { ForEachPixelImageFilter } from './filter/ForEachPixelImageFilter.js';
-export { SpatialConvolutionFilter } from './filter/SpatialConvolutionFilter.js';
-export { ImageBlendExpressionFilter } from './filter/ImageBlendExpressionFilter.js';
 export { SpectralScaleImageFilter } from './filter/SpectralScaleImageFilter.js';
-
+//export { SpatialConvolutionFilter } from './filter/SpatialConvolutionFilter.js';
+//export { ImageBlendExpressionFilter } from './filter/ImageBlendExpressionFilter.js';
 
 
 // filters - processing of Image3D

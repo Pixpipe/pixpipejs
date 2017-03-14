@@ -6,6 +6,7 @@
 */
 
 import { PixpipeObject } from './PixpipeObject.js';
+import { Pipeline } from './Pipeline.js';
 
 /**
 * Image2D class is one of the few base element of Pixpipejs.
@@ -28,6 +29,9 @@ class Image2D extends PixpipeObject{
     this._width = -1;
     this._height = -1;
     this._componentsPerPixel = 4; // RGBA, by default
+
+    // pipeline associated with this image. Not mandatory.
+    this._pipeline = null;
 
     // allocate the array if size is specified
     if(options && "width" in options && "height" in options){
@@ -52,11 +56,8 @@ class Image2D extends PixpipeObject{
           this._data.fill(0);
         }
 
-
-
       }
     }
-
 
   }
 
@@ -88,11 +89,13 @@ class Image2D extends PixpipeObject{
 }
   */
   setData( array, width, height, ncpp=4 ){
-    // do not alloz to set a new internal array
+    /*
+    // do not allow to set a new internal array
     if( this._data ){
       console.warn("Data can be set to an Image2D object only once. Cannot init the Image2D.");
       return;
     }
+    */
 
     this._componentsPerPixel = ncpp;
 
@@ -104,7 +107,6 @@ class Image2D extends PixpipeObject{
     this._data = new Float32Array( array );
     this._width = width;
     this._height = height;
-
   }
 
 
@@ -214,6 +216,24 @@ class Image2D extends PixpipeObject{
   get1dIndexFrom2dPosition( position ){
     return (position.x + position.y*this._width);
   }
+
+
+  /**
+  * Associate a Pipeline instance to this image. Not supposed to be called manually
+  * because it is automatically called-back when adding a filter to a pipeline.
+  * @param {Pipeline} p - Pipeline object.
+  */
+  setPipeline( p ){
+    // only if not already set.
+    if(!this._pipeline){
+      this._pipeline = p;
+    }
+  }
+
+  // TODO: warn the pipeline if metadata changed or pixel value changed
+  // --> do NOT update the pipeline at every modif because if we change a lot
+  //     of pixel values... (wait to call update() on the pipeline.)
+
 
 } /* END of class Image2D */
 
