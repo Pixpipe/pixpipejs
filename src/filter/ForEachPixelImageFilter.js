@@ -39,6 +39,7 @@ class ForEachPixelImageFilter extends PixelWiseImageFilter {
 
   constructor(){
     super();
+    this._addOutput( Image2D );
   }
 
 
@@ -59,7 +60,8 @@ class ForEachPixelImageFilter extends PixelWiseImageFilter {
     this._forEachPixelOfSuch(firstPixel, lastPixel, increment );
 
     // 1 - init the output
-    var outputImg = this._setOutput( Image2D );
+    var outputImg = this.getOutput();
+    console.log(outputImg.uuid);
 
     // 2 - tune the output
     outputImg.setData(
