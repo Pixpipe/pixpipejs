@@ -4,6 +4,8 @@
 
 // core classes
 export { PixpipeObject } from './core/PixpipeObject.js';
+export { PipelineElement } from './core/PipelineElement.js';
+export { Pipeline } from './core/Pipeline.js';
 export { Filter } from './core/Filter.js';
 export { Image2D } from './core/Image2D.js';
 export { ImageToImageFilter } from './core/ImageToImageFilter.js';

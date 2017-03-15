@@ -5,15 +5,14 @@
 * Lab       MCIN - Montreal Neurological Institute
 */
 
-import { PixpipeObject } from './PixpipeObject.js';
-import { Pipeline } from './Pipeline.js';
+import { PipelineElement } from './PipelineElement.js';
 
 /**
 * Image2D class is one of the few base element of Pixpipejs.
 * It is always considered to be 4 channels (RGBA) and stored as a Float32Array
 * typed array.
 */
-class Image2D extends PixpipeObject{
+class Image2D extends PipelineElement{
 
 
   /**
@@ -218,17 +217,7 @@ class Image2D extends PixpipeObject{
   }
 
 
-  /**
-  * Associate a Pipeline instance to this image. Not supposed to be called manually
-  * because it is automatically called-back when adding a filter to a pipeline.
-  * @param {Pipeline} p - Pipeline object.
-  */
-  setPipeline( p ){
-    // only if not already set.
-    if(!this._pipeline){
-      this._pipeline = p;
-    }
-  }
+
 
   // TODO: warn the pipeline if metadata changed or pixel value changed
   // --> do NOT update the pipeline at every modif because if we change a lot

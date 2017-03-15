@@ -5,8 +5,8 @@
 * Lab       MCIN - Montreal Neurological Institute
 */
 
-import { PixpipeObject } from './PixpipeObject.js';
-import { Pipeline } from './Pipeline.js';
+import { PipelineElement } from './PipelineElement.js';
+//import { Pipeline } from './Pipeline.js';
 
 
 /**
@@ -17,7 +17,7 @@ import { Pipeline } from './Pipeline.js';
 * Every input and output can be arranged by category, so that internaly, a filter
 * can use and output diferent kind of data.
 */
-class Filter extends PixpipeObject {
+class Filter extends PipelineElement {
 
   constructor(){
     super();
@@ -37,7 +37,7 @@ class Filter extends PixpipeObject {
     };
 
     // pipeline associated with this filter. Not mandatory.
-    this._pipeline = null;
+    //this._pipeline = null;
   }
 
 
@@ -91,25 +91,15 @@ class Filter extends PixpipeObject {
 
   /**
   * [PRIVATE]
-  * should noly be used by the class that inherit Filter.
-  * This is just a wraper to not access the raw _output object.
-  * @param {Image2D} imageObject - instance of an image
+  * Internal way to setup an output for this filter. Acts like a singleton in a sens
+  * that if an output of a given category was already Initialized, it returns it.
+  * If no input was Initialized, it creates one. Then we are sure the pointer of the
+  * output remain the same and does not break the pipeline.
+  * @param {type} dataType - type of object, i.e. Image2D (this is NOT a String!)
   * @param {Number} category - in case we want to get data from different categories.
+  * @returns {Object} of given type.
   */
-  _setOutput( data, category=0 ){
-    // the category may not exist, we create it
-    if( !(category in this._output) ){
-      this._output[category] = null;
-    }
-
-    this._output[category] = data ;
-  }
-
-
-  /**
-  * Workaround to
-  */
-  _setOutput2( dataType, category=0 ){
+  _setOutput( dataType, category=0 ){
     var outputObject = null;
 
     // the category may not exist, we create it
@@ -120,8 +110,6 @@ class Filter extends PixpipeObject {
       // TODO: if output object exists but is not from dataType: error!
       outputObject = this._output[category];
     }
-
-
 
     return outputObject;
   }
@@ -220,6 +208,7 @@ class Filter extends PixpipeObject {
   * @param {Pipeline} p - Pipeline object.
   */
   setPipeline( p ){
+    /*
     // only if not already set.
     if(!this._pipeline){
       this._pipeline = p;
@@ -232,6 +221,14 @@ class Filter extends PixpipeObject {
       });
 
     }
+    */
+    super.setPipeline( p );
+
+    var inputCategories = Object.keys( this._inputValidator );
+    inputCategories.forEach( function(key){
+      widths.push( that._getInput( key ).setPipeline( p ) );
+    });
+
   }
 
 

@@ -56,9 +56,8 @@ class UrlImageReader extends Filter {
       try{
         var imageData = canvasContext.getImageData(0, 0, tmpCanvas.width, tmpCanvas.height);
         var dataArray = imageData.data;
-        var img2D = new Image2D();
+        var img2D = that._setOutput( Image2D );
         img2D.setData( dataArray, img.width, img.height);
-        that._setOutput( img2D );
 
         if("imageLoaded" in that._events){
           that._events.imageLoaded( that )
