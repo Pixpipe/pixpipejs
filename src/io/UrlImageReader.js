@@ -33,7 +33,7 @@ class UrlImageReader extends Filter {
   constructor( callback ){
     super();
 
-    this._onReadCallback = callback;
+    this._addOutput( Image2D );
   }
 
 
@@ -56,7 +56,8 @@ class UrlImageReader extends Filter {
       try{
         var imageData = canvasContext.getImageData(0, 0, tmpCanvas.width, tmpCanvas.height);
         var dataArray = imageData.data;
-        var img2D = that._setOutput( Image2D );
+
+        var img2D = that.getOutput();
         img2D.setData( dataArray, img.width, img.height);
 
         if("imageLoaded" in that._events){

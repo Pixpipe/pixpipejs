@@ -36,8 +36,8 @@ class Filter extends PipelineElement {
       //"0" : []
     };
 
-    // pipeline associated with this filter. Not mandatory.
-    //this._pipeline = null;
+    this._isOutputReady = false;
+
   }
 
 
@@ -56,11 +56,6 @@ class Filter extends PipelineElement {
   */
   addInput( inputObject, category=0){
 
-    if(category < 0 ){
-      console.warn("A input cannot be of category inferior to zero");
-      return;
-    }
-
     // the category may not exist, we create it
     if( !(category in this._input) ){
       this._input[category] = null;
@@ -72,6 +67,8 @@ class Filter extends PipelineElement {
     if( this._pipeline ){
       inputObject.setPipeline( this._pipeline );
     }
+
+    this._isOutputReady = false;
   }
 
 
@@ -99,19 +96,29 @@ class Filter extends PipelineElement {
   * @param {Number} category - in case we want to get data from different categories.
   * @returns {Object} of given type.
   */
-  _setOutput( dataType, category=0 ){
+  _addOutput( dataType, category=0 ){
     var outputObject = null;
 
     // the category may not exist, we create it
     if( !(category in this._output) ){
       var outputObject = new dataType();
       this._output[category] = outputObject;
+
+      //console.log(this._output);
+      console.log("filter " + this.constructor.name + " creates a new output.");
+      /*
+      if(this._pipeline){
+        outputObject.setPipeline( p );
+      }
+      */
+
     }else{
       // TODO: if output object exists but is not from dataType: error!
-      outputObject = this._output[category];
+      //outputObject = this._output[category];
+      console.warn("An output of category " + category + " was already defined.");
     }
 
-    return outputObject;
+    //return outputObject;
   }
 
 
@@ -129,6 +136,25 @@ class Filter extends PipelineElement {
     }
   }
 
+
+  /**
+  * Same as PixpipeObject.setMetadata but add the _isOutputReady to false.
+  */
+  setMetadata( key, value ){
+    super.setMetadata( key, value );
+    this._isOutputReady = false;
+  }
+
+
+
+  hasOutputReady(){
+    return this._isOutputReady;
+  }
+
+
+  setOutputAsReady(){
+    this._isOutputReady = true;
+  }
 
   /**
   * Validate the input data using a model defined in _inputValidator.
@@ -149,39 +175,6 @@ class Filter extends PipelineElement {
     }
 
     return valid;
-  }
-
-
-  /**
-  * Check if all input image have the same size.
-  * @return {Boolean} true is same size, false if not.
-  */
-  hasSameSizeInput(){
-    var that = this;
-    var inputCategories = Object.keys( this._inputValidator );
-    var sameSize = true;
-
-    var widths = [];
-    var heights = [];
-
-    inputCategories.forEach( function(key){
-      widths.push( that._getInput( key ).getWidth() );
-      heights.push( that._getInput( key ).getHeight() );
-    });
-
-    // if all input have the same size
-    if(widths.length){
-      widths.sort();
-      heights.sort();
-      sameSize = (widths[ 0 ] == widths[ widths.length -1 ] ) &&
-                 (heights[ 0 ] == heights[ heights.length -1 ] );
-
-      if( !sameSize ){
-        console.warn("Input image do not all have the same size. Filter not valid");
-      }
-    }
-
-    return sameSize;
   }
 
 
@@ -224,9 +217,15 @@ class Filter extends PipelineElement {
     */
     super.setPipeline( p );
 
-    var inputCategories = Object.keys( this._inputValidator );
+    var inputCategories = Object.keys( this._input );
     inputCategories.forEach( function(key){
-      widths.push( that._getInput( key ).setPipeline( p ) );
+      that._getInput( key ).setPipeline( p );
+    });
+
+
+    var outputCategories = Object.keys( this._output );
+    outputCategories.forEach( function(key){
+      hat.getOutput( key ).setPipeline( p );
     });
 
   }
@@ -259,6 +258,12 @@ class Filter extends PipelineElement {
   }
 
 
+  /**
+  * @return {Number} the number of inputs
+  */
+  getNumberOfInputs(){
+    return Object.keys( this._inputValidator ).length;
+  }
 
 } /* END class Filter */
 

@@ -15,7 +15,7 @@ class Pipeline extends PixpipeObject {
 
   constructor(){
     super();
-    this._type = Filter.TYPE();
+    this._type = Pipeline.TYPE();
 
     // a list of filters
     this._filters = [];
@@ -38,13 +38,14 @@ class Pipeline extends PixpipeObject {
   */
   addFilter( f ){
     this._filters.push( f );
+    console.log("Filter " +  f.constructor.name + " added to the pipeline.");
   }
 
 
   /**
   *
   */
-  update(forceAll = false){
+  update(forceAll = true){
 
     if( forceAll ){
       this._forceUpdateAll();
@@ -60,10 +61,22 @@ class Pipeline extends PixpipeObject {
   * Run an update on every single filter
   */
   _forceUpdateAll(){
+    console.log(this._filters);
     for(var f=0; f<this._filters.length; f++){
-      // TODO test if this particular filter must be updated
-      this._filters[p].update();
+      // if output of filter is not ready, then when have to run this filter
+      if( ! this._filters[f].hasOutputReady() ){
+        this._filters[f].update();
+        this._filters[f].setOutputAsReady();
+      }
     }
+  }
+
+
+  /**
+  * Update only starting from the step that was modified since the last update
+  */
+  _updateSmart(){
+
   }
 
 

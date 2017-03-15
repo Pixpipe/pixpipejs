@@ -25,6 +25,8 @@ class SpectralScaleImageFilter extends ImageToImageFilter {
     // both input are images.
     this._inputValidator[ 0 ] = Image2D.TYPE();
     this._inputValidator[ 1 ] = Image2D.TYPE();
+
+    this._addOutput( Image2D );
   }
 
 
@@ -60,13 +62,13 @@ class SpectralScaleImageFilter extends ImageToImageFilter {
     }
 
     // building the output
-    var img2D = this._setOutput( Image2D );
+    var img2D = this.getOutput();
     img2D.setData(
       data0,
       dataImg0.getWidth(),
       dataImg0.getHeight()
     );
-    
+
   }
 
 

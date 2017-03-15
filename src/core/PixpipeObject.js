@@ -94,6 +94,15 @@ class PixpipeObject {
   }
 
 
+  /**
+  * Check if the metadata with the given key exists.
+  * @param {String} key - the key to look up in the metadata collection
+  * @return {Boolean} true if the metadata with the given is present, false if not.
+  */
+  hasMetadata( key ){
+    return (key in this._metadata);
+  }
+
 
 }
 

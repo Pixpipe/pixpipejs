@@ -80,6 +80,7 @@ class CanvasImageWriter extends Filter{
       return;
 
     var image = this._input[0];
+    console.log(image);
     var ncppSrc = image.getComponentsPerPixel();
 
     // only Image2d with 1 or 4 bands can be displayed

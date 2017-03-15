@@ -1,0 +1,103 @@
+<html>
+<head>
+  <title>For each pixel gradient blend</title>
+
+  <script src="../dist/pixpipe.js"></script>
+
+  <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700,900" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+
+</head>
+<body>
+  <h1><span style="color: #ff91d7">Pixpipe</span>js</h1>
+  <p>
+  This does the following :
+  <ul>
+    <li>opening a distant image file with AJAX request, using <code>pixpipe.UrlImageReader</code></li>
+    <li>creating a <code>pixpipe.Image2D</code> with the same size as the first, but monoband.</li>
+    <li>run a <code>pixpipe.ForEachPixelImageFilter</code> ont the monoband image to create a radial gradient (values in [0, 1])</li>
+    <li>multiply the loaded image with the gradient image using a <code>pixpipe.SpectralScaleImageFilter</code></li>
+    <li>displaying the final output in a canvas using <code>pixpipe.CanvasImageWriter</code></li>
+  </ul>
+
+  </p>
+
+  <p>
+    <p>The original image:</p>
+    <img class="smaller" src="images/sd.jpg"></img>
+  </p>
+
+  <p>
+    <p>The transformed image, with a radial gradient:</p>
+    <div class="smaller" id="myDiv"></div>
+  </p>
+
+  <script>
+
+  // The filter to read image from URL
+  var url2ImgFilter = new pixpipe.UrlImageReader();
+  // the input of this reader is a simple string url. Can be local of distant, but if distant, the server must allow CORS.
+  url2ImgFilter.addInput( "images/sd.jpg" );
+
+  // the image is loaded...
+  // here, filter = url2ImgFilter
+  url2ImgFilter.on( "imageLoaded", function(filter){
+    var loadedImage = url2ImgFilter.getOutput();
+
+    // create an image, monoband, init to black (0)
+    var myGradientImage = new pixpipe.Image2D({width: loadedImage.getWidth(), height: loadedImage.getHeight(), color: [0, 0, 0, 0]})
+
+    var center = {
+      x: myGradientImage.getWidth() / 2,
+      y: myGradientImage.getHeight() / 2
+    }
+    var halfDiagonalDistance = Math.sqrt( Math.pow(myGradientImage.getWidth(), 2) + Math.pow(myGradientImage.getHeight(), 2)) / 2;
+
+    var forEachPixelFilter = new pixpipe.ForEachPixelImageFilter();
+
+    // add the input input
+    forEachPixelFilter.addInput( myGradientImage );
+
+    forEachPixelFilter.on( "pixel", function(position, color){
+      var distanceFromCenterManhattan = {
+        x: center.x - position.x,
+        y: center.y - position.y
+      }
+
+      var distanceFromCenterEuclidian = Math.sqrt( Math.pow(distanceFromCenterManhattan.x, 2) + Math.pow(distanceFromCenterManhattan.y, 2));
+      var ratio = distanceFromCenterEuclidian / halfDiagonalDistance;
+
+      // gradient image contains value in [0, 1]
+      return [ (1 - ratio), (1 - ratio) , (1 - ratio) , (1 - ratio)  ];
+    });
+
+    // run the filter to create a gradient image
+    forEachPixelFilter.update();
+
+    var blendingFilter = new pixpipe.ImageBlendExpressionFilter();
+    // input "0" : the image to be scale spectrally
+    blendingFilter.addInput( loadedImage, "A" );
+    // input "1" : the image with spectral factor
+    blendingFilter.addInput( forEachPixelFilter.getOutput(), "B" );
+
+    blendingFilter.setMetadata("expression", "A*B");
+
+    // apply the gradient on the loaded image
+    blendingFilter.update();
+
+    // create a filter to write the image into a canvas
+    var imageToCanvasFilter = new pixpipe.CanvasImageWriter( );
+    //imageToCanvasFilter.setMetadata("alpha", true);
+    imageToCanvasFilter.setMetadata( "parentDivID", "myDiv" );
+    imageToCanvasFilter.addInput( blendingFilter.getOutput() );
+    imageToCanvasFilter.update();
+  });
+
+  // Ask to fetch the image from URL
+  url2ImgFilter.update();
+
+
+  </script>
+
+</body>
+</html>
