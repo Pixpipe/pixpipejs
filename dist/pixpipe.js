@@ -11,6 +11,7 @@
 * Lab       MCIN - Montreal Neurological Institute
 */
 
+
 /**
 * PixpipeObject is the base object of all. It creates a uuid and has few
 * generic attributes like type, name and description. Not all these attributes
@@ -28,6 +29,8 @@ class PixpipeObject {
     // Metadata can be anything, a name, an ID, a description, a DOM element.
     // everything that is not an input but rather a setting
     this._metadata = {};
+
+    this._pipeline = null;
 
     this._type = PixpipeObject.TYPE();
   }
@@ -98,7 +101,6 @@ class PixpipeObject {
 
 
 
-
 }
 
 /*
@@ -108,12 +110,118 @@ class PixpipeObject {
 * Lab       MCIN - Montreal Neurological Institute
 */
 
+class PipelineElement extends PixpipeObject {
+
+  constructor(){
+    super();
+
+    this._pipeline = null;
+    this._type = PipelineElement.TYPE();
+  }
+
+
+  /**
+  * Acces it like a static attribute.
+  * Must be overloaded.
+  */
+  static TYPE(){
+    return "PIPELINE_ELEMENT";
+  }
+
+
+  /**
+  * Associate a Pipeline instance to this image. Not supposed to be called manually
+  * because it is automatically called-back when adding a filter to a pipeline.
+  * @param {Pipeline} p - Pipeline object.
+  */
+  setPipeline( p ){
+    // only if not already set.
+    if(!this._pipeline){
+      this._pipeline = p;
+    }
+  }
+
+
+} /* ENDS class PipelineElement */
+
 /*
 * Author   Jonathan Lurie - http://me.jonahanlurie.fr
 * License  MIT
 * Link      https://github.com/jonathanlurie/pixpipejs
 * Lab       MCIN - Montreal Neurological Institute
 */
+
+/**
+* A Pipeline instance handles a cascade of filter when an input dataset is updated.
+* Using a Pipeline object is not mandatory and can be replaced by calling  `update()`.
+*/
+class Pipeline extends PixpipeObject {
+
+  constructor(){
+    super();
+    this._type = Filter.TYPE();
+
+    // a list of filters
+    this._filters = [];
+
+    this._isUpdated = false;
+  }
+
+
+  /**
+  * Hardcode the datatype
+  */
+  static TYPE(){
+    return "PIPELINE";
+  }
+
+
+  /**
+  * Add a filter to the pipeline.
+  *
+  */
+  addFilter( f ){
+    this._filters.push( f );
+  }
+
+
+  /**
+  *
+  */
+  update(forceAll = false){
+
+    if( forceAll ){
+      this._forceUpdateAll();
+    }else{
+
+    }
+
+    this._isUpdated = true;
+  }
+
+
+  /**
+  * Run an update on every single filter
+  */
+  _forceUpdateAll(){
+    for(var f=0; f<this._filters.length; f++){
+      // TODO test if this particular filter must be updated
+      this._filters[p].update();
+    }
+  }
+
+
+} /* END of class Pipeline */
+
+/*
+* Author   Jonathan Lurie - http://me.jonahanlurie.fr
+* License  MIT
+* Link      https://github.com/jonathanlurie/pixpipejs
+* Lab       MCIN - Montreal Neurological Institute
+*/
+
+//import { Pipeline } from './Pipeline.js';
+
 
 /**
 * Filter is a base class and must be inherited to be used properly.
@@ -123,7 +231,7 @@ class PixpipeObject {
 * Every input and output can be arranged by category, so that internaly, a filter
 * can use and output diferent kind of data.
 */
-class Filter$1 extends PixpipeObject {
+class Filter$1 extends PipelineElement {
 
   constructor(){
     super();
@@ -143,7 +251,7 @@ class Filter$1 extends PixpipeObject {
     };
 
     // pipeline associated with this filter. Not mandatory.
-    this._pipeline = null;
+    //this._pipeline = null;
   }
 
 
@@ -197,37 +305,24 @@ class Filter$1 extends PixpipeObject {
 
   /**
   * [PRIVATE]
-  * should noly be used by the class that inherit Filter.
-  * This is just a wraper to not access the raw _output object.
-  * @param {Image2D} imageObject - instance of an image
+  * Internal way to setup an output for this filter. Acts like a singleton in a sens
+  * that if an output of a given category was already Initialized, it returns it.
+  * If no input was Initialized, it creates one. Then we are sure the pointer of the
+  * output remain the same and does not break the pipeline.
+  * @param {type} dataType - type of object, i.e. Image2D (this is NOT a String!)
   * @param {Number} category - in case we want to get data from different categories.
+  * @returns {Object} of given type.
   */
-  _setOutput( data, category=0 ){
-    // the category may not exist, we create it
-    if( !(category in this._output) ){
-      this._output[category] = null;
-    }
-
-    this._output[category] = data ;
-  }
-
-
-  /**
-  * Workaround to
-  */
-  _setOutput2( dataType, category=0 ){
+  _setOutput( dataType, category=0 ){
     var outputObject = null;
-
-    console.log(this._output);
 
     // the category may not exist, we create it
     if( !(category in this._output) ){
       var outputObject = new dataType();
       this._output[category] = outputObject;
-      console.log("hello");
     }else{
+      // TODO: if output object exists but is not from dataType: error!
       outputObject = this._output[category];
-      console.log("hello2");
     }
 
     return outputObject;
@@ -327,6 +422,7 @@ class Filter$1 extends PixpipeObject {
   * @param {Pipeline} p - Pipeline object.
   */
   setPipeline( p ){
+    /*
     // only if not already set.
     if(!this._pipeline){
       this._pipeline = p;
@@ -339,6 +435,14 @@ class Filter$1 extends PixpipeObject {
       });
 
     }
+    */
+    super.setPipeline( p );
+
+    var inputCategories = Object.keys( this._inputValidator );
+    inputCategories.forEach( function(key){
+      widths.push( that._getInput( key ).setPipeline( p ) );
+    });
+
   }
 
 
@@ -384,7 +488,7 @@ class Filter$1 extends PixpipeObject {
 * It is always considered to be 4 channels (RGBA) and stored as a Float32Array
 * typed array.
 */
-class Image2D extends PixpipeObject{
+class Image2D extends PipelineElement{
 
 
   /**
@@ -589,17 +693,7 @@ class Image2D extends PixpipeObject{
   }
 
 
-  /**
-  * Associate a Pipeline instance to this image. Not supposed to be called manually
-  * because it is automatically called-back when adding a filter to a pipeline.
-  * @param {Pipeline} p - Pipeline object.
-  */
-  setPipeline( p ){
-    // only if not already set.
-    if(!this._pipeline){
-      this._pipeline = p;
-    }
-  }
+
 
   // TODO: warn the pipeline if metadata changed or pixel value changed
   // --> do NOT update the pipeline at every modif because if we change a lot
@@ -882,9 +976,9 @@ class UrlImageReader extends Filter$1 {
       try{
         var imageData = canvasContext.getImageData(0, 0, tmpCanvas.width, tmpCanvas.height);
         var dataArray = imageData.data;
-        var img2D = new Image2D();
+        var img2D = that._setOutput( Image2D );
         img2D.setData( dataArray, img.width, img.height);
-        that._setOutput( img2D );
+
 
         if("imageLoaded" in that._events){
           that._events.imageLoaded( that );
@@ -1054,24 +1148,10 @@ class ForEachPixelImageFilter extends PixelWiseImageFilter {
 
     this._forEachPixelOfSuch(firstPixel, lastPixel, increment );
 
-    // TODO : find a way NOT to replace the ouput pointer so that the following
-    // filter can use the same object when refreshed by the pipeline
-    /*
-    // maybe using this kind of thing:
-    var anObjType = Image2D;
-    var im = new anObjType();
-    console.log(im);
-    */
+    // 1 - init the output
+    var outputImg = this._setOutput( Image2D );
 
-    /*
-    // building the output
-    var img2D = new Image2D();
-    img2D.setData( this._inputBuffer, inputImage2D.getWidth(), inputImage2D.getHeight(), inputImage2D.getComponentsPerPixel());
-    this._setOutput( img2D );
-    */
-
-    var outputImg = this._setOutput2( Image2D );
-    console.log(outputImg);
+    // 2 - tune the output
     outputImg.setData(
       this._inputBuffer,
       inputImage2D.getWidth(),
@@ -1142,10 +1222,13 @@ class SpectralScaleImageFilter extends ImageToImageFilter {
     }
 
     // building the output
-    var img2D = new Image2D();
-    img2D.setData( data0, dataImg0.getWidth(), dataImg0.getHeight());
-    this._setOutput( img2D );
-
+    var img2D = this._setOutput( Image2D );
+    img2D.setData(
+      data0,
+      dataImg0.getWidth(),
+      dataImg0.getHeight()
+    );
+    
   }
 
 
@@ -1158,6 +1241,8 @@ class SpectralScaleImageFilter extends ImageToImageFilter {
 // filters - processing of Image3D
 
 exports.PixpipeObject = PixpipeObject;
+exports.PipelineElement = PipelineElement;
+exports.Pipeline = Pipeline;
 exports.Filter = Filter$1;
 exports.Image2D = Image2D;
 exports.ImageToImageFilter = ImageToImageFilter;

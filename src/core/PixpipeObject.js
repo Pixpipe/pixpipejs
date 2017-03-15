@@ -5,6 +5,7 @@
 * Lab       MCIN - Montreal Neurological Institute
 */
 
+
 /**
 * PixpipeObject is the base object of all. It creates a uuid and has few
 * generic attributes like type, name and description. Not all these attributes
@@ -22,6 +23,8 @@ class PixpipeObject {
     // Metadata can be anything, a name, an ID, a description, a DOM element.
     // everything that is not an input but rather a setting
     this._metadata = {};
+
+    this._pipeline = null;
 
     this._type = PixpipeObject.TYPE();
   }
@@ -89,7 +92,6 @@ class PixpipeObject {
       return null;
     }
   }
-
 
 
 
