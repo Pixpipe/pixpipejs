@@ -15,8 +15,8 @@
   <ul>
     <li>opening a distant image file with AJAX request, using <code>pixpipe.UrlImageReader</code></li>
     <li>creating a <code>pixpipe.Image2D</code> with the same size as the first, but monoband.</li>
-    <li>run a <code>pixpipe.ForEachPixelImageFilter</code> ont the monoband image to create a radial gradient (values in [0, 1])</li>
-    <li>multiply the loaded image with the gradient image using a <code>pixpipe.SpectralScaleImageFilter</code></li>
+    <li>run a <code>pixpipe.ForEachPixelImageFilter</code> on the monoband image to create a radial gradient (values in [0, 1])</li>
+    <li>blend the loaded image and the gradient using a <code>pixpipe.ImageBlendExpressionFilter</code></li>
     <li>displaying the final output in a canvas using <code>pixpipe.CanvasImageWriter</code></li>
   </ul>
 
@@ -82,8 +82,11 @@
 
     blendingFilter.setMetadata("expression", "A*B");
 
+    var t0 = performance.now();
     // apply the gradient on the loaded image
     blendingFilter.update();
+    var t1 = performance.now();
+    console.log("Call to doSomething took " + (t1 - t0) + " milliseconds.");
 
     // create a filter to write the image into a canvas
     var imageToCanvasFilter = new pixpipe.CanvasImageWriter( );

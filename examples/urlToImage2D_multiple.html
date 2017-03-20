@@ -1,0 +1,66 @@
+<html>
+<head>
+  <title>URL to Image2D</title>
+
+  <script src="../dist/pixpipe.js"></script>
+
+  <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700,900" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+
+</head>
+<body>
+  <h1><span style="color: #ff91d7">Pixpipe</span>js</h1>
+  <p>
+  This does the following :
+  <ul>
+    <li>opening several distant image files with AJAX request, using a single <code>pixpipe.UrlImageReader</code> instance</li>
+    <li>displaying them in a canvas using <code>pixpipe.CanvasImageWriter</code></li>
+  </ul>
+  </p>
+
+  <div id="myDiv_0"></div>
+  <div id="myDiv_1"></div>
+
+  <script>
+
+
+  // The filter to read image from URL
+  var url2ImgFilter = new pixpipe.UrlImageReader();
+
+  // the input of this reader is a simple string url. Can be local of distant, but if distant, the server must allow CORS.
+  url2ImgFilter.addInput( "images/sd.jpg", 0 );
+  url2ImgFilter.addInput( "images/gaspe.jpg", 1 );
+
+  // the image is loaded...
+  // here, filter = url2ImgFilter
+  url2ImgFilter.on("imageLoaded", function( filter ){
+
+    // Image 1
+    // create a filter to write the image into a canvas
+    var imageToCanvasFilter = new pixpipe.CanvasImageWriter();
+    imageToCanvasFilter.setMetadata( "parentDivID", "myDiv_0" );
+    // use the output of the UrlImageReader as the input for CanvasImageWriter
+    imageToCanvasFilter.addInput( filter.getOutput( 0 ) );
+    // actually copy the data from the Image2D into the inner HTML5 canvas
+    imageToCanvasFilter.update();
+
+
+    // image 2
+    // create a filter to write the image into a canvas
+    var imageToCanvasFilter2 = new pixpipe.CanvasImageWriter();
+    imageToCanvasFilter2.setMetadata( "parentDivID", "myDiv_1" );
+    // use the output of the UrlImageReader as the input for CanvasImageWriter
+    imageToCanvasFilter2.addInput( filter.getOutput( 1 ) );
+    // actually copy the data from the Image2D into the inner HTML5 canvas
+    imageToCanvasFilter2.update();
+
+  })
+
+  // Ask to fetch the image from URL
+  url2ImgFilter.update();
+
+
+  </script>
+
+</body>
+</html>

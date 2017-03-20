@@ -16,8 +16,12 @@ import { Filter } from '../core/Filter.js';
 * Reading a file from URL takes an AJAX request, which is asynchronous. For this
 * reason, what happens next, once the Image2D is created must take place in the
 * callback defined by the event .on("imageLoaded", function(){ ... }).
-*
 * Usage: examples/urlToImage2D.html
+*
+* UrlImageReader can also load multiple images and call the "imageLoaded" event
+* only when all of them are loaded.
+* Usage: examples/urlToImage2D_multiple.html
+*
 *
 * @example
 * var url2ImgFilter = new pixpipe.UrlImageReader( ... );
@@ -32,15 +36,16 @@ class UrlImageReader extends Filter {
   */
   constructor( callback ){
     super();
+    this._loadedCounter = 0;
+    this._addOutput( Image2D, 0 );
 
-    this._addOutput( Image2D );
   }
 
 
   /**
   * Run the reading
   */
-  update(){
+  update_ORIG(){
     var that = this;
 
     var img = new Image();
@@ -57,18 +62,66 @@ class UrlImageReader extends Filter {
         var imageData = canvasContext.getImageData(0, 0, tmpCanvas.width, tmpCanvas.height);
         var dataArray = imageData.data;
 
-        var img2D = that.getOutput();
+        var img2D = that.getOutput( category );
         img2D.setData( dataArray, img.width, img.height);
 
-        if("imageLoaded" in that._events){
+        // call the loaded callback only when all images are loaded
+        if( "imageLoaded" in that._events){
           that._events.imageLoaded( that )
         }
+
       }catch(e){
         console.error(e);
       }
 
     };
 
+
+  }
+
+
+  update(){
+    var that = this;
+    var inputCategories = this.getInputCategories();
+
+    inputCategories.forEach( function(category){
+      that._addOutput( Image2D, category );
+      that._loadImage( category );
+    })
+  }
+
+
+  _loadImage( inputCategory ){
+    var that = this;
+
+    var img = new Image();
+    img.src = this._getInput(inputCategory);
+
+    img.onload = function() {
+      var tmpCanvas = document.createElement("canvas");
+      tmpCanvas.width = img.width;
+      tmpCanvas.height = img.height;
+      var canvasContext = tmpCanvas.getContext('2d');
+      canvasContext.drawImage(img, 0, 0);
+
+      try{
+        var imageData = canvasContext.getImageData(0, 0, tmpCanvas.width, tmpCanvas.height);
+        var dataArray = imageData.data;
+        var img2D = that.getOutput( inputCategory );
+        img2D.setData( dataArray, img.width, img.height);
+
+        that._loadedCounter ++;
+
+        // call the loaded callback only when all images are loaded
+        if(that._loadedCounter == that.getNumberOfInputs() && "imageLoaded" in that._events){
+          that._events.imageLoaded( that )
+        }
+
+      }catch(e){
+        console.error(e);
+      }
+
+    };
 
   }
 

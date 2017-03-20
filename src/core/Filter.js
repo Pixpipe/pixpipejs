@@ -115,7 +115,7 @@ class Filter extends PipelineElement {
     }else{
       // TODO: if output object exists but is not from dataType: error!
       //outputObject = this._output[category];
-      console.warn("An output of category " + category + " was already defined.");
+      console.warn("An output of category " + category + " was already defined. Nothing to be done.");
     }
 
     //return outputObject;
@@ -136,6 +136,21 @@ class Filter extends PipelineElement {
     }
   }
 
+
+  /**
+  * @return {Array} all the input categories as an array of string
+  */
+  getInputCategories(){
+    return Object.keys( this._input );
+  }
+
+
+  /**
+  * @return {Array} all the output categories as an array of string
+  */
+  getOutputCategories(){
+    return Object.keys( this._output );
+  }
 
   /**
   * Same as PixpipeObject.setMetadata but add the _isOutputReady to false.
@@ -262,8 +277,18 @@ class Filter extends PipelineElement {
   * @return {Number} the number of inputs
   */
   getNumberOfInputs(){
-    return Object.keys( this._inputValidator ).length;
+    return Object.keys( this._input ).length;
   }
+
+
+  /**
+  * @return {Number} the number of outputs
+  */
+  getNumberOfOutputs(){
+    return Object.keys( this._output ).length;
+  }
+
+
 
 } /* END class Filter */
 
