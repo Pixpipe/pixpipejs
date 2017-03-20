@@ -351,7 +351,7 @@ class Filter extends PipelineElement {
     }else{
       // TODO: if output object exists but is not from dataType: error!
       //outputObject = this._output[category];
-      console.warn("An output of category " + category + " was already defined.");
+      console.warn("An output of category " + category + " was already defined. Nothing to be done.");
     }
 
     //return outputObject;
@@ -372,6 +372,21 @@ class Filter extends PipelineElement {
     }
   }
 
+
+  /**
+  * @return {Array} all the input categories as an array of string
+  */
+  getInputCategories(){
+    return Object.keys( this._input );
+  }
+
+
+  /**
+  * @return {Array} all the output categories as an array of string
+  */
+  getOutputCategories(){
+    return Object.keys( this._output );
+  }
 
   /**
   * Same as PixpipeObject.setMetadata but add the _isOutputReady to false.
@@ -498,8 +513,18 @@ class Filter extends PipelineElement {
   * @return {Number} the number of inputs
   */
   getNumberOfInputs(){
-    return Object.keys( this._inputValidator ).length;
+    return Object.keys( this._input ).length;
   }
+
+
+  /**
+  * @return {Number} the number of outputs
+  */
+  getNumberOfOutputs(){
+    return Object.keys( this._output ).length;
+  }
+
+
 
 } /* END class Filter */
 
@@ -949,7 +974,6 @@ class CanvasImageWriter extends Filter{
       return;
 
     var image = this._input[0];
-    console.log(image);
     var ncppSrc = image.getComponentsPerPixel();
 
     // only Image2d with 1 or 4 bands can be displayed
@@ -1023,8 +1047,12 @@ class CanvasImageWriter extends Filter{
 * Reading a file from URL takes an AJAX request, which is asynchronous. For this
 * reason, what happens next, once the Image2D is created must take place in the
 * callback defined by the event .on("imageLoaded", function(){ ... }).
-*
 * Usage: examples/urlToImage2D.html
+*
+* UrlImageReader can also load multiple images and call the "imageLoaded" event
+* only when all of them are loaded.
+* Usage: examples/urlToImage2D_multiple.html
+*
 *
 * @example
 * var url2ImgFilter = new pixpipe.UrlImageReader( ... );
@@ -1039,15 +1067,16 @@ class UrlImageReader extends Filter {
   */
   constructor( callback ){
     super();
+    this._loadedCounter = 0;
+    this._addOutput( Image2D, 0 );
 
-    this._addOutput( Image2D );
   }
 
 
   /**
   * Run the reading
   */
-  update(){
+  update_ORIG(){
     var that = this;
 
     var img = new Image();
@@ -1064,18 +1093,66 @@ class UrlImageReader extends Filter {
         var imageData = canvasContext.getImageData(0, 0, tmpCanvas.width, tmpCanvas.height);
         var dataArray = imageData.data;
 
-        var img2D = that.getOutput();
+        var img2D = that.getOutput( category );
         img2D.setData( dataArray, img.width, img.height);
 
-        if("imageLoaded" in that._events){
+        // call the loaded callback only when all images are loaded
+        if( "imageLoaded" in that._events){
           that._events.imageLoaded( that );
         }
+
       }catch(e){
         console.error(e);
       }
 
     };
 
+
+  }
+
+
+  update(){
+    var that = this;
+    var inputCategories = this.getInputCategories();
+
+    inputCategories.forEach( function(category){
+      that._addOutput( Image2D, category );
+      that._loadImage( category );
+    });
+  }
+
+
+  _loadImage( inputCategory ){
+    var that = this;
+
+    var img = new Image();
+    img.src = this._getInput(inputCategory);
+
+    img.onload = function() {
+      var tmpCanvas = document.createElement("canvas");
+      tmpCanvas.width = img.width;
+      tmpCanvas.height = img.height;
+      var canvasContext = tmpCanvas.getContext('2d');
+      canvasContext.drawImage(img, 0, 0);
+
+      try{
+        var imageData = canvasContext.getImageData(0, 0, tmpCanvas.width, tmpCanvas.height);
+        var dataArray = imageData.data;
+        var img2D = that.getOutput( inputCategory );
+        img2D.setData( dataArray, img.width, img.height);
+
+        that._loadedCounter ++;
+
+        // call the loaded callback only when all images are loaded
+        if(that._loadedCounter == that.getNumberOfInputs() && "imageLoaded" in that._events){
+          that._events.imageLoaded( that );
+        }
+
+      }catch(e){
+        console.error(e);
+      }
+
+    };
 
   }
 
@@ -2676,14 +2753,6 @@ class ImageBlendExpressionFilter extends ImageToImageFilter {
   constructor(){
     super();
     this._addOutput( Image2D );
-
-    var parser = new bundle.Parser();
-    var expr = parser.parse('2 * x + 1');
-    console.log(expr.evaluate({ x: 3 })); // 7
-
-    // or
-    //Parser.evaluate('6 * x', { x: 7 }) // 42
-
   }
 
 
@@ -2705,7 +2774,7 @@ class ImageBlendExpressionFilter extends ImageToImageFilter {
       return;
     }
 
-    var inputCategories = Object.keys( this._input );
+    var inputCategories = this.getInputCategories();
     var firstInput = this._getInput( inputCategories[0] );
     var outputBuffer = firstInput.getDataCopy();
     var parser = new bundle.Parser();
@@ -2730,8 +2799,8 @@ class ImageBlendExpressionFilter extends ImageToImageFilter {
       firstInput.getHeight()
     );
 
-
   }
+
 
 
 

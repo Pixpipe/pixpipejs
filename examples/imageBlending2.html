@@ -1,0 +1,80 @@
+<html>
+<head>
+  <title>Mask and blending</title>
+
+  <script src="../dist/pixpipe.js"></script>
+
+  <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700,900" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+
+</head>
+<body>
+  <h1><span style="color: #ff91d7">Pixpipe</span>js</h1>
+  <p>
+  This does the following :
+  <ul>
+    <li>opening a distant image (1) file with AJAX request, using <code>pixpipe.UrlImageReader</code></li>
+    <li>opening another distant image (2) file with AJAX request, using <code>pixpipe.UrlImageReader</code> </li>
+    <li>(image 1 and image 2 have the same size and same number of band) </li>
+    <li>use image 2 as a mask and blend both using a <code>pixpipe.ImageBlendExpressionFilter</code> </li>
+    <li>displaying the final output in a canvas using <code>pixpipe.CanvasImageWriter</code></li>
+  </ul>
+
+  </p>
+
+  <p>
+    <p>The original image and the mask:</p>
+    <img class="smaller" src="images/ny1.jpg"></img>
+    <img class="smaller" src="images/ny2.jpg"></img>
+  </p>
+
+  <p>
+    <p>The blended image, only the lighter parts of the second images are visible:</p>
+    <div class="smaller" id="myDiv"></div>
+  </p>
+
+  <script>
+
+  // The filter to read image from URL
+  var url2ImgFilter = new pixpipe.UrlImageReader();
+  // the input of this reader is a simple string url. Can be local of distant, but if distant, the server must allow CORS.
+  url2ImgFilter.addInput( "images/ny1.jpg", 0 );
+  url2ImgFilter.addInput( "images/ny2.jpg", 1 );
+
+  // the image is loaded...
+  // here, filter = url2ImgFilter
+  url2ImgFilter.on( "imageLoaded", function(filter){
+    var loadedImage = url2ImgFilter.getOutput();
+
+
+    var blendingFilter = new pixpipe.ImageBlendExpressionFilter();
+    // input "0" : the image to be scale spectrally
+    blendingFilter.addInput( url2ImgFilter.getOutput(0), "A" );
+    // input "1" : the image with spectral factor
+    blendingFilter.addInput( url2ImgFilter.getOutput(1), "B" );
+
+    // only shows where the mask is white
+    blendingFilter.setMetadata("expression", "B > A ? B : A");
+
+    var t0 = performance.now();
+    // apply the gradient on the loaded image
+    blendingFilter.update();
+    var t1 = performance.now();
+    console.log("Performing blending took " + (t1 - t0) + " milliseconds.");
+
+    // create a filter to write the image into a canvas
+    var imageToCanvasFilter = new pixpipe.CanvasImageWriter( );
+    //imageToCanvasFilter.setMetadata("alpha", true);
+    imageToCanvasFilter.setMetadata( "parentDivID", "myDiv" );
+    imageToCanvasFilter.addInput( blendingFilter.getOutput() );
+    imageToCanvasFilter.update();
+  });
+
+  // Ask to fetch the image from URL
+  url2ImgFilter.update();
+
+
+  </script>
+
+</body>
+</html>

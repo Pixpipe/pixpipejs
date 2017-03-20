@@ -32,6 +32,7 @@
     "expr-eval": "^1.0.0"
   },
   "devDependencies": {
+    "documentation": "^3.0.4",
     "gulp": "^3.9.1",
     "gulp-rollup": "^2.11.0",
     "gulp-util": "^3.0.8",

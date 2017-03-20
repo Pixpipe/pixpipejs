@@ -19,20 +19,21 @@ import { ImageToImageFilter } from '../core/ImageToImageFilter.js';
 * should be set using `setMetadata( "expresssion", "A * B" )` , where `A` and `B`
 * are the categories set in input.
 *
+* Using a blending expression is the aesiest way to test a blending but it is a
+* pretty slow process since the expresion has to be evaluated for every process.
+* To speed-up your process, it is recomended to develop a new filter that does
+* exactly (and only) the blending method you want.
+*
+* usage: examples/imageBlending.html
+* usage: examples/imageBlending2.html
+* usage: examples/forEachPixelGradientBlend.html
+*
 */
 class ImageBlendExpressionFilter extends ImageToImageFilter {
 
   constructor(){
     super();
     this._addOutput( Image2D );
-
-    var parser = new Parser.Parser();
-    var expr = parser.parse('2 * x + 1');
-    console.log(expr.evaluate({ x: 3 })); // 7
-
-    // or
-    //Parser.evaluate('6 * x', { x: 7 }) // 42
-
   }
 
 
@@ -54,7 +55,7 @@ class ImageBlendExpressionFilter extends ImageToImageFilter {
       return;
     }
 
-    var inputCategories = Object.keys( this._input );
+    var inputCategories = this.getInputCategories();
     var firstInput = this._getInput( inputCategories[0] );
     var outputBuffer = firstInput.getDataCopy();
     var parser = new Parser.Parser();
@@ -79,8 +80,8 @@ class ImageBlendExpressionFilter extends ImageToImageFilter {
       firstInput.getHeight()
     );
 
-
   }
+
 
 
 
