@@ -38,7 +38,7 @@ class ImageBlendExpressionFilter extends ImageToImageFilter {
 
 
 
-  update(){
+  _run(){
 
     // the metadata was not set
     if(!this.hasMetadata("expression")){

@@ -46,7 +46,7 @@ class ForEachPixelImageFilter extends PixelWiseImageFilter {
   /**
   * Run the filter
   */
-  update(){
+  _run(){
     if( ! this.hasValidInput())
       return;
 

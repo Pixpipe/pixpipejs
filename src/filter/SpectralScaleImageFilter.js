@@ -33,7 +33,7 @@ class SpectralScaleImageFilter extends ImageToImageFilter {
   /**
   * Run the filter
   */
-  update(){
+  _run(){
     // filter must have valid input of the same size
     if( !this.hasSameSizeInput() || !this.hasValidInput()){
       return;
