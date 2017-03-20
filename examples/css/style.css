@@ -1,0 +1,21 @@
+body {
+  font-family: 'Roboto', sans-serif;
+  background-color: #3a3a3a;
+  color: #e6e6e6;
+  font-size: large;
+  margin: 10px 20vw 0 20vw;
+}
+
+canvas,
+img {
+  margin: 10px 0 10px 0;
+  width: 60vw;
+  height: auto;
+}
+
+code {
+  background-color: #676767;
+  padding: 0px 4px 1px 4px;
+  border-radius: 3px;
+  font-family: monospace;
+}

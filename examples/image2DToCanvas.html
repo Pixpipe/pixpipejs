@@ -3,15 +3,29 @@
   <title>Image2D To Canvas</title>
 
   <script src="../dist/pixpipe.js"></script>
+
+  <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700,900" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+
 </head>
 <body>
+  <h1><span style="color: #ff91d7">Pixpipe</span>js</h1>
+  <p>
+  This does the following :
+  <ul>
+    <li>creating a <code>pixpipe.Image2D</code> with a given size and color</li>
+    <li>displaying it in a canvas using <code>pixpipe.CanvasImageWriter</code></li>
+  </ul>
+
+  </p>
 
   <div id="myDiv"></div>
 
   <script>
 
   // create an image
-  var myImage = new pixpipe.Image2D({width: 100, height: 250, color: [255, 128, 64, 255]})
+  var myImage = new pixpipe.Image2D({width: 100, height: 50, color: [255, 128, 64, 255]})
+  console.log(myImage);
 
   // create a filter to write the image into a canvas
   var imageToCanvasFilter = new pixpipe.CanvasImageWriter( );

@@ -35,7 +35,7 @@ class FileImageReader extends Filter {
     super();
 
     this._allowedTypes = /image.*/;
-    this._onReadCallback = callback;
+    this._addOutput( Image2D, 0 );
   }
 
 
@@ -59,7 +59,7 @@ class FileImageReader extends Filter {
   /**
   * Run the reading
   */
-  update(){
+  _run(){
 
     if(! this.hasValidInput)
       return
@@ -80,10 +80,8 @@ class FileImageReader extends Filter {
       var imageData = canvasContext.getImageData(0, 0, tmpCanvas.width, tmpCanvas.height);
       var dataArray = imageData.data;
 
-      var img2D = new Image2D();
+      var img2D = that.getOutput();
       img2D.setData( dataArray, img.width, img.height);
-      console.log(img2D);
-      that._setOutput( img2D );
 
       if("imageLoaded" in that._events){
         that._events.imageLoaded( that )
