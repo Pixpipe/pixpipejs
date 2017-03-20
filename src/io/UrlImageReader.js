@@ -16,8 +16,12 @@ import { Filter } from '../core/Filter.js';
 * Reading a file from URL takes an AJAX request, which is asynchronous. For this
 * reason, what happens next, once the Image2D is created must take place in the
 * callback defined by the event .on("imageLoaded", function(){ ... }).
-*
 * Usage: examples/urlToImage2D.html
+*
+* UrlImageReader can also load multiple images and call the "imageLoaded" event
+* only when all of them are loaded.
+* Usage: examples/urlToImage2D_multiple.html
+*
 *
 * @example
 * var url2ImgFilter = new pixpipe.UrlImageReader( ... );
@@ -32,19 +36,34 @@ class UrlImageReader extends Filter {
   */
   constructor( callback ){
     super();
-
-    this._onReadCallback = callback;
+    this._loadedCounter = 0;
+    this._addOutput( Image2D, 0 );
   }
 
 
   /**
-  * Run the reading
+  * Overload the function
   */
-  update(){
+  _run(){
+    var that = this;
+    var inputCategories = this.getInputCategories();
+
+    inputCategories.forEach( function(category){
+      that._addOutput( Image2D, category );
+      that._loadImage( category );
+    })
+  }
+
+
+  /**
+  * [PRIVATE]
+  * Loading task for a single category (aka file, in this case)
+  */
+  _loadImage( inputCategory ){
     var that = this;
 
     var img = new Image();
-    img.src = this._getInput();
+    img.src = this._getInput(inputCategory);
 
     img.onload = function() {
       var tmpCanvas = document.createElement("canvas");
@@ -56,19 +75,21 @@ class UrlImageReader extends Filter {
       try{
         var imageData = canvasContext.getImageData(0, 0, tmpCanvas.width, tmpCanvas.height);
         var dataArray = imageData.data;
-        var img2D = new Image2D();
+        var img2D = that.getOutput( inputCategory );
         img2D.setData( dataArray, img.width, img.height);
-        that._setOutput( img2D );
 
-        if("imageLoaded" in that._events){
+        that._loadedCounter ++;
+
+        // call the loaded callback only when all images are loaded
+        if(that._loadedCounter == that.getNumberOfInputs() && "imageLoaded" in that._events){
           that._events.imageLoaded( that )
         }
+
       }catch(e){
         console.error(e);
       }
 
     };
-
 
   }
 

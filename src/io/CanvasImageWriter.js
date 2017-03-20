@@ -12,6 +12,7 @@ import { Filter } from '../core/Filter.js';
 * CanvasImageWriter is a filter to output an instance of Image into a
 * HTML5 canvas element.
 * The metadata "parentDivID" has to be set using `setMetadata("parentDivID", "whatever")`
+* The metadata "alpha", if true, enable transparency. Default: false.
 * usage: examples/imageToCanvasFilter.html
 *
 * @example
@@ -29,14 +30,14 @@ class CanvasImageWriter extends Filter{
   * @param {String} parentDivID - dom id of the future canvas' parent.
   * (most likely the ID of a div)
   */
-  constructor( parentDivID){
+  constructor(){
     // call Filter constructor
     super();
 
     this._inputValidator[ 0 ] = Image2D.TYPE();
+    this.setMetadata("alpha", false);
 
     // so that we can flush the content
-    this._parentId = parentDivID;
     this._canvas = null;
     this._ctx = null;
   }
@@ -72,11 +73,20 @@ class CanvasImageWriter extends Filter{
   /**
   * Overwrite the generic (empty) method.
   */
-  update(){
+  _run(){
 
     // abort if invalid input
     if(!this.hasValidInput() )
       return;
+
+    var image = this._input[0];
+    var ncppSrc = image.getComponentsPerPixel();
+
+    // only Image2d with 1 or 4 bands can be displayed
+    if( ncppSrc != 1 && ncppSrc != 4){
+      console.warn("Cannot write Image in canvas if contains other than 1 or 4 bands.");
+      return;
+    }
 
     if(!this.getMetadata("parentDivID")){
       console.error("The parent DIV ID to place the canvas element was not specified. Unable to display anything.");
@@ -85,8 +95,7 @@ class CanvasImageWriter extends Filter{
 
     // build a new canvas
     this._init();
-
-    var image = this._input[0];
+    var useAlphaBand = this.getMetadata("alpha");
 
     // resizing the canvas
     this._canvas.width = image.getWidth();
@@ -98,13 +107,27 @@ class CanvasImageWriter extends Filter{
     // getting Image object data
     var originalImageDataArray = image.getData();
 
-    // copying the data into the canvas array (clamped uint8)
-    originalImageDataArray.forEach( function(value, index){
-      canvasImageDataArray[index] = value;
-    });
+    if(ncppSrc == 4){
+      // copying the data into the canvas array (clamped uint8)
+      originalImageDataArray.forEach( function(value, index){
+        if(!useAlphaBand && index%4 == 3){
+          canvasImageDataArray[index] = 255;
+        }else{
+          canvasImageDataArray[index] = value;
+        }
+      });
+
+    }else if(ncppSrc == 1){
+      originalImageDataArray.forEach( function(value, index){
+        canvasImageDataArray[index*4] = value;
+        canvasImageDataArray[index*4 + 1] = value;
+        canvasImageDataArray[index*4 + 2] = value;
+        canvasImageDataArray[index*4 + 3] = 255;
+      });
+
+    }
+
     this._ctx.putImageData(canvasImageData, 0, 0);
-
-
 
   }
 

@@ -5,14 +5,14 @@
 * Lab       MCIN - Montreal Neurological Institute
 */
 
-import { PixpipeObject } from './PixpipeObject.js';
+import { PipelineElement } from './PipelineElement.js';
 
 /**
 * Image2D class is one of the few base element of Pixpipejs.
 * It is always considered to be 4 channels (RGBA) and stored as a Float32Array
 * typed array.
 */
-class Image2D extends PixpipeObject{
+class Image2D extends PipelineElement{
 
 
   /**
@@ -27,7 +27,10 @@ class Image2D extends PixpipeObject{
     this._data = null;
     this._width = -1;
     this._height = -1;
-    this._componentsPerPixel = 4; // RGBA
+    this._componentsPerPixel = 4; // RGBA, by default
+
+    // pipeline associated with this image. Not mandatory.
+    this._pipeline = null;
 
     // allocate the array if size is specified
     if(options && "width" in options && "height" in options){
@@ -35,24 +38,25 @@ class Image2D extends PixpipeObject{
       if( options.width > 0 && options.height > 0){
         this._width = options.width;
         this._height = options.height;
+
+        if("color" in options){
+          this._componentsPerPixel = options.color.length;
+        }
+
         this._data = new Float32Array( this._width * this._height * this._componentsPerPixel );
 
-        // init the color if specified
-        if("color" in options && options.color.length == 4 ){
+        // init with the given color
+        if("color" in options){
           var color = options.color;
-
-          for(var i=0; i<this._data.length; i+=4){
-            this._data[i] = color[0];
-            this._data[i + 1] = color[1];
-            this._data[i + 2] = color[2];
-            this._data[i + 3] = color[3];
+          for(var i=0; i<this._data.length; i++){
+            this._data[i] = color[i%this._componentsPerPixel];
           }
-
-          console.log(this._data);
+        }else{
+          this._data.fill(0);
         }
+
       }
     }
-
 
   }
 
@@ -80,13 +84,19 @@ class Image2D extends PixpipeObject{
   * @param {Float32Array} array - 1D array of raw data stored as RGBARGBA...
   * @param {Number} width - width of the Image2D
   * @param {Number} height - height of the Image2D
+  * @param {Number} ncpp - number of components per pixel (default: 4)
+}
   */
-  setData( array, width, height ){
-    // do not alloz to set a new internal array
+  setData( array, width, height, ncpp=4 ){
+    /*
+    // do not allow to set a new internal array
     if( this._data ){
       console.warn("Data can be set to an Image2D object only once. Cannot init the Image2D.");
       return;
     }
+    */
+
+    this._componentsPerPixel = ncpp;
 
     if( array.length != width*height*this._componentsPerPixel){
       console.warn("The array size does not match the width and height. Cannot init the Image2D.");
@@ -96,7 +106,47 @@ class Image2D extends PixpipeObject{
     this._data = new Float32Array( array );
     this._width = width;
     this._height = height;
+  }
 
+
+  /**
+  * Modify the color of a given pixel.
+  * @param {Object} position - 2D position in form {x, y}
+  * @param {Array} color - color, must have the same numb of components per pix than the image
+  */
+  setPixel( position, color ){
+    if("x" in position && position.x >=0 && position.x < this._width &&
+       "y" in position && position.y >=0 && position.y < this._height &&
+       color.length == this._componentsPerPixel)
+    {
+
+      var pos1D = this.get1dIndexFrom2dPosition( position );
+
+      for(var i=0; i<this._componentsPerPixel; i++){
+        this._data[ pos1D + i] = color[i];
+      }
+
+    }else{
+      console.error("x and y position have to be within the image dimensions and color size must be the same as the original image.");
+    }
+  }
+
+
+  /**
+  * @return {Array} the color of the given pixel.
+  */
+  getPixel( position ){
+    if("x" in position && position.x >=0 && position.x < this._width &&
+       "y" in position && position.y >=0 && position.y < this._height)
+    {
+      var pos1D = this.get1dIndexFrom2dPosition( position );
+      var color = this._data.slice(pos1D, pos1D + this._componentsPerPixel);
+      return color;
+
+    }else{
+      console.warn("The requested position is outside the image.");
+      return null;
+    }
   }
 
 
@@ -144,8 +194,8 @@ class Image2D extends PixpipeObject{
 
   /**
   * Compute the (x, y) position from a position in a 1D array.
-  * @param {Number} i - the index of a pixel. This has nothing to do with
-  * the number of components per pixel.
+  * This has nothing to do with the number of components per pixel.
+  * @param {Number} i - the index of a pixel.
   * @return {Object} coordinate as {x, y}
   */
   get2dPositionFrom1dIndex( i ){
@@ -154,6 +204,25 @@ class Image2D extends PixpipeObject{
       y: Math.floor(i / this._width)
     }
   }
+
+
+  /**
+  * Compute the 1D index within the data buffer from a 2D position {x, y}.
+  * This has nothing to do with the number of components per pixel.
+  * @param {Object} position - 2D coord like {x, y}
+  * @return {Number} the 1D position within the buffer
+  */
+  get1dIndexFrom2dPosition( position ){
+    return (position.x + position.y*this._width);
+  }
+
+
+
+
+  // TODO: warn the pipeline if metadata changed or pixel value changed
+  // --> do NOT update the pipeline at every modif because if we change a lot
+  //     of pixel values... (wait to call update() on the pipeline.)
+
 
 } /* END of class Image2D */
 
