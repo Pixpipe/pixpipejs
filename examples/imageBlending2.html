@@ -56,11 +56,8 @@
     // only shows where the mask is white
     blendingFilter.setMetadata("expression", "B > A ? B : A");
 
-    var t0 = performance.now();
     // apply the gradient on the loaded image
     blendingFilter.update();
-    var t1 = performance.now();
-    console.log("Performing blending took " + (t1 - t0) + " milliseconds.");
 
     // create a filter to write the image into a canvas
     var imageToCanvasFilter = new pixpipe.CanvasImageWriter( );

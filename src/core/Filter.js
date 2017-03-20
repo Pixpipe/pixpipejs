@@ -36,6 +36,10 @@ class Filter extends PipelineElement {
       //"0" : []
     };
 
+    // to leasure time. The 2 default values are added by _beforeRun and _afterRun
+    // under the name of "begin" and "end"
+    this._timer = {};
+
     this._isOutputReady = false;
 
   }
@@ -198,7 +202,41 @@ class Filter extends PipelineElement {
   * Launch the process.
   */
   update(){
+    this.addTimeRecord("begin");
+    this._run();
+    this.addTimeRecord("end");
+    console.log("Running time for filter " + this.constructor.name + ": " + this.getTime("begin", "end") + "ms.");
+  }
+
+
+  /**
+  *
+  */
+  _run(){
     console.error("The update() method has not been written, this filter is not valid.");
+  }
+
+
+  /**
+  * Set a time measurement (from an arbitrary starting point)
+  * @param {String} recordName - name of the record
+  */
+  addTimeRecord( recordName ){
+    this._timer[ recordName ] = performance.now();
+  }
+
+
+  /**
+  * @return {Number} the elapsed time in ms between fromRecord and toRecord.
+  * Return -1 if one or both time record
+  */
+  getTime(fromRecord, toRecord){
+    if( fromRecord in this._timer && toRecord in this._timer ){
+      return Math.abs(this._timer[toRecord] - this._timer[fromRecord])
+    }else{
+      console.warn("The two given record name must exist in the time record table.");
+      return -1;
+    }
   }
 
 

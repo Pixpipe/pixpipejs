@@ -37,6 +37,7 @@
     "gulp-rollup": "^2.11.0",
     "gulp-util": "^3.0.8",
     "rollup": "^0.41.4",
+    "rollup-plugin-bundle-worker": "^0.1.0",
     "rollup-plugin-commonjs": "^8.0.2",
     "rollup-plugin-node-resolve": "^2.0.0"
   }

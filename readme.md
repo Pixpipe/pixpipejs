@@ -24,5 +24,8 @@ MIT - See [LICENSE file](LICENSE).
 
 
 # Todo
-## doc for dev
-- how to make _inputValidator (Filter) and when to call validateInput
+- Doc and tutorials for developers
+- Integrate wokers with Rollup
+- FFT
+- Image3D
+- Readers for Minc and NIfTI

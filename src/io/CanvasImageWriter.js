@@ -73,7 +73,7 @@ class CanvasImageWriter extends Filter{
   /**
   * Overwrite the generic (empty) method.
   */
-  update(){
+  _run(){
 
     // abort if invalid input
     if(!this.hasValidInput() )
@@ -127,13 +127,7 @@ class CanvasImageWriter extends Filter{
 
     }
 
-
-
-
-
     this._ctx.putImageData(canvasImageData, 0, 0);
-
-
 
   }
 

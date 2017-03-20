@@ -272,6 +272,10 @@ class Filter extends PipelineElement {
       //"0" : []
     };
 
+    // to leasure time. The 2 default values are added by _beforeRun and _afterRun
+    // under the name of "begin" and "end"
+    this._timer = {};
+
     this._isOutputReady = false;
 
   }
@@ -434,7 +438,41 @@ class Filter extends PipelineElement {
   * Launch the process.
   */
   update(){
+    this.addTimeRecord("begin");
+    this._run();
+    this.addTimeRecord("end");
+    console.log("Running time for filter " + this.constructor.name + ": " + this.getTime("begin", "end") + "ms.");
+  }
+
+
+  /**
+  *
+  */
+  _run(){
     console.error("The update() method has not been written, this filter is not valid.");
+  }
+
+
+  /**
+  * Set a time measurement (from an arbitrary starting point)
+  * @param {String} recordName - name of the record
+  */
+  addTimeRecord( recordName ){
+    this._timer[ recordName ] = performance.now();
+  }
+
+
+  /**
+  * @return {Number} the elapsed time in ms between fromRecord and toRecord.
+  * Return -1 if one or both time record
+  */
+  getTime(fromRecord, toRecord){
+    if( fromRecord in this._timer && toRecord in this._timer ){
+      return Math.abs(this._timer[toRecord] - this._timer[fromRecord])
+    }else{
+      console.warn("The two given record name must exist in the time record table.");
+      return -1;
+    }
   }
 
 
@@ -967,7 +1005,7 @@ class CanvasImageWriter extends Filter{
   /**
   * Overwrite the generic (empty) method.
   */
-  update(){
+  _run(){
 
     // abort if invalid input
     if(!this.hasValidInput() )
@@ -1021,13 +1059,7 @@ class CanvasImageWriter extends Filter{
 
     }
 
-
-
-
-
     this._ctx.putImageData(canvasImageData, 0, 0);
-
-
 
   }
 
@@ -1069,49 +1101,13 @@ class UrlImageReader extends Filter {
     super();
     this._loadedCounter = 0;
     this._addOutput( Image2D, 0 );
-
   }
 
 
   /**
-  * Run the reading
+  * Overload the function
   */
-  update_ORIG(){
-    var that = this;
-
-    var img = new Image();
-    img.src = this._getInput();
-
-    img.onload = function() {
-      var tmpCanvas = document.createElement("canvas");
-      tmpCanvas.width = img.width;
-      tmpCanvas.height = img.height;
-      var canvasContext = tmpCanvas.getContext('2d');
-      canvasContext.drawImage(img, 0, 0);
-
-      try{
-        var imageData = canvasContext.getImageData(0, 0, tmpCanvas.width, tmpCanvas.height);
-        var dataArray = imageData.data;
-
-        var img2D = that.getOutput( category );
-        img2D.setData( dataArray, img.width, img.height);
-
-        // call the loaded callback only when all images are loaded
-        if( "imageLoaded" in that._events){
-          that._events.imageLoaded( that );
-        }
-
-      }catch(e){
-        console.error(e);
-      }
-
-    };
-
-
-  }
-
-
-  update(){
+  _run(){
     var that = this;
     var inputCategories = this.getInputCategories();
 
@@ -1122,6 +1118,10 @@ class UrlImageReader extends Filter {
   }
 
 
+  /**
+  * [PRIVATE]
+  * Loading task for a single category (aka file, in this case)
+  */
   _loadImage( inputCategory ){
     var that = this;
 
@@ -1193,7 +1193,7 @@ class FileImageReader extends Filter {
     super();
 
     this._allowedTypes = /image.*/;
-    this._onReadCallback = callback;
+    this._addOutput( Image2D, 0 );
   }
 
 
@@ -1217,7 +1217,7 @@ class FileImageReader extends Filter {
   /**
   * Run the reading
   */
-  update(){
+  _run(){
 
     if(! this.hasValidInput)
       return
@@ -1238,10 +1238,8 @@ class FileImageReader extends Filter {
       var imageData = canvasContext.getImageData(0, 0, tmpCanvas.width, tmpCanvas.height);
       var dataArray = imageData.data;
 
-      var img2D = new Image2D();
+      var img2D = that.getOutput();
       img2D.setData( dataArray, img.width, img.height);
-      console.log(img2D);
-      that._setOutput( img2D );
 
       if("imageLoaded" in that._events){
         that._events.imageLoaded( that );
@@ -1300,7 +1298,7 @@ class ForEachPixelImageFilter extends PixelWiseImageFilter {
   /**
   * Run the filter
   */
-  update(){
+  _run(){
     if( ! this.hasValidInput())
       return;
 
@@ -1361,7 +1359,7 @@ class SpectralScaleImageFilter extends ImageToImageFilter {
   /**
   * Run the filter
   */
-  update(){
+  _run(){
     // filter must have valid input of the same size
     if( !this.hasSameSizeInput() || !this.hasValidInput()){
       return;
@@ -2747,6 +2745,15 @@ return parser;
 * should be set using `setMetadata( "expresssion", "A * B" )` , where `A` and `B`
 * are the categories set in input.
 *
+* Using a blending expression is the aesiest way to test a blending but it is a
+* pretty slow process since the expresion has to be evaluated for every process.
+* To speed-up your process, it is recomended to develop a new filter that does
+* exactly (and only) the blending method you want.
+*
+* usage: examples/imageBlending.html
+* usage: examples/imageBlending2.html
+* usage: examples/forEachPixelGradientBlend.html
+*
 */
 class ImageBlendExpressionFilter extends ImageToImageFilter {
 
@@ -2757,7 +2764,7 @@ class ImageBlendExpressionFilter extends ImageToImageFilter {
 
 
 
-  update(){
+  _run(){
 
     // the metadata was not set
     if(!this.hasMetadata("expression")){

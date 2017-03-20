@@ -38,49 +38,13 @@ class UrlImageReader extends Filter {
     super();
     this._loadedCounter = 0;
     this._addOutput( Image2D, 0 );
-
   }
 
 
   /**
-  * Run the reading
+  * Overload the function
   */
-  update_ORIG(){
-    var that = this;
-
-    var img = new Image();
-    img.src = this._getInput();
-
-    img.onload = function() {
-      var tmpCanvas = document.createElement("canvas");
-      tmpCanvas.width = img.width;
-      tmpCanvas.height = img.height;
-      var canvasContext = tmpCanvas.getContext('2d');
-      canvasContext.drawImage(img, 0, 0);
-
-      try{
-        var imageData = canvasContext.getImageData(0, 0, tmpCanvas.width, tmpCanvas.height);
-        var dataArray = imageData.data;
-
-        var img2D = that.getOutput( category );
-        img2D.setData( dataArray, img.width, img.height);
-
-        // call the loaded callback only when all images are loaded
-        if( "imageLoaded" in that._events){
-          that._events.imageLoaded( that )
-        }
-
-      }catch(e){
-        console.error(e);
-      }
-
-    };
-
-
-  }
-
-
-  update(){
+  _run(){
     var that = this;
     var inputCategories = this.getInputCategories();
 
@@ -91,6 +55,10 @@ class UrlImageReader extends Filter {
   }
 
 
+  /**
+  * [PRIVATE]
+  * Loading task for a single category (aka file, in this case)
+  */
   _loadImage( inputCategory ){
     var that = this;
 
