@@ -104,6 +104,14 @@ class PixpipeObject {
   }
 
 
+  /**
+  * @return {Array} of Strings where each is a key of an existing metadata record
+  */
+  getMetadataKeys(){
+    return Object.keys( this._metadata );
+  }
+
+
 }
 
 export { PixpipeObject }
