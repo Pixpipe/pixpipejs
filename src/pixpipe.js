@@ -8,6 +8,7 @@ export { PipelineElement } from './core/PipelineElement.js';
 export { Pipeline } from './core/Pipeline.js';
 export { Filter } from './core/Filter.js';
 export { Image2D } from './core/Image2D.js';
+export { Image3D } from './core/Image3D.js';
 export { ImageToImageFilter } from './core/ImageToImageFilter.js';
 export { PixelWiseImageFilter } from './core/PixelWiseImageFilter.js';
 

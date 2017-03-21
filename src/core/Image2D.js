@@ -74,7 +74,8 @@ class Image2D extends PipelineElement{
   */
   clone(){
     var cpImg = new Image2D();
-    cpImg.setData( this._data, this._width, this._height );
+    //cpImg.setData( this._data, this._width, this._height );
+    cpImg.setData( new Float32Array( this._data ), this._width, this._height );
     return cpImg;
   }
 
@@ -85,17 +86,9 @@ class Image2D extends PipelineElement{
   * @param {Number} width - width of the Image2D
   * @param {Number} height - height of the Image2D
   * @param {Number} ncpp - number of components per pixel (default: 4)
-}
+  * @param {Boolean} deepCopy - if true, a copy of the data is given, if false we jsut give the pointer
   */
-  setData( array, width, height, ncpp=4 ){
-    /*
-    // do not allow to set a new internal array
-    if( this._data ){
-      console.warn("Data can be set to an Image2D object only once. Cannot init the Image2D.");
-      return;
-    }
-    */
-
+  setData( array, width, height, ncpp=4, deepCopy=false ){
     this._componentsPerPixel = ncpp;
 
     if( array.length != width*height*this._componentsPerPixel){
@@ -103,7 +96,12 @@ class Image2D extends PipelineElement{
       return;
     }
 
-    this._data = new Float32Array( array );
+    if(deepCopy){
+      this._data = new Float32Array( array );
+    }else{
+      this._data = array;
+    }
+
     this._width = width;
     this._height = height;
   }
@@ -120,7 +118,7 @@ class Image2D extends PipelineElement{
        color.length == this._componentsPerPixel)
     {
 
-      var pos1D = this.get1dIndexFrom2dPosition( position );
+      var pos1D = this.get1dIndexFrom2dPosition( position ) * this._componentsPerPixel;
 
       for(var i=0; i<this._componentsPerPixel; i++){
         this._data[ pos1D + i] = color[i];
@@ -133,13 +131,14 @@ class Image2D extends PipelineElement{
 
 
   /**
+  * @param {Object} position - 2D positoin like {x, y}
   * @return {Array} the color of the given pixel.
   */
   getPixel( position ){
     if("x" in position && position.x >=0 && position.x < this._width &&
        "y" in position && position.y >=0 && position.y < this._height)
     {
-      var pos1D = this.get1dIndexFrom2dPosition( position );
+      var pos1D = this.get1dIndexFrom2dPosition( position ) * this._componentsPerPixel;
       var color = this._data.slice(pos1D, pos1D + this._componentsPerPixel);
       return color;
 
