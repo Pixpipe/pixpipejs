@@ -206,6 +206,7 @@ class Filter extends PipelineElement {
     this._run();
     this.addTimeRecord("end");
     console.log("Running time for filter " + this.constructor.name + ": " + this.getTime("begin", "end") + "ms.");
+    this.setOutputAsReady();
   }
 
 
