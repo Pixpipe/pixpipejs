@@ -29,7 +29,8 @@
   },
   "homepage": "https://github.com/jonathanlurie/pixpipejs#readme",
   "dependencies": {
-    "expr-eval": "^1.0.0"
+    "expr-eval": "^1.0.0",
+    "pako": "^1.0.4"
   },
   "devDependencies": {
     "documentation": "^3.0.4",
