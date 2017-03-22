@@ -7,6 +7,7 @@
 * Lab       MCIN - Montreal Neurological Institute
 */
 
+import pako from 'pako'
 import { Filter } from '../core/Filter.js';
 
 
@@ -2774,6 +2775,8 @@ class Minc2Decoder extends Filter{
     var minc_header = this.parseHeader(hdf5_data.header_text);
     console.log(minc_header);
     //var minc_volume = createMincVolume(minc_header, hdf5_data.raw_data);
+
+
   }
 
 
