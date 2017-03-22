@@ -1,0 +1,54 @@
+<html>
+<head>
+  <title>FileToArrayBufferReader to ArrayBuffer</title>
+
+  <script src="../dist/pixpipe.js"></script>
+  <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700,900" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <h1><span style="color: #ff91d7">Pixpipe</span>js</h1>
+  <p>
+  This does the following :
+  <ul>
+    <li>opening a local file, using <code>pixpipe.FileToArrayBufferReader</code></li>
+    <li>use <code>console.log</code> to display it in the Javascript console.</li>
+  </ul>
+
+  </p>
+
+  <div>
+		Select an file:
+		<input type="file" id="fileInput">
+	</div>
+
+  <script>
+  window.onload = function() {
+
+    var fileInput = document.getElementById('fileInput');
+
+    // The filter to read image from URL
+    var file2Buff = new pixpipe.FileToArrayBufferReader();
+
+    // the image is loaded...
+    // here, filter = url2ImgFilter
+    file2Buff.on("ready", function( filter ){
+      var buff = file2Buff.getOutput();
+      console.log( "File was successfully loaded into a " + buff.byteLength + " byte long ArrayBuffer.");
+    });
+
+
+    fileInput.addEventListener('change', function(e) {
+			var file = fileInput.files[0];
+      // set the input, an HTML5 File object
+      file2Buff.addInput(file)
+
+      // Ask to fetch the image from URL
+      file2Buff.update();
+		});
+
+  }
+  </script>
+
+</body>
+</html>

@@ -24,6 +24,7 @@ MIT - See [LICENSE file](LICENSE).
 
 
 # Todo
+- replace all the events named "imageLoaded" by "ready"
 - Doc and tutorials for developers
 - Integrate wokers with Rollup
 - FFT

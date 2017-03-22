@@ -16,6 +16,7 @@ export { PixelWiseImageFilter } from './core/PixelWiseImageFilter.js';
 export { CanvasImageWriter } from './io/CanvasImageWriter.js';
 export { UrlImageReader } from './io/UrlImageReader.js';
 export { FileImageReader } from './io/FileImageReader.js';
+export { FileToArrayBufferReader } from './io/FileToArrayBufferReader.js';
 
 // filters - processing of Images2D
 export { ForEachPixelImageFilter } from './filter/ForEachPixelImageFilter.js';

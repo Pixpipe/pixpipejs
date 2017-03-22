@@ -27,11 +27,7 @@ import { Filter } from '../core/Filter.js';
 */
 class FileImageReader extends Filter {
 
-  /**
-  * @param {function} callback - function to call when the image is loaded.
-  * The _this_ object will be in argument of this callback.
-  */
-  constructor( callback){
+  constructor(){
     super();
 
     this._allowedTypes = /image.*/;
