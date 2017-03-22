@@ -18,6 +18,9 @@ export { UrlImageReader } from './io/UrlImageReader.js';
 export { FileImageReader } from './io/FileImageReader.js';
 export { FileToArrayBufferReader } from './io/FileToArrayBufferReader.js';
 
+// decoders
+export { Minc2Decoder } from './decoder/Minc2Decoder.js';
+
 // filters - processing of Images2D
 export { ForEachPixelImageFilter } from './filter/ForEachPixelImageFilter.js';
 export { SpectralScaleImageFilter } from './filter/SpectralScaleImageFilter.js';
