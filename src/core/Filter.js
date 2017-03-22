@@ -16,6 +16,9 @@ import { PipelineElement } from './PipelineElement.js';
 * Every filter has a addInput(), a getOutput() and a update() methods.
 * Every input and output can be arranged by category, so that internaly, a filter
 * can use and output diferent kind of data.
+*
+* usage: examples/fileToArrayBuffer.html
+*
 */
 class Filter extends PipelineElement {
 
@@ -86,6 +89,24 @@ class Filter extends PipelineElement {
       return this._output[ category ];
     }else{
       return null;
+    }
+  }
+
+
+  /**
+  * Perform an action for each output.
+  * @param {function} cb - callback function called for evey single output
+  * with 2 args: the output category and the outpub object.
+  */
+  forEachOutput( cb ){
+    if(!cb){
+      console.warn("forEachOutput requires a callback.");
+      return;
+    }
+    var outputCategories = this.getOutputCategories();
+
+    for(var o=0; o<outputCategories.length; o++){
+      cb( outputCategories[o], this.getOutput(outputCategories[o]) );
     }
   }
 

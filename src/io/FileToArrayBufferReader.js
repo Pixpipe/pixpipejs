@@ -28,6 +28,7 @@ class FileToArrayBufferReader extends Filter {
 
   _run(){
     var that = this;
+    this._outputCounter = 0;
     var inputCategories = this.getInputCategories();
 
     inputCategories.forEach( function(category){
