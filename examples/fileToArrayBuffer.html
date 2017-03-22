@@ -12,14 +12,16 @@
   This does the following :
   <ul>
     <li>opening a local file, using <code>pixpipe.FileToArrayBufferReader</code></li>
-    <li>use <code>console.log</code> to display it in the Javascript console.</li>
+    <li>display the length of the ArrayBuffer in Bytes</li>
   </ul>
 
   </p>
 
   <div>
 		Select an file:
-		<input type="file" id="fileInput">
+		<input type="file" id="fileInput" multiple="multiple">
+    <br>
+    <span id="fileInfo"></span>
 	</div>
 
   <script>
@@ -33,17 +35,30 @@
     // the image is loaded...
     // here, filter = url2ImgFilter
     file2Buff.on("ready", function( filter ){
-      var buff = file2Buff.getOutput();
-      console.log( "File was successfully loaded into a " + buff.byteLength + " byte long ArrayBuffer.");
+
+      var filenames = filter.getMetadata("filenames");
+
+      filter.forEachOutput( function( category, output){
+        document.getElementById('fileInfo').innerHTML += "<br><b>" + filenames[category] + "</b> successfully loaded (" + output.byteLength + " bytes)";
+      })
+
     });
 
 
+    // event listener of the file input
     fileInput.addEventListener('change', function(e) {
-			var file = fileInput.files[0];
-      // set the input, an HTML5 File object
-      file2Buff.addInput(file)
+      var files = e.target.files;
+      var filenames = {};
 
-      // Ask to fetch the image from URL
+      for(var i=0; i<files.length; i++){
+        // set the input, an HTML5 File object and a category (ID)
+        file2Buff.addInput(files[i], i);
+        filenames[i] = files[i].name ;
+      }
+
+      file2Buff.setMetadata("filenames", filenames);
+
+      // Perform the reading + conversion ibto ArrayBuffer
       file2Buff.update();
 		});
 
