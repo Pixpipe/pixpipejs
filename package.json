@@ -9,6 +9,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "rollup -c",
+    "build-min": "npm run build && printf \"// Build date: $(date '+%Y-%m%-dT%H:%M:%S')\n\n\" > dist/pixpipe.min.js && cat header.txt >> dist/pixpipe.min.js && google-closure-compiler-js --languageOut ES5 dist/pixpipe.js >> dist/pixpipe.min.js",
+    "doc": "documentation build -o ./doc/ -f html",
     "doc": "documentation dist/pixpipe.js --name Pixpipe.js -o ./doc/ -f html"
   },
   "repository": {
@@ -34,6 +36,7 @@
   },
   "devDependencies": {
     "documentation": "^3.0.4",
+    "google-closure-compiler-js": "^20170218.0.0",
     "gulp": "^3.9.1",
     "gulp-rollup": "^2.11.0",
     "gulp-util": "^3.0.8",

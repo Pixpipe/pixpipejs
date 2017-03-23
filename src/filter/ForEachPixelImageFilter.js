@@ -61,7 +61,7 @@ class ForEachPixelImageFilter extends PixelWiseImageFilter {
 
     // 1 - init the output
     var outputImg = this.getOutput();
-    console.log(outputImg.uuid);
+    console.log(outputImg.getUuid);
 
     // 2 - tune the output
     outputImg.setData(

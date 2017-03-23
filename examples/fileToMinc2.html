@@ -11,8 +11,11 @@
   <p>
   This does the following :
   <ul>
-    <li>opening a local file, using <code>pixpipe.FileToArrayBufferReader</code></li>
-    <li>display the length of the ArrayBuffer in Bytes</li>
+    <li>open a local Minc2 file, using <code>pixpipe.FileToArrayBufferReader</code></li>
+    <li>redirect the file buffer into a <code>pixpipe.Minc2Decoder</code> to extract Minc dataset and metadata</li>
+    <li>get the output as a generique <code>pixpipe.MniVolume</code> object</li>
+    <li><code>slice()</code> the volume 3 times, along 3 given axis to get 3 <code>pixpipe.Image2D</code> objects</li>
+    <li>display the images in separate canvas using a single instance of <code>pixpipe.CanvasImageWriter</code></li>
   </ul>
 
   </p>
@@ -23,6 +26,10 @@
     <br>
     <span id="fileInfo"></span>
 	</div>
+
+  <div id="myDiv_x"></div>
+  <div id="myDiv_y"></div>
+  <div id="myDiv_z"></div>
 
   <script>
   window.onload = function() {
@@ -44,7 +51,21 @@
       minc2Decoder.addInput( mincBuff );
       minc2Decoder.update();
 
+      var mniVolume = minc2Decoder.getOutput();
 
+      // create a filter to write the image into a canvas
+      var imageToCanvasFilter = new pixpipe.CanvasImageWriter( );
+      imageToCanvasFilter.setMetadata( "parentDivID", "myDiv_x" );
+      imageToCanvasFilter.addInput( mniVolume.slice("xspace", 80) );
+      imageToCanvasFilter.update();
+
+      imageToCanvasFilter.setMetadata( "parentDivID", "myDiv_y" );
+      imageToCanvasFilter.addInput( mniVolume.slice("yspace", 128) );
+      imageToCanvasFilter.update();
+
+      imageToCanvasFilter.setMetadata( "parentDivID", "myDiv_z" );
+      imageToCanvasFilter.addInput( mniVolume.slice("zspace", 128) );
+      imageToCanvasFilter.update();
     });
 
 
