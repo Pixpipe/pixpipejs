@@ -9,6 +9,7 @@
 
 import pako from 'pako'
 import { Filter } from '../core/Filter.js';
+import { MniVolume } from '../core/MniVolume.js';
 
 
 /**
@@ -2571,9 +2572,9 @@ class Minc2Decoder extends Filter{
   }
 
 
-
+/*
   createMincVolume(header, raw_data){
-    var volume = createVolume(header, createMincData(header, raw_data));
+    var volume = createVolume(header, this.createMincData(header, raw_data));
     volume.type = "minc";
 
     volume.saveOriginAndTransform(header);
@@ -2583,6 +2584,57 @@ class Minc2Decoder extends Filter{
     return volume;
 
   }
+*/
+
+
+  /*
+    initialize the large 1D array of data depending on the type found.
+    Rearange the original ArrayBuffer into a typed array.
+    args:
+      header: obj - header of the data
+      raw_data: ArrayBuffer - sub object given by hdf5Loader
+  */
+  createMincData(header, raw_data){
+
+    var native_data = null;
+
+    switch (header.datatype) {
+      case 'int8':
+      native_data = new Int8Array(raw_data);
+      break;
+      case 'int16':
+      native_data = new Int16Array(raw_data);
+      break;
+      case 'int32':
+      native_data = new Int32Array(raw_data);
+      break;
+      case 'float32':
+      native_data = new Float32Array(raw_data);
+      break;
+      case 'float64':
+      native_data = new Float64Array(raw_data);
+      break;
+      case 'uint8':
+      native_data = new Uint8Array(raw_data);
+      break;
+      case 'uint16':
+      native_data = new Uint16Array(raw_data);
+      break;
+      case 'uint32':
+      case 'rgb8':
+      native_data = new Uint32Array(raw_data);
+      break;
+      default:
+      var error_message = "Unsupported data type: " + header.datatype;
+      console.log({ message: error_message } );
+      //BrainBrowser.events.triggerEvent("error", { message: error_message } );
+      throw new Error(error_message);
+    }
+
+    return native_data;
+  }
+
+
 
 
   //----------------------------------------------------------------------------
@@ -2643,8 +2695,6 @@ class Minc2Decoder extends Filter{
     if (!this.defined(image)) {
       throw new Error("Can't find image dataset.");
     }
-
-    console.log(image);
 
     var valid_range = this.findAttribute(image, "valid_range", 0);
     /* If no valid_range is found, we substitute our own. */
@@ -2764,19 +2814,13 @@ class Minc2Decoder extends Filter{
       new_abuf = this.scaleVoxels(image, image_min, image_max, valid_range, this.getMetadata("debug"));
     }
 
+    var minc_header = this.parseHeader( JSON.stringify(header) );
+    var dataArray = this.createMincData(minc_header, new_abuf)
 
-    var hdf5_data = {
-      header_text: JSON.stringify(header),
-      raw_data: new_abuf
-    };
-
-    console.log( hdf5_data );
-
-    var minc_header = this.parseHeader(hdf5_data.header_text);
-    console.log(minc_header);
-    //var minc_volume = createMincVolume(minc_header, hdf5_data.raw_data);
-
-
+    // add the output to this filter
+    this._addOutput(MniVolume);
+    var mniVol = this.getOutput();
+    mniVol.setData(dataArray, minc_header)
   }
 
 

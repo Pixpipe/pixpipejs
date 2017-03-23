@@ -59,7 +59,7 @@ class PixpipeObject {
   /**
   * Return a copy of the uuid
   */
-  get uuid(){
+  getUuid(){
     return this._uuid.slice();
   }
 
