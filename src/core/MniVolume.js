@@ -9,7 +9,7 @@ import { Image3D } from './Image3D.js';
 import { Image2D } from './Image2D.js';
 
 /**
-* MniVolume instance are like Image3D but include
+* MniVolume instance are like Image3D but include some brain things
 */
 class MniVolume extends Image3D{
 
@@ -107,7 +107,7 @@ class MniVolume extends Image3D{
 
   /**
   * [STATIC]
-  * swap the data
+  * swap the data to be used from the outside (ie. nifti)
   */
   static swapn(byte_data, n_per_item) {
     for (var d = 0; d < byte_data.length; d += n_per_item) {
@@ -123,11 +123,15 @@ class MniVolume extends Image3D{
     }
   }
 
+
   /**
   * Initialize a MniVolume with the data and the header.
   * @param {Array} data - TypedArray containing the data
   */
   setData( data, header ){
+    console.log(header);
+
+    return;
     var that = this;
     this._data = data;
 
@@ -147,13 +151,10 @@ class MniVolume extends Image3D{
     this._saveOriginAndTransform();
 
     // adding some fields to metadata header
-    this._finishHeader()
+    //this._finishHeader()
 
     console.log(this._metadata);
     console.log(this._data);
-
-
-    console.log( this.getIntensityValue(100, 100, 100));
   }
 
 
@@ -319,9 +320,6 @@ class MniVolume extends Image3D{
     //var slice_data = new this._data.constructor(width * height);
     var slice_data = new Float32Array(width * height);
 
-
-    var slice;
-
     // Rows and colums of the result slice.
     var row, col;
 
@@ -373,7 +371,10 @@ class MniVolume extends Image3D{
     }
 
     var outputImage = new Image2D();
-    outputImage.setData(  slice_data, width, height, 1)
+    outputImage.setData(  slice_data, width, height, 1);
+    outputImage.setMetadata("min", min);
+    outputImage.setMetadata("max", max);
+    outputImage.setMetadata("avg", intensitySum / (i-1) );
     return outputImage;
 
   }
