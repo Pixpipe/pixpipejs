@@ -1,6 +1,6 @@
 <html>
 <head>
-  <title>File to Minc2</title>
+  <title>File to Nifti</title>
 
   <script src="../dist/pixpipe.js"></script>
   <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700,900" rel="stylesheet">
@@ -11,8 +11,8 @@
   <p>
   This does the following :
   <ul>
-    <li>open a local Minc2 file, using <code>pixpipe.FileToArrayBufferReader</code></li>
-    <li>redirect the file buffer into a <code>pixpipe.Minc2Decoder</code> to extract Minc dataset and metadata</li>
+    <li>open a local NIfTI file, using <code>pixpipe.FileToArrayBufferReader</code></li>
+    <li>redirect the file buffer into a <code>pixpipe.NiftiDecoder</code> to extract NIfTI dataset and metadata</li>
     <li>get the output as a generique <code>pixpipe.MniVolume</code> object</li>
     <li><code>slice()</code> the volume 3 times, along 3 given axis to get 3 <code>pixpipe.Image2D</code> objects</li>
     <li>display the images in separate canvas using a single instance of <code>pixpipe.CanvasImageWriter</code></li>
@@ -45,13 +45,13 @@
 
       var filenames = filter.getMetadata("filenames");
 
-      var mincBuff = filter.getOutput();
+      var niftiBuff = filter.getOutput();
 
-      var minc2Decoder = new pixpipe.Minc2Decoder();
-      minc2Decoder.addInput( mincBuff );
-      minc2Decoder.update();
+      var niftiDecoder = new pixpipe.NiftiDecoder();
+      niftiDecoder.addInput( niftiBuff );
+      niftiDecoder.update();
 
-      var mniVolume = minc2Decoder.getOutput();
+      var mniVolume = niftiDecoder.getOutput();
 
       if(mniVolume){
         // create a filter to write the image into a canvas
@@ -68,7 +68,7 @@
         imageToCanvasFilter.addInput( mniVolume.slice("zspace", 128) );
         imageToCanvasFilter.update();
       }else{
-        console.warn("Non-existant output for minc2Decoder.");
+        console.warn("Non-existant output for niftiDecoder.");
       }
     });
 
