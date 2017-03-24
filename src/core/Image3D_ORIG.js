@@ -22,51 +22,32 @@ class Image3D extends PipelineElement{
   */
   constructor( options=null ){
     super();
-    this.setMetadata("type", Image3D.TYPE() );
+    this._type = Image3D.TYPE();
 
     // a rgba stored in a Float32Array (typed array)
     this._data = null;
+    this._xSize = -1;
+    this._ySize = -1;
+    this._zSize = -1;
+    this._ncpp = 1;  // number of component per pixel, for color OR time series
 
-    // number of component per pixel, for color OR time series
-    this.setMetadata("ncpp", 1);
-
-    this.setMetadata("order", ["zspace", "yspace", "xspace"]);
-    var xspace = {
-      offset: 1,
-      step: 1
-    }
-
-    var yspace = {
-      step: 1
-    }
-
-    var zspace = {
-      step: 1
-    }
-
-    this.setMetadata("xspace", xspace);
-    this.setMetadata("yspace", yspace);
-    this.setMetadata("zspace", zspace);
+    // pipeline associated with this image. Not mandatory.
+    this._pipeline = null;
 
     // replacing default value for ncpp
     if(options && "ncpp" in options){
-      this.setMetadata("ncpp", options.ncpp);
+      this._ncpp = options.ncpp;
     }
 
     // allocate the array if size is specified
     if(options && "xSize" in options && "ySize" in options && "zSize" in options){
 
       if( options.xSize > 0 && options.ySize > 0 && options.zSize > 0 ){
-        xspace.space_length = options.xSize;
-        yspace.space_length = options.ySize;
-        zspace.space_length = options.zSize;
-
-        yspace.offset = xspace.space_length;
-        zspace.offset = xspace.space_length * yspace.space_length;
-
-        this._data = new Float32Array( options.xSize * options.ySize * options.zSize * this.getMetadata("ncpp") );
+        this._xSize = options.xSize;
+        this._ySize = options.ySize;
+        this._zSize = options.zSize;
+        this._data = new Float32Array( this._xSize * this._ySize * this._zSize * this._ncpp );
         this._data.fill(0);
-
       }
     }
 
@@ -85,22 +66,9 @@ class Image3D extends PipelineElement{
   * @return {Image3D} a deep copy instance of this Image3D
   */
   clone(){
-    // TODO: instead of xSize ySize zSize, use space0Size, space1Size and space2Size
-    // so that we can use the space order rather than hardcoded dimension order
-    // (++ compatibility with MniVolume)
-    // or maybe not... (see constructor)
-
-    /*
     var cpImg = new Image3D();
-    cpImg.setData(
-      new Float32Array( this._data ),
-      this.getMetadata(),
-      this._ySize,
-      this._zSize
-    );
-
+    cpImg.setData( new Float32Array( this._data ), this._xSize, this._ySize, this._zSize );
     return cpImg;
-    */
   }
 
 
@@ -115,15 +83,9 @@ class Image3D extends PipelineElement{
   */
   setData( array, xSize, ySize, zSize, ncpp=4, deepCopy=false ){
 
-    // TODO: instead of xSize ySize zSize, use space0Size, space1Size and space2Size
-    // so that we can use the space order rather than hardcoded dimension order
-    // (++ compatibility with MniVolume)
-    // or maybe not... (see constructor)
+    this._ncpp = ncpp;
 
-    /*
-    this.setMetadata("ncpp", ncpp);
-
-    if( array.length != xSize*ySize*zSize*ncpp){
+    if( array.length != xSize*ySize*zSize*this._ncpp){
       console.warn("The array size does not match the width and height. Cannot init the Image3D.");
       return;
     }
@@ -134,17 +96,9 @@ class Image3D extends PipelineElement{
       this._data = array;
     }
 
-    var xspace = this.getMetadata("xspace");
-    var yspace = this.getMetadata("yspace");
-    var zspace = this.getMetadata("zspace");
-
-    xspace.space_length = xSize;
-    yspace.space_length = ySize;
-    zspace.space_length = zSize;
-
-    yspace.offset = xspace.space_length;
-    zspace.offset = xspace.space_length * yspace.space_length;
-    */
+    this._xSize = xSize;
+    this._ySize = ySize;
+    this._zSize = zSize;
   }
 
 
@@ -154,7 +108,21 @@ class Image3D extends PipelineElement{
   * @param {Array} color - color, must have the same number of components per pixel than the image
   */
   setPixel( position, color ){
-    // TODO: to implement using order offset
+    if("x" in position && position.x >=0 && position.x < this._xSize &&
+       "y" in position && position.y >=0 && position.y < this._ySize &&
+       "z" in position && position.z >=0 && position.z < this._zSize &&
+       color.length == this._ncpp)
+    {
+
+      var pos1D = this.get1dIndexFrom3dPosition( position ) * this._ncpp;
+
+      for(var i=0; i<this._ncpp; i++){
+        this._data[ pos1D + i] = color[i];
+      }
+
+    }else{
+      console.error("The position has to be within the image dimensions and color size must be the same as the original image.");
+    }
   }
 
 
@@ -163,21 +131,50 @@ class Image3D extends PipelineElement{
   * @return {Array} the color of the given pixel.
   */
   getPixel( position ){
-    // TODO: to implement using order offset
+    if("x" in position && position.x >=0 && position.x < this._xSize &&
+       "y" in position && position.y >=0 && position.y < this._ySize &&
+       "z" in position && position.z >=0 && position.z < this._zSize)
+    {
+      var pos1D = this.get1dIndexFrom3dPosition( position ) * this._ncpp;
+      var color = this._data.slice(pos1D, pos1D + this._ncpp);
+      return color;
+
+    }else{
+      console.warn("The requested position is outside the image.");
+      return null;
+    }
   }
 
 
   /**
-  * @param {String} space - "xspace", "yspace" or "zspace"
-  * @return {Number} the size of the Image3D along the given space
+  * @return {Number} the xSize of the Image3D
   */
-  getSize( space ){
-    if( this.hasMetadata( space )){
-      return this.getMetadata( space ).space_length;
-    }else{
-      console.warn("The space must be \"xspace\", \"yspace\" or \"zspace\".");
-      return null;
-    }
+  getXSize(){
+    return this._xSize;
+  }
+
+
+  /**
+  * @return {Number} the ySize of the Image3D
+  */
+  getYSize(){
+    return this._ySize;
+  }
+
+
+  /**
+  * @return {Number} the zSize of the Image3D
+  */
+  getZSize(){
+    return this._zSize;
+  }
+
+
+  /**
+  * @return {Number} the number of components per pixel
+  */
+  getComponentsPerPixel(){
+    return this._ncpp;
   }
 
 
@@ -207,8 +204,7 @@ class Image3D extends PipelineElement{
   */
   get1dIndexFrom3dPosition( position ){
     //return (position.x + position.y*this._width);
-    //return this._xSize * this._ySize * position.z + this._xSize * position.y + position.x;
-    // TODO: to implement using order offset
+    return this._xSize * this._ySize * position.z + this._xSize * position.y + position.x;
   }
 
 

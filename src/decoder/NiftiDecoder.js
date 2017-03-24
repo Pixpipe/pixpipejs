@@ -55,7 +55,9 @@ class NiftiDecoder extends Filter {
     }
 
     if (error_message) {
-      throw new Error(error_message);
+      //throw new Error(error_message);
+      console.warn("The input file is not a NIfTI file.");
+      return null;
     }
 
     header.xspace.space_length = dview.getUint16(42, littleEndian);
@@ -215,21 +217,10 @@ class NiftiDecoder extends Filter {
     return m;
   }
 
-  /*
-  createNifti1Volume(header, raw_data, callback) {
-    var volume = VolumeViewer.createVolume(header,
-                                           createNifti1Data(header, raw_data));
-    volume.type = "nifti";
-    volume.intensity_min = volume.header.voxel_min;
-    volume.intensity_max = volume.header.voxel_max;
-    volume.saveOriginAndTransform(header);
 
-    return volume;
-
-  }
+  /**
+  * [PRIVATE]
   */
-
-
   createNifti1Data(header, raw_data) {
     var native_data = null;
 
@@ -318,6 +309,11 @@ class NiftiDecoder extends Filter {
     }
 
     var header = this.parseNifti1Header( inputBuffer );
+
+    // abort if header not valid
+    if(!header)
+      return;
+
     var dataArray = this.createNifti1Data(header, inputBuffer)
 
     // add the output to this filter
@@ -325,6 +321,7 @@ class NiftiDecoder extends Filter {
     var mniVol = this.getOutput();
     mniVol.setData(dataArray, header);
     mniVol.setMetadata("type", "nifti");
+
   }
 
 

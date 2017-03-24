@@ -19,6 +19,7 @@ To make image processing:
 # The future of Pixpipe.js
 The plan is to add more image processing filters and tools, like *FFT*, or *wavelet decomposition* to process data in the frequency domain. Though, this kind of processing is quite greedy and would need a *low-level* approach. This can be done efficiently using *C/C++* code converted into optimal lower-level Javascript using [Emscriptem](http://kripken.github.io/emscripten-site/). These are the next big steps.
 
+
 # License
 MIT - See [LICENSE file](LICENSE).
 
@@ -29,4 +30,13 @@ MIT - See [LICENSE file](LICENSE).
 - Integrate wokers with Rollup
 - FFT
 - Image3D
-- Readers for Minc and NIfTI
+- Replace ncpp attribute by a metadata (Image2D & Image3D)
+- Push some methods of MniVolume to Image3D
+- Write about the features in this readme
+- Oblique sampling for Image3D
+- Better test time series with NIfTI (maybe add an example)
+- Load a file as a ArrayBuffer with a AJAX
+- Rewrite **The future of Pixpipe.js** of this readme
+- Add an efficient way to minify the code
+- ~~Load a file as a ArrayBuffer with a file dialog~~ DONE: `FileToArrayBufferReader`
+- ~~Readers for Minc and NIfTI~~ DONE: `Minc2Decoder` and `NiftiDecoder`
