@@ -2644,6 +2644,11 @@ class Minc2Decoder extends Filter{
 
     var inputBuffer = this._getInput(0);
 
+    if(!inputBuffer){
+      console.warn("Minc2Decoder requires an ArrayBuffer as input \"0\". Unable to continue.");
+      return;
+    }
+
     this._dv = new DataView(inputBuffer);
 
 
@@ -2664,7 +2669,15 @@ class Minc2Decoder extends Filter{
 
     var root = this.createLink();
 
-    this._superblk = this.hdf5Superblock();
+    try{
+      this._superblk = this.hdf5Superblock();
+    }catch(e){
+      //console.error(e);
+      console.warn("The input file is not a Minc2 file.");
+      return;
+    }
+
+
     this.seek(this._superblk.root_addr);
 
     if (this._superblk.sbver <= 1) {
@@ -2820,7 +2833,8 @@ class Minc2Decoder extends Filter{
     // add the output to this filter
     this._addOutput(MniVolume);
     var mniVol = this.getOutput();
-    mniVol.setData(dataArray, minc_header)
+    mniVol.setData(dataArray, minc_header);
+    MniVolume.setMetadata("type", "minc2");
   }
 
 

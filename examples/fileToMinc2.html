@@ -1,6 +1,6 @@
 <html>
 <head>
-  <title>FileToArrayBufferReader to ArrayBuffer</title>
+  <title>File to Minc2</title>
 
   <script src="../dist/pixpipe.js"></script>
   <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700,900" rel="stylesheet">
@@ -53,19 +53,23 @@
 
       var mniVolume = minc2Decoder.getOutput();
 
-      // create a filter to write the image into a canvas
-      var imageToCanvasFilter = new pixpipe.CanvasImageWriter( );
-      imageToCanvasFilter.setMetadata( "parentDivID", "myDiv_x" );
-      imageToCanvasFilter.addInput( mniVolume.slice("xspace", 80) );
-      imageToCanvasFilter.update();
+      if(mniVolume){
+        // create a filter to write the image into a canvas
+        var imageToCanvasFilter = new pixpipe.CanvasImageWriter( );
+        imageToCanvasFilter.setMetadata( "parentDivID", "myDiv_x" );
+        imageToCanvasFilter.addInput( mniVolume.slice("xspace", 80) );
+        imageToCanvasFilter.update();
 
-      imageToCanvasFilter.setMetadata( "parentDivID", "myDiv_y" );
-      imageToCanvasFilter.addInput( mniVolume.slice("yspace", 128) );
-      imageToCanvasFilter.update();
+        imageToCanvasFilter.setMetadata( "parentDivID", "myDiv_y" );
+        imageToCanvasFilter.addInput( mniVolume.slice("yspace", 128) );
+        imageToCanvasFilter.update();
 
-      imageToCanvasFilter.setMetadata( "parentDivID", "myDiv_z" );
-      imageToCanvasFilter.addInput( mniVolume.slice("zspace", 128) );
-      imageToCanvasFilter.update();
+        imageToCanvasFilter.setMetadata( "parentDivID", "myDiv_z" );
+        imageToCanvasFilter.addInput( mniVolume.slice("zspace", 128) );
+        imageToCanvasFilter.update();
+      }else{
+        console.warn("Non-existant output for minc2Decoder.");
+      }
     });
 
 

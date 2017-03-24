@@ -11,6 +11,7 @@ export { Image2D } from './core/Image2D.js';
 export { Image3D } from './core/Image3D.js';
 export { ImageToImageFilter } from './core/ImageToImageFilter.js';
 export { PixelWiseImageFilter } from './core/PixelWiseImageFilter.js';
+export { MniVolume } from './core/MniVolume.js';
 
 // io - Readers and writers
 export { CanvasImageWriter } from './io/CanvasImageWriter.js';
@@ -20,6 +21,7 @@ export { FileToArrayBufferReader } from './io/FileToArrayBufferReader.js';
 
 // decoders
 export { Minc2Decoder } from './decoder/Minc2Decoder.js';
+export { NiftiDecoder } from './decoder/NiftiDecoder.js';
 
 // filters - processing of Images2D
 export { ForEachPixelImageFilter } from './filter/ForEachPixelImageFilter.js';
