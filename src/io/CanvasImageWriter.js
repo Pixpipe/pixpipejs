@@ -81,6 +81,7 @@ class CanvasImageWriter extends Filter{
   * Overwrite the generic (empty) method.
   */
   _run(){
+    var that = this;
 
     // abort if invalid input
     if(!this.hasValidInput() )
@@ -121,7 +122,7 @@ class CanvasImageWriter extends Filter{
         if(!useAlphaBand && index%4 == 3){
           canvasImageDataArray[index] = 255;
         }else{
-          canvasImageDataArray[index] = value;
+          canvasImageDataArray[index] = that._stretchMinMax(value);
         }
       });
 
@@ -129,9 +130,10 @@ class CanvasImageWriter extends Filter{
     }else if(ncppSrc == 1){
       originalImageDataArray.forEach( function(value, index){
         var index1D = index*4;
-        canvasImageDataArray[index1D] = value;
-        canvasImageDataArray[index1D + 1] = value;
-        canvasImageDataArray[index1D + 2] = value;
+        var stretchedValue = that._stretchMinMax(value);
+        canvasImageDataArray[index1D] = stretchedValue;
+        canvasImageDataArray[index1D + 1] = stretchedValue;
+        canvasImageDataArray[index1D + 2] = stretchedValue;
         canvasImageDataArray[index1D + 3] = 255;
       });
 
@@ -147,7 +149,7 @@ class CanvasImageWriter extends Filter{
         }
 
         // regular RGB
-        canvasImageDataArray[destCounter] = value;
+        canvasImageDataArray[destCounter] = that._stretchMinMax(value);
         destCounter ++;
       });
     }
@@ -171,7 +173,7 @@ class CanvasImageWriter extends Filter{
       return intensity;
     }
 
-    
+    return ( (intensity - min) / (max - min) ) * 255;
   }
 
 }

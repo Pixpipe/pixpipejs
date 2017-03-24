@@ -56,6 +56,10 @@
       if(mniVolume){
         // create a filter to write the image into a canvas
         var imageToCanvasFilter = new pixpipe.CanvasImageWriter( );
+        // replace the default min max values of [0, 255]
+        imageToCanvasFilter.setMetadata("min", mniVolume.getMetadata("voxel_min"));
+        imageToCanvasFilter.setMetadata("max", mniVolume.getMetadata("voxel_max"));
+
         imageToCanvasFilter.setMetadata( "parentDivID", "myDiv_x" );
         imageToCanvasFilter.addInput( mniVolume.slice("xspace", 80) );
         imageToCanvasFilter.update();
