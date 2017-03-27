@@ -75,7 +75,8 @@ class Image2D extends PipelineElement{
   clone(){
     var cpImg = new Image2D();
     //cpImg.setData( this._data, this._width, this._height );
-    cpImg.setData( new Float32Array( this._data ), this._width, this._height );
+    cpImg.setData( this._data, this._width, this._height, this._ncpp, true );
+    cpImg.copyMetadataFrom( this );
     return cpImg;
   }
 
@@ -97,7 +98,7 @@ class Image2D extends PipelineElement{
     }
 
     if(deepCopy){
-      this._data = new Float32Array( array );
+      this._data =  array.slice();
     }else{
       this._data = array;
     }

@@ -2834,7 +2834,7 @@ class Minc2Decoder extends Filter{
     this._addOutput(MniVolume);
     var mniVol = this.getOutput();
     mniVol.setData(dataArray, minc_header);
-    mniVol.setMetadata("type", "minc2");
+    mniVol.setMetadata("format", "minc2");
   }
 
 

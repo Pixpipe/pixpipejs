@@ -129,9 +129,6 @@ class MniVolume extends Image3D{
   * @param {Array} data - TypedArray containing the data
   */
   setData( data, header ){
-    console.log(header);
-
-    return;
     var that = this;
     this._data = data;
 
@@ -151,29 +148,13 @@ class MniVolume extends Image3D{
     this._saveOriginAndTransform();
 
     // adding some fields to metadata header
-    //this._finishHeader()
+    this._finishHeader()
 
     console.log(this._metadata);
-    console.log(this._data);
   }
 
 
-  /**
-  * [PRIVATE]
-  * Look for min and max on the dataset and add them to the header metadata
-  */
-  _scanDataRange(){
-    var min = +Infinity;
-    var max = -Infinity;
 
-    this._data.forEach( function(value){
-      min = Math.min(min, value);
-      max = Math.max(max, value);
-    })
-
-    this.setMetadata("voxel_min", min);
-    this.setMetadata("voxel_max", max);
-  }
 
 
   /**
@@ -226,158 +207,12 @@ class MniVolume extends Image3D{
   }
 
 
-  /**
-  * [PRIVATE]
-  * Creates common fields all headers must contain.
-  */
-  _finishHeader() {
-    var xspace = this.getMetadata("xspace");
-    var yspace = this.getMetadata("yspace");
-    var zspace = this.getMetadata("zspace");
-
-    xspace.name = "xspace";
-    yspace.name = "yspace";
-    zspace.name = "zspace";
-
-    xspace.width_space  = yspace;
-    xspace.width        = yspace.space_length;
-    xspace.height_space = zspace;
-    xspace.height       = zspace.space_length;
-
-    yspace.width_space  = xspace;
-    yspace.width        = xspace.space_length;
-    yspace.height_space = zspace;
-    yspace.height       = zspace.space_length;
-
-    zspace.width_space  = xspace;
-    zspace.width        = xspace.space_length;
-    zspace.height_space = yspace;
-    zspace.height       = yspace.space_length;
-  }
-
-
-  /**
-  * Get the intensity of a given voxel. The position i j k
-  */
-  getIntensityValue(i, j, k, time) {
-    var order = this.getMetadata("order");
-    time = time === undefined ? this.getMetadata( "current_time" ) : time;
-
-    if (i < 0 || i >= this.getMetadata( order[0] ).space_length ||
-        j < 0 || j >= this.getMetadata( order[1] ).space_length ||
-        k < 0 || k >= this.getMetadata( order[2] ).space_length)
-    {
-        return 0;
-    }
-
-    var time_offset = this.hasMetadata( "time" ) ? time * this.getMetadata( "time" ).offset : 0;
-
-    var xyzt_offset = (
-      i * this.getMetadata( order[0] ).offset +
-      j * this.getMetadata( order[1] ).offset +
-      k * this.getMetadata( order[2] ).offset +
-      time_offset);
-
-    return this._data[xyzt_offset];
-  }
 
 
 
 
 
-  /**
-  * [PRIVATE]
-  * Return a slice from the minc cube as a 1D typed array,
-  * along with some relative data (slice size, step, etc.)
-  * args:
-  * @param {String} axis - "xspace", "yspace" or zspace (mandatory)
-  * @param {Number} slice_num - index of the slice [0; length-1] (optional, default: length-1)
-  * @param {Number} time - index of time (optional, default: 0)
-  * TODO: add some method to a slice (get value) because it's a 1D array... and compare with Python
-  */
-  slice(axis, slice_num = 0, time = 0) {
-    if( !this.hasMetadata(axis) ){
-      console.warn("The axis " + axis + " does not exist.");
-      return null;
-    }
 
-    var time_offset = this.hasMetadata("time") ? time * this.getMetadata("time").offset : 0;
-
-    var axis_space = this.getMetadata(axis);
-    var width_space = axis_space.width_space;
-    var height_space = axis_space.height_space;
-
-    var width = axis_space.width;
-    var height = axis_space.height;
-
-    var axis_space_offset = axis_space.offset;
-    var width_space_offset = width_space.offset;
-    var height_space_offset = height_space.offset;
-
-    // Calling the volume data's constructor guarantees that the
-    // slice data buffer has the same type as the volume.
-    //
-    //var slice_data = new this._data.constructor(width * height);
-    var slice_data = new Float32Array(width * height);
-
-    // Rows and colums of the result slice.
-    var row, col;
-
-    // Indexes into the volume, relative to the slice.
-    // NOT xspace, yspace, zspace coordinates!!!
-    var x, y, z;
-
-    // Linear offsets into volume considering an
-    // increasing number of axes: (t) time,
-    // (z) z-axis, (y) y-axis, (x) x-axis.
-    var tz_offset, tzy_offset, tzyx_offset;
-
-    // Whether the dimension steps positively or negatively.
-    var x_positive = width_space.step  > 0;
-    var y_positive = height_space.step > 0;
-    var z_positive = axis_space.step   > 0;
-
-    // iterator for the result slice.
-    var i = 0;
-    var intensity = 0;
-    var intensitySum = 0;
-    var min = Infinity;
-    var max = -Infinity;
-
-    var maxOfVolume = this.getMetadata("voxel_max");
-
-    z = z_positive ? slice_num : axis_space.space_length - slice_num - 1;
-    if (z >= 0 && z < axis_space.space_length) {
-      tz_offset = time_offset + z * axis_space_offset;
-
-      for (row = height - 1; row >= 0; row--) {
-        y = y_positive ? row : height - row - 1;
-        tzy_offset = tz_offset + y * height_space_offset;
-
-        for (col = 0; col < width; col++) {
-          x = x_positive ? col : width - col - 1;
-          tzyx_offset = tzy_offset + x * width_space_offset;
-
-          intensity = this._data[tzyx_offset];
-
-          min = Math.min(min, intensity);
-          max = Math.max(max, intensity);
-          intensitySum += intensity;
-
-          slice_data[i++] = intensity;
-
-        }
-      }
-    }
-
-    var outputImage = new Image2D();
-    outputImage.setData(  slice_data, width, height, 1);
-    outputImage.setMetadata("min", min);
-    outputImage.setMetadata("max", max);
-    outputImage.setMetadata("avg", intensitySum / (i-1) );
-    return outputImage;
-
-  }
 
 
 

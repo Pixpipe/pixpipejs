@@ -112,6 +112,25 @@ class PixpipeObject {
   }
 
 
+  /**
+  * Copy all the metadata from the object in argument to this.
+  * A deep copy by serialization is perform.
+  * The metadata that exist only in _this_ are kept.
+  * @param {PixpipeObject} otherObject - the object to copy metadata from
+  */
+  copyMetadataFrom( otherObject ){
+    var that = this;
+
+    otherObject.getMetadataKeys().forEach( function(key){
+      try{
+        var metadataObjectCopy = JSON.parse( JSON.stringify( otherObject.getMetadata(key) ) );
+        that.setMetadata(key, metadataObjectCopy);
+      }catch(e){
+        console.error(e);
+      }
+    });
+  }
+
 }
 
 export { PixpipeObject }
