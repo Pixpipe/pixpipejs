@@ -34,6 +34,7 @@ MIT - See [LICENSE file](LICENSE).
 - Push some methods of MniVolume to Image3D
 - Write about the features in this readme
 - Oblique sampling for Image3D
+- export a/multiple Image2D of sliced Image3D (upon 2D size limit) with mosaic (for shader texturing)
 - Better test time series with NIfTI (maybe add an example)
 - Load a file as a ArrayBuffer with a AJAX
 - Rewrite **The future of Pixpipe.js** of this readme

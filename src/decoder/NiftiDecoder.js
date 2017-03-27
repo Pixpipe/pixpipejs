@@ -320,7 +320,7 @@ class NiftiDecoder extends Filter {
     this._addOutput(MniVolume);
     var mniVol = this.getOutput();
     mniVol.setData(dataArray, header);
-    mniVol.setMetadata("type", "nifti");
+    mniVol.setMetadata("format", "nifti");
 
   }
 

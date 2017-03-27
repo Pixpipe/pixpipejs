@@ -118,6 +118,25 @@ class PixpipeObject {
   }
 
 
+  /**
+  * Copy all the metadata from the object in argument to this.
+  * A deep copy by serialization is perform.
+  * The metadata that exist only in _this_ are kept.
+  * @param {PixpipeObject} otherObject - the object to copy metadata from
+  */
+  copyMetadataFrom( otherObject ){
+    var that = this;
+
+    otherObject.getMetadataKeys().forEach( function(key){
+      try{
+        var metadataObjectCopy = JSON.parse( JSON.stringify( otherObject.getMetadata(key) ) );
+        that.setMetadata(key, metadataObjectCopy);
+      }catch(e){
+        console.error(e);
+      }
+    });
+  }
+
 }
 
 /*
@@ -671,7 +690,8 @@ class Image2D extends PipelineElement{
   clone(){
     var cpImg = new Image2D();
     //cpImg.setData( this._data, this._width, this._height );
-    cpImg.setData( new Float32Array( this._data ), this._width, this._height );
+    cpImg.setData( this._data, this._width, this._height, this._ncpp, true );
+    cpImg.copyMetadataFrom( this );
     return cpImg;
   }
 
@@ -693,7 +713,7 @@ class Image2D extends PipelineElement{
     }
 
     if(deepCopy){
-      this._data = new Float32Array( array );
+      this._data =  array.slice();
     }else{
       this._data = array;
     }
@@ -838,12 +858,16 @@ class Image3D extends PipelineElement{
 
   /**
   * Constructor of an Image3D instance. If no options, no array is allocated.
-  * @param {Object} options - if present, must have options.xSize, options.ySize, option.zSize.
-  * Also options.ncpp to set the number of components per pixel. (possibly for using time series)
+  * @param {Object} options - may contain the following:
+  *   - options.xSize {Number} space length along x axis
+  *   - options.ySize {Number} space length along y axis
+  *   - option.zSize {Number} space length along z axis
+  *   - options.ncpp {Number} number of components per pixel. Default = 1
+  *   - options.order {Array} dimensionality order. default = ["zspace", "yspace", "xspace"]
   */
   constructor( options=null ){
     super();
-    this.setMetadata("type", Image3D.TYPE() );
+    this._type = Image3D.TYPE();
 
     // a rgba stored in a Float32Array (typed array)
     this._data = null;
@@ -851,7 +875,13 @@ class Image3D extends PipelineElement{
     // number of component per pixel, for color OR time series
     this.setMetadata("ncpp", 1);
 
-    this.setMetadata("order", ["zspace", "yspace", "xspace"]);
+    // dimensionality order
+    if(options && "order" in options){
+      this.setMetadata("order", options.order);
+    }else{
+      this.setMetadata("order", ["zspace", "yspace", "xspace"]);
+    }
+
     var xspace = {
       offset: 1,
       step: 1
@@ -888,9 +918,10 @@ class Image3D extends PipelineElement{
         this._data = new Float32Array( options.xSize * options.ySize * options.zSize * this.getMetadata("ncpp") );
         this._data.fill(0);
 
+        this._scanDataRange();
+        this._finishHeader();
       }
     }
-
   }
 
 
@@ -906,22 +937,23 @@ class Image3D extends PipelineElement{
   * @return {Image3D} a deep copy instance of this Image3D
   */
   clone(){
-    // TODO: instead of xSize ySize zSize, use space0Size, space1Size and space2Size
-    // so that we can use the space order rather than hardcoded dimension order
-    // (++ compatibility with MniVolume)
-    // or maybe not... (see constructor)
-
-    /*
     var cpImg = new Image3D();
+
     cpImg.setData(
-      new Float32Array( this._data ),
-      this.getMetadata(),
-      this._ySize,
-      this._zSize
+      this._data,
+      this.getMetadata("xspace").space_length,
+      this.getMetadata("yspace").space_length,
+      this.getMetadata("zspace").space_length,
+      {
+        ncpp: this.getMetadata("ncpp"),
+        order: this.getMetadata("order").slice(),
+        deepCopy: true,
+      }
     );
 
+    cpImg.copyMetadataFrom( this );
+
     return cpImg;
-    */
   }
 
 
@@ -933,24 +965,38 @@ class Image3D extends PipelineElement{
   * @param {Number} zSize - length along z dimension of the Image3D
   * @param {Number} ncpp - number of components per pixel (default: 4)
   * @param {Boolean} deepCopy - if true, a copy of the data is given, if false we jsut give the pointer
+  * @param {Object} options, among them:
+  *   - ncpp {Number} number of components per pixel. Default = 1
+  *   - order {Array} dimensionality order. Default = ["zspace", "yspace", "xspace"]
+  *   - deepCopy {Boolean} copy the whole array if true, or just the pointer if false. Default = false
+  *
   */
-  setData( array, xSize, ySize, zSize, ncpp=4, deepCopy=false ){
+  setData( array, xSize, ySize, zSize, options){
+    var ncpp = 1;
 
-    // TODO: instead of xSize ySize zSize, use space0Size, space1Size and space2Size
-    // so that we can use the space order rather than hardcoded dimension order
-    // (++ compatibility with MniVolume)
-    // or maybe not... (see constructor)
-
-    /*
-    this.setMetadata("ncpp", ncpp);
+    // number of components per pixel
+    if(options && "ncpp" in options){
+      ncpp = options.ncpp;
+    }
 
     if( array.length != xSize*ySize*zSize*ncpp){
       console.warn("The array size does not match the width and height. Cannot init the Image3D.");
       return;
     }
 
-    if(deepCopy){
-      this._data = new Float32Array( array );
+    // number of components per pixel
+    if(options && "ncpp" in options){
+      this.setMetadata("ncpp", options.ncpp);
+    }
+
+    // dimensionality order
+    if(options && "order" in options){
+      this.setMetadata("order", options.order);
+    }
+
+    // deep of shallow copy
+    if(options && "deepCopy" in options && options.deepCopy){
+      this._data = array.slice();
     }else{
       this._data = array;
     }
@@ -965,7 +1011,57 @@ class Image3D extends PipelineElement{
 
     yspace.offset = xspace.space_length;
     zspace.offset = xspace.space_length * yspace.space_length;
-    */
+
+    this._scanDataRange();
+    this._finishHeader();
+  }
+
+
+  /**
+  * [PRIVATE]
+  * Creates common fields all headers must contain.
+  */
+  _finishHeader() {
+    var xspace = this.getMetadata("xspace");
+    var yspace = this.getMetadata("yspace");
+    var zspace = this.getMetadata("zspace");
+
+    xspace.name = "xspace";
+    yspace.name = "yspace";
+    zspace.name = "zspace";
+
+    xspace.width_space  = JSON.parse( JSON.stringify( yspace ) );//yspace;
+    xspace.width        = yspace.space_length;
+    xspace.height_space = JSON.parse( JSON.stringify( zspace ) );//zspace;
+    xspace.height       = zspace.space_length;
+
+    yspace.width_space  = JSON.parse( JSON.stringify( xspace ) );//xspace;
+    yspace.width        = xspace.space_length;
+    yspace.height_space = JSON.parse( JSON.stringify( zspace ) );//zspace;
+    yspace.height       = zspace.space_length;
+
+    zspace.width_space  = JSON.parse( JSON.stringify( xspace ) );//xspace;
+    zspace.width        = xspace.space_length;
+    zspace.height_space = JSON.parse( JSON.stringify( yspace ) );//yspace;
+    zspace.height       = yspace.space_length;
+  }
+
+
+  /**
+  * [PRIVATE]
+  * Look for min and max on the dataset and add them to the header metadata
+  */
+  _scanDataRange(){
+    var min = +Infinity;
+    var max = -Infinity;
+
+    this._data.forEach( function(value){
+      min = Math.min(min, value);
+      max = Math.max(max, value);
+    });
+
+    this.setMetadata("voxel_min", min);
+    this.setMetadata("voxel_max", max);
   }
 
 
@@ -1030,6 +1126,160 @@ class Image3D extends PipelineElement{
     //return (position.x + position.y*this._width);
     //return this._xSize * this._ySize * position.z + this._xSize * position.y + position.x;
     // TODO: to implement using order offset
+  }
+
+
+  /**
+  * [PRIVATE]
+  * Return a slice from the minc cube as a 1D typed array,
+  * along with some relative data (slice size, step, etc.)
+  * args:
+  * @param {String} axis - "xspace", "yspace" or zspace (mandatory)
+  * @param {Number} slice_num - index of the slice [0; length-1] (optional, default: length-1)
+  * @param {Number} time - index of time (optional, default: 0)
+  * TODO: add some method to a slice (get value) because it's a 1D array... and compare with Python
+  */
+  getSlice(axis, slice_num = 0, time = 0) {
+    if( !this.hasMetadata(axis) ){
+      console.warn("The axis " + axis + " does not exist.");
+      return null;
+    }
+
+    var time_offset = this.hasMetadata("time") ? time * this.getMetadata("time").offset : 0;
+
+    var axis_space = this.getMetadata(axis);
+    var width_space = axis_space.width_space;
+    var height_space = axis_space.height_space;
+
+    var width = axis_space.width;
+    var height = axis_space.height;
+
+    var axis_space_offset = axis_space.offset;
+    var width_space_offset = width_space.offset;
+    var height_space_offset = height_space.offset;
+
+    // Calling the volume data's constructor guarantees that the
+    // slice data buffer has the same type as the volume.
+    //
+    //var slice_data = new this._data.constructor(width * height);
+    var slice_data = new this._data.constructor(width * height);
+
+    // Rows and colums of the result slice.
+    var row, col;
+
+    // Indexes into the volume, relative to the slice.
+    // NOT xspace, yspace, zspace coordinates!!!
+    var x, y, z;
+
+    // Linear offsets into volume considering an
+    // increasing number of axes: (t) time,
+    // (z) z-axis, (y) y-axis, (x) x-axis.
+    var tz_offset, tzy_offset, tzyx_offset;
+
+    // Whether the dimension steps positively or negatively.
+    var x_positive = width_space.step  > 0;
+    var y_positive = height_space.step > 0;
+    var z_positive = axis_space.step   > 0;
+
+    // iterator for the result slice.
+    var i = 0;
+    var intensity = 0;
+    var intensitySum = 0;
+    var min = Infinity;
+    var max = -Infinity;
+
+    var maxOfVolume = this.getMetadata("voxel_max");
+
+    z = z_positive ? slice_num : axis_space.space_length - slice_num - 1;
+    if (z >= 0 && z < axis_space.space_length) {
+      tz_offset = time_offset + z * axis_space_offset;
+
+      for (row = height - 1; row >= 0; row--) {
+        y = y_positive ? row : height - row - 1;
+        tzy_offset = tz_offset + y * height_space_offset;
+
+        for (col = 0; col < width; col++) {
+          x = x_positive ? col : width - col - 1;
+          tzyx_offset = tzy_offset + x * width_space_offset;
+
+          intensity = this._data[tzyx_offset];
+
+          min = Math.min(min, intensity);
+          max = Math.max(max, intensity);
+          intensitySum += intensity;
+
+          slice_data[i++] = intensity;
+        }
+      }
+    }
+
+    var outputImage = new Image2D();
+    outputImage.setData(  slice_data, width, height, 1);
+    outputImage.setMetadata("min", min);
+    outputImage.setMetadata("max", max);
+    outputImage.setMetadata("avg", intensitySum / (i-1) );
+    return outputImage;
+
+  }
+
+
+  /**
+  * Get the intensity of a given voxel, addressed by dimensionality order.
+  * In case of doubt, use getIntensity_xyz instead.
+  * @param {Number} i - Position within the biggest dimensionality order
+  * @param {Number} j - Position within the in-the-middle dimensionality order
+  * @param {Number} k - Position within the smallest dimensionality order
+  */
+  getIntensity_ijk(i, j, k, time = 0) {
+    var order = this.getMetadata("order");
+
+    if (i < 0 || i >= this.getMetadata( order[0] ).space_length ||
+        j < 0 || j >= this.getMetadata( order[1] ).space_length ||
+        k < 0 || k >= this.getMetadata( order[2] ).space_length)
+    {
+        console.warn("getIntensity_ijk position is out of range.");
+        return 0;
+    }
+
+    var time_offset = this.hasMetadata( "time" ) ? time * this.getMetadata( "time" ).offset : 0;
+
+    var xyzt_offset = (
+      i * this.getMetadata( order[0] ).offset +
+      j * this.getMetadata( order[1] ).offset +
+      k * this.getMetadata( order[2] ).offset +
+      time_offset);
+
+    return this._data[xyzt_offset];
+  }
+
+
+  /**
+  * Get the intensity of a given voxel, addressed by dimension names.
+  * @param {Number} x - position within xspace
+  * @param {Number} y - position within yspace
+  * @param {Number} z - position within zspace
+  * @param {Number} time - position in time (optional)
+  */
+  getIntensity_xyz(x, y, z, time = 0) {
+    var order = this.getMetadata("order");
+
+    if (x < 0 || x >= this.getMetadata( "xspace" ).space_length ||
+        y < 0 || y >= this.getMetadata( "yspace" ).space_length ||
+        z < 0 || z >= this.getMetadata( "zspace" ).space_length)
+    {
+        console.warn("getIntensity_xyz position is out of range.");
+        return 0;
+    }
+
+    var time_offset = this.hasMetadata( "time" ) ? time * this.getMetadata( "time" ).offset : 0;
+
+    var xyzt_offset = (
+      x * this.getMetadata( "xspace" ).offset +
+      y * this.getMetadata( "yspace" ).offset +
+      z * this.getMetadata( "zspace" ).offset +
+      time_offset);
+
+    return this._data[xyzt_offset];
   }
 
 
@@ -1304,9 +1554,6 @@ class MniVolume extends Image3D{
   * @param {Array} data - TypedArray containing the data
   */
   setData( data, header ){
-    console.log(header);
-
-    return;
     var that = this;
     this._data = data;
 
@@ -1326,29 +1573,13 @@ class MniVolume extends Image3D{
     this._saveOriginAndTransform();
 
     // adding some fields to metadata header
-    //this._finishHeader()
+    this._finishHeader();
 
     console.log(this._metadata);
-    console.log(this._data);
   }
 
 
-  /**
-  * [PRIVATE]
-  * Look for min and max on the dataset and add them to the header metadata
-  */
-  _scanDataRange(){
-    var min = +Infinity;
-    var max = -Infinity;
 
-    this._data.forEach( function(value){
-      min = Math.min(min, value);
-      max = Math.max(max, value);
-    });
-
-    this.setMetadata("voxel_min", min);
-    this.setMetadata("voxel_max", max);
-  }
 
 
   /**
@@ -1401,158 +1632,12 @@ class MniVolume extends Image3D{
   }
 
 
-  /**
-  * [PRIVATE]
-  * Creates common fields all headers must contain.
-  */
-  _finishHeader() {
-    var xspace = this.getMetadata("xspace");
-    var yspace = this.getMetadata("yspace");
-    var zspace = this.getMetadata("zspace");
-
-    xspace.name = "xspace";
-    yspace.name = "yspace";
-    zspace.name = "zspace";
-
-    xspace.width_space  = yspace;
-    xspace.width        = yspace.space_length;
-    xspace.height_space = zspace;
-    xspace.height       = zspace.space_length;
-
-    yspace.width_space  = xspace;
-    yspace.width        = xspace.space_length;
-    yspace.height_space = zspace;
-    yspace.height       = zspace.space_length;
-
-    zspace.width_space  = xspace;
-    zspace.width        = xspace.space_length;
-    zspace.height_space = yspace;
-    zspace.height       = yspace.space_length;
-  }
-
-
-  /**
-  * Get the intensity of a given voxel. The position i j k
-  */
-  getIntensityValue(i, j, k, time) {
-    var order = this.getMetadata("order");
-    time = time === undefined ? this.getMetadata( "current_time" ) : time;
-
-    if (i < 0 || i >= this.getMetadata( order[0] ).space_length ||
-        j < 0 || j >= this.getMetadata( order[1] ).space_length ||
-        k < 0 || k >= this.getMetadata( order[2] ).space_length)
-    {
-        return 0;
-    }
-
-    var time_offset = this.hasMetadata( "time" ) ? time * this.getMetadata( "time" ).offset : 0;
-
-    var xyzt_offset = (
-      i * this.getMetadata( order[0] ).offset +
-      j * this.getMetadata( order[1] ).offset +
-      k * this.getMetadata( order[2] ).offset +
-      time_offset);
-
-    return this._data[xyzt_offset];
-  }
 
 
 
 
 
-  /**
-  * [PRIVATE]
-  * Return a slice from the minc cube as a 1D typed array,
-  * along with some relative data (slice size, step, etc.)
-  * args:
-  * @param {String} axis - "xspace", "yspace" or zspace (mandatory)
-  * @param {Number} slice_num - index of the slice [0; length-1] (optional, default: length-1)
-  * @param {Number} time - index of time (optional, default: 0)
-  * TODO: add some method to a slice (get value) because it's a 1D array... and compare with Python
-  */
-  slice(axis, slice_num = 0, time = 0) {
-    if( !this.hasMetadata(axis) ){
-      console.warn("The axis " + axis + " does not exist.");
-      return null;
-    }
 
-    var time_offset = this.hasMetadata("time") ? time * this.getMetadata("time").offset : 0;
-
-    var axis_space = this.getMetadata(axis);
-    var width_space = axis_space.width_space;
-    var height_space = axis_space.height_space;
-
-    var width = axis_space.width;
-    var height = axis_space.height;
-
-    var axis_space_offset = axis_space.offset;
-    var width_space_offset = width_space.offset;
-    var height_space_offset = height_space.offset;
-
-    // Calling the volume data's constructor guarantees that the
-    // slice data buffer has the same type as the volume.
-    //
-    //var slice_data = new this._data.constructor(width * height);
-    var slice_data = new Float32Array(width * height);
-
-    // Rows and colums of the result slice.
-    var row, col;
-
-    // Indexes into the volume, relative to the slice.
-    // NOT xspace, yspace, zspace coordinates!!!
-    var x, y, z;
-
-    // Linear offsets into volume considering an
-    // increasing number of axes: (t) time,
-    // (z) z-axis, (y) y-axis, (x) x-axis.
-    var tz_offset, tzy_offset, tzyx_offset;
-
-    // Whether the dimension steps positively or negatively.
-    var x_positive = width_space.step  > 0;
-    var y_positive = height_space.step > 0;
-    var z_positive = axis_space.step   > 0;
-
-    // iterator for the result slice.
-    var i = 0;
-    var intensity = 0;
-    var intensitySum = 0;
-    var min = Infinity;
-    var max = -Infinity;
-
-    var maxOfVolume = this.getMetadata("voxel_max");
-
-    z = z_positive ? slice_num : axis_space.space_length - slice_num - 1;
-    if (z >= 0 && z < axis_space.space_length) {
-      tz_offset = time_offset + z * axis_space_offset;
-
-      for (row = height - 1; row >= 0; row--) {
-        y = y_positive ? row : height - row - 1;
-        tzy_offset = tz_offset + y * height_space_offset;
-
-        for (col = 0; col < width; col++) {
-          x = x_positive ? col : width - col - 1;
-          tzyx_offset = tzy_offset + x * width_space_offset;
-
-          intensity = this._data[tzyx_offset];
-
-          min = Math.min(min, intensity);
-          max = Math.max(max, intensity);
-          intensitySum += intensity;
-
-          slice_data[i++] = intensity;
-
-        }
-      }
-    }
-
-    var outputImage = new Image2D();
-    outputImage.setData(  slice_data, width, height, 1);
-    outputImage.setMetadata("min", min);
-    outputImage.setMetadata("max", max);
-    outputImage.setMetadata("avg", intensitySum / (i-1) );
-    return outputImage;
-
-  }
 
 
 
@@ -11407,7 +11492,7 @@ class Minc2Decoder extends Filter{
     this._addOutput(MniVolume);
     var mniVol = this.getOutput();
     mniVol.setData(dataArray, minc_header);
-    mniVol.setMetadata("type", "minc2");
+    mniVol.setMetadata("format", "minc2");
   }
 
 
@@ -11731,7 +11816,7 @@ class NiftiDecoder extends Filter {
     this._addOutput(MniVolume);
     var mniVol = this.getOutput();
     mniVol.setData(dataArray, header);
-    mniVol.setMetadata("type", "nifti");
+    mniVol.setMetadata("format", "nifti");
 
   }
 
