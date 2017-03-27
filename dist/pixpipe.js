@@ -640,9 +640,7 @@ class Image2D extends PipelineElement{
 
     // a rgba stored in a Float32Array (typed array)
     this._data = null;
-    this._width = -1;
-    this._height = -1;
-    this._componentsPerPixel = 4; // RGBA, by default
+    this.setMetadata("ncpp", 4);
 
     // pipeline associated with this image. Not mandatory.
     this._pipeline = null;
@@ -651,20 +649,21 @@ class Image2D extends PipelineElement{
     if(options && "width" in options && "height" in options){
 
       if( options.width > 0 && options.height > 0){
-        this._width = options.width;
-        this._height = options.height;
+        this.setMetadata("width", options.width);
+        this.setMetadata("height", options.height);
 
         if("color" in options){
-          this._componentsPerPixel = options.color.length;
+          this.setMetadata("ncpp", options.color.length );
         }
 
-        this._data = new Float32Array( this._width * this._height * this._componentsPerPixel );
+        this._data = new Float32Array( options.width * options.height * this.getMetadata("ncpp") );
+        var ncpp = this.getMetadata("ncpp");
 
         // init with the given color
         if("color" in options){
           var color = options.color;
           for(var i=0; i<this._data.length; i++){
-            this._data[i] = color[i%this._componentsPerPixel];
+            this._data[i] = color[i%ncpp];
           }
         }else{
           this._data.fill(0);
@@ -689,8 +688,7 @@ class Image2D extends PipelineElement{
   */
   clone(){
     var cpImg = new Image2D();
-    //cpImg.setData( this._data, this._width, this._height );
-    cpImg.setData( this._data, this._width, this._height, this._ncpp, true );
+    cpImg.setData( this._data, this.getMetadata("width"), this.getMetadata("height"), this.getMetadata("ncpp"), true );
     cpImg.copyMetadataFrom( this );
     return cpImg;
   }
@@ -705,9 +703,9 @@ class Image2D extends PipelineElement{
   * @param {Boolean} deepCopy - if true, a copy of the data is given, if false we jsut give the pointer
   */
   setData( array, width, height, ncpp=4, deepCopy=false ){
-    this._componentsPerPixel = ncpp;
+    this.setMetadata("ncpp", ncpp);
 
-    if( array.length != width*height*this._componentsPerPixel){
+    if( array.length != width*height*ncpp){
       console.warn("The array size does not match the width and height. Cannot init the Image2D.");
       return;
     }
@@ -718,8 +716,8 @@ class Image2D extends PipelineElement{
       this._data = array;
     }
 
-    this._width = width;
-    this._height = height;
+    this.setMetadata("width", width);
+    this.setMetadata("height", height);
   }
 
 
@@ -729,14 +727,16 @@ class Image2D extends PipelineElement{
   * @param {Array} color - color, must have the same numb of components per pix than the image
   */
   setPixel( position, color ){
-    if("x" in position && position.x >=0 && position.x < this._width &&
-       "y" in position && position.y >=0 && position.y < this._height &&
-       color.length == this._componentsPerPixel)
+    var ncpp = this.getMetadata("ncpp");
+
+    if("x" in position && position.x >=0 && position.x < this.getMetadata("width") &&
+       "y" in position && position.y >=0 && position.y < this.getMetadata("height") &&
+       color.length == ncpp)
     {
 
-      var pos1D = this.get1dIndexFrom2dPosition( position ) * this._componentsPerPixel;
+      var pos1D = this.get1dIndexFrom2dPosition( position ) * ncpp;
 
-      for(var i=0; i<this._componentsPerPixel; i++){
+      for(var i=0; i<ncpp; i++){
         this._data[ pos1D + i] = color[i];
       }
 
@@ -751,11 +751,11 @@ class Image2D extends PipelineElement{
   * @return {Array} the color of the given pixel.
   */
   getPixel( position ){
-    if("x" in position && position.x >=0 && position.x < this._width &&
-       "y" in position && position.y >=0 && position.y < this._height)
+    if("x" in position && position.x >=0 && position.x < this.getMetadata("width") &&
+       "y" in position && position.y >=0 && position.y < this.getMetadata("height"))
     {
-      var pos1D = this.get1dIndexFrom2dPosition( position ) * this._componentsPerPixel;
-      var color = this._data.slice(pos1D, pos1D + this._componentsPerPixel);
+      var pos1D = this.get1dIndexFrom2dPosition( position ) * this.getMetadata("ncpp");
+      var color = this._data.slice(pos1D, pos1D + this.getMetadata("ncpp"));
       return color;
 
     }else{
@@ -769,7 +769,7 @@ class Image2D extends PipelineElement{
   * @return {Number} the width of the Image2D
   */
   getWidth(){
-    return this._width;
+    return this.getMetadata("width");
   }
 
 
@@ -777,7 +777,7 @@ class Image2D extends PipelineElement{
   * @return {Number} the height of the Image2D
   */
   getHeight(){
-    return this._height;
+    return this.getMetadata("height");
   }
 
 
@@ -785,7 +785,7 @@ class Image2D extends PipelineElement{
   * @return {Number} the number of components per pixel
   */
   getComponentsPerPixel(){
-    return this._componentsPerPixel;
+    return this.getMetadata("ncpp");
   }
 
 
@@ -815,8 +815,8 @@ class Image2D extends PipelineElement{
   */
   get2dPositionFrom1dIndex( i ){
     return {
-      x: i % this._width,
-      y: Math.floor(i / this._width)
+      x: i % this.getMetadata("width"),
+      y: Math.floor(i / this.getMetadata("width"))
     }
   }
 
@@ -828,7 +828,7 @@ class Image2D extends PipelineElement{
   * @return {Number} the 1D position within the buffer
   */
   get1dIndexFrom2dPosition( position ){
-    return (position.x + position.y*this._width);
+    return (position.x + position.y*this.getMetadata("width"));
   }
 
 
