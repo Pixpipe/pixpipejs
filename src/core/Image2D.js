@@ -17,7 +17,10 @@ class Image2D extends PipelineElement{
 
   /**
   * Constructor of an Image2D instance. If no options, no array is allocated.
-  * @param {Object} options - if present, must have options.width, options.height. Also options.color = [r, g, b, a] is possible but not mandatory, this sets the default color.
+  * @param {Object} options - if present:
+  *   - options.width {Number} width in pixel
+  *   - options.height {Number} height in pixel
+  *   - options.color {Array} can be [r, g, b, a] or just [i]. Optional.
   */
   constructor( options=null ){
     super();
