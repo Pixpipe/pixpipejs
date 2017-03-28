@@ -15,10 +15,10 @@ import { Filter } from '../core/Filter.js';
 * with no argument for that.
 * Reading a file from URL takes an AJAX request, which is asynchronous. For this
 * reason, what happens next, once the Image2D is created must take place in the
-* callback defined by the event .on("imageLoaded", function(){ ... }).
+* callback defined by the event .on("ready", function(){ ... }).
 * Usage: examples/urlToImage2D.html
 *
-* UrlImageReader can also load multiple images and call the "imageLoaded" event
+* UrlImageReader can also load multiple images and call the "ready" event
 * only when all of them are loaded.
 * Usage: examples/urlToImage2D_multiple.html
 *
@@ -81,8 +81,8 @@ class UrlImageReader extends Filter {
         that._loadedCounter ++;
 
         // call the loaded callback only when all images are loaded
-        if(that._loadedCounter == that.getNumberOfInputs() && "imageLoaded" in that._events){
-          that._events.imageLoaded( that )
+        if(that._loadedCounter == that.getNumberOfInputs() && "ready" in that._events){
+          that._events.ready( that )
         }
 
       }catch(e){

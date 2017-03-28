@@ -14,7 +14,7 @@ import { Filter } from '../core/Filter.js';
 * Use the regular `addInput()` and `getOuput()` with no argument for that.
 * Reading a local file is an asynchronous process. For this
 * reason, what happens next, once the Image2D is created must take place in the
-* callback defined by the event .on("imageLoaded", function(){ ... }).
+* callback defined by the event .on("ready", function(){ ... }).
 *
 *
 *
@@ -27,11 +27,7 @@ import { Filter } from '../core/Filter.js';
 */
 class FileImageReader extends Filter {
 
-  /**
-  * @param {function} callback - function to call when the image is loaded.
-  * The _this_ object will be in argument of this callback.
-  */
-  constructor( callback){
+  constructor(){
     super();
 
     this._allowedTypes = /image.*/;
@@ -83,8 +79,8 @@ class FileImageReader extends Filter {
       var img2D = that.getOutput();
       img2D.setData( dataArray, img.width, img.height);
 
-      if("imageLoaded" in that._events){
-        that._events.imageLoaded( that )
+      if("ready" in that._events){
+        that._events.ready( that )
       }
 		}
 
