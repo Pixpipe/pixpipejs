@@ -19,3 +19,7 @@ code {
   border-radius: 3px;
   font-family: monospace;
 }
+
+.canvasDiv{
+  margin-bottom: 10px;
+}
