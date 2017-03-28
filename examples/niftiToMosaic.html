@@ -7,7 +7,7 @@
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-  <h1><span style="color: #ff91d7">Pixpipe</span>js</h1>
+  <h1><a href="https://github.com/jonathanlurie/pixpipejs"><span style="color: #ff91d7">Pixpipe</span><span style="color: #FFFFFF">js</span></a></h1>
   <p>
   This does the following :
   <ul>
@@ -65,15 +65,18 @@
         var space = "zspace";
         mosaicFilter.setMetadata( "axis", space);
 
-        console.log(mniVolume.getMetadata(space));
+        var spaceInfo = mniVolume.getMetadata(space);
+        document.getElementById('fileInfo').innerHTML += "<br>" + filenames[0] + " is composed of "
+          + spaceInfo.space_length + " slices of size "
+          + spaceInfo.width + "x" + spaceInfo.height + "px <br>";
 
         // default is 4096 * 4096 but we can print a canvas in a more "parametric"
         // way so that we have 10 images for each row. Be aware HTML5 Canvas have
         // size/area limits. See http://bit.ly/2nIlyoi for more info.
 
         // set the max size allowed
-        mosaicFilter.setMetadata("maxWidth", mniVolume.getMetadata(space).width * 10 );
-        mosaicFilter.setMetadata("maxHeight",  10 * mniVolume.getMetadata(space).height);
+        //mosaicFilter.setMetadata("maxWidth", mniVolume.getMetadata(space).width * 10 );
+        //mosaicFilter.setMetadata("maxHeight",  10 * mniVolume.getMetadata(space).height);
 
         // or print in one big canvas;
         // mosaicFilter.setMetadata("maxHeight", Math.ceil(mniVolume.getMetadata(space).space_length / 10) * mniVolume.getMetadata(space).height);
@@ -90,8 +93,12 @@
 
         // display the output in multiple canvas if needed
         for(var nbOut=0; nbOut<mosaicFilter.getNumberOfOutputs(); nbOut++){
+          var outputMosaic = mosaicFilter.getOutput(nbOut);
+
+          document.getElementById('fileInfo').innerHTML += "Output " + nbOut + ": " + outputMosaic.getWidth() + "x" + outputMosaic.getHeight() + "px (while the max output size allowed is " + mosaicFilter.getMetadata("maxWidth") + "x" + mosaicFilter.getMetadata("maxHeight") + "px )";
+
           imageToCanvasFilter.setMetadata( "parentDivID", "output" );
-          imageToCanvasFilter.addInput( mosaicFilter.getOutput(nbOut) );
+          imageToCanvasFilter.addInput( outputMosaic );
           imageToCanvasFilter.update();
         }
 
