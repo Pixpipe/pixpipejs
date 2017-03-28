@@ -42,6 +42,7 @@ class CanvasImageWriter extends Filter{
     this.setMetadata("alpha", false);
     this.setMetadata("min", 0);
     this.setMetadata("max", 255);
+    this.setMetadata("reset", true);
 
 
     // so that we can flush the content
@@ -57,8 +58,16 @@ class CanvasImageWriter extends Filter{
   _init(){
 
     var parentElem = document.getElementById( this.getMetadata("parentDivID") );
-    while (parentElem.firstChild) {
-        parentElem.removeChild(parentElem.firstChild);
+
+    if(! parentElem ){
+      return false;
+    }
+
+    // reset content
+    if(this.getMetadata("reset")){
+      while (parentElem.firstChild) {
+          parentElem.removeChild(parentElem.firstChild);
+      }
     }
 
     // creating a canvas element
@@ -74,6 +83,8 @@ class CanvasImageWriter extends Filter{
     this._ctx.ctxmsImageSmoothingEnabled = false;
 
     document.getElementById(this.getMetadata("parentDivID")).appendChild(this._canvas);
+
+    return true;
   }
 
 
@@ -102,7 +113,10 @@ class CanvasImageWriter extends Filter{
     }
 
     // build a new canvas
-    this._init();
+    if( !this._init() ){
+      console.warn("The parent div was not specified or does not exist.");
+      return;
+    }
     var useAlphaBand = this.getMetadata("alpha");
 
     // resizing the canvas
