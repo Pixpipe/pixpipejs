@@ -88,7 +88,6 @@ class Image3DToMosaicFilter extends Filter{
 
       // create a new output image when the current is full (or not init)
       if( sliceIndex%slicePerOutputIm == 0 ){
-        console.log("output: " + outputCounter);
         outImage = new Image2D({width: outputWidth, height: outputHeight, color: [0]});
         this._output[ outputCounter ] = outImage;
         sliceIndexCurrentOutput = 0;

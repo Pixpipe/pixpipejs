@@ -9,7 +9,7 @@
 
 </head>
 <body>
-  <h1><span style="color: #ff91d7">Pixpipe</span>js</h1>
+  <h1><a href="https://github.com/jonathanlurie/pixpipejs"><span style="color: #ff91d7">Pixpipe</span><span style="color: #FFFFFF">js</span></a></h1>
   <p>
   This does the following :
   <ul>
@@ -34,7 +34,7 @@
 
   // the image is loaded...
   // here, filter = url2ImgFilter
-  url2ImgFilter.on("imageLoaded", function( filter ){
+  url2ImgFilter.on("ready", function( filter ){
     // use the output of the UrlImageReader as the input for CanvasImageWriter
     imageToCanvasFilter.addInput( filter.getOutput() );
     // actually copy the data from the Image2D into the inner HTML5 canvas

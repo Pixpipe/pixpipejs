@@ -1850,10 +1850,10 @@ class CanvasImageWriter extends Filter{
 * with no argument for that.
 * Reading a file from URL takes an AJAX request, which is asynchronous. For this
 * reason, what happens next, once the Image2D is created must take place in the
-* callback defined by the event .on("imageLoaded", function(){ ... }).
+* callback defined by the event .on("ready", function(){ ... }).
 * Usage: examples/urlToImage2D.html
 *
-* UrlImageReader can also load multiple images and call the "imageLoaded" event
+* UrlImageReader can also load multiple images and call the "ready" event
 * only when all of them are loaded.
 * Usage: examples/urlToImage2D_multiple.html
 *
@@ -1916,8 +1916,8 @@ class UrlImageReader extends Filter {
         that._loadedCounter ++;
 
         // call the loaded callback only when all images are loaded
-        if(that._loadedCounter == that.getNumberOfInputs() && "imageLoaded" in that._events){
-          that._events.imageLoaded( that );
+        if(that._loadedCounter == that.getNumberOfInputs() && "ready" in that._events){
+          that._events.ready( that );
         }
 
       }catch(e){
@@ -1944,7 +1944,7 @@ class UrlImageReader extends Filter {
 * Use the regular `addInput()` and `getOuput()` with no argument for that.
 * Reading a local file is an asynchronous process. For this
 * reason, what happens next, once the Image2D is created must take place in the
-* callback defined by the event .on("imageLoaded", function(){ ... }).
+* callback defined by the event .on("ready", function(){ ... }).
 *
 *
 *
@@ -2009,8 +2009,8 @@ class FileImageReader extends Filter {
       var img2D = that.getOutput();
       img2D.setData( dataArray, img.width, img.height);
 
-      if("imageLoaded" in that._events){
-        that._events.imageLoaded( that );
+      if("ready" in that._events){
+        that._events.ready( that );
       }
 		};
 
@@ -2029,7 +2029,7 @@ class FileImageReader extends Filter {
 */
 
 /**
-* Takes the File inputs from a <input type="file"> and reads it as a ArrayBuffer.
+* Takes the File inputs from a HTML input of type "file" (aka. a file dialog), and reads it as a ArrayBuffer.
 * Every File given in input should be added separately using `addInput( file[i], 'uniqueID' )`.
 * The event "ready" must be set up ( using .on("ready", function(){}) ) and will
 * be triggered when all the files given in input are translated into ArrayBuffers.
