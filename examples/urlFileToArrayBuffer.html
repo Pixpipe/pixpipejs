@@ -1,0 +1,48 @@
+<html>
+<head>
+  <title>UrlFileToArrayBufferReader to ArrayBuffer</title>
+
+  <script src="../dist/pixpipe.js"></script>
+  <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700,900" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <h1><a href="https://github.com/jonathanlurie/pixpipejs"><span style="color: #ff91d7">Pixpipe</span><span style="color: #FFFFFF">js</span></a></h1>
+  <p>
+  This does the following :
+  <ul>
+    <li>opening distant files, using <code>pixpipe.UrlToArrayBufferFilter</code></li>
+    <li>display the length of the ArrayBuffers in Bytes</li>
+  </ul>
+
+  </p>
+
+  <div>
+    <span id="fileInfo"></span>
+	</div>
+
+  <script>
+  window.onload = function() {
+
+    var urlArrBuff =  new pixpipe.UrlToArrayBufferFilter();
+
+    // ad a distant file to read
+    urlArrBuff.addInput( "images/structural.nii", 0 );
+    urlArrBuff.addInput( "images/mask.png", 1 );
+
+    // define what to do when all input URL are loaded into ArrayBuffer
+    urlArrBuff.on("ready", function( filter ){
+
+      urlArrBuff.forEachOutput( function(category, output){
+        document.getElementById('fileInfo').innerHTML += "<br><b>output " + category+ ":</b> successfully loaded (" + output.byteLength + " bytes)";
+      });
+
+    })
+
+    urlArrBuff.update();
+
+  } /* END of window.onload */
+  </script>
+
+</body>
+</html>
