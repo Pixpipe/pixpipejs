@@ -14,8 +14,8 @@
     <li>open a local NIfTI file, using <code>pixpipe.FileToArrayBufferReader</code></li>
     <li>redirect the file buffer into a <code>pixpipe.NiftiDecoder</code> to extract NIfTI dataset and metadata</li>
     <li>get the output as a generique <code>pixpipe.MniVolume</code> object</li>
-    <li>produce a mosaic (Image2D) of all slices using <code>pixpipe.Image3DToMosaicFilter</code></li>
-    <li>display the mosaic in a canvas using <code>pixpipe.CanvasImageWriter</code></li>
+    <li>produce multiple 10x10 mosaics (Image2Ds) of slices using <code>pixpipe.Image3DToMosaicFilter</code></li>
+    <li>display the mosaics in a canvas using a single instance of <code>pixpipe.CanvasImageWriter</code></li>
   </ul>
 
   </p>
@@ -27,9 +27,9 @@
     <span id="fileInfo"></span>
 	</div>
 
-  <div id="myDiv_x"></div>
-  <div id="myDiv_y"></div>
-  <div id="myDiv_z"></div>
+  <div id="output">
+
+  </div>
 
   <script>
   window.onload = function() {
@@ -55,13 +55,30 @@
 
       if(mniVolume){
 
-
         var mosaicFilter = new pixpipe.Image3DToMosaicFilter();
 
         // niftiDecoder ouputs a pixpipe.MniVolume, which iherit pixpipe.Image3D
         // making it compatible with pixpipe.Image3DToMosaicFilter
-        mosaicFilter.addInput( mniVolume )
+        mosaicFilter.addInput( mniVolume );
 
+        // which axis do we want the picture of?
+        var space = "zspace";
+        mosaicFilter.setMetadata( "axis", space);
+
+        console.log(mniVolume.getMetadata(space));
+
+        // default is 4096 * 4096 but we can print a canvas in a more "parametric"
+        // way so that we have 10 images for each row. Be aware HTML5 Canvas have
+        // size/area limits. See http://bit.ly/2nIlyoi for more info.
+
+        // set the max size allowed
+        mosaicFilter.setMetadata("maxWidth", mniVolume.getMetadata(space).width * 10 );
+        mosaicFilter.setMetadata("maxHeight",  10 * mniVolume.getMetadata(space).height);
+
+        // or print in one big canvas;
+        // mosaicFilter.setMetadata("maxHeight", Math.ceil(mniVolume.getMetadata(space).space_length / 10) * mniVolume.getMetadata(space).height);
+
+        // run the filter
         mosaicFilter.update();
 
         // create a filter to write the image into a canvas
@@ -69,11 +86,14 @@
         // replace the default min max values of [0, 255]
         imageToCanvasFilter.setMetadata("min", mniVolume.getMetadata("voxel_min"));
         imageToCanvasFilter.setMetadata("max", mniVolume.getMetadata("voxel_max"));
+        imageToCanvasFilter.setMetadata("reset", false);
 
-        // display sagital
-        imageToCanvasFilter.setMetadata( "parentDivID", "myDiv_x" );
-        imageToCanvasFilter.addInput( mosaicFilter.getOutput(0) );
-        imageToCanvasFilter.update();
+        // display the output in multiple canvas if needed
+        for(var nbOut=0; nbOut<mosaicFilter.getNumberOfOutputs(); nbOut++){
+          imageToCanvasFilter.setMetadata( "parentDivID", "output" );
+          imageToCanvasFilter.addInput( mosaicFilter.getOutput(nbOut) );
+          imageToCanvasFilter.update();
+        }
 
 
       }else{

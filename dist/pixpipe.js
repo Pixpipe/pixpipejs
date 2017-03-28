@@ -744,7 +744,7 @@ class Image2D extends PipelineElement{
       }
 
     }else{
-      //console.error("x and y position have to be within the image dimensions and color size must be the same as the original image.");
+      console.error("x and y position have to be within the image dimensions and color size must be the same as the original image.");
     }
   }
 
@@ -1687,6 +1687,7 @@ class CanvasImageWriter extends Filter{
     this.setMetadata("alpha", false);
     this.setMetadata("min", 0);
     this.setMetadata("max", 255);
+    this.setMetadata("reset", true);
 
 
     // so that we can flush the content
@@ -1702,8 +1703,16 @@ class CanvasImageWriter extends Filter{
   _init(){
 
     var parentElem = document.getElementById( this.getMetadata("parentDivID") );
-    while (parentElem.firstChild) {
-        parentElem.removeChild(parentElem.firstChild);
+
+    if(! parentElem ){
+      return false;
+    }
+
+    // reset content
+    if(this.getMetadata("reset")){
+      while (parentElem.firstChild) {
+          parentElem.removeChild(parentElem.firstChild);
+      }
     }
 
     // creating a canvas element
@@ -1719,6 +1728,8 @@ class CanvasImageWriter extends Filter{
     this._ctx.ctxmsImageSmoothingEnabled = false;
 
     document.getElementById(this.getMetadata("parentDivID")).appendChild(this._canvas);
+
+    return true;
   }
 
 
@@ -1747,7 +1758,10 @@ class CanvasImageWriter extends Filter{
     }
 
     // build a new canvas
-    this._init();
+    if( !this._init() ){
+      console.warn("The parent div was not specified or does not exist.");
+      return;
+    }
     var useAlphaBand = this.getMetadata("alpha");
 
     // resizing the canvas
@@ -13435,43 +13449,59 @@ class Image3DToMosaicFilter extends Filter{
     // size of the ouput image(s)
     var outputWidth = widthFit * width;
     var outputHeight = heightFit * height;
+    var slicePerOutputIm = widthFit * heightFit;
 
     // Number of output image(s) necessary to cover the whole Image3D dataset
-    var outputNecessary = Math.ceil( numOfSlices / (widthFit*heightFit) );
+    var outputNecessary = Math.ceil( numOfSlices / slicePerOutputIm );
 
-    // for each output image
-    for(var im=0; im<outputNecessary; im++){
-      // creating the output image
-      var outImage = new Image2D({width: outputWidth, height: outputHeight, color: [0]});
-      this._output[ im ] = outImage;
+    // if only one output, maybe it's not filled entirely, so we can make it a bit smaller
+    if( outputNecessary == 1){
+      outputHeight = Math.ceil( numOfSlices / widthFit ) * height;
+    }
+
+    var outputCounter = 0;
+    var sliceIndex = 0;
+    var sliceIndexCurrentOutput = 0;
+
+    var outImage = null;
 
 
+    // for each slice
+    for(var sliceIndex; sliceIndex<numOfSlices; sliceIndex++){
 
-      for(var sliceIndex=0; sliceIndex<numOfSlices; sliceIndex++){
-        // slice from the input dataset
-        var slice = inputImage3D.getSlice( this.getMetadata("axis") , im);
-        
-        // for each tile-line in the output image
-        for(var row=0; row<heightFit; row++){
+      // fetching the slice
+      var slice = inputImage3D.getSlice( this.getMetadata("axis") , sliceIndex);
 
-          // for each tile-col in the output image
-          for(var col=0; col<widthFit; col++){
 
-            // for each row of the input slice
-            for(var y=0; y<height; y++){
+      // create a new output image when the current is full (or not init)
+      if( sliceIndex%slicePerOutputIm == 0 ){
+        console.log("output: " + outputCounter);
+        outImage = new Image2D({width: outputWidth, height: outputHeight, color: [0]});
+        this._output[ outputCounter ] = outImage;
+        sliceIndexCurrentOutput = 0;
+        outputCounter++;
+      }
 
-              // for each col of the output image
-              for(var x=0; x<width; x++){
-                outImage.setPixel(
-                  {x: col*width+x, y:row*height+y},
-                  slice.getPixel({x: x, y: y})
-                );
-              }
-            }
-          }
+      var col = sliceIndexCurrentOutput % widthFit;
+      var row = Math.floor( sliceIndexCurrentOutput / widthFit );
+      sliceIndexCurrentOutput ++;
+
+      var offsetPixelCol = col * width;
+      var offsetPixelRow = row * height;
+
+      // for each row of the input slice
+      for(var y=0; y<height; y++){
+        // for each col of the output image
+        for(var x=0; x<width; x++){
+          outImage.setPixel(
+            {x: offsetPixelCol+x, y: offsetPixelRow+y},
+            slice.getPixel({x: x, y: y})
+          );
         }
       }
+
     }
+
 
   }
 
