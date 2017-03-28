@@ -19,3 +19,11 @@ code {
   border-radius: 3px;
   font-family: monospace;
 }
+
+a{
+  text-decoration: none;
+}
+
+.canvasDiv{
+  margin-bottom: 10px;
+}

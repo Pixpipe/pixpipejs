@@ -9,7 +9,7 @@
 
 </head>
 <body>
-  <h1><span style="color: #ff91d7">Pixpipe</span>js</h1>
+  <h1><a href="https://github.com/jonathanlurie/pixpipejs"><span style="color: #ff91d7">Pixpipe</span><span style="color: #FFFFFF">js</span></a></h1>
   <p>
   This does the following :
   <ul>
@@ -41,7 +41,7 @@
 
   // the image is loaded...
   // here, filter = url2ImgFilter
-  url2ImgFilter.on( "imageLoaded", function(filter){
+  url2ImgFilter.on( "ready", function(filter){
     var loadedImage = url2ImgFilter.getOutput();
 
     // create an image, monoband, init to black (0)

@@ -59,7 +59,7 @@ class PixpipeObject {
   /**
   * Return a copy of the uuid
   */
-  get uuid(){
+  getUuid(){
     return this._uuid.slice();
   }
 
@@ -103,6 +103,33 @@ class PixpipeObject {
     return (key in this._metadata);
   }
 
+
+  /**
+  * @return {Array} of Strings where each is a key of an existing metadata record
+  */
+  getMetadataKeys(){
+    return Object.keys( this._metadata );
+  }
+
+
+  /**
+  * Copy all the metadata from the object in argument to this.
+  * A deep copy by serialization is perform.
+  * The metadata that exist only in _this_ are kept.
+  * @param {PixpipeObject} otherObject - the object to copy metadata from
+  */
+  copyMetadataFrom( otherObject ){
+    var that = this;
+
+    otherObject.getMetadataKeys().forEach( function(key){
+      try{
+        var metadataObjectCopy = JSON.parse( JSON.stringify( otherObject.getMetadata(key) ) );
+        that.setMetadata(key, metadataObjectCopy);
+      }catch(e){
+        console.error(e);
+      }
+    });
+  }
 
 }
 

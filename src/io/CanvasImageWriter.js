@@ -13,6 +13,10 @@ import { Filter } from '../core/Filter.js';
 * HTML5 canvas element.
 * The metadata "parentDivID" has to be set using `setMetadata("parentDivID", "whatever")`
 * The metadata "alpha", if true, enable transparency. Default: false.
+* If the input Image2D has values not in [0, 255], you can remap/stretch using
+* setMetadata("min", xxx ) default: 0
+* setMetadata("max", xxx ) default: 255
+*
 * usage: examples/imageToCanvasFilter.html
 *
 * @example
@@ -36,6 +40,10 @@ class CanvasImageWriter extends Filter{
 
     this._inputValidator[ 0 ] = Image2D.TYPE();
     this.setMetadata("alpha", false);
+    this.setMetadata("min", 0);
+    this.setMetadata("max", 255);
+    this.setMetadata("reset", true);
+
 
     // so that we can flush the content
     this._canvas = null;
@@ -50,8 +58,16 @@ class CanvasImageWriter extends Filter{
   _init(){
 
     var parentElem = document.getElementById( this.getMetadata("parentDivID") );
-    while (parentElem.firstChild) {
-        parentElem.removeChild(parentElem.firstChild);
+
+    if(! parentElem ){
+      return false;
+    }
+
+    // reset content
+    if(this.getMetadata("reset")){
+      while (parentElem.firstChild) {
+          parentElem.removeChild(parentElem.firstChild);
+      }
     }
 
     // creating a canvas element
@@ -67,6 +83,8 @@ class CanvasImageWriter extends Filter{
     this._ctx.ctxmsImageSmoothingEnabled = false;
 
     document.getElementById(this.getMetadata("parentDivID")).appendChild(this._canvas);
+
+    return true;
   }
 
 
@@ -74,6 +92,7 @@ class CanvasImageWriter extends Filter{
   * Overwrite the generic (empty) method.
   */
   _run(){
+    var that = this;
 
     // abort if invalid input
     if(!this.hasValidInput() )
@@ -94,7 +113,10 @@ class CanvasImageWriter extends Filter{
     }
 
     // build a new canvas
-    this._init();
+    if( !this._init() ){
+      console.warn("The parent div was not specified or does not exist.");
+      return;
+    }
     var useAlphaBand = this.getMetadata("alpha");
 
     // resizing the canvas
@@ -107,28 +129,65 @@ class CanvasImageWriter extends Filter{
     // getting Image object data
     var originalImageDataArray = image.getData();
 
+    // input image is RGBA
     if(ncppSrc == 4){
       // copying the data into the canvas array (clamped uint8)
       originalImageDataArray.forEach( function(value, index){
         if(!useAlphaBand && index%4 == 3){
           canvasImageDataArray[index] = 255;
         }else{
-          canvasImageDataArray[index] = value;
+          canvasImageDataArray[index] = that._stretchMinMax(value);
         }
       });
 
+    // input image is mono chanel
     }else if(ncppSrc == 1){
       originalImageDataArray.forEach( function(value, index){
-        canvasImageDataArray[index*4] = value;
-        canvasImageDataArray[index*4 + 1] = value;
-        canvasImageDataArray[index*4 + 2] = value;
-        canvasImageDataArray[index*4 + 3] = 255;
+        var index1D = index*4;
+        var stretchedValue = that._stretchMinMax(value);
+        canvasImageDataArray[index1D] = stretchedValue;
+        canvasImageDataArray[index1D + 1] = stretchedValue;
+        canvasImageDataArray[index1D + 2] = stretchedValue;
+        canvasImageDataArray[index1D + 3] = 255;
       });
 
+    // input image is RGB
+    }else if(ncppSrc == 3){
+      console.warn("From RGB Image2D to RGBA canvas, not sure of this implementation.");
+      var destCounter = 0;
+      originalImageDataArray.forEach( function(value, index){
+        // adding the Alpha chanel
+        if( index%4 == 3){
+          canvasImageDataArray[destCounter] = 255;
+          destCounter++;
+        }
+
+        // regular RGB
+        canvasImageDataArray[destCounter] = that._stretchMinMax(value);
+        destCounter ++;
+      });
     }
 
     this._ctx.putImageData(canvasImageData, 0, 0);
 
+  }
+
+
+  /**
+  * [PRIVATE]
+  * remap the intensity between getMetadata("min") and getMetadata("max")
+  * @param {Number} intensity - input pixel value
+  * @return {Number} the adjusted number
+  */
+  _stretchMinMax( intensity ){
+    var min = this.getMetadata("min");
+    var max = this.getMetadata("max");
+
+    if(min == 0 && max == 255){
+      return intensity;
+    }
+
+    return ( (intensity - min) / (max - min) ) * 255;
   }
 
 }
