@@ -15,6 +15,13 @@ To make image processing:
 - easy to contribute
 - well documented for both users and contributors.
 
+# Compatible formats
+Here is the list of compatible formats:
+- jpeg (to Image2D)
+- png (to Image2D)
+- NIfTI (to Image3D / MniVolume)
+- Minc2 (to Image3D / MniVolume)
+
 # Documentation
 See [here](doc/) for the code documentation. Though, if you are just getting into `Pixpipe.js`, the best way to learn is by checking the examples below.
 
@@ -29,7 +36,7 @@ Here, we will learn what is an `Image2D`, how to display it in a canvas using `C
 - [Same but with multiple images](http://me.jonathanlurie.fr/pixpipejs/examples/urlToImage2D_multiple.html)
 - [Create an Image2D from a local file and display it](http://me.jonathanlurie.fr/pixpipejs/examples/fileToImage2D.html)
 
-## Simple filters for `Image2D`
+## Simple filters for Image2D
 See a `Filter` as a *box* that takes one or more input and produces one or more output. If some parameters are needed to make the filter work properly, this must happen using `setMetadata()`. To ask the filter to do its job, just call `update()`.  
 A `Filter` should **NEVER** modify the input data.
 - [The filter that lets you apply a treatment at a pixel level](http://me.jonathanlurie.fr/pixpipejs/examples/forEachPixel.html)
@@ -46,23 +53,23 @@ A `Filter` should **NEVER** modify the input data.
 - [Open a local  NIfTI file and display a mosaic of all the slices](http://me.jonathanlurie.fr/pixpipejs/examples/niftiToMosaic.html)
 - [Open a local file as an ArrayBuffer](http://me.jonathanlurie.fr/pixpipejs/examples/fileToArrayBuffer.html). Good starting point to create a new binary file parser
 
-# License
-MIT - See [LICENSE file](LICENSE).
-
-
 # Todo
-- ~~replace all the events named "ready" by "ready"~~
 - Doc and tutorials for developers
 - Integrate wokers with Rollup
-- FFT
-- ~~Image3D~~
-- ~~Replace ncpp attribute by a metadata (Image2D & Image3D)~~
-- ~~Push some methods of MniVolume to Image3D~~
+- 2D FFT
+- Bilinear and trilinear interpolation + resampling filter
 - Write about the features in this readme
 - Oblique sampling for Image3D
-- ~~export a/multiple Image2D of sliced Image3D (upon 2D size limit) with mosaic (for shader texturing)~~
 - Better test time series with NIfTI (maybe add an example)
 - Load a file as a ArrayBuffer with a AJAX
 - Add an efficient way to minify the code
+- Export `Image2D`, `Image3D` or generic `PixpipeObject` as a file (using serialization and Pako)
 - ~~Load a file as a ArrayBuffer with a file dialog~~ DONE: `FileToArrayBufferReader`
 - ~~Readers for Minc and NIfTI~~ DONE: `Minc2Decoder` and `NiftiDecoder`
+- ~~Image3D~~
+- ~~Replace ncpp attribute by a metadata (Image2D & Image3D)~~
+- ~~Push some methods of MniVolume to Image3D~~
+- ~~export a/multiple Image2D of sliced Image3D (upon 2D size limit) with mosaic (for shader texturing)~~
+
+# License
+MIT - See [LICENSE file](LICENSE).

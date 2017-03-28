@@ -18,6 +18,7 @@ export { CanvasImageWriter } from './io/CanvasImageWriter.js';
 export { UrlImageReader } from './io/UrlImageReader.js';
 export { FileImageReader } from './io/FileImageReader.js';
 export { FileToArrayBufferReader } from './io/FileToArrayBufferReader.js';
+export { UrlToArrayBufferFilter } from './io/UrlToArrayBufferFilter.js';
 
 // decoders
 export { Minc2Decoder } from './decoder/Minc2Decoder.js';

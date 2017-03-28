@@ -113,6 +113,26 @@ class Filter extends PipelineElement {
 
   /**
   * [PRIVATE]
+  * Perform an action for each input.
+  * @param {function} cb - callback function to call for every single input
+  * with 2 args: the output category and the outpub object.
+  */
+  _forEachInput( cb ){
+    if(!cb){
+      console.warn("forEachOutput requires a callback.");
+      return;
+    }
+
+    var inputCategories = this.getInputCategories();
+
+    for(var i=0; i<inputCategories.length; i++){
+      cb( inputCategories[i], this._getInput(inputCategories[i]) );
+    }
+  }
+
+
+  /**
+  * [PRIVATE]
   * Internal way to setup an output for this filter. Acts like a singleton in a sens
   * that if an output of a given category was already Initialized, it returns it.
   * If no input was Initialized, it creates one. Then we are sure the pointer of the
