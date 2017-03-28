@@ -19,31 +19,32 @@ To make image processing:
 See [here](doc/) for the code documentation. Though, if you are just getting into `Pixpipe.js`, the best way to learn is by checking the examples below.
 
 # Examples
-Processing images usually take a bit of time, open your javascript console so that you can see the filter feedback.
+Processing images usually take a bit of time, open your javascript console so that you can see the filter feedback.  
+All the following examples are in the [example folder](https://github.com/jonathanlurie/pixpipejs/tree/master/examples).
 
 ## basics
 Here, we will learn what is an `Image2D`, how to display it in a canvas using `CanvasImageWriter`. In addition, we have two different ways to load an existing image: from its URL (using a `UrlImageReader`) or with a file dialog (using a `FileImageReader`).
-- [Create an Image2D and display it](examples/image2DToCanvas.html)
-- [Create an Image2D from an image URL and display it](examples/urlToImage2D.html)
-- [Same but with multiple images](examples/urlToImage2D_multiple.html)
-- [Create an Image2D from a local file and display it](examples/fileToImage2D.html)
+- [Create an Image2D and display it](http://me.jonathanlurie.fr/pixpipejs/examples/image2DToCanvas.html)
+- [Create an Image2D from an image URL and display it](http://me.jonathanlurie.fr/pixpipejs/examples/urlToImage2D.html)
+- [Same but with multiple images](http://me.jonathanlurie.fr/pixpipejs/examples/urlToImage2D_multiple.html)
+- [Create an Image2D from a local file and display it](http://me.jonathanlurie.fr/pixpipejs/examples/fileToImage2D.html)
 
 ## Simple filters for `Image2D`
 See a `Filter` as a *box* that takes one or more input and produces one or more output. If some parameters are needed to make the filter work properly, this must happen using `setMetadata()`. To ask the filter to do its job, just call `update()`.  
 A `Filter` should **NEVER** modify the input data.
-- [The filter that lets you apply a treatment at a pixel level](examples/forEachPixel.html)
-- [A pixel-wise filter that uses pixel position to adapt its behaviour](examples/forEachPixelGradient.html)
-- [Use a math expression evaluator to blend an image and a mask](examples/imageBlending.html)
-- [Use a math expression evaluator to blend two images](examples/imageBlending2.html)
-- [Create a pattern and blend it with an image using a math expression evaluator](examples/forEachPixelGradientBlend.html)
+- [The filter that lets you apply a treatment at a pixel level](http://me.jonathanlurie.fr/pixpipejs/examples/forEachPixel.html)
+- [A pixel-wise filter that uses pixel position to adapt its behaviour](http://me.jonathanlurie.fr/pixpipejs/examples/forEachPixelGradient.html)
+- [Use a math expression evaluator to blend an image and a mask](http://me.jonathanlurie.fr/pixpipejs/examples/imageBlending.html)
+- [Use a math expression evaluator to blend two images](http://me.jonathanlurie.fr/pixpipejs/examples/imageBlending2.html)
+- [Create a pattern and blend it with an image using a math expression evaluator](http://me.jonathanlurie.fr/pixpipejs/examples/forEachPixelGradientBlend.html)
 
 ## Open medical 3D dataset
-- [Open a local Minc2 file, extract 3 orthogonal slices and display in canvas](examples/fileToMinc2.html)
-- [Open a local  NIfTI file, extract 3 orthogonal slices and display in canvas](examples/fileToNifti.html)
+- [Open a local Minc2 file, extract 3 orthogonal slices and display in canvas](http://me.jonathanlurie.fr/pixpipejs/examples/fileToMinc2.html)
+- [Open a local  NIfTI file, extract 3 orthogonal slices and display in canvas](http://me.jonathanlurie.fr/pixpipejs/examples/fileToNifti.html)
 
 ## Advanced
-- [Open a local  NIfTI file and display a mosaic of all the slices](examples/niftiToMosaic.html)
-- [Open a local file as an ArrayBuffer](examples/fileToArrayBuffer.html). Good starting point to create a new binary file parser
+- [Open a local  NIfTI file and display a mosaic of all the slices](http://me.jonathanlurie.fr/pixpipejs/examples/niftiToMosaic.html)
+- [Open a local file as an ArrayBuffer](http://me.jonathanlurie.fr/pixpipejs/examples/fileToArrayBuffer.html). Good starting point to create a new binary file parser
 
 # License
 MIT - See [LICENSE file](LICENSE).
