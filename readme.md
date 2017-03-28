@@ -1,7 +1,7 @@
-<img src="images/pixpipe.png" width=250></img>
+<img src="images/pixpipe.png" width=250>
 
 
-Pixpipe.js is an attempt of building an image processing pipeline entirely in Javascript for browsers. Its architecture was somewhat inspired by [ITK](https://itk.org/), making a clear separation between objects that *contain* data (`Image2D`) from object that *process* data (`Filter`).  
+[Pixpipe.js](https://github.com/jonathanlurie/pixpipejs) is an attempt of building an image processing pipeline entirely in Javascript for browsers. Its architecture was somewhat inspired by [ITK](https://itk.org/), making a clear separation between objects that *contain* data (`Image2D`) from object that *process* data (`Filter`).  
 
 The concept of *pipeline* implies that the output of a `Filter` can be used as an input for the next one, like in *ITK*. In Pixpipe.js, this is done by using the `Filter`'s methods `addInput()` and `getOuput()`. Some `Filter` may have several *input* or *output* of different kinds.
 
