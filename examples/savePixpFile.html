@@ -1,0 +1,56 @@
+<html>
+<head>
+  <title>Image2D to pixp file</title>
+
+  <script src="../dist/pixpipe.js"></script>
+
+  <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700,900" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+
+</head>
+<body>
+  <h1><a href="https://github.com/jonathanlurie/pixpipejs"><span style="color: #ff91d7">Pixpipe</span><span style="color: #FFFFFF">js</span></a></h1>
+  <p>
+  This does the following :
+  <ul>
+    <li>opening a local image file, using <code>pixpipe.FileImageReader</code></li>
+    <li>saving it as a <code>*.pixp</code> file using <code>pixpipe.PixpEncoder</code></li>
+  </ul>
+
+  </p>
+
+  <p>
+    <p>The original image:</p>
+    <img class="smaller" src="images/sd.jpg"></img>
+  </p>
+
+
+  <script>
+
+
+  // The filter to read image from URL
+  var url2ImgFilter = new pixpipe.UrlImageReader();
+
+  // the image is loaded...
+  // here, filter = url2ImgFilter
+  url2ImgFilter.on( "ready", function(filter){
+    //var image = filter.getOutput();
+    var image = new pixpipe.Image2D({width: 10, height: 5, color: [255, 128, 64, 255]})
+    var encoder = new pixpipe.PixpEncoder();
+    encoder.setMetadata("filename", "sanDiego.gz"); // optional, default: untitled.pixp
+    encoder.addInput( image );
+    encoder.update();
+
+  });
+
+  // the input of this reader is a simple string url. Can be local of distant, but if distant, the server must allow CORS.
+  url2ImgFilter.addInput( "images/sd.jpg" );
+
+  // Ask to fetch the image from URL
+  url2ImgFilter.update();
+
+
+  </script>
+
+</body>
+</html>
