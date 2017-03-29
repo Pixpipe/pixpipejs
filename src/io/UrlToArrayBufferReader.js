@@ -16,7 +16,7 @@ import { Filter } from '../core/Filter.js';
 *
 * usage: examples/urlFileToArrayBuffer.html
 */
-class UrlToArrayBufferFilter extends Filter {
+class UrlToArrayBufferReader extends Filter {
 
   constructor(){
     super();
@@ -70,6 +70,6 @@ class UrlToArrayBufferFilter extends Filter {
   }
 
 
-} /* END of class UrlToArrayBufferFilter */
+} /* END of class UrlToArrayBufferReader */
 
-export { UrlToArrayBufferFilter }
+export { UrlToArrayBufferReader }

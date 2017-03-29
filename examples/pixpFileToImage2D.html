@@ -11,8 +11,8 @@
   <p>
   This does the following :
   <ul>
-    <li>opening distant files, using <code>pixpipe.UrlToArrayBufferReader</code></li>
-    <li>display the length of the ArrayBuffers in Bytes</li>
+    <li>opening distant <code>*.pixp</code> file, using <code>pixpipe.UrlToArrayBufferReader</code></li>
+    <li>decode it as an Image2D using <code>pixpipe.UrlToArrayBufferReader</code></li>
   </ul>
 
   </p>
@@ -27,16 +27,18 @@
     var urlArrBuff =  new pixpipe.UrlToArrayBufferReader();
 
     // ad a distant file to read
-    urlArrBuff.addInput( "images/structural.nii", 0 );
-    urlArrBuff.addInput( "images/mask.png", 1 );
+    urlArrBuff.addInput( "images/sanDiego.pixp.gz" );
+    //urlArrBuff.addInput( "images/mesh.stl.gz");
+
 
     // define what to do when all input URL are loaded into ArrayBuffer
     urlArrBuff.on("ready", function( filter ){
 
-      urlArrBuff.forEachOutput( function(category, output){
-        document.getElementById('fileInfo').innerHTML += "<br><b>output " + category+ ":</b> successfully loaded (" + output.byteLength + " bytes)";
-      });
+      var buffer = urlArrBuff.getOutput();
 
+      var decoder = new pixpipe.PixpDecoder();
+      decoder.addInput( buffer );
+      decoder.update();
     })
 
     urlArrBuff.update();
