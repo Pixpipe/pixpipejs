@@ -137,6 +137,14 @@ class PixpipeObject {
     });
   }
 
+
+  /**
+  * @return {Object} a copy of local metadata
+  */
+  getMetadataCopy(){
+    return JSON.parse( JSON.stringify( this._metadata ) );
+  }
+
 }
 
 /*
@@ -376,6 +384,26 @@ class Filter extends PipelineElement {
 
   /**
   * [PRIVATE]
+  * Perform an action for each input.
+  * @param {function} cb - callback function to call for every single input
+  * with 2 args: the output category and the outpub object.
+  */
+  _forEachInput( cb ){
+    if(!cb){
+      console.warn("forEachOutput requires a callback.");
+      return;
+    }
+
+    var inputCategories = this.getInputCategories();
+
+    for(var i=0; i<inputCategories.length; i++){
+      cb( inputCategories[i], this._getInput(inputCategories[i]) );
+    }
+  }
+
+
+  /**
+  * [PRIVATE]
   * Internal way to setup an output for this filter. Acts like a singleton in a sens
   * that if an output of a given category was already Initialized, it returns it.
   * If no input was Initialized, it creates one. Then we are sure the pointer of the
@@ -406,7 +434,7 @@ class Filter extends PipelineElement {
       console.warn("An output of category " + category + " was already defined. Nothing to be done.");
     }
 
-    //return outputObject;
+    return outputObject;
   }
 
 
@@ -622,12 +650,51 @@ class Filter extends PipelineElement {
 * Lab       MCIN - Montreal Neurological Institute
 */
 
+
+/**
+* RasterContainer is a common interface for Image2D and Image3D
+* (and possibly some other future formats).
+* Should not be used as-is.
+*/
+class PixpipeContainer extends PipelineElement {
+  constructor(){
+    super();
+    this._data = null;
+  }
+
+
+  /**
+  * Associate d with the internal data object by pointer copy (if Object or Array)
+  * @param {TypedArray} d - pixel or voxel data. If multi-band, should be rgbargba...
+  */
+  setRawData( d ){
+    this._data = d;
+  }
+
+
+  /**
+  * Associate the internal metadata object with the one in args.
+  * @param {Object} m - metadata. Should NOT contain TypedArray
+  */
+  setRawMetadata( m ){
+    this._metadata = m;
+  }
+
+} /* END of class PixpipeContainer */
+
+/*
+* Author   Jonathan Lurie - http://me.jonahanlurie.fr
+* License  MIT
+* Link      https://github.com/jonathanlurie/pixpipejs
+* Lab       MCIN - Montreal Neurological Institute
+*/
+
 /**
 * Image2D class is one of the few base element of Pixpipejs.
 * It is always considered to be 4 channels (RGBA) and stored as a Float32Array
 * typed array.
 */
-class Image2D extends PipelineElement{
+class Image2D extends PixpipeContainer{
 
 
   /**
@@ -641,8 +708,7 @@ class Image2D extends PipelineElement{
     super();
     this._type = Image2D.TYPE();
 
-    // a rgba stored in a Float32Array (typed array)
-    this._data = null;
+    // default number of components per pixel
     this.setMetadata("ncpp", 4);
 
     // pipeline associated with this image. Not mandatory.
@@ -856,7 +922,7 @@ class Image2D extends PipelineElement{
 * It is always considered to be 4 channels (RGBA) and stored as a Float32Array
 * typed array.
 */
-class Image3D extends PipelineElement{
+class Image3D extends PixpipeContainer{
 
 
   /**
@@ -871,9 +937,6 @@ class Image3D extends PipelineElement{
   constructor( options=null ){
     super();
     this._type = Image3D.TYPE();
-
-    // a rgba stored in a Float32Array (typed array)
-    this._data = null;
 
     // number of component per pixel, for color OR time series
     this.setMetadata("ncpp", 1);
@@ -932,7 +995,7 @@ class Image3D extends PipelineElement{
   * Hardcode the datatype
   */
   static TYPE(){
-    return "Image3D";
+    return "IMAGE3D";
   }
 
 
@@ -1909,7 +1972,7 @@ class UrlImageReader extends Filter {
 
       try{
         var imageData = canvasContext.getImageData(0, 0, tmpCanvas.width, tmpCanvas.height);
-        var dataArray = imageData.data;
+        var dataArray = new Float32Array( imageData.data );
         var img2D = that.getOutput( inputCategory );
         img2D.setData( dataArray, img.width, img.height);
 
@@ -2097,6 +2160,77 @@ class FileToArrayBufferReader extends Filter {
   }
 
 } /* END of class FileToArrayBufferReader */
+
+/*
+* Author   Jonathan Lurie - http://me.jonahanlurie.fr
+* License  MIT
+* Link      https://github.com/jonathanlurie/pixpipejs
+* Lab       MCIN - Montreal Neurological Institute
+*/
+
+/**
+* Open a files as ArrayBuffer using their URL. You must specify one or several URL
+* (String) using `addInput("...")`` and add function to the event "ready" using
+* `.on( "ready", function(filter){ ... })`.
+* The "ready" event will be called only when all input are loaded.
+*
+* usage: examples/urlFileToArrayBuffer.html
+*/
+class UrlToArrayBufferReader extends Filter {
+
+  constructor(){
+    super();
+    this._outputCounter = 0;
+  }
+
+
+  _run(){
+    var that = this;
+
+    if(! this.getNumberOfInputs() ){
+      console.warn("No input was specified, cannot run this filer.");
+      return;
+    }
+
+
+    this._forEachInput( function(category, input){
+      that._loadUrl(category, input);
+    });
+
+  }
+
+
+  /**
+  * [PRIVATE]
+  * Perform a XMLHttpRequest with the given url and adds it to the output
+  */
+  _loadUrl( category, url ){
+    var that = this;
+
+    var xhr = new XMLHttpRequest();
+    xhr.open("GET", url, true);
+    xhr.responseType = "arraybuffer";
+
+    xhr.onload = function(event) {
+      var arrayBuff = xhr.response;
+      that._output[ category ] = arrayBuff;
+
+      that._outputCounter ++;
+
+      if( that._outputCounter == that.getNumberOfInputs() && "ready" in that._events){
+        that._events.ready( that );
+      }
+    };
+
+    xhr.error = function(){
+      console.log("here go the error");
+    };
+
+    xhr.send();
+  }
+
+
+} /* END of class UrlToArrayBufferReader */
 
 var commonjsGlobal = typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
 
@@ -11840,6 +11974,368 @@ class NiftiDecoder extends Filter {
 
 } /* END class NiftiDecoder */
 
+var FileSaver = createCommonjsModule(function (module) {
+/* FileSaver.js
+ * A saveAs() FileSaver implementation.
+ * 1.3.2
+ * 2016-06-16 18:25:19
+ *
+ * By Eli Grey, http://eligrey.com
+ * License: MIT
+ *   See https://github.com/eligrey/FileSaver.js/blob/master/LICENSE.md
+ */
+
+/*global self */
+/*jslint bitwise: true, indent: 4, laxbreak: true, laxcomma: true, smarttabs: true, plusplus: true */
+
+/*! @source http://purl.eligrey.com/github/FileSaver.js/blob/master/FileSaver.js */
+
+var saveAs = saveAs || (function(view) {
+	"use strict";
+	// IE <10 is explicitly unsupported
+	if (typeof view === "undefined" || typeof navigator !== "undefined" && /MSIE [1-9]\./.test(navigator.userAgent)) {
+		return;
+	}
+	var
+		  doc = view.document
+		  // only get URL when necessary in case Blob.js hasn't overridden it yet
+		, get_URL = function() {
+			return view.URL || view.webkitURL || view;
+		}
+		, save_link = doc.createElementNS("http://www.w3.org/1999/xhtml", "a")
+		, can_use_save_link = "download" in save_link
+		, click = function(node) {
+			var event = new MouseEvent("click");
+			node.dispatchEvent(event);
+		}
+		, is_safari = /constructor/i.test(view.HTMLElement) || view.safari
+		, is_chrome_ios =/CriOS\/[\d]+/.test(navigator.userAgent)
+		, throw_outside = function(ex) {
+			(view.setImmediate || view.setTimeout)(function() {
+				throw ex;
+			}, 0);
+		}
+		, force_saveable_type = "application/octet-stream"
+		// the Blob API is fundamentally broken as there is no "downloadfinished" event to subscribe to
+		, arbitrary_revoke_timeout = 1000 * 40 // in ms
+		, revoke = function(file) {
+			var revoker = function() {
+				if (typeof file === "string") { // file is an object URL
+					get_URL().revokeObjectURL(file);
+				} else { // file is a File
+					file.remove();
+				}
+			};
+			setTimeout(revoker, arbitrary_revoke_timeout);
+		}
+		, dispatch = function(filesaver, event_types, event) {
+			event_types = [].concat(event_types);
+			var i = event_types.length;
+			while (i--) {
+				var listener = filesaver["on" + event_types[i]];
+				if (typeof listener === "function") {
+					try {
+						listener.call(filesaver, event || filesaver);
+					} catch (ex) {
+						throw_outside(ex);
+					}
+				}
+			}
+		}
+		, auto_bom = function(blob) {
+			// prepend BOM for UTF-8 XML and text/* types (including HTML)
+			// note: your browser will automatically convert UTF-16 U+FEFF to EF BB BF
+			if (/^\s*(?:text\/\S*|application\/xml|\S*\/\S*\+xml)\s*;.*charset\s*=\s*utf-8/i.test(blob.type)) {
+				return new Blob([String.fromCharCode(0xFEFF), blob], {type: blob.type});
+			}
+			return blob;
+		}
+		, FileSaver = function(blob, name, no_auto_bom) {
+			if (!no_auto_bom) {
+				blob = auto_bom(blob);
+			}
+			// First try a.download, then web filesystem, then object URLs
+			var
+				  filesaver = this
+				, type = blob.type
+				, force = type === force_saveable_type
+				, object_url
+				, dispatch_all = function() {
+					dispatch(filesaver, "writestart progress write writeend".split(" "));
+				}
+				// on any filesys errors revert to saving with object URLs
+				, fs_error = function() {
+					if ((is_chrome_ios || (force && is_safari)) && view.FileReader) {
+						// Safari doesn't allow downloading of blob urls
+						var reader = new FileReader();
+						reader.onloadend = function() {
+							var url = is_chrome_ios ? reader.result : reader.result.replace(/^data:[^;]*;/, 'data:attachment/file;');
+							var popup = view.open(url, '_blank');
+							if(!popup) view.location.href = url;
+							url=undefined; // release reference before dispatching
+							filesaver.readyState = filesaver.DONE;
+							dispatch_all();
+						};
+						reader.readAsDataURL(blob);
+						filesaver.readyState = filesaver.INIT;
+						return;
+					}
+					// don't create more object URLs than needed
+					if (!object_url) {
+						object_url = get_URL().createObjectURL(blob);
+					}
+					if (force) {
+						view.location.href = object_url;
+					} else {
+						var opened = view.open(object_url, "_blank");
+						if (!opened) {
+							// Apple does not allow window.open, see https://developer.apple.com/library/safari/documentation/Tools/Conceptual/SafariExtensionGuide/WorkingwithWindowsandTabs/WorkingwithWindowsandTabs.html
+							view.location.href = object_url;
+						}
+					}
+					filesaver.readyState = filesaver.DONE;
+					dispatch_all();
+					revoke(object_url);
+				};
+			filesaver.readyState = filesaver.INIT;
+
+			if (can_use_save_link) {
+				object_url = get_URL().createObjectURL(blob);
+				setTimeout(function() {
+					save_link.href = object_url;
+					save_link.download = name;
+					click(save_link);
+					dispatch_all();
+					revoke(object_url);
+					filesaver.readyState = filesaver.DONE;
+				});
+				return;
+			}
+
+			fs_error();
+		}
+		, FS_proto = FileSaver.prototype
+		, saveAs = function(blob, name, no_auto_bom) {
+			return new FileSaver(blob, name || blob.name || "download", no_auto_bom);
+		};
+	// IE 10+ (native saveAs)
+	if (typeof navigator !== "undefined" && navigator.msSaveOrOpenBlob) {
+		return function(blob, name, no_auto_bom) {
+			name = name || blob.name || "download";
+
+			if (!no_auto_bom) {
+				blob = auto_bom(blob);
+			}
+			return navigator.msSaveOrOpenBlob(blob, name);
+		};
+	}
+
+	FS_proto.abort = function(){};
+	FS_proto.readyState = FS_proto.INIT = 0;
+	FS_proto.WRITING = 1;
+	FS_proto.DONE = 2;
+
+	FS_proto.error =
+	FS_proto.onwritestart =
+	FS_proto.onprogress =
+	FS_proto.onwrite =
+	FS_proto.onabort =
+	FS_proto.onerror =
+	FS_proto.onwriteend =
+		null;
+
+	return saveAs;
+}(
+	   typeof self !== "undefined" && self
+	|| typeof window !== "undefined" && window
+	|| commonjsGlobal.content
+));
+// `self` is undefined in Firefox for Android content script context
+// while `this` is nsIContentFrameMessageManager
+// with an attribute `content` that corresponds to the window
+
+if ('object' !== "undefined" && module.exports) {
+  module.exports.saveAs = saveAs;
+} else if ((typeof undefined !== "undefined" && undefined !== null) && (undefined.amd !== null)) {
+  undefined("FileSaver.js", function() {
+    return saveAs;
+  });
+}
+});
+
+/*
+* Author    Jonathan Lurie - http://me.jonahanlurie.fr
+*
+* License   MIT
+* Link      https://github.com/jonathanlurie/pixpipejs
+* Lab       MCIN - Montreal Neurological Institute
+*/
+
+//import JSZip from "jszip";
+/**
+* A PixpEncoder instance takes an Image2D or Image3D as input with `addInput(...)`
+* and encode it so that it can be saved as a *.pixp file.
+* An output filename can be specified using `.setMetadata("filename", "yourName.pixp");`,
+* by default, the name is "untitled.pixp".
+* When `update()` is called, a gzip blog is prepared as output[0] and can then be downloaded
+* when calling the method `.download()`. The gzip blob could also be sent over AJAX
+* using a third party library.
+*
+* usage: examples/savePixpFile.html
+*/
+class PixpEncoder extends Filter {
+  constructor(){
+    super();
+    this.setMetadata("filename", "untitled.pixp");
+
+  }
+
+
+  /**
+  * [PRIVATE]
+  * Only accept Image2D and Image3D
+  */
+  _hasValidInput(){
+    var input = this._getInput();
+    return input && ( input.isOfType(Image2D.TYPE()) || input.isOfType(Image3D.TYPE()) );
+  }
+
+
+  _run(){
+
+    if(! this.hasValidInput() ){
+      console.warn("PixpEncoder can only encode Image2D and Image3D.");
+      return;
+    }
+
+    var input = this._getInput();
+
+    var arrayAndMeta = {
+      dataType: input.getData().constructor.name, // typed array type
+      data: Array.prototype.slice.call( input.getData() ),  // data of pixel/voxel
+      metadata: input.getMetadataCopy(),  // Image2D/Image3D._metadata
+      pixpipeType: input.constructor.name // "Image2D" or "Image3D", will be used for reconstruction
+    };
+
+    var pixpString = JSON.stringify( arrayAndMeta );
+
+    var deflator = new index.Deflate({
+      level: 6,
+      //to: 'string',
+      gzip: true,
+      header: {
+          text: true,
+          time: + new Date(),
+          comment: "This file was created by Pixpipe.js"
+        }
+    });
+
+    deflator.push(pixpString, true);
+
+    // making a blob to be saved
+    this._output[0] = new Blob([deflator.result], {type: "application/gzip"} );
+  }
+
+
+  /**
+  * Download the generated file
+  */
+  download(){
+    var output = this.getOutput();
+
+    if(output){
+      FileSaver.saveAs( this.getOutput(), this.getMetadata("filename"));
+    }else{
+      console.warn("No output computed yet.");
+    }
+  }
+
+} /* END of class PixpEncoder */
+
+/*
+* Author    Jonathan Lurie - http://me.jonahanlurie.fr
+*
+* License   MIT
+* Link      https://github.com/jonathanlurie/pixpipejs
+* Lab       MCIN - Montreal Neurological Institute
+*/
+
+/**
+* A PixpDecoder instance decodes a *.pixp file and output an Image2D or Image3D.
+* The input, specified by `.addInput(...)` must be an ArrayBuffer
+* (from an `UrlToArrayBufferFilter`, an `UrlToArrayBufferReader` or anothrer source ).
+*
+* usage: examples/pixpFileToImage2D.html
+*/
+class PixpDecoder extends Filter {
+  constructor(){
+    super();
+
+  }
+
+
+  /**
+  * [PRIVATE]
+  * Only accept Image2D and Image3D
+  */
+  _hasValidInput(){
+    var input = this._getInput();
+    return input &&  input instanceof ArrayBuffer;
+  }
+
+
+  _run(){
+
+    if(! this.hasValidInput() ){
+      console.warn("PixpDecoder can only decode ArrayBuffer.");
+      return;
+    }
+
+    var input = this._getInput();
+
+    //var pixpString2 = pako.inflate(input, { to: 'string' });
+    //var pixpObject = JSON.parse( pixpString2 );
+
+    var inflator = new index.Inflate({
+      level: 6,
+      to: 'string'
+    });
+
+    inflator.push( input, true );
+
+    var pixpObject = null;
+
+    try{
+      pixpObject = JSON.parse( inflator.result );
+    }catch(e){
+      console.warn("Could not parse pixp file.");
+      return;
+    }
+
+    if( ! (pixpObject.pixpipeType in pixpipe)){
+      console.warn("Unknown type pixpipe." + pixpObject.pixpipeType + ", cannot create any output." );
+      return;
+    }
+
+    var constructorHost = (window || this);
+    if(! constructorHost[ pixpObject.dataType ]){
+      console.warn( "Data array from pixp file is unknown: " + pixpObject.dataType );
+      return;
+    }
+
+    var outputRawData = new constructorHost[ pixpObject.dataType ]( pixpObject.data );
+    var output = new pixpipe[ pixpObject.pixpipeType ];
+    output.setRawData( outputRawData );
+    output.setRawMetadata( pixpObject.metadata );
+
+    this._output[0] = output;
+
+  }
+
+
+
+} /* END of class PixpDecoder */
+
 /*
 * Author   Jonathan Lurie - http://me.jonahanlurie.fr
 * License  MIT
@@ -13475,7 +13971,6 @@ class Image3DToMosaicFilter extends Filter{
 
       // create a new output image when the current is full (or not init)
       if( sliceIndex%slicePerOutputIm == 0 ){
-        console.log("output: " + outputCounter);
         outImage = new Image2D({width: outputWidth, height: outputHeight, color: [0]});
         this._output[ outputCounter ] = outImage;
         sliceIndexCurrentOutput = 0;
@@ -13520,8 +14015,11 @@ exports.CanvasImageWriter = CanvasImageWriter;
 exports.UrlImageReader = UrlImageReader;
 exports.FileImageReader = FileImageReader;
 exports.FileToArrayBufferReader = FileToArrayBufferReader;
+exports.UrlToArrayBufferReader = UrlToArrayBufferReader;
 exports.Minc2Decoder = Minc2Decoder;
 exports.NiftiDecoder = NiftiDecoder;
+exports.PixpEncoder = PixpEncoder;
+exports.PixpDecoder = PixpDecoder;
 exports.ForEachPixelImageFilter = ForEachPixelImageFilter;
 exports.SpectralScaleImageFilter = SpectralScaleImageFilter;
 exports.ImageBlendExpressionFilter = ImageBlendExpressionFilter;

@@ -5,7 +5,7 @@
 * Lab       MCIN - Montreal Neurological Institute
 */
 
-import { PipelineElement } from './PipelineElement.js';
+import { PixpipeContainer } from './PixpipeContainer.js';
 import { Image2D } from './Image2D.js';
 
 /**
@@ -13,7 +13,7 @@ import { Image2D } from './Image2D.js';
 * It is always considered to be 4 channels (RGBA) and stored as a Float32Array
 * typed array.
 */
-class Image3D extends PipelineElement{
+class Image3D extends PixpipeContainer{
 
 
   /**
@@ -28,9 +28,6 @@ class Image3D extends PipelineElement{
   constructor( options=null ){
     super();
     this._type = Image3D.TYPE();
-
-    // a rgba stored in a Float32Array (typed array)
-    this._data = null;
 
     // number of component per pixel, for color OR time series
     this.setMetadata("ncpp", 1);
@@ -89,7 +86,7 @@ class Image3D extends PipelineElement{
   * Hardcode the datatype
   */
   static TYPE(){
-    return "Image3D";
+    return "IMAGE3D";
   }
 
 

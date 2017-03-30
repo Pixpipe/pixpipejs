@@ -1,0 +1,73 @@
+<html>
+<head>
+  <title>Image2D to pixp file</title>
+
+  <script src="../dist/pixpipe.js"></script>
+
+  <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700,900" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+
+</head>
+<body>
+  <h1><a href="https://github.com/jonathanlurie/pixpipejs"><span style="color: #ff91d7">Pixpipe</span><span style="color: #FFFFFF">js</span></a></h1>
+  <p>
+  This does the following :
+  <ul>
+    <li>opening a local image file, using <code>pixpipe.FileImageReader</code></li>
+    <li>saving it as a <code>*.pixp</code> file using <code>pixpipe.PixpEncoder</code></li>
+    <li>use the dowload button at the bottom to get the file</li>
+  </ul>
+
+  </p>
+
+  <p>
+    <p>The jpeg picture is being transformed into a pixp file:</p>
+    <img class="smaller" src="images/sd.jpg"></img>
+  </p>
+  <p style="text-align: center;">
+    <input id="downloadBt" type="submit" value="File in preparation..." onclick="downloadFile()" disabled>
+  </p>
+  <script>
+
+  // The filter to read image from URL
+  var url2ImgFilter = new pixpipe.UrlImageReader();
+  var encoder = new pixpipe.PixpEncoder();
+
+  // the image is loaded...
+  // here, filter = url2ImgFilter
+  url2ImgFilter.on( "ready", function(filter){
+    var image = filter.getOutput();
+    //var image = new pixpipe.Image2D({width: 10, height: 5, color: [255, 128, 64, 255]})
+
+    encoder.setMetadata("filename", "sd.pixp"); // optional, default: untitled.pixp
+    encoder.addInput( image );
+
+    // Creates the gzip blob
+    encoder.update();
+
+    // the file is ready to be downloaded, let's free this download button!
+    var bt = document.getElementById("downloadBt");
+    bt.value = "Download file"
+    bt.disabled = false;
+
+    // In a world where we don't care what the user might think of a download that
+    // starts automatically, this alternative is also acceptable:
+    // encoder.download();
+  });
+
+  // the input of this reader is a simple string url. Can be local of distant, but if distant, the server must allow CORS.
+  url2ImgFilter.addInput( "images/sd.jpg" );
+
+  // Ask to fetch the image from URL
+  url2ImgFilter.update();
+
+
+  // bound to the download button
+  function downloadFile(){
+    encoder.download();
+  }
+
+  </script>
+
+</body>
+</html>

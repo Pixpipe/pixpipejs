@@ -11,9 +11,9 @@
   <p>
   This does the following :
   <ul>
-    <li>open a local Minc2 file, using <code>pixpipe.FileToArrayBufferReader</code></li>
-    <li>redirect the file buffer into a <code>pixpipe.Minc2Decoder</code> to extract Minc dataset and metadata</li>
-    <li>get the output as a generique <code>pixpipe.MniVolume</code> object</li>
+    <li>open a local Pixp file, using <code>pixpipe.FileToArrayBufferReader</code></li>
+    <li>redirect the file buffer into a <code>pixpipe.PixpDecoder</code></li>
+    <li>get the output as a generic <code>pixpipe.Image3D</code> object</li>
     <li><code>slice()</code> the volume 3 times, along 3 given axis to get 3 <code>pixpipe.Image2D</code> objects</li>
     <li>display the images in separate canvas using a single instance of <code>pixpipe.CanvasImageWriter</code></li>
   </ul>
@@ -45,38 +45,39 @@
 
       var filenames = filter.getMetadata("filenames");
 
-      var mincBuff = filter.getOutput();
+      // raw buffer from file
+      var buff = filter.getOutput();
 
-      var minc2Decoder = new pixpipe.Minc2Decoder();
-      minc2Decoder.addInput( mincBuff );
-      minc2Decoder.update();
+      var pixpDecoder = new pixpipe.PixpDecoder();
+      pixpDecoder.addInput( buff );
+      pixpDecoder.update();
 
-      var mniVolume = minc2Decoder.getOutput();
+      var img3D = pixpDecoder.getOutput();
 
-      if(mniVolume){
+      if(img3D && img3D.isOfType(pixpipe.Image3D.TYPE()) ){
         // create a filter to write the image into a canvas
         var imageToCanvasFilter = new pixpipe.CanvasImageWriter( );
         // replace the default min max values of [0, 255]
-        imageToCanvasFilter.setMetadata("min", mniVolume.getMetadata("voxel_min"));
-        imageToCanvasFilter.setMetadata("max", mniVolume.getMetadata("voxel_max"));
+        imageToCanvasFilter.setMetadata("min", img3D.getMetadata("voxel_min"));
+        imageToCanvasFilter.setMetadata("max", img3D.getMetadata("voxel_max"));
 
         imageToCanvasFilter.setMetadata( "parentDivID", "myDiv_x" );
         imageToCanvasFilter.addInput(
-          mniVolume.getSlice("xspace", Math.floor(mniVolume.getMetadata("xspace").space_length / 2) )
+          img3D.getSlice("xspace", Math.floor(img3D.getMetadata("xspace").space_length / 2) )
         );
 
         imageToCanvasFilter.update();
 
         imageToCanvasFilter.setMetadata( "parentDivID", "myDiv_y" );
         imageToCanvasFilter.addInput(
-          mniVolume.getSlice("yspace", Math.floor(mniVolume.getMetadata("yspace").space_length / 2))
+          img3D.getSlice("yspace", Math.floor(img3D.getMetadata("yspace").space_length / 2))
         );
 
         imageToCanvasFilter.update();
 
         imageToCanvasFilter.setMetadata( "parentDivID", "myDiv_z" );
         imageToCanvasFilter.addInput(
-          mniVolume.getSlice("zspace", Math.floor(mniVolume.getMetadata("zspace").space_length / 2))
+          img3D.getSlice("zspace", Math.floor(img3D.getMetadata("zspace").space_length / 2))
         );
 
         imageToCanvasFilter.update();
