@@ -1,0 +1,71 @@
+<html>
+<head>
+  <title>UrlFileToArrayBufferReader to ArrayBuffer</title>
+
+  <script src="../dist/pixpipe.js"></script>
+  <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700,900" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <h1><a href="https://github.com/jonathanlurie/pixpipejs"><span style="color: #ff91d7">Pixpipe</span><span style="color: #FFFFFF">js</span></a></h1>
+  <p>
+  This does the following :
+  <ul>
+    <li>opening distant files, using <code>pixpipe.UrlToArrayBufferReader</code></li>
+    <li>decode the input buffer as a Minc2 dataset using <code>pixpipe.Minc2Decoder</code></li>
+    <li>create a <code>*.pixp</code> file using <code>pixpipe.PixpEncoder</code></li>
+    <li>click on the download button to get the file</li>
+  </ul>
+
+  </p>
+
+  <div>
+    <p style="text-align: center;">
+      <input id="downloadBt" type="submit" value="File in preparation..." onclick="downloadFile()" disabled>
+    </p>
+	</div>
+
+  <script>
+
+
+    var urlArrBuff =  new pixpipe.UrlToArrayBufferReader();
+    var encoder = new pixpipe.PixpEncoder();
+
+    // ad a distant file to read
+    urlArrBuff.addInput( "images/mri_t2w.mnc", 0 );
+
+    // define what to do when all input URL are loaded into ArrayBuffer
+    urlArrBuff.on("ready", function( filter ){
+      // undefined buffer
+      var buff = urlArrBuff.getOutput();
+
+      // Decoding the minc2 dataset from the buffer
+      var minc2Decoder = new pixpipe.Minc2Decoder();
+      minc2Decoder.addInput( buff );
+      minc2Decoder.update();
+
+      // set the output filename
+      encoder.setMetadata("filename", "mri_t2w.pixp"); // optional, default: untitled.pixp
+      encoder.addInput( minc2Decoder.getOutput() );
+
+      // Creates the gzip blob
+      encoder.update();
+
+      // the file is ready to be downloaded, let's free this download button!
+      var bt = document.getElementById("downloadBt");
+      bt.value = "Download file"
+      bt.disabled = false;
+    })
+
+    urlArrBuff.update();
+
+    // bound to the download button
+    function downloadFile(){
+      encoder.download();
+    }
+
+
+  </script>
+
+</body>
+</html>

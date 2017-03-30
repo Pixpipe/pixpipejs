@@ -18,10 +18,13 @@ export { CanvasImageWriter } from './io/CanvasImageWriter.js';
 export { UrlImageReader } from './io/UrlImageReader.js';
 export { FileImageReader } from './io/FileImageReader.js';
 export { FileToArrayBufferReader } from './io/FileToArrayBufferReader.js';
+export { UrlToArrayBufferReader } from './io/UrlToArrayBufferReader.js';
 
 // decoders
 export { Minc2Decoder } from './decoder/Minc2Decoder.js';
 export { NiftiDecoder } from './decoder/NiftiDecoder.js';
+export { PixpEncoder } from './decoder/PixpEncoder.js';
+export { PixpDecoder } from './decoder/PixpDecoder.js';
 
 // filters - processing of Images2D
 export { ForEachPixelImageFilter } from './filter/ForEachPixelImageFilter.js';

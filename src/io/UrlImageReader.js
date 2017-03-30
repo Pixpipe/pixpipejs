@@ -74,7 +74,7 @@ class UrlImageReader extends Filter {
 
       try{
         var imageData = canvasContext.getImageData(0, 0, tmpCanvas.width, tmpCanvas.height);
-        var dataArray = imageData.data;
+        var dataArray = new Float32Array( imageData.data );
         var img2D = that.getOutput( inputCategory );
         img2D.setData( dataArray, img.width, img.height);
 

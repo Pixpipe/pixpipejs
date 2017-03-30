@@ -1,0 +1,112 @@
+<html>
+<head>
+  <title>File to Minc2</title>
+
+  <script src="../dist/pixpipe.js"></script>
+  <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700,900" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <h1><a href="https://github.com/jonathanlurie/pixpipejs"><span style="color: #ff91d7">Pixpipe</span><span style="color: #FFFFFF">js</span></a></h1>
+  <p>
+  This does the following :
+  <ul>
+    <li>open a local Pixp file, using <code>pixpipe.FileToArrayBufferReader</code></li>
+    <li>redirect the file buffer into a <code>pixpipe.PixpDecoder</code></li>
+    <li>get the output as a generic <code>pixpipe.Image3D</code> object</li>
+    <li><code>slice()</code> the volume 3 times, along 3 given axis to get 3 <code>pixpipe.Image2D</code> objects</li>
+    <li>display the images in separate canvas using a single instance of <code>pixpipe.CanvasImageWriter</code></li>
+  </ul>
+
+  </p>
+
+  <div>
+		Select an file:
+		<input type="file" id="fileInput">
+    <br>
+    <span id="fileInfo"></span>
+	</div>
+
+  <div id="myDiv_x"></div>
+  <div id="myDiv_y"></div>
+  <div id="myDiv_z"></div>
+
+  <script>
+  window.onload = function() {
+
+    var fileInput = document.getElementById('fileInput');
+
+    // The filter to read image from URL
+    var file2Buff = new pixpipe.FileToArrayBufferReader();
+
+    // the image is loaded...
+    // here, filter = url2ImgFilter
+    file2Buff.on("ready", function( filter ){
+
+      var filenames = filter.getMetadata("filenames");
+
+      // raw buffer from file
+      var buff = filter.getOutput();
+
+      var pixpDecoder = new pixpipe.PixpDecoder();
+      pixpDecoder.addInput( buff );
+      pixpDecoder.update();
+
+      var img3D = pixpDecoder.getOutput();
+
+      if(img3D && img3D.isOfType(pixpipe.Image3D.TYPE()) ){
+        // create a filter to write the image into a canvas
+        var imageToCanvasFilter = new pixpipe.CanvasImageWriter( );
+        // replace the default min max values of [0, 255]
+        imageToCanvasFilter.setMetadata("min", img3D.getMetadata("voxel_min"));
+        imageToCanvasFilter.setMetadata("max", img3D.getMetadata("voxel_max"));
+
+        imageToCanvasFilter.setMetadata( "parentDivID", "myDiv_x" );
+        imageToCanvasFilter.addInput(
+          img3D.getSlice("xspace", Math.floor(img3D.getMetadata("xspace").space_length / 2) )
+        );
+
+        imageToCanvasFilter.update();
+
+        imageToCanvasFilter.setMetadata( "parentDivID", "myDiv_y" );
+        imageToCanvasFilter.addInput(
+          img3D.getSlice("yspace", Math.floor(img3D.getMetadata("yspace").space_length / 2))
+        );
+
+        imageToCanvasFilter.update();
+
+        imageToCanvasFilter.setMetadata( "parentDivID", "myDiv_z" );
+        imageToCanvasFilter.addInput(
+          img3D.getSlice("zspace", Math.floor(img3D.getMetadata("zspace").space_length / 2))
+        );
+
+        imageToCanvasFilter.update();
+
+      }else{
+        console.warn("Non-existant output for minc2Decoder.");
+      }
+    });
+
+
+    // event listener of the file input
+    fileInput.addEventListener('change', function(e) {
+      var files = e.target.files;
+      var filenames = {};
+
+      for(var i=0; i<files.length; i++){
+        // set the input, an HTML5 File object and a category (ID)
+        file2Buff.addInput(files[i], i);
+        filenames[i] = files[i].name ;
+      }
+
+      file2Buff.setMetadata("filenames", filenames);
+
+      // Perform the reading + conversion ibto ArrayBuffer
+      file2Buff.update();
+		});
+
+  }
+  </script>
+
+</body>
+</html>

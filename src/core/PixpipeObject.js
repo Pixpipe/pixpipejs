@@ -131,6 +131,14 @@ class PixpipeObject {
     });
   }
 
+
+  /**
+  * @return {Object} a copy of local metadata
+  */
+  getMetadataCopy(){
+    return JSON.parse( JSON.stringify( this._metadata ) );
+  }
+
 }
 
 export { PixpipeObject }
