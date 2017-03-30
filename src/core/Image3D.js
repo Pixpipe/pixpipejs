@@ -86,7 +86,7 @@ class Image3D extends RasterContainer{
   * Hardcode the datatype
   */
   static TYPE(){
-    return "Image3D";
+    return "IMAGE3D";
   }
 
 

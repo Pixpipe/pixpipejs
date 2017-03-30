@@ -55,8 +55,15 @@ class PixpDecoder extends Filter {
     });
 
     inflator.push( input, true );
-    //console.log( inflator.result );
-    var pixpObject = JSON.parse( inflator.result );
+
+    var pixpObject = null;
+
+    try{
+      pixpObject = JSON.parse( inflator.result );
+    }catch(e){
+      console.warn("Could not parse pixp file.");
+      return;
+    }
 
     if( ! (pixpObject.pixpipeType in pixpipe)){
       console.warn("Unknown type pixpipe." + pixpObject.pixpipeType + ", cannot create any output." );
@@ -75,6 +82,7 @@ class PixpDecoder extends Filter {
     output.setRawMetadata( pixpObject.metadata );
 
     this._output[0] = output;
+
   }
 
 

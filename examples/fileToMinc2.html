@@ -51,8 +51,7 @@
       minc2Decoder.addInput( mincBuff );
       minc2Decoder.update();
 
-      var mniVolume_ORIG = minc2Decoder.getOutput();
-      var mniVolume = mniVolume_ORIG.clone();
+      var mniVolume = minc2Decoder.getOutput();
 
       if(mniVolume){
         // create a filter to write the image into a canvas
@@ -62,16 +61,26 @@
         imageToCanvasFilter.setMetadata("max", mniVolume.getMetadata("voxel_max"));
 
         imageToCanvasFilter.setMetadata( "parentDivID", "myDiv_x" );
-        imageToCanvasFilter.addInput( mniVolume.getSlice("xspace", 80) );
+        imageToCanvasFilter.addInput(
+          mniVolume.getSlice("xspace", Math.floor(mniVolume.getMetadata("xspace").space_length / 2) )
+        );
+
         imageToCanvasFilter.update();
 
         imageToCanvasFilter.setMetadata( "parentDivID", "myDiv_y" );
-        imageToCanvasFilter.addInput( mniVolume.getSlice("yspace", 128) );
+        imageToCanvasFilter.addInput(
+          mniVolume.getSlice("yspace", Math.floor(mniVolume.getMetadata("yspace").space_length / 2))
+        );
+
         imageToCanvasFilter.update();
 
         imageToCanvasFilter.setMetadata( "parentDivID", "myDiv_z" );
-        imageToCanvasFilter.addInput( mniVolume.getSlice("zspace", 128) );
+        imageToCanvasFilter.addInput(
+          mniVolume.getSlice("zspace", Math.floor(mniVolume.getMetadata("zspace").space_length / 2))
+        );
+
         imageToCanvasFilter.update();
+
       }else{
         console.warn("Non-existant output for minc2Decoder.");
       }

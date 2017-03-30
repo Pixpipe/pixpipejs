@@ -995,7 +995,7 @@ class Image3D extends RasterContainer{
   * Hardcode the datatype
   */
   static TYPE(){
-    return "Image3D";
+    return "IMAGE3D";
   }
 
 
@@ -12165,7 +12165,6 @@ if ('object' !== "undefined" && module.exports) {
 
 /*
 * Author    Jonathan Lurie - http://me.jonahanlurie.fr
-*           Robert D. Vincent
 *
 * License   MIT
 * Link      https://github.com/jonathanlurie/pixpipejs
@@ -12181,6 +12180,8 @@ if ('object' !== "undefined" && module.exports) {
 * When `update()` is called, a gzip blog is prepared as output[0] and can then be downloaded
 * when calling the method `.download()`. The gzip blob could also be sent over AJAX
 * using a third party library.
+*
+* usage: examples/savePixpFile.html
 */
 class PixpEncoder extends Filter {
   constructor(){
@@ -12236,7 +12237,9 @@ class PixpEncoder extends Filter {
   }
 
 
-
+  /**
+  * Download the generated file
+  */
   download(){
     var output = this.getOutput();
 
@@ -12251,7 +12254,6 @@ class PixpEncoder extends Filter {
 
 /*
 * Author    Jonathan Lurie - http://me.jonahanlurie.fr
-*           Robert D. Vincent
 *
 * License   MIT
 * Link      https://github.com/jonathanlurie/pixpipejs
@@ -12262,6 +12264,8 @@ class PixpEncoder extends Filter {
 * A PixpDecoder instance decodes a *.pixp file and output an Image2D or Image3D.
 * The input, specified by `.addInput(...)` must be an ArrayBuffer
 * (from an `UrlToArrayBufferFilter`, an `UrlToArrayBufferReader` or anothrer source ).
+*
+* usage: examples/pixpFileToImage2D.html
 */
 class PixpDecoder extends Filter {
   constructor(){
@@ -12298,8 +12302,15 @@ class PixpDecoder extends Filter {
     });
 
     inflator.push( input, true );
-    //console.log( inflator.result );
-    var pixpObject = JSON.parse( inflator.result );
+
+    var pixpObject = null;
+
+    try{
+      pixpObject = JSON.parse( inflator.result );
+    }catch(e){
+      console.warn("Could not parse pixp file.");
+      return;
+    }
 
     if( ! (pixpObject.pixpipeType in pixpipe)){
       console.warn("Unknown type pixpipe." + pixpObject.pixpipeType + ", cannot create any output." );
@@ -12318,6 +12329,7 @@ class PixpDecoder extends Filter {
     output.setRawMetadata( pixpObject.metadata );
 
     this._output[0] = output;
+
   }
 
 
