@@ -14,7 +14,7 @@ import { PipelineElement } from './PipelineElement.js';
 * (and possibly some other future formats).
 * Should not be used as-is.
 */
-class RasterContainer extends PipelineElement {
+class PixpipeContainer extends PipelineElement {
   constructor(){
     super();
     this._data = null;
@@ -38,6 +38,6 @@ class RasterContainer extends PipelineElement {
     this._metadata = m;
   }
 
-} /* END of class RasterContainer */
+} /* END of class PixpipeContainer */
 
-export { RasterContainer }
+export { PixpipeContainer }

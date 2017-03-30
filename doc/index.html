@@ -268,6 +268,31 @@
                   #_forEachPixelOfSuch
                 </a>
               <a
+                href='#PixpEncoder'
+                class='block bold'>
+                PixpEncoder
+              </a>
+                <a
+                  href='#PixpEncoder._hasValidInput'
+                  class='regular block'>
+                  #_hasValidInput
+                </a>
+                <a
+                  href='#PixpEncoder.download'
+                  class='regular block'>
+                  #download
+                </a>
+              <a
+                href='#PixpDecoder'
+                class='block bold'>
+                PixpDecoder
+              </a>
+                <a
+                  href='#PixpDecoder._hasValidInput'
+                  class='regular block'>
+                  #_hasValidInput
+                </a>
+              <a
                 href='#CanvasImageWriter'
                 class='block bold'>
                 CanvasImageWriter
@@ -313,14 +338,34 @@
                   #constructor
                 </a>
               <a
-                href='#UrlToArrayBufferFilter'
+                href='#UrlToArrayBufferReader'
                 class='block bold'>
-                UrlToArrayBufferFilter
+                UrlToArrayBufferReader
               </a>
                 <a
-                  href='#UrlToArrayBufferFilter._loadUrl'
+                  href='#UrlToArrayBufferReader._loadUrl'
                   class='regular block'>
                   #_loadUrl
+                </a>
+              <a
+                href='#SpectralScaleImageFilter'
+                class='block bold'>
+                SpectralScaleImageFilter
+              </a>
+                <a
+                  href='#SpectralScaleImageFilter._run'
+                  class='regular block'>
+                  #_run
+                </a>
+              <a
+                href='#ForEachPixelImageFilter'
+                class='block bold'>
+                ForEachPixelImageFilter
+              </a>
+                <a
+                  href='#ForEachPixelImageFilter._run'
+                  class='regular block'>
+                  #_run
                 </a>
               <a
                 href='#FileImageReader'
@@ -336,26 +381,6 @@
                   href='#FileImageReader.hasValidInput'
                   class='regular block'>
                   #hasValidInput
-                </a>
-              <a
-                href='#ForEachPixelImageFilter'
-                class='block bold'>
-                ForEachPixelImageFilter
-              </a>
-                <a
-                  href='#ForEachPixelImageFilter._run'
-                  class='regular block'>
-                  #_run
-                </a>
-              <a
-                href='#SpectralScaleImageFilter'
-                class='block bold'>
-                SpectralScaleImageFilter
-              </a>
-                <a
-                  href='#SpectralScaleImageFilter._run'
-                  class='regular block'>
-                  #_run
                 </a>
               <a
                 href='#MniVolume'
@@ -778,6 +803,11 @@
                   #getMetadata
                 </a>
                 <a
+                  href='#PixpipeObject.getMetadataCopy'
+                  class='regular block'>
+                  #getMetadataCopy
+                </a>
+                <a
                   href='#PixpipeObject.getMetadataKeys'
                   class='regular block'>
                   #getMetadataKeys
@@ -1122,6 +1152,21 @@
                 class='block bold'>
                 match_length
               </a>
+              <a
+                href='#PixpipeContainer'
+                class='block bold'>
+                PixpipeContainer
+              </a>
+                <a
+                  href='#PixpipeContainer.setRawData'
+                  class='regular block'>
+                  #setRawData
+                </a>
+                <a
+                  href='#PixpipeContainer.setRawMetadata'
+                  class='regular block'>
+                  #setRawMetadata
+                </a>
               <a
                 href='#prev_length'
                 class='block bold'>
@@ -2638,6 +2683,96 @@ generic function for painting row, colum or whole</p>
         </div>
 </section>
 </div><div class='py1'><section class='py2 clearfix'>
+  <h2 id='PixpEncoder' class='mt0'>
+    PixpEncoder<span class='gray'></span>
+  </h2>
+  <p>A PixpEncoder instance takes an Image2D or Image3D as input with <code>addInput(...)</code>
+and encode it so that it can be saved as a *.pixp file.
+An output filename can be specified using <code>.setMetadata(&quot;filename&quot;, &quot;yourName.pixp&quot;);</code>,
+by default, the name is &quot;untitled.pixp&quot;.
+When <code>update()</code> is called, a gzip blog is prepared as output[0] and can then be downloaded
+when calling the method <code>.download()</code>. The gzip blob could also be sent over AJAX
+using a third party library.</p>
+<p>usage: examples/savePixpFile.html</p>
+
+      <h4>Instance members</h4>
+        <div class='collapsible' id='PixpEncoder._hasValidInput'>
+          <a href='#PixpEncoder._hasValidInput'>
+            <code>
+              #_hasValidInput<span class='gray'></span>
+            </code>
+            <div class='force-inline'>
+              <p>[PRIVATE]
+Only accept Image2D and Image3D</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2'>
+            <section class='py2 clearfix'>
+              <h2 id='PixpEncoder._hasValidInput' class='mt0'>
+                _hasValidInput<span class='gray'></span>
+              </h2>
+              <p>[PRIVATE]
+            Only accept Image2D and Image3D</p>
+            
+            </section>
+          </div>
+        </div>
+        <div class='collapsible' id='PixpEncoder.download'>
+          <a href='#PixpEncoder.download'>
+            <code>
+              #download<span class='gray'></span>
+            </code>
+            <div class='force-inline'>
+              <p>Download the generated file</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2'>
+            <section class='py2 clearfix'>
+              <h2 id='PixpEncoder.download' class='mt0'>
+                download<span class='gray'></span>
+              </h2>
+              <p>Download the generated file</p>
+            
+            </section>
+          </div>
+        </div>
+</section>
+</div><div class='py1'><section class='py2 clearfix'>
+  <h2 id='PixpDecoder' class='mt0'>
+    PixpDecoder<span class='gray'></span>
+  </h2>
+  <p>A PixpDecoder instance decodes a *.pixp file and output an Image2D or Image3D.
+The input, specified by <code>.addInput(...)</code> must be an ArrayBuffer
+(from an <code>UrlToArrayBufferFilter</code>, an <code>UrlToArrayBufferReader</code> or anothrer source ).</p>
+<p>usage: examples/pixpFileToImage2D.html</p>
+
+      <h4>Instance members</h4>
+        <div class='collapsible' id='PixpDecoder._hasValidInput'>
+          <a href='#PixpDecoder._hasValidInput'>
+            <code>
+              #_hasValidInput<span class='gray'></span>
+            </code>
+            <div class='force-inline'>
+              <p>[PRIVATE]
+Only accept Image2D and Image3D</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2'>
+            <section class='py2 clearfix'>
+              <h2 id='PixpDecoder._hasValidInput' class='mt0'>
+                _hasValidInput<span class='gray'></span>
+              </h2>
+              <p>[PRIVATE]
+            Only accept Image2D and Image3D</p>
+            
+            </section>
+          </div>
+        </div>
+</section>
+</div><div class='py1'><section class='py2 clearfix'>
   <h2 id='CanvasImageWriter' class='mt0'>
     CanvasImageWriter<span class='gray'></span>
   </h2>
@@ -2881,8 +3016,8 @@ Loading task for a single category (aka file, in this case)</p>
         </div>
 </section>
 </div><div class='py1'><section class='py2 clearfix'>
-  <h2 id='UrlToArrayBufferFilter' class='mt0'>
-    UrlToArrayBufferFilter<span class='gray'></span>
+  <h2 id='UrlToArrayBufferReader' class='mt0'>
+    UrlToArrayBufferReader<span class='gray'></span>
   </h2>
   <p>Open a files as ArrayBuffer using their URL. You must specify one or several URL
 (String) using <code>addInput(&quot;...&quot;)&grave;&grave; and add function to the event &quot;ready&quot; using</code>.on( &quot;ready&quot;, function(filter){ ... })&grave;.
@@ -2890,8 +3025,8 @@ The &quot;ready&quot; event will be called only when all input are loaded.</p>
 <p>usage: examples/urlFileToArrayBuffer.html</p>
 
       <h4>Instance members</h4>
-        <div class='collapsible' id='UrlToArrayBufferFilter._loadUrl'>
-          <a href='#UrlToArrayBufferFilter._loadUrl'>
+        <div class='collapsible' id='UrlToArrayBufferReader._loadUrl'>
+          <a href='#UrlToArrayBufferReader._loadUrl'>
             <code>
               #_loadUrl<span class='gray'>(category, url)</span>
             </code>
@@ -2903,7 +3038,7 @@ Perform a XMLHttpRequest with the given url and adds it to the output</p>
           </a>
           <div class='collapser border px2'>
             <section class='py2 clearfix'>
-              <h2 id='UrlToArrayBufferFilter._loadUrl' class='mt0'>
+              <h2 id='UrlToArrayBufferReader._loadUrl' class='mt0'>
                 _loadUrl<span class='gray'>(category, url)</span>
               </h2>
               <p>[PRIVATE]
@@ -2924,6 +3059,88 @@ Perform a XMLHttpRequest with the given url and adds it to the output</p>
                       </div>
                     </li>
                 </ul>
+            </section>
+          </div>
+        </div>
+</section>
+</div><div class='py1'><section class='py2 clearfix'>
+  <h2 id='SpectralScaleImageFilter' class='mt0'>
+    SpectralScaleImageFilter<span class='gray'></span>
+  </h2>
+  <p>Multiply an image by the other, like a scaling function.
+The image requires two inputs named &quot;0&quot; and &quot;1&quot;.
+Simply use <code>addInput( myImg1, &quot;0&quot; )</code>
+and <code>addInput( myImg2, &quot;1&quot; )</code>. The input &quot;0&quot; can have 1 or more bands while
+the input &quot;1&quot; can have only one band since the same scale is apply to each band.</p>
+<p>usage: examples/forEachPixelGadient.html</p>
+
+      <h4>Instance members</h4>
+        <div class='collapsible' id='SpectralScaleImageFilter._run'>
+          <a href='#SpectralScaleImageFilter._run'>
+            <code>
+              #_run<span class='gray'></span>
+            </code>
+            <div class='force-inline'>
+              <p>Run the filter</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2'>
+            <section class='py2 clearfix'>
+              <h2 id='SpectralScaleImageFilter._run' class='mt0'>
+                _run<span class='gray'></span>
+              </h2>
+              <p>Run the filter</p>
+            
+            </section>
+          </div>
+        </div>
+</section>
+</div><div class='py1'><section class='py2 clearfix'>
+  <h2 id='ForEachPixelImageFilter' class='mt0'>
+    ForEachPixelImageFilter<span class='gray'></span>
+  </h2>
+  <p>A filter of type ForEachPixelImageFilter can perform a operation on evey pixel
+of an Image2D with a simple interface. For this purpose, a per-pixel-callback
+must be specified using method
+.on( &quot;pixel&quot; , function( coord, color ){ ... })
+where coord is of form {x, y} and color is of form [r, g, b, a] (with possibly)
+a different number of components per pixel.
+This callback must return, or null (original color not modified),
+or a array of color (same dimension as the one in arguments).</p>
+<p>Usage: examples/forEachPixel.html</p>
+
+    <h4>Examples</h4>
+<pre class='overflow-auto'><span class="hljs-keyword">var</span> forEachPixelFilter = <span class="hljs-keyword">new</span> pixpipe.ForEachPixelImageFilter();
+forEachPixelFilter.on( <span class="hljs-string">"pixel"</span>, <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">position, color</span>)</span>{
+
+    <span class="hljs-keyword">return</span> [
+      color[<span class="hljs-number">1</span>], <span class="hljs-comment">// red (takes the values from green)</span>
+      color[<span class="hljs-number">0</span>], <span class="hljs-comment">// green (takes the values from red)</span>
+      color[<span class="hljs-number">2</span>] * <span class="hljs-number">0.5</span>, <span class="hljs-comment">// blue get 50% darker</span>
+      <span class="hljs-number">255</span> <span class="hljs-comment">// alpha, at max</span>
+    ]
+
+  }
+);</pre>
+      <h4>Instance members</h4>
+        <div class='collapsible' id='ForEachPixelImageFilter._run'>
+          <a href='#ForEachPixelImageFilter._run'>
+            <code>
+              #_run<span class='gray'></span>
+            </code>
+            <div class='force-inline'>
+              <p>Run the filter</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2'>
+            <section class='py2 clearfix'>
+              <h2 id='ForEachPixelImageFilter._run' class='mt0'>
+                _run<span class='gray'></span>
+              </h2>
+              <p>Run the filter</p>
+            
             </section>
           </div>
         </div>
@@ -2981,88 +3198,6 @@ file2ImgFilter.update();</pre>
                 hasValidInput<span class='gray'></span>
               </h2>
               <p>Overload the default method because HTML5 File is not a Pixpipe type</p>
-            
-            </section>
-          </div>
-        </div>
-</section>
-</div><div class='py1'><section class='py2 clearfix'>
-  <h2 id='ForEachPixelImageFilter' class='mt0'>
-    ForEachPixelImageFilter<span class='gray'></span>
-  </h2>
-  <p>A filter of type ForEachPixelImageFilter can perform a operation on evey pixel
-of an Image2D with a simple interface. For this purpose, a per-pixel-callback
-must be specified using method
-.on( &quot;pixel&quot; , function( coord, color ){ ... })
-where coord is of form {x, y} and color is of form [r, g, b, a] (with possibly)
-a different number of components per pixel.
-This callback must return, or null (original color not modified),
-or a array of color (same dimension as the one in arguments).</p>
-<p>Usage: examples/forEachPixel.html</p>
-
-    <h4>Examples</h4>
-<pre class='overflow-auto'><span class="hljs-keyword">var</span> forEachPixelFilter = <span class="hljs-keyword">new</span> pixpipe.ForEachPixelImageFilter();
-forEachPixelFilter.on( <span class="hljs-string">"pixel"</span>, <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">position, color</span>)</span>{
-
-    <span class="hljs-keyword">return</span> [
-      color[<span class="hljs-number">1</span>], <span class="hljs-comment">// red (takes the values from green)</span>
-      color[<span class="hljs-number">0</span>], <span class="hljs-comment">// green (takes the values from red)</span>
-      color[<span class="hljs-number">2</span>] * <span class="hljs-number">0.5</span>, <span class="hljs-comment">// blue get 50% darker</span>
-      <span class="hljs-number">255</span> <span class="hljs-comment">// alpha, at max</span>
-    ]
-
-  }
-);</pre>
-      <h4>Instance members</h4>
-        <div class='collapsible' id='ForEachPixelImageFilter._run'>
-          <a href='#ForEachPixelImageFilter._run'>
-            <code>
-              #_run<span class='gray'></span>
-            </code>
-            <div class='force-inline'>
-              <p>Run the filter</p>
-
-            </div>
-          </a>
-          <div class='collapser border px2'>
-            <section class='py2 clearfix'>
-              <h2 id='ForEachPixelImageFilter._run' class='mt0'>
-                _run<span class='gray'></span>
-              </h2>
-              <p>Run the filter</p>
-            
-            </section>
-          </div>
-        </div>
-</section>
-</div><div class='py1'><section class='py2 clearfix'>
-  <h2 id='SpectralScaleImageFilter' class='mt0'>
-    SpectralScaleImageFilter<span class='gray'></span>
-  </h2>
-  <p>Multiply an image by the other, like a scaling function.
-The image requires two inputs named &quot;0&quot; and &quot;1&quot;.
-Simply use <code>addInput( myImg1, &quot;0&quot; )</code>
-and <code>addInput( myImg2, &quot;1&quot; )</code>. The input &quot;0&quot; can have 1 or more bands while
-the input &quot;1&quot; can have only one band since the same scale is apply to each band.</p>
-<p>usage: examples/forEachPixelGadient.html</p>
-
-      <h4>Instance members</h4>
-        <div class='collapsible' id='SpectralScaleImageFilter._run'>
-          <a href='#SpectralScaleImageFilter._run'>
-            <code>
-              #_run<span class='gray'></span>
-            </code>
-            <div class='force-inline'>
-              <p>Run the filter</p>
-
-            </div>
-          </a>
-          <div class='collapser border px2'>
-            <section class='py2 clearfix'>
-              <h2 id='SpectralScaleImageFilter._run' class='mt0'>
-                _run<span class='gray'></span>
-              </h2>
-              <p>Run the filter</p>
             
             </section>
           </div>
@@ -5536,6 +5671,31 @@ The metadata that exist only in <em>this</em> are kept.</p>
             </section>
           </div>
         </div>
+        <div class='collapsible' id='PixpipeObject.getMetadataCopy'>
+          <a href='#PixpipeObject.getMetadataCopy'>
+            <code>
+              #getMetadataCopy<span class='gray'></span>
+            </code>
+            <div class='force-inline'>
+              
+            </div>
+          </a>
+          <div class='collapser border px2'>
+            <section class='py2 clearfix'>
+              <h2 id='PixpipeObject.getMetadataCopy' class='mt0'>
+                getMetadataCopy<span class='gray'></span>
+              </h2>
+              
+                  <h4>Returns</h4>
+                  <code><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a></code></code>
+                  :
+                  <div class='force-inline'>
+                    <p>a copy of local metadata</p>
+            
+                  </div>
+            </section>
+          </div>
+        </div>
         <div class='collapsible' id='PixpipeObject.getMetadataKeys'>
           <a href='#PixpipeObject.getMetadataKeys'>
             <code>
@@ -5877,191 +6037,6 @@ console.log(pako.deflate(data));
   <h2 id='Deflate' class='mt0'>
     Deflate<span class='gray'>(options)</span>
   </h2>
-  <p>class Deflate</p>
-<p>Generic JS-style wrapper for zlib calls. If you don&apos;t need
-streaming behaviour - use more simple functions: [[deflate]],
-[[deflateRaw]] and [[gzip]].</p>
-
-    <h4>Parameters</h4>
-    <ul class='suppress-p-margin'>
-        <li> <strong>options</strong>
-          :
-          <div class='force-inline'>
-            
-          </div>
-        </li>
-    </ul>
-      <h4>Instance members</h4>
-        <div class='collapsible' id='Deflate.onData'>
-          <a href='#Deflate.onData'>
-            <code>
-              #onData<span class='gray'>(chunk)</span>
-            </code>
-            <div class='force-inline'>
-              <p>Deflate#onData(chunk) -&gt; Void</p>
-<ul>
-<li>chunk (Uint8Array|Array|String): ouput data. Type of array depends
-on js engine support. When string output requested, each chunk
-will be string.</li>
-</ul>
-<p>By default, stores data blocks in <code>chunks[]</code> property and glue
-those in <code>onEnd</code>. Override this handler, if you need another behaviour.</p>
-
-            </div>
-          </a>
-          <div class='collapser border px2'>
-            <section class='py2 clearfix'>
-              <h2 id='Deflate.onData' class='mt0'>
-                onData<span class='gray'>(chunk)</span>
-              </h2>
-              <p>Deflate#onData(chunk) -&gt; Void</p>
-            <ul>
-            <li>chunk (Uint8Array|Array|String): ouput data. Type of array depends
-            on js engine support. When string output requested, each chunk
-            will be string.</li>
-            </ul>
-            <p>By default, stores data blocks in <code>chunks[]</code> property and glue
-            those in <code>onEnd</code>. Override this handler, if you need another behaviour.</p>
-            
-                <h4>Parameters</h4>
-                <ul class='suppress-p-margin'>
-                    <li> <strong>chunk</strong>
-                      :
-                      <div class='force-inline'>
-                        
-                      </div>
-                    </li>
-                </ul>
-            </section>
-          </div>
-        </div>
-        <div class='collapsible' id='Deflate.onEnd'>
-          <a href='#Deflate.onEnd'>
-            <code>
-              #onEnd<span class='gray'>(status)</span>
-            </code>
-            <div class='force-inline'>
-              <p>Deflate#onEnd(status) -&gt; Void</p>
-<ul>
-<li>status (Number): deflate status. 0 (Z_OK) on success,
-other if not.</li>
-</ul>
-<p>Called once after you tell deflate that the input stream is
-complete (Z_FINISH) or should be flushed (Z_SYNC_FLUSH)
-or if an error happened. By default - join collected chunks,
-free memory and fill <code>results</code> / <code>err</code> properties.</p>
-
-            </div>
-          </a>
-          <div class='collapser border px2'>
-            <section class='py2 clearfix'>
-              <h2 id='Deflate.onEnd' class='mt0'>
-                onEnd<span class='gray'>(status)</span>
-              </h2>
-              <p>Deflate#onEnd(status) -&gt; Void</p>
-            <ul>
-            <li>status (Number): deflate status. 0 (Z_OK) on success,
-            other if not.</li>
-            </ul>
-            <p>Called once after you tell deflate that the input stream is
-            complete (Z_FINISH) or should be flushed (Z_SYNC_FLUSH)
-            or if an error happened. By default - join collected chunks,
-            free memory and fill <code>results</code> / <code>err</code> properties.</p>
-            
-                <h4>Parameters</h4>
-                <ul class='suppress-p-margin'>
-                    <li> <strong>status</strong>
-                      :
-                      <div class='force-inline'>
-                        
-                      </div>
-                    </li>
-                </ul>
-            </section>
-          </div>
-        </div>
-        <div class='collapsible' id='Deflate.push'>
-          <a href='#Deflate.push'>
-            <code>
-              #push<span class='gray'>(data, mode)</span>
-            </code>
-            <div class='force-inline'>
-              <p>Deflate#push(data[, mode]) -&gt; Boolean</p>
-<ul>
-<li>data (Uint8Array|Array|ArrayBuffer|String): input data. Strings will be
-converted to utf8 byte sequence.</li>
-<li>mode (Number|Boolean): 0..6 for corresponding Z_NO_FLUSH..Z_TREE modes.
-See constants. Skipped or <code>false</code> means Z_NO_FLUSH, <code>true</code> meansh Z_FINISH.</li>
-</ul>
-<p>Sends input data to deflate pipe, generating [[Deflate#onData]] calls with
-new compressed chunks. Returns <code>true</code> on success. The last data block must have
-mode Z_FINISH (or <code>true</code>). That will flush internal pending buffers and call
-[[Deflate#onEnd]]. For interim explicit flushes (without ending the stream) you
-can use mode Z_SYNC_FLUSH, keeping the compression context.</p>
-<p>On fail call [[Deflate#onEnd]] with error code and return false.</p>
-<p>We strongly recommend to use <code>Uint8Array</code> on input for best speed (output
-array format is detected automatically). Also, don&apos;t skip last param and always
-use the same type in your code (boolean or number). That will improve JS speed.</p>
-<p>For regular <code>Array</code>-s make sure all elements are [0..255].</p>
-<h5>Example</h5>
-<pre><code class="language-javascript">push(chunk, false); // push one of data chunks
-...
-push(chunk, true);  // push last chunk
-</code></pre>
-
-            </div>
-          </a>
-          <div class='collapser border px2'>
-            <section class='py2 clearfix'>
-              <h2 id='Deflate.push' class='mt0'>
-                push<span class='gray'>(data, mode)</span>
-              </h2>
-              <p>Deflate#push(data[, mode]) -&gt; Boolean</p>
-            <ul>
-            <li>data (Uint8Array|Array|ArrayBuffer|String): input data. Strings will be
-            converted to utf8 byte sequence.</li>
-            <li>mode (Number|Boolean): 0..6 for corresponding Z_NO_FLUSH..Z_TREE modes.
-            See constants. Skipped or <code>false</code> means Z_NO_FLUSH, <code>true</code> meansh Z_FINISH.</li>
-            </ul>
-            <p>Sends input data to deflate pipe, generating [[Deflate#onData]] calls with
-            new compressed chunks. Returns <code>true</code> on success. The last data block must have
-            mode Z_FINISH (or <code>true</code>). That will flush internal pending buffers and call
-            [[Deflate#onEnd]]. For interim explicit flushes (without ending the stream) you
-            can use mode Z_SYNC_FLUSH, keeping the compression context.</p>
-            <p>On fail call [[Deflate#onEnd]] with error code and return false.</p>
-            <p>We strongly recommend to use <code>Uint8Array</code> on input for best speed (output
-            array format is detected automatically). Also, don&apos;t skip last param and always
-            use the same type in your code (boolean or number). That will improve JS speed.</p>
-            <p>For regular <code>Array</code>-s make sure all elements are [0..255].</p>
-            <h5>Example</h5>
-            <pre><code class="language-javascript">push(chunk, false); // push one of data chunks
-            ...
-            push(chunk, true);  // push last chunk
-            </code></pre>
-            
-                <h4>Parameters</h4>
-                <ul class='suppress-p-margin'>
-                    <li> <strong>data</strong>
-                      :
-                      <div class='force-inline'>
-                        
-                      </div>
-                    </li>
-                    <li> <strong>mode</strong>
-                      :
-                      <div class='force-inline'>
-                        
-                      </div>
-                    </li>
-                </ul>
-            </section>
-          </div>
-        </div>
-</section>
-</div><div class='py1'><section class='py2 clearfix'>
-  <h2 id='Deflate' class='mt0'>
-    Deflate<span class='gray'>(options)</span>
-  </h2>
   <p>Deflate.result -&gt; Uint8Array|Array</p>
 <p>Compressed result, generated by default [[Deflate#onData]]
 and [[Deflate#onEnd]] handlers. Filled after you push last chunk
@@ -6249,11 +6224,379 @@ push(chunk, true);  // push last chunk
   <h2 id='Deflate' class='mt0'>
     Deflate<span class='gray'>(options)</span>
   </h2>
+  <p>class Deflate</p>
+<p>Generic JS-style wrapper for zlib calls. If you don&apos;t need
+streaming behaviour - use more simple functions: [[deflate]],
+[[deflateRaw]] and [[gzip]].</p>
+
+    <h4>Parameters</h4>
+    <ul class='suppress-p-margin'>
+        <li> <strong>options</strong>
+          :
+          <div class='force-inline'>
+            
+          </div>
+        </li>
+    </ul>
+      <h4>Instance members</h4>
+        <div class='collapsible' id='Deflate.onData'>
+          <a href='#Deflate.onData'>
+            <code>
+              #onData<span class='gray'>(chunk)</span>
+            </code>
+            <div class='force-inline'>
+              <p>Deflate#onData(chunk) -&gt; Void</p>
+<ul>
+<li>chunk (Uint8Array|Array|String): ouput data. Type of array depends
+on js engine support. When string output requested, each chunk
+will be string.</li>
+</ul>
+<p>By default, stores data blocks in <code>chunks[]</code> property and glue
+those in <code>onEnd</code>. Override this handler, if you need another behaviour.</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2'>
+            <section class='py2 clearfix'>
+              <h2 id='Deflate.onData' class='mt0'>
+                onData<span class='gray'>(chunk)</span>
+              </h2>
+              <p>Deflate#onData(chunk) -&gt; Void</p>
+            <ul>
+            <li>chunk (Uint8Array|Array|String): ouput data. Type of array depends
+            on js engine support. When string output requested, each chunk
+            will be string.</li>
+            </ul>
+            <p>By default, stores data blocks in <code>chunks[]</code> property and glue
+            those in <code>onEnd</code>. Override this handler, if you need another behaviour.</p>
+            
+                <h4>Parameters</h4>
+                <ul class='suppress-p-margin'>
+                    <li> <strong>chunk</strong>
+                      :
+                      <div class='force-inline'>
+                        
+                      </div>
+                    </li>
+                </ul>
+            </section>
+          </div>
+        </div>
+        <div class='collapsible' id='Deflate.onEnd'>
+          <a href='#Deflate.onEnd'>
+            <code>
+              #onEnd<span class='gray'>(status)</span>
+            </code>
+            <div class='force-inline'>
+              <p>Deflate#onEnd(status) -&gt; Void</p>
+<ul>
+<li>status (Number): deflate status. 0 (Z_OK) on success,
+other if not.</li>
+</ul>
+<p>Called once after you tell deflate that the input stream is
+complete (Z_FINISH) or should be flushed (Z_SYNC_FLUSH)
+or if an error happened. By default - join collected chunks,
+free memory and fill <code>results</code> / <code>err</code> properties.</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2'>
+            <section class='py2 clearfix'>
+              <h2 id='Deflate.onEnd' class='mt0'>
+                onEnd<span class='gray'>(status)</span>
+              </h2>
+              <p>Deflate#onEnd(status) -&gt; Void</p>
+            <ul>
+            <li>status (Number): deflate status. 0 (Z_OK) on success,
+            other if not.</li>
+            </ul>
+            <p>Called once after you tell deflate that the input stream is
+            complete (Z_FINISH) or should be flushed (Z_SYNC_FLUSH)
+            or if an error happened. By default - join collected chunks,
+            free memory and fill <code>results</code> / <code>err</code> properties.</p>
+            
+                <h4>Parameters</h4>
+                <ul class='suppress-p-margin'>
+                    <li> <strong>status</strong>
+                      :
+                      <div class='force-inline'>
+                        
+                      </div>
+                    </li>
+                </ul>
+            </section>
+          </div>
+        </div>
+        <div class='collapsible' id='Deflate.push'>
+          <a href='#Deflate.push'>
+            <code>
+              #push<span class='gray'>(data, mode)</span>
+            </code>
+            <div class='force-inline'>
+              <p>Deflate#push(data[, mode]) -&gt; Boolean</p>
+<ul>
+<li>data (Uint8Array|Array|ArrayBuffer|String): input data. Strings will be
+converted to utf8 byte sequence.</li>
+<li>mode (Number|Boolean): 0..6 for corresponding Z_NO_FLUSH..Z_TREE modes.
+See constants. Skipped or <code>false</code> means Z_NO_FLUSH, <code>true</code> meansh Z_FINISH.</li>
+</ul>
+<p>Sends input data to deflate pipe, generating [[Deflate#onData]] calls with
+new compressed chunks. Returns <code>true</code> on success. The last data block must have
+mode Z_FINISH (or <code>true</code>). That will flush internal pending buffers and call
+[[Deflate#onEnd]]. For interim explicit flushes (without ending the stream) you
+can use mode Z_SYNC_FLUSH, keeping the compression context.</p>
+<p>On fail call [[Deflate#onEnd]] with error code and return false.</p>
+<p>We strongly recommend to use <code>Uint8Array</code> on input for best speed (output
+array format is detected automatically). Also, don&apos;t skip last param and always
+use the same type in your code (boolean or number). That will improve JS speed.</p>
+<p>For regular <code>Array</code>-s make sure all elements are [0..255].</p>
+<h5>Example</h5>
+<pre><code class="language-javascript">push(chunk, false); // push one of data chunks
+...
+push(chunk, true);  // push last chunk
+</code></pre>
+
+            </div>
+          </a>
+          <div class='collapser border px2'>
+            <section class='py2 clearfix'>
+              <h2 id='Deflate.push' class='mt0'>
+                push<span class='gray'>(data, mode)</span>
+              </h2>
+              <p>Deflate#push(data[, mode]) -&gt; Boolean</p>
+            <ul>
+            <li>data (Uint8Array|Array|ArrayBuffer|String): input data. Strings will be
+            converted to utf8 byte sequence.</li>
+            <li>mode (Number|Boolean): 0..6 for corresponding Z_NO_FLUSH..Z_TREE modes.
+            See constants. Skipped or <code>false</code> means Z_NO_FLUSH, <code>true</code> meansh Z_FINISH.</li>
+            </ul>
+            <p>Sends input data to deflate pipe, generating [[Deflate#onData]] calls with
+            new compressed chunks. Returns <code>true</code> on success. The last data block must have
+            mode Z_FINISH (or <code>true</code>). That will flush internal pending buffers and call
+            [[Deflate#onEnd]]. For interim explicit flushes (without ending the stream) you
+            can use mode Z_SYNC_FLUSH, keeping the compression context.</p>
+            <p>On fail call [[Deflate#onEnd]] with error code and return false.</p>
+            <p>We strongly recommend to use <code>Uint8Array</code> on input for best speed (output
+            array format is detected automatically). Also, don&apos;t skip last param and always
+            use the same type in your code (boolean or number). That will improve JS speed.</p>
+            <p>For regular <code>Array</code>-s make sure all elements are [0..255].</p>
+            <h5>Example</h5>
+            <pre><code class="language-javascript">push(chunk, false); // push one of data chunks
+            ...
+            push(chunk, true);  // push last chunk
+            </code></pre>
+            
+                <h4>Parameters</h4>
+                <ul class='suppress-p-margin'>
+                    <li> <strong>data</strong>
+                      :
+                      <div class='force-inline'>
+                        
+                      </div>
+                    </li>
+                    <li> <strong>mode</strong>
+                      :
+                      <div class='force-inline'>
+                        
+                      </div>
+                    </li>
+                </ul>
+            </section>
+          </div>
+        </div>
+</section>
+</div><div class='py1'><section class='py2 clearfix'>
+  <h2 id='Deflate' class='mt0'>
+    Deflate<span class='gray'>(options)</span>
+  </h2>
   <p>Deflate.err -&gt; Number</p>
 <p>Error code after deflate finished. 0 (Z_OK) on success.
 You will not need it in real life, because deflate errors
 are possible only on wrong options or bad <code>onData</code> / <code>onEnd</code>
 custom handlers.</p>
+
+    <h4>Parameters</h4>
+    <ul class='suppress-p-margin'>
+        <li> <strong>options</strong>
+          :
+          <div class='force-inline'>
+            
+          </div>
+        </li>
+    </ul>
+      <h4>Instance members</h4>
+        <div class='collapsible' id='Deflate.onData'>
+          <a href='#Deflate.onData'>
+            <code>
+              #onData<span class='gray'>(chunk)</span>
+            </code>
+            <div class='force-inline'>
+              <p>Deflate#onData(chunk) -&gt; Void</p>
+<ul>
+<li>chunk (Uint8Array|Array|String): ouput data. Type of array depends
+on js engine support. When string output requested, each chunk
+will be string.</li>
+</ul>
+<p>By default, stores data blocks in <code>chunks[]</code> property and glue
+those in <code>onEnd</code>. Override this handler, if you need another behaviour.</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2'>
+            <section class='py2 clearfix'>
+              <h2 id='Deflate.onData' class='mt0'>
+                onData<span class='gray'>(chunk)</span>
+              </h2>
+              <p>Deflate#onData(chunk) -&gt; Void</p>
+            <ul>
+            <li>chunk (Uint8Array|Array|String): ouput data. Type of array depends
+            on js engine support. When string output requested, each chunk
+            will be string.</li>
+            </ul>
+            <p>By default, stores data blocks in <code>chunks[]</code> property and glue
+            those in <code>onEnd</code>. Override this handler, if you need another behaviour.</p>
+            
+                <h4>Parameters</h4>
+                <ul class='suppress-p-margin'>
+                    <li> <strong>chunk</strong>
+                      :
+                      <div class='force-inline'>
+                        
+                      </div>
+                    </li>
+                </ul>
+            </section>
+          </div>
+        </div>
+        <div class='collapsible' id='Deflate.onEnd'>
+          <a href='#Deflate.onEnd'>
+            <code>
+              #onEnd<span class='gray'>(status)</span>
+            </code>
+            <div class='force-inline'>
+              <p>Deflate#onEnd(status) -&gt; Void</p>
+<ul>
+<li>status (Number): deflate status. 0 (Z_OK) on success,
+other if not.</li>
+</ul>
+<p>Called once after you tell deflate that the input stream is
+complete (Z_FINISH) or should be flushed (Z_SYNC_FLUSH)
+or if an error happened. By default - join collected chunks,
+free memory and fill <code>results</code> / <code>err</code> properties.</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2'>
+            <section class='py2 clearfix'>
+              <h2 id='Deflate.onEnd' class='mt0'>
+                onEnd<span class='gray'>(status)</span>
+              </h2>
+              <p>Deflate#onEnd(status) -&gt; Void</p>
+            <ul>
+            <li>status (Number): deflate status. 0 (Z_OK) on success,
+            other if not.</li>
+            </ul>
+            <p>Called once after you tell deflate that the input stream is
+            complete (Z_FINISH) or should be flushed (Z_SYNC_FLUSH)
+            or if an error happened. By default - join collected chunks,
+            free memory and fill <code>results</code> / <code>err</code> properties.</p>
+            
+                <h4>Parameters</h4>
+                <ul class='suppress-p-margin'>
+                    <li> <strong>status</strong>
+                      :
+                      <div class='force-inline'>
+                        
+                      </div>
+                    </li>
+                </ul>
+            </section>
+          </div>
+        </div>
+        <div class='collapsible' id='Deflate.push'>
+          <a href='#Deflate.push'>
+            <code>
+              #push<span class='gray'>(data, mode)</span>
+            </code>
+            <div class='force-inline'>
+              <p>Deflate#push(data[, mode]) -&gt; Boolean</p>
+<ul>
+<li>data (Uint8Array|Array|ArrayBuffer|String): input data. Strings will be
+converted to utf8 byte sequence.</li>
+<li>mode (Number|Boolean): 0..6 for corresponding Z_NO_FLUSH..Z_TREE modes.
+See constants. Skipped or <code>false</code> means Z_NO_FLUSH, <code>true</code> meansh Z_FINISH.</li>
+</ul>
+<p>Sends input data to deflate pipe, generating [[Deflate#onData]] calls with
+new compressed chunks. Returns <code>true</code> on success. The last data block must have
+mode Z_FINISH (or <code>true</code>). That will flush internal pending buffers and call
+[[Deflate#onEnd]]. For interim explicit flushes (without ending the stream) you
+can use mode Z_SYNC_FLUSH, keeping the compression context.</p>
+<p>On fail call [[Deflate#onEnd]] with error code and return false.</p>
+<p>We strongly recommend to use <code>Uint8Array</code> on input for best speed (output
+array format is detected automatically). Also, don&apos;t skip last param and always
+use the same type in your code (boolean or number). That will improve JS speed.</p>
+<p>For regular <code>Array</code>-s make sure all elements are [0..255].</p>
+<h5>Example</h5>
+<pre><code class="language-javascript">push(chunk, false); // push one of data chunks
+...
+push(chunk, true);  // push last chunk
+</code></pre>
+
+            </div>
+          </a>
+          <div class='collapser border px2'>
+            <section class='py2 clearfix'>
+              <h2 id='Deflate.push' class='mt0'>
+                push<span class='gray'>(data, mode)</span>
+              </h2>
+              <p>Deflate#push(data[, mode]) -&gt; Boolean</p>
+            <ul>
+            <li>data (Uint8Array|Array|ArrayBuffer|String): input data. Strings will be
+            converted to utf8 byte sequence.</li>
+            <li>mode (Number|Boolean): 0..6 for corresponding Z_NO_FLUSH..Z_TREE modes.
+            See constants. Skipped or <code>false</code> means Z_NO_FLUSH, <code>true</code> meansh Z_FINISH.</li>
+            </ul>
+            <p>Sends input data to deflate pipe, generating [[Deflate#onData]] calls with
+            new compressed chunks. Returns <code>true</code> on success. The last data block must have
+            mode Z_FINISH (or <code>true</code>). That will flush internal pending buffers and call
+            [[Deflate#onEnd]]. For interim explicit flushes (without ending the stream) you
+            can use mode Z_SYNC_FLUSH, keeping the compression context.</p>
+            <p>On fail call [[Deflate#onEnd]] with error code and return false.</p>
+            <p>We strongly recommend to use <code>Uint8Array</code> on input for best speed (output
+            array format is detected automatically). Also, don&apos;t skip last param and always
+            use the same type in your code (boolean or number). That will improve JS speed.</p>
+            <p>For regular <code>Array</code>-s make sure all elements are [0..255].</p>
+            <h5>Example</h5>
+            <pre><code class="language-javascript">push(chunk, false); // push one of data chunks
+            ...
+            push(chunk, true);  // push last chunk
+            </code></pre>
+            
+                <h4>Parameters</h4>
+                <ul class='suppress-p-margin'>
+                    <li> <strong>data</strong>
+                      :
+                      <div class='force-inline'>
+                        
+                      </div>
+                    </li>
+                    <li> <strong>mode</strong>
+                      :
+                      <div class='force-inline'>
+                        
+                      </div>
+                    </li>
+                </ul>
+            </section>
+          </div>
+        </div>
+</section>
+</div><div class='py1'><section class='py2 clearfix'>
+  <h2 id='Deflate' class='mt0'>
+    Deflate<span class='gray'>(options)</span>
+  </h2>
+  <p>Deflate.msg -&gt; String</p>
+<p>Error message, if [[Deflate.err]] != 0</p>
 
     <h4>Parameters</h4>
     <ul class='suppress-p-margin'>
@@ -6662,189 +7005,6 @@ push(chunk, true);  // push last chunk
         </div>
 </section>
 </div><div class='py1'><section class='py2 clearfix'>
-  <h2 id='Deflate' class='mt0'>
-    Deflate<span class='gray'>(options)</span>
-  </h2>
-  <p>Deflate.msg -&gt; String</p>
-<p>Error message, if [[Deflate.err]] != 0</p>
-
-    <h4>Parameters</h4>
-    <ul class='suppress-p-margin'>
-        <li> <strong>options</strong>
-          :
-          <div class='force-inline'>
-            
-          </div>
-        </li>
-    </ul>
-      <h4>Instance members</h4>
-        <div class='collapsible' id='Deflate.onData'>
-          <a href='#Deflate.onData'>
-            <code>
-              #onData<span class='gray'>(chunk)</span>
-            </code>
-            <div class='force-inline'>
-              <p>Deflate#onData(chunk) -&gt; Void</p>
-<ul>
-<li>chunk (Uint8Array|Array|String): ouput data. Type of array depends
-on js engine support. When string output requested, each chunk
-will be string.</li>
-</ul>
-<p>By default, stores data blocks in <code>chunks[]</code> property and glue
-those in <code>onEnd</code>. Override this handler, if you need another behaviour.</p>
-
-            </div>
-          </a>
-          <div class='collapser border px2'>
-            <section class='py2 clearfix'>
-              <h2 id='Deflate.onData' class='mt0'>
-                onData<span class='gray'>(chunk)</span>
-              </h2>
-              <p>Deflate#onData(chunk) -&gt; Void</p>
-            <ul>
-            <li>chunk (Uint8Array|Array|String): ouput data. Type of array depends
-            on js engine support. When string output requested, each chunk
-            will be string.</li>
-            </ul>
-            <p>By default, stores data blocks in <code>chunks[]</code> property and glue
-            those in <code>onEnd</code>. Override this handler, if you need another behaviour.</p>
-            
-                <h4>Parameters</h4>
-                <ul class='suppress-p-margin'>
-                    <li> <strong>chunk</strong>
-                      :
-                      <div class='force-inline'>
-                        
-                      </div>
-                    </li>
-                </ul>
-            </section>
-          </div>
-        </div>
-        <div class='collapsible' id='Deflate.onEnd'>
-          <a href='#Deflate.onEnd'>
-            <code>
-              #onEnd<span class='gray'>(status)</span>
-            </code>
-            <div class='force-inline'>
-              <p>Deflate#onEnd(status) -&gt; Void</p>
-<ul>
-<li>status (Number): deflate status. 0 (Z_OK) on success,
-other if not.</li>
-</ul>
-<p>Called once after you tell deflate that the input stream is
-complete (Z_FINISH) or should be flushed (Z_SYNC_FLUSH)
-or if an error happened. By default - join collected chunks,
-free memory and fill <code>results</code> / <code>err</code> properties.</p>
-
-            </div>
-          </a>
-          <div class='collapser border px2'>
-            <section class='py2 clearfix'>
-              <h2 id='Deflate.onEnd' class='mt0'>
-                onEnd<span class='gray'>(status)</span>
-              </h2>
-              <p>Deflate#onEnd(status) -&gt; Void</p>
-            <ul>
-            <li>status (Number): deflate status. 0 (Z_OK) on success,
-            other if not.</li>
-            </ul>
-            <p>Called once after you tell deflate that the input stream is
-            complete (Z_FINISH) or should be flushed (Z_SYNC_FLUSH)
-            or if an error happened. By default - join collected chunks,
-            free memory and fill <code>results</code> / <code>err</code> properties.</p>
-            
-                <h4>Parameters</h4>
-                <ul class='suppress-p-margin'>
-                    <li> <strong>status</strong>
-                      :
-                      <div class='force-inline'>
-                        
-                      </div>
-                    </li>
-                </ul>
-            </section>
-          </div>
-        </div>
-        <div class='collapsible' id='Deflate.push'>
-          <a href='#Deflate.push'>
-            <code>
-              #push<span class='gray'>(data, mode)</span>
-            </code>
-            <div class='force-inline'>
-              <p>Deflate#push(data[, mode]) -&gt; Boolean</p>
-<ul>
-<li>data (Uint8Array|Array|ArrayBuffer|String): input data. Strings will be
-converted to utf8 byte sequence.</li>
-<li>mode (Number|Boolean): 0..6 for corresponding Z_NO_FLUSH..Z_TREE modes.
-See constants. Skipped or <code>false</code> means Z_NO_FLUSH, <code>true</code> meansh Z_FINISH.</li>
-</ul>
-<p>Sends input data to deflate pipe, generating [[Deflate#onData]] calls with
-new compressed chunks. Returns <code>true</code> on success. The last data block must have
-mode Z_FINISH (or <code>true</code>). That will flush internal pending buffers and call
-[[Deflate#onEnd]]. For interim explicit flushes (without ending the stream) you
-can use mode Z_SYNC_FLUSH, keeping the compression context.</p>
-<p>On fail call [[Deflate#onEnd]] with error code and return false.</p>
-<p>We strongly recommend to use <code>Uint8Array</code> on input for best speed (output
-array format is detected automatically). Also, don&apos;t skip last param and always
-use the same type in your code (boolean or number). That will improve JS speed.</p>
-<p>For regular <code>Array</code>-s make sure all elements are [0..255].</p>
-<h5>Example</h5>
-<pre><code class="language-javascript">push(chunk, false); // push one of data chunks
-...
-push(chunk, true);  // push last chunk
-</code></pre>
-
-            </div>
-          </a>
-          <div class='collapser border px2'>
-            <section class='py2 clearfix'>
-              <h2 id='Deflate.push' class='mt0'>
-                push<span class='gray'>(data, mode)</span>
-              </h2>
-              <p>Deflate#push(data[, mode]) -&gt; Boolean</p>
-            <ul>
-            <li>data (Uint8Array|Array|ArrayBuffer|String): input data. Strings will be
-            converted to utf8 byte sequence.</li>
-            <li>mode (Number|Boolean): 0..6 for corresponding Z_NO_FLUSH..Z_TREE modes.
-            See constants. Skipped or <code>false</code> means Z_NO_FLUSH, <code>true</code> meansh Z_FINISH.</li>
-            </ul>
-            <p>Sends input data to deflate pipe, generating [[Deflate#onData]] calls with
-            new compressed chunks. Returns <code>true</code> on success. The last data block must have
-            mode Z_FINISH (or <code>true</code>). That will flush internal pending buffers and call
-            [[Deflate#onEnd]]. For interim explicit flushes (without ending the stream) you
-            can use mode Z_SYNC_FLUSH, keeping the compression context.</p>
-            <p>On fail call [[Deflate#onEnd]] with error code and return false.</p>
-            <p>We strongly recommend to use <code>Uint8Array</code> on input for best speed (output
-            array format is detected automatically). Also, don&apos;t skip last param and always
-            use the same type in your code (boolean or number). That will improve JS speed.</p>
-            <p>For regular <code>Array</code>-s make sure all elements are [0..255].</p>
-            <h5>Example</h5>
-            <pre><code class="language-javascript">push(chunk, false); // push one of data chunks
-            ...
-            push(chunk, true);  // push last chunk
-            </code></pre>
-            
-                <h4>Parameters</h4>
-                <ul class='suppress-p-margin'>
-                    <li> <strong>data</strong>
-                      :
-                      <div class='force-inline'>
-                        
-                      </div>
-                    </li>
-                    <li> <strong>mode</strong>
-                      :
-                      <div class='force-inline'>
-                        
-                      </div>
-                    </li>
-                </ul>
-            </section>
-          </div>
-        </div>
-</section>
-</div><div class='py1'><section class='py2 clearfix'>
   <h2 id='deflateRaw' class='mt0'>
     deflateRaw<span class='gray'>(input, options)</span>
   </h2>
@@ -7064,10 +7224,375 @@ try {
   <h2 id='Inflate' class='mt0'>
     Inflate<span class='gray'>(options)</span>
   </h2>
-  <p>class Inflate</p>
-<p>Generic JS-style wrapper for zlib calls. If you don&apos;t need
-streaming behaviour - use more simple functions: [[inflate]]
-and [[inflateRaw]].</p>
+  <p>Inflate.result -&gt; Uint8Array|Array|String</p>
+<p>Uncompressed result, generated by default [[Inflate#onData]]
+and [[Inflate#onEnd]] handlers. Filled after you push last chunk
+(call [[Inflate#push]] with <code>Z_FINISH</code> / <code>true</code> param) or if you
+push a chunk with explicit flush (call [[Inflate#push]] with
+<code>Z_SYNC_FLUSH</code> param).</p>
+
+    <h4>Parameters</h4>
+    <ul class='suppress-p-margin'>
+        <li> <strong>options</strong>
+          :
+          <div class='force-inline'>
+            
+          </div>
+        </li>
+    </ul>
+      <h4>Instance members</h4>
+        <div class='collapsible' id='Inflate.onData'>
+          <a href='#Inflate.onData'>
+            <code>
+              #onData<span class='gray'>(chunk)</span>
+            </code>
+            <div class='force-inline'>
+              <p>Inflate#onData(chunk) -&gt; Void</p>
+<ul>
+<li>chunk (Uint8Array|Array|String): ouput data. Type of array depends
+on js engine support. When string output requested, each chunk
+will be string.</li>
+</ul>
+<p>By default, stores data blocks in <code>chunks[]</code> property and glue
+those in <code>onEnd</code>. Override this handler, if you need another behaviour.</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2'>
+            <section class='py2 clearfix'>
+              <h2 id='Inflate.onData' class='mt0'>
+                onData<span class='gray'>(chunk)</span>
+              </h2>
+              <p>Inflate#onData(chunk) -&gt; Void</p>
+            <ul>
+            <li>chunk (Uint8Array|Array|String): ouput data. Type of array depends
+            on js engine support. When string output requested, each chunk
+            will be string.</li>
+            </ul>
+            <p>By default, stores data blocks in <code>chunks[]</code> property and glue
+            those in <code>onEnd</code>. Override this handler, if you need another behaviour.</p>
+            
+                <h4>Parameters</h4>
+                <ul class='suppress-p-margin'>
+                    <li> <strong>chunk</strong>
+                      :
+                      <div class='force-inline'>
+                        
+                      </div>
+                    </li>
+                </ul>
+            </section>
+          </div>
+        </div>
+        <div class='collapsible' id='Inflate.onEnd'>
+          <a href='#Inflate.onEnd'>
+            <code>
+              #onEnd<span class='gray'>(status)</span>
+            </code>
+            <div class='force-inline'>
+              <p>Inflate#onEnd(status) -&gt; Void</p>
+<ul>
+<li>status (Number): inflate status. 0 (Z_OK) on success,
+other if not.</li>
+</ul>
+<p>Called either after you tell inflate that the input stream is
+complete (Z_FINISH) or should be flushed (Z_SYNC_FLUSH)
+or if an error happened. By default - join collected chunks,
+free memory and fill <code>results</code> / <code>err</code> properties.</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2'>
+            <section class='py2 clearfix'>
+              <h2 id='Inflate.onEnd' class='mt0'>
+                onEnd<span class='gray'>(status)</span>
+              </h2>
+              <p>Inflate#onEnd(status) -&gt; Void</p>
+            <ul>
+            <li>status (Number): inflate status. 0 (Z_OK) on success,
+            other if not.</li>
+            </ul>
+            <p>Called either after you tell inflate that the input stream is
+            complete (Z_FINISH) or should be flushed (Z_SYNC_FLUSH)
+            or if an error happened. By default - join collected chunks,
+            free memory and fill <code>results</code> / <code>err</code> properties.</p>
+            
+                <h4>Parameters</h4>
+                <ul class='suppress-p-margin'>
+                    <li> <strong>status</strong>
+                      :
+                      <div class='force-inline'>
+                        
+                      </div>
+                    </li>
+                </ul>
+            </section>
+          </div>
+        </div>
+        <div class='collapsible' id='Inflate.push'>
+          <a href='#Inflate.push'>
+            <code>
+              #push<span class='gray'>(data, mode)</span>
+            </code>
+            <div class='force-inline'>
+              <p>Inflate#push(data[, mode]) -&gt; Boolean</p>
+<ul>
+<li>data (Uint8Array|Array|ArrayBuffer|String): input data</li>
+<li>mode (Number|Boolean): 0..6 for corresponding Z_NO_FLUSH..Z_TREE modes.
+See constants. Skipped or <code>false</code> means Z_NO_FLUSH, <code>true</code> meansh Z_FINISH.</li>
+</ul>
+<p>Sends input data to inflate pipe, generating [[Inflate#onData]] calls with
+new output chunks. Returns <code>true</code> on success. The last data block must have
+mode Z_FINISH (or <code>true</code>). That will flush internal pending buffers and call
+[[Inflate#onEnd]]. For interim explicit flushes (without ending the stream) you
+can use mode Z_SYNC_FLUSH, keeping the decompression context.</p>
+<p>On fail call [[Inflate#onEnd]] with error code and return false.</p>
+<p>We strongly recommend to use <code>Uint8Array</code> on input for best speed (output
+format is detected automatically). Also, don&apos;t skip last param and always
+use the same type in your code (boolean or number). That will improve JS speed.</p>
+<p>For regular <code>Array</code>-s make sure all elements are [0..255].</p>
+<h5>Example</h5>
+<pre><code class="language-javascript">push(chunk, false); // push one of data chunks
+...
+push(chunk, true);  // push last chunk
+</code></pre>
+
+            </div>
+          </a>
+          <div class='collapser border px2'>
+            <section class='py2 clearfix'>
+              <h2 id='Inflate.push' class='mt0'>
+                push<span class='gray'>(data, mode)</span>
+              </h2>
+              <p>Inflate#push(data[, mode]) -&gt; Boolean</p>
+            <ul>
+            <li>data (Uint8Array|Array|ArrayBuffer|String): input data</li>
+            <li>mode (Number|Boolean): 0..6 for corresponding Z_NO_FLUSH..Z_TREE modes.
+            See constants. Skipped or <code>false</code> means Z_NO_FLUSH, <code>true</code> meansh Z_FINISH.</li>
+            </ul>
+            <p>Sends input data to inflate pipe, generating [[Inflate#onData]] calls with
+            new output chunks. Returns <code>true</code> on success. The last data block must have
+            mode Z_FINISH (or <code>true</code>). That will flush internal pending buffers and call
+            [[Inflate#onEnd]]. For interim explicit flushes (without ending the stream) you
+            can use mode Z_SYNC_FLUSH, keeping the decompression context.</p>
+            <p>On fail call [[Inflate#onEnd]] with error code and return false.</p>
+            <p>We strongly recommend to use <code>Uint8Array</code> on input for best speed (output
+            format is detected automatically). Also, don&apos;t skip last param and always
+            use the same type in your code (boolean or number). That will improve JS speed.</p>
+            <p>For regular <code>Array</code>-s make sure all elements are [0..255].</p>
+            <h5>Example</h5>
+            <pre><code class="language-javascript">push(chunk, false); // push one of data chunks
+            ...
+            push(chunk, true);  // push last chunk
+            </code></pre>
+            
+                <h4>Parameters</h4>
+                <ul class='suppress-p-margin'>
+                    <li> <strong>data</strong>
+                      :
+                      <div class='force-inline'>
+                        
+                      </div>
+                    </li>
+                    <li> <strong>mode</strong>
+                      :
+                      <div class='force-inline'>
+                        
+                      </div>
+                    </li>
+                </ul>
+            </section>
+          </div>
+        </div>
+</section>
+</div><div class='py1'><section class='py2 clearfix'>
+  <h2 id='Inflate' class='mt0'>
+    Inflate<span class='gray'>(options)</span>
+  </h2>
+  <p>Inflate.err -&gt; Number</p>
+<p>Error code after inflate finished. 0 (Z_OK) on success.
+Should be checked if broken data possible.</p>
+
+    <h4>Parameters</h4>
+    <ul class='suppress-p-margin'>
+        <li> <strong>options</strong>
+          :
+          <div class='force-inline'>
+            
+          </div>
+        </li>
+    </ul>
+      <h4>Instance members</h4>
+        <div class='collapsible' id='Inflate.onData'>
+          <a href='#Inflate.onData'>
+            <code>
+              #onData<span class='gray'>(chunk)</span>
+            </code>
+            <div class='force-inline'>
+              <p>Inflate#onData(chunk) -&gt; Void</p>
+<ul>
+<li>chunk (Uint8Array|Array|String): ouput data. Type of array depends
+on js engine support. When string output requested, each chunk
+will be string.</li>
+</ul>
+<p>By default, stores data blocks in <code>chunks[]</code> property and glue
+those in <code>onEnd</code>. Override this handler, if you need another behaviour.</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2'>
+            <section class='py2 clearfix'>
+              <h2 id='Inflate.onData' class='mt0'>
+                onData<span class='gray'>(chunk)</span>
+              </h2>
+              <p>Inflate#onData(chunk) -&gt; Void</p>
+            <ul>
+            <li>chunk (Uint8Array|Array|String): ouput data. Type of array depends
+            on js engine support. When string output requested, each chunk
+            will be string.</li>
+            </ul>
+            <p>By default, stores data blocks in <code>chunks[]</code> property and glue
+            those in <code>onEnd</code>. Override this handler, if you need another behaviour.</p>
+            
+                <h4>Parameters</h4>
+                <ul class='suppress-p-margin'>
+                    <li> <strong>chunk</strong>
+                      :
+                      <div class='force-inline'>
+                        
+                      </div>
+                    </li>
+                </ul>
+            </section>
+          </div>
+        </div>
+        <div class='collapsible' id='Inflate.onEnd'>
+          <a href='#Inflate.onEnd'>
+            <code>
+              #onEnd<span class='gray'>(status)</span>
+            </code>
+            <div class='force-inline'>
+              <p>Inflate#onEnd(status) -&gt; Void</p>
+<ul>
+<li>status (Number): inflate status. 0 (Z_OK) on success,
+other if not.</li>
+</ul>
+<p>Called either after you tell inflate that the input stream is
+complete (Z_FINISH) or should be flushed (Z_SYNC_FLUSH)
+or if an error happened. By default - join collected chunks,
+free memory and fill <code>results</code> / <code>err</code> properties.</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2'>
+            <section class='py2 clearfix'>
+              <h2 id='Inflate.onEnd' class='mt0'>
+                onEnd<span class='gray'>(status)</span>
+              </h2>
+              <p>Inflate#onEnd(status) -&gt; Void</p>
+            <ul>
+            <li>status (Number): inflate status. 0 (Z_OK) on success,
+            other if not.</li>
+            </ul>
+            <p>Called either after you tell inflate that the input stream is
+            complete (Z_FINISH) or should be flushed (Z_SYNC_FLUSH)
+            or if an error happened. By default - join collected chunks,
+            free memory and fill <code>results</code> / <code>err</code> properties.</p>
+            
+                <h4>Parameters</h4>
+                <ul class='suppress-p-margin'>
+                    <li> <strong>status</strong>
+                      :
+                      <div class='force-inline'>
+                        
+                      </div>
+                    </li>
+                </ul>
+            </section>
+          </div>
+        </div>
+        <div class='collapsible' id='Inflate.push'>
+          <a href='#Inflate.push'>
+            <code>
+              #push<span class='gray'>(data, mode)</span>
+            </code>
+            <div class='force-inline'>
+              <p>Inflate#push(data[, mode]) -&gt; Boolean</p>
+<ul>
+<li>data (Uint8Array|Array|ArrayBuffer|String): input data</li>
+<li>mode (Number|Boolean): 0..6 for corresponding Z_NO_FLUSH..Z_TREE modes.
+See constants. Skipped or <code>false</code> means Z_NO_FLUSH, <code>true</code> meansh Z_FINISH.</li>
+</ul>
+<p>Sends input data to inflate pipe, generating [[Inflate#onData]] calls with
+new output chunks. Returns <code>true</code> on success. The last data block must have
+mode Z_FINISH (or <code>true</code>). That will flush internal pending buffers and call
+[[Inflate#onEnd]]. For interim explicit flushes (without ending the stream) you
+can use mode Z_SYNC_FLUSH, keeping the decompression context.</p>
+<p>On fail call [[Inflate#onEnd]] with error code and return false.</p>
+<p>We strongly recommend to use <code>Uint8Array</code> on input for best speed (output
+format is detected automatically). Also, don&apos;t skip last param and always
+use the same type in your code (boolean or number). That will improve JS speed.</p>
+<p>For regular <code>Array</code>-s make sure all elements are [0..255].</p>
+<h5>Example</h5>
+<pre><code class="language-javascript">push(chunk, false); // push one of data chunks
+...
+push(chunk, true);  // push last chunk
+</code></pre>
+
+            </div>
+          </a>
+          <div class='collapser border px2'>
+            <section class='py2 clearfix'>
+              <h2 id='Inflate.push' class='mt0'>
+                push<span class='gray'>(data, mode)</span>
+              </h2>
+              <p>Inflate#push(data[, mode]) -&gt; Boolean</p>
+            <ul>
+            <li>data (Uint8Array|Array|ArrayBuffer|String): input data</li>
+            <li>mode (Number|Boolean): 0..6 for corresponding Z_NO_FLUSH..Z_TREE modes.
+            See constants. Skipped or <code>false</code> means Z_NO_FLUSH, <code>true</code> meansh Z_FINISH.</li>
+            </ul>
+            <p>Sends input data to inflate pipe, generating [[Inflate#onData]] calls with
+            new output chunks. Returns <code>true</code> on success. The last data block must have
+            mode Z_FINISH (or <code>true</code>). That will flush internal pending buffers and call
+            [[Inflate#onEnd]]. For interim explicit flushes (without ending the stream) you
+            can use mode Z_SYNC_FLUSH, keeping the decompression context.</p>
+            <p>On fail call [[Inflate#onEnd]] with error code and return false.</p>
+            <p>We strongly recommend to use <code>Uint8Array</code> on input for best speed (output
+            format is detected automatically). Also, don&apos;t skip last param and always
+            use the same type in your code (boolean or number). That will improve JS speed.</p>
+            <p>For regular <code>Array</code>-s make sure all elements are [0..255].</p>
+            <h5>Example</h5>
+            <pre><code class="language-javascript">push(chunk, false); // push one of data chunks
+            ...
+            push(chunk, true);  // push last chunk
+            </code></pre>
+            
+                <h4>Parameters</h4>
+                <ul class='suppress-p-margin'>
+                    <li> <strong>data</strong>
+                      :
+                      <div class='force-inline'>
+                        
+                      </div>
+                    </li>
+                    <li> <strong>mode</strong>
+                      :
+                      <div class='force-inline'>
+                        
+                      </div>
+                    </li>
+                </ul>
+            </section>
+          </div>
+        </div>
+</section>
+</div><div class='py1'><section class='py2 clearfix'>
+  <h2 id='Inflate' class='mt0'>
+    Inflate<span class='gray'>(options)</span>
+  </h2>
+  <p>Inflate.msg -&gt; String</p>
+<p>Error message, if [[Inflate.err]] != 0</p>
 
     <h4>Parameters</h4>
     <ul class='suppress-p-margin'>
@@ -7462,375 +7987,10 @@ push(chunk, true);  // push last chunk
   <h2 id='Inflate' class='mt0'>
     Inflate<span class='gray'>(options)</span>
   </h2>
-  <p>Inflate.msg -&gt; String</p>
-<p>Error message, if [[Inflate.err]] != 0</p>
-
-    <h4>Parameters</h4>
-    <ul class='suppress-p-margin'>
-        <li> <strong>options</strong>
-          :
-          <div class='force-inline'>
-            
-          </div>
-        </li>
-    </ul>
-      <h4>Instance members</h4>
-        <div class='collapsible' id='Inflate.onData'>
-          <a href='#Inflate.onData'>
-            <code>
-              #onData<span class='gray'>(chunk)</span>
-            </code>
-            <div class='force-inline'>
-              <p>Inflate#onData(chunk) -&gt; Void</p>
-<ul>
-<li>chunk (Uint8Array|Array|String): ouput data. Type of array depends
-on js engine support. When string output requested, each chunk
-will be string.</li>
-</ul>
-<p>By default, stores data blocks in <code>chunks[]</code> property and glue
-those in <code>onEnd</code>. Override this handler, if you need another behaviour.</p>
-
-            </div>
-          </a>
-          <div class='collapser border px2'>
-            <section class='py2 clearfix'>
-              <h2 id='Inflate.onData' class='mt0'>
-                onData<span class='gray'>(chunk)</span>
-              </h2>
-              <p>Inflate#onData(chunk) -&gt; Void</p>
-            <ul>
-            <li>chunk (Uint8Array|Array|String): ouput data. Type of array depends
-            on js engine support. When string output requested, each chunk
-            will be string.</li>
-            </ul>
-            <p>By default, stores data blocks in <code>chunks[]</code> property and glue
-            those in <code>onEnd</code>. Override this handler, if you need another behaviour.</p>
-            
-                <h4>Parameters</h4>
-                <ul class='suppress-p-margin'>
-                    <li> <strong>chunk</strong>
-                      :
-                      <div class='force-inline'>
-                        
-                      </div>
-                    </li>
-                </ul>
-            </section>
-          </div>
-        </div>
-        <div class='collapsible' id='Inflate.onEnd'>
-          <a href='#Inflate.onEnd'>
-            <code>
-              #onEnd<span class='gray'>(status)</span>
-            </code>
-            <div class='force-inline'>
-              <p>Inflate#onEnd(status) -&gt; Void</p>
-<ul>
-<li>status (Number): inflate status. 0 (Z_OK) on success,
-other if not.</li>
-</ul>
-<p>Called either after you tell inflate that the input stream is
-complete (Z_FINISH) or should be flushed (Z_SYNC_FLUSH)
-or if an error happened. By default - join collected chunks,
-free memory and fill <code>results</code> / <code>err</code> properties.</p>
-
-            </div>
-          </a>
-          <div class='collapser border px2'>
-            <section class='py2 clearfix'>
-              <h2 id='Inflate.onEnd' class='mt0'>
-                onEnd<span class='gray'>(status)</span>
-              </h2>
-              <p>Inflate#onEnd(status) -&gt; Void</p>
-            <ul>
-            <li>status (Number): inflate status. 0 (Z_OK) on success,
-            other if not.</li>
-            </ul>
-            <p>Called either after you tell inflate that the input stream is
-            complete (Z_FINISH) or should be flushed (Z_SYNC_FLUSH)
-            or if an error happened. By default - join collected chunks,
-            free memory and fill <code>results</code> / <code>err</code> properties.</p>
-            
-                <h4>Parameters</h4>
-                <ul class='suppress-p-margin'>
-                    <li> <strong>status</strong>
-                      :
-                      <div class='force-inline'>
-                        
-                      </div>
-                    </li>
-                </ul>
-            </section>
-          </div>
-        </div>
-        <div class='collapsible' id='Inflate.push'>
-          <a href='#Inflate.push'>
-            <code>
-              #push<span class='gray'>(data, mode)</span>
-            </code>
-            <div class='force-inline'>
-              <p>Inflate#push(data[, mode]) -&gt; Boolean</p>
-<ul>
-<li>data (Uint8Array|Array|ArrayBuffer|String): input data</li>
-<li>mode (Number|Boolean): 0..6 for corresponding Z_NO_FLUSH..Z_TREE modes.
-See constants. Skipped or <code>false</code> means Z_NO_FLUSH, <code>true</code> meansh Z_FINISH.</li>
-</ul>
-<p>Sends input data to inflate pipe, generating [[Inflate#onData]] calls with
-new output chunks. Returns <code>true</code> on success. The last data block must have
-mode Z_FINISH (or <code>true</code>). That will flush internal pending buffers and call
-[[Inflate#onEnd]]. For interim explicit flushes (without ending the stream) you
-can use mode Z_SYNC_FLUSH, keeping the decompression context.</p>
-<p>On fail call [[Inflate#onEnd]] with error code and return false.</p>
-<p>We strongly recommend to use <code>Uint8Array</code> on input for best speed (output
-format is detected automatically). Also, don&apos;t skip last param and always
-use the same type in your code (boolean or number). That will improve JS speed.</p>
-<p>For regular <code>Array</code>-s make sure all elements are [0..255].</p>
-<h5>Example</h5>
-<pre><code class="language-javascript">push(chunk, false); // push one of data chunks
-...
-push(chunk, true);  // push last chunk
-</code></pre>
-
-            </div>
-          </a>
-          <div class='collapser border px2'>
-            <section class='py2 clearfix'>
-              <h2 id='Inflate.push' class='mt0'>
-                push<span class='gray'>(data, mode)</span>
-              </h2>
-              <p>Inflate#push(data[, mode]) -&gt; Boolean</p>
-            <ul>
-            <li>data (Uint8Array|Array|ArrayBuffer|String): input data</li>
-            <li>mode (Number|Boolean): 0..6 for corresponding Z_NO_FLUSH..Z_TREE modes.
-            See constants. Skipped or <code>false</code> means Z_NO_FLUSH, <code>true</code> meansh Z_FINISH.</li>
-            </ul>
-            <p>Sends input data to inflate pipe, generating [[Inflate#onData]] calls with
-            new output chunks. Returns <code>true</code> on success. The last data block must have
-            mode Z_FINISH (or <code>true</code>). That will flush internal pending buffers and call
-            [[Inflate#onEnd]]. For interim explicit flushes (without ending the stream) you
-            can use mode Z_SYNC_FLUSH, keeping the decompression context.</p>
-            <p>On fail call [[Inflate#onEnd]] with error code and return false.</p>
-            <p>We strongly recommend to use <code>Uint8Array</code> on input for best speed (output
-            format is detected automatically). Also, don&apos;t skip last param and always
-            use the same type in your code (boolean or number). That will improve JS speed.</p>
-            <p>For regular <code>Array</code>-s make sure all elements are [0..255].</p>
-            <h5>Example</h5>
-            <pre><code class="language-javascript">push(chunk, false); // push one of data chunks
-            ...
-            push(chunk, true);  // push last chunk
-            </code></pre>
-            
-                <h4>Parameters</h4>
-                <ul class='suppress-p-margin'>
-                    <li> <strong>data</strong>
-                      :
-                      <div class='force-inline'>
-                        
-                      </div>
-                    </li>
-                    <li> <strong>mode</strong>
-                      :
-                      <div class='force-inline'>
-                        
-                      </div>
-                    </li>
-                </ul>
-            </section>
-          </div>
-        </div>
-</section>
-</div><div class='py1'><section class='py2 clearfix'>
-  <h2 id='Inflate' class='mt0'>
-    Inflate<span class='gray'>(options)</span>
-  </h2>
-  <p>Inflate.err -&gt; Number</p>
-<p>Error code after inflate finished. 0 (Z_OK) on success.
-Should be checked if broken data possible.</p>
-
-    <h4>Parameters</h4>
-    <ul class='suppress-p-margin'>
-        <li> <strong>options</strong>
-          :
-          <div class='force-inline'>
-            
-          </div>
-        </li>
-    </ul>
-      <h4>Instance members</h4>
-        <div class='collapsible' id='Inflate.onData'>
-          <a href='#Inflate.onData'>
-            <code>
-              #onData<span class='gray'>(chunk)</span>
-            </code>
-            <div class='force-inline'>
-              <p>Inflate#onData(chunk) -&gt; Void</p>
-<ul>
-<li>chunk (Uint8Array|Array|String): ouput data. Type of array depends
-on js engine support. When string output requested, each chunk
-will be string.</li>
-</ul>
-<p>By default, stores data blocks in <code>chunks[]</code> property and glue
-those in <code>onEnd</code>. Override this handler, if you need another behaviour.</p>
-
-            </div>
-          </a>
-          <div class='collapser border px2'>
-            <section class='py2 clearfix'>
-              <h2 id='Inflate.onData' class='mt0'>
-                onData<span class='gray'>(chunk)</span>
-              </h2>
-              <p>Inflate#onData(chunk) -&gt; Void</p>
-            <ul>
-            <li>chunk (Uint8Array|Array|String): ouput data. Type of array depends
-            on js engine support. When string output requested, each chunk
-            will be string.</li>
-            </ul>
-            <p>By default, stores data blocks in <code>chunks[]</code> property and glue
-            those in <code>onEnd</code>. Override this handler, if you need another behaviour.</p>
-            
-                <h4>Parameters</h4>
-                <ul class='suppress-p-margin'>
-                    <li> <strong>chunk</strong>
-                      :
-                      <div class='force-inline'>
-                        
-                      </div>
-                    </li>
-                </ul>
-            </section>
-          </div>
-        </div>
-        <div class='collapsible' id='Inflate.onEnd'>
-          <a href='#Inflate.onEnd'>
-            <code>
-              #onEnd<span class='gray'>(status)</span>
-            </code>
-            <div class='force-inline'>
-              <p>Inflate#onEnd(status) -&gt; Void</p>
-<ul>
-<li>status (Number): inflate status. 0 (Z_OK) on success,
-other if not.</li>
-</ul>
-<p>Called either after you tell inflate that the input stream is
-complete (Z_FINISH) or should be flushed (Z_SYNC_FLUSH)
-or if an error happened. By default - join collected chunks,
-free memory and fill <code>results</code> / <code>err</code> properties.</p>
-
-            </div>
-          </a>
-          <div class='collapser border px2'>
-            <section class='py2 clearfix'>
-              <h2 id='Inflate.onEnd' class='mt0'>
-                onEnd<span class='gray'>(status)</span>
-              </h2>
-              <p>Inflate#onEnd(status) -&gt; Void</p>
-            <ul>
-            <li>status (Number): inflate status. 0 (Z_OK) on success,
-            other if not.</li>
-            </ul>
-            <p>Called either after you tell inflate that the input stream is
-            complete (Z_FINISH) or should be flushed (Z_SYNC_FLUSH)
-            or if an error happened. By default - join collected chunks,
-            free memory and fill <code>results</code> / <code>err</code> properties.</p>
-            
-                <h4>Parameters</h4>
-                <ul class='suppress-p-margin'>
-                    <li> <strong>status</strong>
-                      :
-                      <div class='force-inline'>
-                        
-                      </div>
-                    </li>
-                </ul>
-            </section>
-          </div>
-        </div>
-        <div class='collapsible' id='Inflate.push'>
-          <a href='#Inflate.push'>
-            <code>
-              #push<span class='gray'>(data, mode)</span>
-            </code>
-            <div class='force-inline'>
-              <p>Inflate#push(data[, mode]) -&gt; Boolean</p>
-<ul>
-<li>data (Uint8Array|Array|ArrayBuffer|String): input data</li>
-<li>mode (Number|Boolean): 0..6 for corresponding Z_NO_FLUSH..Z_TREE modes.
-See constants. Skipped or <code>false</code> means Z_NO_FLUSH, <code>true</code> meansh Z_FINISH.</li>
-</ul>
-<p>Sends input data to inflate pipe, generating [[Inflate#onData]] calls with
-new output chunks. Returns <code>true</code> on success. The last data block must have
-mode Z_FINISH (or <code>true</code>). That will flush internal pending buffers and call
-[[Inflate#onEnd]]. For interim explicit flushes (without ending the stream) you
-can use mode Z_SYNC_FLUSH, keeping the decompression context.</p>
-<p>On fail call [[Inflate#onEnd]] with error code and return false.</p>
-<p>We strongly recommend to use <code>Uint8Array</code> on input for best speed (output
-format is detected automatically). Also, don&apos;t skip last param and always
-use the same type in your code (boolean or number). That will improve JS speed.</p>
-<p>For regular <code>Array</code>-s make sure all elements are [0..255].</p>
-<h5>Example</h5>
-<pre><code class="language-javascript">push(chunk, false); // push one of data chunks
-...
-push(chunk, true);  // push last chunk
-</code></pre>
-
-            </div>
-          </a>
-          <div class='collapser border px2'>
-            <section class='py2 clearfix'>
-              <h2 id='Inflate.push' class='mt0'>
-                push<span class='gray'>(data, mode)</span>
-              </h2>
-              <p>Inflate#push(data[, mode]) -&gt; Boolean</p>
-            <ul>
-            <li>data (Uint8Array|Array|ArrayBuffer|String): input data</li>
-            <li>mode (Number|Boolean): 0..6 for corresponding Z_NO_FLUSH..Z_TREE modes.
-            See constants. Skipped or <code>false</code> means Z_NO_FLUSH, <code>true</code> meansh Z_FINISH.</li>
-            </ul>
-            <p>Sends input data to inflate pipe, generating [[Inflate#onData]] calls with
-            new output chunks. Returns <code>true</code> on success. The last data block must have
-            mode Z_FINISH (or <code>true</code>). That will flush internal pending buffers and call
-            [[Inflate#onEnd]]. For interim explicit flushes (without ending the stream) you
-            can use mode Z_SYNC_FLUSH, keeping the decompression context.</p>
-            <p>On fail call [[Inflate#onEnd]] with error code and return false.</p>
-            <p>We strongly recommend to use <code>Uint8Array</code> on input for best speed (output
-            format is detected automatically). Also, don&apos;t skip last param and always
-            use the same type in your code (boolean or number). That will improve JS speed.</p>
-            <p>For regular <code>Array</code>-s make sure all elements are [0..255].</p>
-            <h5>Example</h5>
-            <pre><code class="language-javascript">push(chunk, false); // push one of data chunks
-            ...
-            push(chunk, true);  // push last chunk
-            </code></pre>
-            
-                <h4>Parameters</h4>
-                <ul class='suppress-p-margin'>
-                    <li> <strong>data</strong>
-                      :
-                      <div class='force-inline'>
-                        
-                      </div>
-                    </li>
-                    <li> <strong>mode</strong>
-                      :
-                      <div class='force-inline'>
-                        
-                      </div>
-                    </li>
-                </ul>
-            </section>
-          </div>
-        </div>
-</section>
-</div><div class='py1'><section class='py2 clearfix'>
-  <h2 id='Inflate' class='mt0'>
-    Inflate<span class='gray'>(options)</span>
-  </h2>
-  <p>Inflate.result -&gt; Uint8Array|Array|String</p>
-<p>Uncompressed result, generated by default [[Inflate#onData]]
-and [[Inflate#onEnd]] handlers. Filled after you push last chunk
-(call [[Inflate#push]] with <code>Z_FINISH</code> / <code>true</code> param) or if you
-push a chunk with explicit flush (call [[Inflate#push]] with
-<code>Z_SYNC_FLUSH</code> param).</p>
+  <p>class Inflate</p>
+<p>Generic JS-style wrapper for zlib calls. If you don&apos;t need
+streaming behaviour - use more simple functions: [[inflate]]
+and [[inflateRaw]].</p>
 
     <h4>Parameters</h4>
     <ul class='suppress-p-margin'>
@@ -8094,6 +8254,76 @@ by header.content. Done for convenience.</p>
     match_length<span class='gray'></span>
   </h2>
   
+</section>
+</div><div class='py1'><section class='py2 clearfix'>
+  <h2 id='PixpipeContainer' class='mt0'>
+    PixpipeContainer<span class='gray'></span>
+  </h2>
+  <p>RasterContainer is a common interface for Image2D and Image3D
+(and possibly some other future formats).
+Should not be used as-is.</p>
+
+      <h4>Instance members</h4>
+        <div class='collapsible' id='PixpipeContainer.setRawData'>
+          <a href='#PixpipeContainer.setRawData'>
+            <code>
+              #setRawData<span class='gray'>(d)</span>
+            </code>
+            <div class='force-inline'>
+              <p>Associate d with the internal data object by pointer copy (if Object or Array)</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2'>
+            <section class='py2 clearfix'>
+              <h2 id='PixpipeContainer.setRawData' class='mt0'>
+                setRawData<span class='gray'>(d)</span>
+              </h2>
+              <p>Associate d with the internal data object by pointer copy (if Object or Array)</p>
+            
+                <h4>Parameters</h4>
+                <ul class='suppress-p-margin'>
+                    <li><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/TypedArray">TypedArray</a></code> <strong>d</strong>
+                      :
+                      <div class='force-inline'>
+                        <p>pixel or voxel data. If multi-band, should be rgbargba...</p>
+            
+                      </div>
+                    </li>
+                </ul>
+            </section>
+          </div>
+        </div>
+        <div class='collapsible' id='PixpipeContainer.setRawMetadata'>
+          <a href='#PixpipeContainer.setRawMetadata'>
+            <code>
+              #setRawMetadata<span class='gray'>(m)</span>
+            </code>
+            <div class='force-inline'>
+              <p>Associate the internal metadata object with the one in args.</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2'>
+            <section class='py2 clearfix'>
+              <h2 id='PixpipeContainer.setRawMetadata' class='mt0'>
+                setRawMetadata<span class='gray'>(m)</span>
+              </h2>
+              <p>Associate the internal metadata object with the one in args.</p>
+            
+                <h4>Parameters</h4>
+                <ul class='suppress-p-margin'>
+                    <li><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a></code> <strong>m</strong>
+                      :
+                      <div class='force-inline'>
+                        <p>metadata. Should NOT contain TypedArray</p>
+            
+                      </div>
+                    </li>
+                </ul>
+            </section>
+          </div>
+        </div>
 </section>
 </div><div class='py1'><section class='py2 clearfix'>
   <h2 id='prev_length' class='mt0'>
