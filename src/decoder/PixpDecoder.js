@@ -1,6 +1,5 @@
 /*
 * Author    Jonathan Lurie - http://me.jonahanlurie.fr
-*           Robert D. Vincent
 *
 * License   MIT
 * Link      https://github.com/jonathanlurie/pixpipejs
@@ -18,6 +17,8 @@ import { Image3D } from '../core/Image3D.js';
 * A PixpDecoder instance decodes a *.pixp file and output an Image2D or Image3D.
 * The input, specified by `.addInput(...)` must be an ArrayBuffer
 * (from an `UrlToArrayBufferFilter`, an `UrlToArrayBufferReader` or anothrer source ).
+*
+* usage: examples/pixpFileToImage2D.html
 */
 class PixpDecoder extends Filter {
   constructor(){
@@ -44,45 +45,36 @@ class PixpDecoder extends Filter {
     }
 
     var input = this._getInput();
-    console.log(input);
 
-    var pixpString2 = pako.inflate(input, { to: 'string' });
-    var pixpObject = JSON.parse( pixpString2 );
+    //var pixpString2 = pako.inflate(input, { to: 'string' });
+    //var pixpObject = JSON.parse( pixpString2 );
 
-    /*
-    var fileReader = new FileReader();
-    fileReader.onload = function() {
-      var arrayBuffer = this.result;
-      var pixpString2 = pako.inflate(arrayBuffer, { to: 'string' });
-      var pixpObject = JSON.parse( pixpString2 );
-      console.log( pixpObject );
-    };
-    fileReader.readAsArrayBuffer(input);
-    */
+    var inflator = new pako.Inflate({
+      level: 6,
+      to: 'string'
+    });
 
+    inflator.push( input, true );
+    //console.log( inflator.result );
+    var pixpObject = JSON.parse( inflator.result );
 
-    return;
-
-    /*
-    var arrayAndMeta = {
-      dataType: input.getData().constructor.name, // typed array type
-      data: Array.prototype.slice.call( input.getData() ),  // data of pixel/voxel
-      metadata: input.getMetadataCopy(),  // Image2D/Image3D._metadata
-      pixpipeType: input.constructor.name
+    if( ! (pixpObject.pixpipeType in pixpipe)){
+      console.warn("Unknown type pixpipe." + pixpObject.pixpipeType + ", cannot create any output." );
+      return;
     }
 
-    var pixpString = JSON.stringify( arrayAndMeta );
-    var pixpBinaryString = pako.deflate(pixpString, { to: 'string' });
+    var constructorHost = (window || this);
+    if(! constructorHost[ pixpObject.dataType ]){
+      console.warn( "Data array from pixp file is unknown: " + pixpObject.dataType );
+      return;
+    }
 
-    // making a blob to be saved
-    var blob = new Blob([pixpBinaryString], {type: "text/plain;charset=utf-8"});
-    FileSaver.saveAs(blob, "untitled_" + arrayAndMeta.pixpipeType + ".pixp");
-    */
-    // **************************** decompress
+    var outputRawData = new constructorHost[ pixpObject.dataType ]( pixpObject.data );
+    var output = new pixpipe[ pixpObject.pixpipeType ];
+    output.setRawData( outputRawData );
+    output.setRawMetadata( pixpObject.metadata );
 
-    //var pixpString2 = pako.inflate(pixpBinaryString, { to: 'string' });
-    //var pixpObject = JSON.parse( pixpString2 );
-    //console.log( pixpObject );
+    this._output[0] = output;
   }
 
 

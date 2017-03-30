@@ -1,6 +1,5 @@
 /*
 * Author    Jonathan Lurie - http://me.jonahanlurie.fr
-*           Robert D. Vincent
 *
 * License   MIT
 * Link      https://github.com/jonathanlurie/pixpipejs
@@ -20,11 +19,17 @@ import { Image3D } from '../core/Image3D.js';
 * and encode it so that it can be saved as a *.pixp file.
 * An output filename can be specified using `.setMetadata("filename", "yourName.pixp");`,
 * by default, the name is "untitled.pixp".
+* When `update()` is called, a gzip blog is prepared as output[0] and can then be downloaded
+* when calling the method `.download()`. The gzip blob could also be sent over AJAX
+* using a third party library.
+*
+* usage: examples/savePixpFile.html
 */
 class PixpEncoder extends Filter {
   constructor(){
     super();
     this.setMetadata("filename", "untitled.pixp");
+
   }
 
 
@@ -51,55 +56,40 @@ class PixpEncoder extends Filter {
       dataType: input.getData().constructor.name, // typed array type
       data: Array.prototype.slice.call( input.getData() ),  // data of pixel/voxel
       metadata: input.getMetadataCopy(),  // Image2D/Image3D._metadata
-      pixpipeType: input.constructor.name
+      pixpipeType: input.constructor.name // "Image2D" or "Image3D", will be used for reconstruction
     }
 
     var pixpString = JSON.stringify( arrayAndMeta );
-    //var pixpBinaryString = pako.deflate(pixpString/*, { to: 'string' }*/);
-    //var pixpBinaryRaw = pako.deflateRaw(pixpString);
 
-    // making a blob to be saved
-    //var blob = new Blob([pixpBinaryString], {type: "example/binary"}/*, {type: "text/plain;charset=utf-8"}*/);
-    //FileSaver.saveAs(blob, this.getMetadata("filename"));
-
-
-    //var zip = new JSZip();
-    //zip.file(this.getMetadata("filename"), pixpString);
-
-    zip.generateAsync({type:"blob"})
-    .then(function (blob) {
-        FileSaver.saveAs(blob, "hello.zip");
+    var deflator = new pako.Deflate({
+      level: 6,
+      //to: 'string',
+      gzip: true,
+      header: {
+          text: true,
+          time: + new Date(),
+          comment: "This file was created by Pixpipe.js"
+        }
     });
 
-    // TODO: try to see how JSZip does
+    deflator.push(pixpString, true);
 
-    //var file = new File([pixpBinaryRaw], this.getMetadata("filename"), {type: "application/gzip;charset=utf-8"});
-    //FileSaver.saveAs(file);
-
-    //this._download( this.getMetadata("filename"),  pixpBinaryString);
-
-    // **************************** decompress
-
-    //var pixpString2 = pako.inflate(pixpBinaryString, { to: 'string' });
-    //var pixpObject = JSON.parse( pixpString2 );
-    //console.log( pixpObject );
+    // making a blob to be saved
+    this._output[0] = new Blob([deflator.result], {type: "application/gzip"} );
   }
 
 
+  /**
+  * Download the generated file
+  */
+  download(){
+    var output = this.getOutput();
 
-
-
-  _download(filename, text) {
-    var element = document.createElement('a');
-    element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
-    element.setAttribute('download', filename);
-
-    element.style.display = 'none';
-    document.body.appendChild(element);
-
-    element.click();
-
-    document.body.removeChild(element);
+    if(output){
+      FileSaver.saveAs( this.getOutput(), this.getMetadata("filename"));
+    }else{
+      console.warn("No output computed yet.");
+    }
   }
 
 } /* END of class PixpEncoder */

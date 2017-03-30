@@ -12,14 +12,13 @@
   This does the following :
   <ul>
     <li>opening distant <code>*.pixp</code> file, using <code>pixpipe.UrlToArrayBufferReader</code></li>
-    <li>decode it as an Image2D using <code>pixpipe.UrlToArrayBufferReader</code></li>
+    <li>decode the <code>*.pixp</code> as an Image2D using <code>pixpipe.PixpDecoder</code></li>
+    <li>displaying the Image2D in a canvas using <code>pixpipe.CanvasImageWriter</code></li>
   </ul>
 
   </p>
 
-  <div>
-    <span id="fileInfo"></span>
-	</div>
+  <div id="myDiv"></div>
 
   <script>
   window.onload = function() {
@@ -27,9 +26,7 @@
     var urlArrBuff =  new pixpipe.UrlToArrayBufferReader();
 
     // ad a distant file to read
-    urlArrBuff.addInput( "images/sanDiego.pixp.gz" );
-    //urlArrBuff.addInput( "images/mesh.stl.gz");
-
+    urlArrBuff.addInput( "images/sd.pixp" );
 
     // define what to do when all input URL are loaded into ArrayBuffer
     urlArrBuff.on("ready", function( filter ){
@@ -39,6 +36,12 @@
       var decoder = new pixpipe.PixpDecoder();
       decoder.addInput( buffer );
       decoder.update();
+
+      // create a filter to write the image into a canvas
+      var imageToCanvasFilter = new pixpipe.CanvasImageWriter( );
+      imageToCanvasFilter.setMetadata( "parentDivID", "myDiv" );
+      imageToCanvasFilter.addInput( decoder.getOutput() );
+      imageToCanvasFilter.update();
     })
 
     urlArrBuff.update();

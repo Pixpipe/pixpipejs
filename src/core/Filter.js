@@ -163,7 +163,7 @@ class Filter extends PipelineElement {
       console.warn("An output of category " + category + " was already defined. Nothing to be done.");
     }
 
-    //return outputObject;
+    return outputObject;
   }
 
 
