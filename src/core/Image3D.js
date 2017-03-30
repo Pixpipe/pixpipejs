@@ -5,7 +5,7 @@
 * Lab       MCIN - Montreal Neurological Institute
 */
 
-import { RasterContainer } from './RasterContainer.js';
+import { PixpipeContainer } from './PixpipeContainer.js';
 import { Image2D } from './Image2D.js';
 
 /**
@@ -13,7 +13,7 @@ import { Image2D } from './Image2D.js';
 * It is always considered to be 4 channels (RGBA) and stored as a Float32Array
 * typed array.
 */
-class Image3D extends RasterContainer{
+class Image3D extends PixpipeContainer{
 
 
   /**

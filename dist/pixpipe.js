@@ -656,7 +656,7 @@ class Filter extends PipelineElement {
 * (and possibly some other future formats).
 * Should not be used as-is.
 */
-class RasterContainer extends PipelineElement {
+class PixpipeContainer extends PipelineElement {
   constructor(){
     super();
     this._data = null;
@@ -680,7 +680,7 @@ class RasterContainer extends PipelineElement {
     this._metadata = m;
   }
 
-} /* END of class RasterContainer */
+} /* END of class PixpipeContainer */
 
 /*
 * Author   Jonathan Lurie - http://me.jonahanlurie.fr
@@ -694,7 +694,7 @@ class RasterContainer extends PipelineElement {
 * It is always considered to be 4 channels (RGBA) and stored as a Float32Array
 * typed array.
 */
-class Image2D extends RasterContainer{
+class Image2D extends PixpipeContainer{
 
 
   /**
@@ -922,7 +922,7 @@ class Image2D extends RasterContainer{
 * It is always considered to be 4 channels (RGBA) and stored as a Float32Array
 * typed array.
 */
-class Image3D extends RasterContainer{
+class Image3D extends PixpipeContainer{
 
 
   /**

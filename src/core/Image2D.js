@@ -5,14 +5,14 @@
 * Lab       MCIN - Montreal Neurological Institute
 */
 
-import { RasterContainer } from './RasterContainer.js';
+import { PixpipeContainer } from './PixpipeContainer.js';
 
 /**
 * Image2D class is one of the few base element of Pixpipejs.
 * It is always considered to be 4 channels (RGBA) and stored as a Float32Array
 * typed array.
 */
-class Image2D extends RasterContainer{
+class Image2D extends PixpipeContainer{
 
 
   /**
