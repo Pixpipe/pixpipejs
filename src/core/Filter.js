@@ -5,8 +5,8 @@
 * Lab       MCIN - Montreal Neurological Institute
 */
 
-import { PipelineElement } from './PipelineElement.js';
-//import { Pipeline } from './Pipeline.js';
+
+import { PixpipeObject } from './PixpipeObject.js';
 
 
 /**
@@ -20,7 +20,7 @@ import { PipelineElement } from './PipelineElement.js';
 * usage: examples/fileToArrayBuffer.html
 *
 */
-class Filter extends PipelineElement {
+class Filter extends PixpipeObject {
 
   constructor(){
     super();
@@ -69,11 +69,6 @@ class Filter extends PipelineElement {
     }
 
     this._input[category] = inputObject ;
-
-    // add the pipeline object if defined
-    if( this._pipeline ){
-      inputObject.setPipeline( this._pipeline );
-    }
 
     this._isOutputReady = false;
   }
@@ -135,8 +130,7 @@ class Filter extends PipelineElement {
   * [PRIVATE]
   * Internal way to setup an output for this filter. Acts like a singleton in a sens
   * that if an output of a given category was already Initialized, it returns it.
-  * If no input was Initialized, it creates one. Then we are sure the pointer of the
-  * output remain the same and does not break the pipeline.
+  * If no input was Initialized, it creates one.
   * @param {type} dataType - type of object, i.e. Image2D (this is NOT a String!)
   * @param {Number} category - in case we want to get data from different categories.
   * @returns {Object} of given type.
@@ -151,11 +145,6 @@ class Filter extends PipelineElement {
 
       //console.log(this._output);
       console.log("filter " + this.constructor.name + " creates a new output.");
-      /*
-      if(this._pipeline){
-        outputObject.setPipeline( p );
-      }
-      */
 
     }else{
       // TODO: if output object exists but is not from dataType: error!
@@ -287,69 +276,6 @@ class Filter extends PipelineElement {
   */
   on(eventId, callback){
     this._events[ eventId ] = callback;
-  }
-
-
-  /**
-  * Associate a Pipeline instance to this filter. Not supposed to be called manually
-  * because it is automatically called-back when adding a filter to a pipeline.
-  * @param {Pipeline} p - Pipeline object.
-  */
-  setPipeline( p ){
-    /*
-    // only if not already set.
-    if(!this._pipeline){
-      this._pipeline = p;
-
-      // set the pipeline to all input so that they can update the entire
-      // pipeline in case of modification
-      var inputCategories = Object.keys( this._inputValidator );
-      inputCategories.forEach( function(key){
-        widths.push( that._getInput( key ).setPipeline( p ) );
-      });
-
-    }
-    */
-    super.setPipeline( p );
-
-    var inputCategories = Object.keys( this._input );
-    inputCategories.forEach( function(key){
-      that._getInput( key ).setPipeline( p );
-    });
-
-
-    var outputCategories = Object.keys( this._output );
-    outputCategories.forEach( function(key){
-      hat.getOutput( key ).setPipeline( p );
-    });
-
-  }
-
-
-  /**
-  * Update the whole pipeline due to an update in the filter
-  * (new input, new metadata)
-  */
-  _updatePipeline(){
-    if(this._pipeline){
-      this._pipeline.update();
-    }
-  }
-
-
-  /**
-  * @param {String} uuid - uuid to look for
-  * @return {Boolean} true if this filter uses an input with such uuid
-  */
-  hasInputWithUuid( uuid ){
-    var found = false;
-
-    var inputCategories = Object.keys( this._inputValidator );
-    inputCategories.forEach( function(key){
-      found = found | that._getInput( key ).setPipeline( p ) ;
-    });
-
-    return found;
   }
 
 

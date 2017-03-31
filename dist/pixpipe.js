@@ -30,8 +30,6 @@ class PixpipeObject {
     // everything that is not an input but rather a setting
     this._metadata = {};
 
-    this._pipeline = null;
-
     this._type = PixpipeObject.TYPE();
   }
 
@@ -154,131 +152,6 @@ class PixpipeObject {
 * Lab       MCIN - Montreal Neurological Institute
 */
 
-class PipelineElement extends PixpipeObject {
-
-  constructor(){
-    super();
-
-    this._pipeline = null;
-    this._type = PipelineElement.TYPE();
-  }
-
-
-  /**
-  * Acces it like a static attribute.
-  * Must be overloaded.
-  */
-  static TYPE(){
-    return "PIPELINE_ELEMENT";
-  }
-
-
-  /**
-  * Associate a Pipeline instance to this image. Not supposed to be called manually
-  * because it is automatically called-back when adding a filter to a pipeline.
-  * @param {Pipeline} p - Pipeline object.
-  */
-  setPipeline( p ){
-    // only if not already set.
-    if(!this._pipeline){
-      this._pipeline = p;
-    }
-  }
-
-
-} /* ENDS class PipelineElement */
-
-/*
-* Author   Jonathan Lurie - http://me.jonahanlurie.fr
-* License  MIT
-* Link      https://github.com/jonathanlurie/pixpipejs
-* Lab       MCIN - Montreal Neurological Institute
-*/
-
-/**
-* A Pipeline instance handles a cascade of filter when an input dataset is updated.
-* Using a Pipeline object is not mandatory and can be replaced by calling  `update()`.
-*/
-class Pipeline extends PixpipeObject {
-
-  constructor(){
-    super();
-    this._type = Pipeline.TYPE();
-
-    // a list of filters
-    this._filters = [];
-
-    this._isUpdated = false;
-  }
-
-
-  /**
-  * Hardcode the datatype
-  */
-  static TYPE(){
-    return "PIPELINE";
-  }
-
-
-  /**
-  * Add a filter to the pipeline.
-  *
-  */
-  addFilter( f ){
-    this._filters.push( f );
-    console.log("Filter " +  f.constructor.name + " added to the pipeline.");
-  }
-
-
-  /**
-  *
-  */
-  update(forceAll = true){
-
-    if( forceAll ){
-      this._forceUpdateAll();
-    }else{
-
-    }
-
-    this._isUpdated = true;
-  }
-
-
-  /**
-  * Run an update on every single filter
-  */
-  _forceUpdateAll(){
-    console.log(this._filters);
-    for(var f=0; f<this._filters.length; f++){
-      // if output of filter is not ready, then when have to run this filter
-      if( ! this._filters[f].hasOutputReady() ){
-        this._filters[f].update();
-        this._filters[f].setOutputAsReady();
-      }
-    }
-  }
-
-
-  /**
-  * Update only starting from the step that was modified since the last update
-  */
-  _updateSmart(){
-
-  }
-
-
-} /* END of class Pipeline */
-
-/*
-* Author   Jonathan Lurie - http://me.jonahanlurie.fr
-* License  MIT
-* Link      https://github.com/jonathanlurie/pixpipejs
-* Lab       MCIN - Montreal Neurological Institute
-*/
-
-//import { Pipeline } from './Pipeline.js';
-
 
 /**
 * Filter is a base class and must be inherited to be used properly.
@@ -291,7 +164,7 @@ class Pipeline extends PixpipeObject {
 * usage: examples/fileToArrayBuffer.html
 *
 */
-class Filter extends PipelineElement {
+class Filter extends PixpipeObject {
 
   constructor(){
     super();
@@ -340,11 +213,6 @@ class Filter extends PipelineElement {
     }
 
     this._input[category] = inputObject ;
-
-    // add the pipeline object if defined
-    if( this._pipeline ){
-      inputObject.setPipeline( this._pipeline );
-    }
 
     this._isOutputReady = false;
   }
@@ -406,8 +274,7 @@ class Filter extends PipelineElement {
   * [PRIVATE]
   * Internal way to setup an output for this filter. Acts like a singleton in a sens
   * that if an output of a given category was already Initialized, it returns it.
-  * If no input was Initialized, it creates one. Then we are sure the pointer of the
-  * output remain the same and does not break the pipeline.
+  * If no input was Initialized, it creates one.
   * @param {type} dataType - type of object, i.e. Image2D (this is NOT a String!)
   * @param {Number} category - in case we want to get data from different categories.
   * @returns {Object} of given type.
@@ -422,11 +289,6 @@ class Filter extends PipelineElement {
 
       //console.log(this._output);
       console.log("filter " + this.constructor.name + " creates a new output.");
-      /*
-      if(this._pipeline){
-        outputObject.setPipeline( p );
-      }
-      */
 
     }else{
       // TODO: if output object exists but is not from dataType: error!
@@ -562,69 +424,6 @@ class Filter extends PipelineElement {
 
 
   /**
-  * Associate a Pipeline instance to this filter. Not supposed to be called manually
-  * because it is automatically called-back when adding a filter to a pipeline.
-  * @param {Pipeline} p - Pipeline object.
-  */
-  setPipeline( p ){
-    /*
-    // only if not already set.
-    if(!this._pipeline){
-      this._pipeline = p;
-
-      // set the pipeline to all input so that they can update the entire
-      // pipeline in case of modification
-      var inputCategories = Object.keys( this._inputValidator );
-      inputCategories.forEach( function(key){
-        widths.push( that._getInput( key ).setPipeline( p ) );
-      });
-
-    }
-    */
-    super.setPipeline( p );
-
-    var inputCategories = Object.keys( this._input );
-    inputCategories.forEach( function(key){
-      that._getInput( key ).setPipeline( p );
-    });
-
-
-    var outputCategories = Object.keys( this._output );
-    outputCategories.forEach( function(key){
-      hat.getOutput( key ).setPipeline( p );
-    });
-
-  }
-
-
-  /**
-  * Update the whole pipeline due to an update in the filter
-  * (new input, new metadata)
-  */
-  _updatePipeline(){
-    if(this._pipeline){
-      this._pipeline.update();
-    }
-  }
-
-
-  /**
-  * @param {String} uuid - uuid to look for
-  * @return {Boolean} true if this filter uses an input with such uuid
-  */
-  hasInputWithUuid( uuid ){
-    var found = false;
-
-    var inputCategories = Object.keys( this._inputValidator );
-    inputCategories.forEach( function(key){
-      found = found | that._getInput( key ).setPipeline( p ) ;
-    });
-
-    return found;
-  }
-
-
-  /**
   * @return {Number} the number of inputs
   */
   getNumberOfInputs(){
@@ -656,7 +455,7 @@ class Filter extends PipelineElement {
 * (and possibly some other future formats).
 * Should not be used as-is.
 */
-class PixpipeContainer extends PipelineElement {
+class PixpipeContainer extends PixpipeObject {
   constructor(){
     super();
     this._data = null;
@@ -710,9 +509,6 @@ class Image2D extends PixpipeContainer{
 
     // default number of components per pixel
     this.setMetadata("ncpp", 4);
-
-    // pipeline associated with this image. Not mandatory.
-    this._pipeline = null;
 
     // allocate the array if size is specified
     if(options && "width" in options && "height" in options){
@@ -899,13 +695,6 @@ class Image2D extends PixpipeContainer{
   get1dIndexFrom2dPosition( position ){
     return (position.x + position.y*this.getMetadata("width"));
   }
-
-
-
-
-  // TODO: warn the pipeline if metadata changed or pixel value changed
-  // --> do NOT update the pipeline at every modif because if we change a lot
-  //     of pixel values... (wait to call update() on the pipeline.)
 
 
 } /* END of class Image2D */
@@ -1433,64 +1222,6 @@ class ImageToImageFilter extends Filter {
 
 
 } /* END class ImageToImageFilter */
-
-/*
-* Author   Jonathan Lurie - http://me.jonahanlurie.fr
-* License  MIT
-* Link      https://github.com/jonathanlurie/pixpipejs
-* Lab       MCIN - Montreal Neurological Institute
-*/
-
-/**
-* PixelWiseImageFilter is not supposed to be use as is and is just to
-* be inherited by other filters.
-* This class does not overload the update() method.
-*/
-class PixelWiseImageFilter extends ImageToImageFilter{
-
-  constructor(){
-    super();
-  }
-
-
-  /**
-  * [PRIVATE]
-  * generic function for painting row, colum or whole
-  * @param {Number} firstPixel - Index of the first pixel in 1D array
-  * @param {Number} lastPixel - Index of the last pixel in 1D array
-  * @param {Number} increment - jump gap from a pixel to another (in a 1D style)
-  */
-  _forEachPixelOfSuch(firstPixel, lastPixel, increment ){
-    // abort if no callback per pixel
-    if( ! "pixel" in this._events){
-      console.warn("No function to apply per pixel was specified.");
-      return;
-    }
-
-    var inputImage2D = this._getInput();
-    var inputBuffer = this._inputBuffer;
-    var componentPerPixel = inputImage2D.getComponentsPerPixel();
-
-    var currentColor = null;
-
-    for(var p=firstPixel; p<lastPixel; p+=increment ){
-      var firstCompoPos1D = p * componentPerPixel;
-      var position2D = inputImage2D.get2dPositionFrom1dIndex(p);
-      currentColor = inputBuffer.slice(firstCompoPos1D, firstCompoPos1D + componentPerPixel);
-
-      var newColor = this._events.pixel( position2D, currentColor);
-
-      if(newColor && newColor.length == componentPerPixel){
-        for(var i=0; i<componentPerPixel; i++){
-          inputBuffer[firstCompoPos1D + i] = newColor[i];
-        }
-      }
-
-    }
-  }
-
-
-} /* END of class PixelWiseImageFilter */
 
 /*
 * Author   Jonathan Lurie - http://me.jonahanlurie.fr
@@ -12370,7 +12101,7 @@ class PixpDecoder extends Filter {
 * );
 *
 */
-class ForEachPixelImageFilter extends PixelWiseImageFilter {
+class ForEachPixelImageFilter extends ImageToImageFilter {
 
   constructor(){
     super();
@@ -12407,6 +12138,44 @@ class ForEachPixelImageFilter extends PixelWiseImageFilter {
     );
 
   }
+
+
+  /**
+  * [PRIVATE]
+  * generic function for painting row, colum or whole
+  * @param {Number} firstPixel - Index of the first pixel in 1D array
+  * @param {Number} lastPixel - Index of the last pixel in 1D array
+  * @param {Number} increment - jump gap from a pixel to another (in a 1D style)
+  */
+  _forEachPixelOfSuch(firstPixel, lastPixel, increment ){
+    // abort if no callback per pixel
+    if( ! "pixel" in this._events){
+      console.warn("No function to apply per pixel was specified.");
+      return;
+    }
+
+    var inputImage2D = this._getInput();
+    var inputBuffer = this._inputBuffer;
+    var componentPerPixel = inputImage2D.getComponentsPerPixel();
+
+    var currentColor = null;
+
+    for(var p=firstPixel; p<lastPixel; p+=increment ){
+      var firstCompoPos1D = p * componentPerPixel;
+      var position2D = inputImage2D.get2dPositionFrom1dIndex(p);
+      currentColor = inputBuffer.slice(firstCompoPos1D, firstCompoPos1D + componentPerPixel);
+
+      var newColor = this._events.pixel( position2D, currentColor);
+
+      if(newColor && newColor.length == componentPerPixel){
+        for(var i=0; i<componentPerPixel; i++){
+          inputBuffer[firstCompoPos1D + i] = newColor[i];
+        }
+      }
+
+    }
+  }
+
 
 } /* END class ForEachPixelImageFilter */
 
@@ -14003,13 +13772,10 @@ class Image3DToMosaicFilter extends Filter{
 } /* END of class Image3DToMosaicFilter */
 
 exports.PixpipeObject = PixpipeObject;
-exports.PipelineElement = PipelineElement;
-exports.Pipeline = Pipeline;
 exports.Filter = Filter;
 exports.Image2D = Image2D;
 exports.Image3D = Image3D;
 exports.ImageToImageFilter = ImageToImageFilter;
-exports.PixelWiseImageFilter = PixelWiseImageFilter;
 exports.MniVolume = MniVolume;
 exports.CanvasImageWriter = CanvasImageWriter;
 exports.UrlImageReader = UrlImageReader;
