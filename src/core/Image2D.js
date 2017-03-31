@@ -29,9 +29,6 @@ class Image2D extends PixpipeContainer{
     // default number of components per pixel
     this.setMetadata("ncpp", 4);
 
-    // pipeline associated with this image. Not mandatory.
-    this._pipeline = null;
-
     // allocate the array if size is specified
     if(options && "width" in options && "height" in options){
 
@@ -217,13 +214,6 @@ class Image2D extends PixpipeContainer{
   get1dIndexFrom2dPosition( position ){
     return (position.x + position.y*this.getMetadata("width"));
   }
-
-
-
-
-  // TODO: warn the pipeline if metadata changed or pixel value changed
-  // --> do NOT update the pipeline at every modif because if we change a lot
-  //     of pixel values... (wait to call update() on the pipeline.)
 
 
 } /* END of class Image2D */

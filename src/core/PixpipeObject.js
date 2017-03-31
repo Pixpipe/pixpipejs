@@ -24,8 +24,6 @@ class PixpipeObject {
     // everything that is not an input but rather a setting
     this._metadata = {};
 
-    this._pipeline = null;
-
     this._type = PixpipeObject.TYPE();
   }
 
