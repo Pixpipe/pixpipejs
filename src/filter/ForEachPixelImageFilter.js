@@ -55,7 +55,7 @@ class ForEachPixelImageFilter extends ImageToImageFilter {
     var lastPixel = inputImage2D.getWidth() * inputImage2D.getHeight();
     var increment = 1;
 
-    this._inputBuffer = inputImage2D.getDataCopy();
+    var bufferCopy = inputImage2D.getDataCopy();
 
     this._forEachPixelOfSuch(firstPixel, lastPixel, increment );
 
@@ -65,7 +65,7 @@ class ForEachPixelImageFilter extends ImageToImageFilter {
 
     // 2 - tune the output
     outputImg.setData(
-      this._inputBuffer,
+      bufferCopy,
       inputImage2D.getWidth(),
       inputImage2D.getHeight(),
       inputImage2D.getComponentsPerPixel()
