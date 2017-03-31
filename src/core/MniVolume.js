@@ -207,15 +207,6 @@ class MniVolume extends Image3D{
   }
 
 
-
-
-
-
-
-
-
-
-
 } /* END of class Image3D */
 
 export { MniVolume }
