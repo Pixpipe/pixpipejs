@@ -4,21 +4,30 @@
 This cookbook will help you to become familiar with the architecture of **Pixpipe.js**, to understand the code samples and eventually, create your own pipeline.
 
 # Table of content
-- Overview
-- Core architecture
-  - PixpipeObject
-  - PixpipeContainer
-  - Image2D
-  - Image3D
-  - MniVolume
-  - Filter
-  - [ImageToImageFilter](#ImageToImageFilter)
-- [Building Pixpipe](#Building-Pixpipe)
+- [Overview](#overview)
+- [Core architecture](#core-architecture)
+  - [PixpipeObject](#pixpipeobject)
+  - [PixpipeContainer](pixpipecontainer)
+  - [Image2D](#image2d)
+  - [Image3D](#image3d)
+  - [MniVolume](#mnivolume)
+  - [Filter](#filter)
+  - [ImageToImageFilter](#imagetoimagefilter)
+- [Building Pixpipe](#building-pixpipe)
 - Create a custom filter
 - Validate input (input validator)
 
 # Overview
-The point of Pixpipe is to be easy to use and easy to contribute to.
+The point of Pixpipe is to be easy to use and easy to contribute to. This goal leads to take some decision:  
+1. using a source bundler ([Rollup](http://rollupjs.org/))
+2. properly define a folder hierarchy within `src`:
+  - `core` for the most low level *interfaces* and *classes*
+  - `decoder` for specific file decoding and encoding
+  - `filter` for all the filters (this could, maybe, be better arranged)
+  - `io` for dowloading/reading/writing files from the filesystem or AJAX
+  - `pixpipe.js` the main entry point where are listed all the modules
+3. A modular approach and a clear separation of objects.
+4. A single output file after build, located in `dist` so that's it's easy to import
 
 # Core architecture
 Pixpipe is strongly *object oriented* and relies a lot on inheritance. As said in the `readme`, it was inpired by *ITK* for its genericity because it make the pipeline scalable and modular.  
