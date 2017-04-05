@@ -1,0 +1,6 @@
+toc:
+  - name: core
+    description: |
+      The core objects of Pixpipe.
+  - Image2D
+  - Image3D
