@@ -18,7 +18,8 @@ import { Filter } from '../core/Filter.js';
 *
 *
 *
-* Usage: examples/fileToImage2D.html
+* **Usage**
+* - [examples/fileToImage2D.html](../examples/fileToImage2D.html)
 *
 * @example
 * var file2ImgFilter = new pixpipe.file2ImgFilter( ... );

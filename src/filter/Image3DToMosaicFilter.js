@@ -23,7 +23,8 @@ import { Image3D } from '../core/Image3D.js';
 * Image2D will be created and accessible through `getOutput(n)`.
 * All output image have the same size so that the last one may have dead space.
 *
-* usage: examples/niftiToMosaic.html
+* **Usage**
+* - [examples/niftiToMosaic.html](../examples/niftiToMosaic.html)
 */
 class Image3DToMosaicFilter extends Filter{
 

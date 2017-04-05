@@ -1,0 +1,70 @@
+<html>
+<head>
+  <title>Multiply Image2D</title>
+
+  <script src="../dist/pixpipe.js"></script>
+
+  <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700,900" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+
+</head>
+<body>
+  <h1><a href="https://github.com/jonathanlurie/pixpipejs"><span style="color: #ff91d7">Pixpipe</span><span style="color: #FFFFFF">js</span></a></h1>
+  <p>
+  This does the following :
+  <ul>
+    <li>opening a distant image file with AJAX request, using <code>pixpipe.UrlImageReader</code></li>
+    <li>displaying it in a canvas using <code>pixpipe.CanvasImageWriter</code></li>
+  </ul>
+  </p>
+
+  <div id="myDiv"></div>
+
+  <script>
+
+  // create a filter to write the image into a canvas
+  var imageToCanvasFilter = new pixpipe.CanvasImageWriter();
+  imageToCanvasFilter.setMetadata( "parentDivID", "myDiv" );
+  imageToCanvasFilter.setMetadata("reset", false);
+
+  // The filter to read image from URL
+  var url2ImgFilter = new pixpipe.UrlImageReader();
+
+  // the input of this reader is a simple string url. Can be local of distant, but if distant, the server must allow CORS.
+  url2ImgFilter.addInput( "images/sd.jpg" );
+
+  // the image is loaded...
+  // here, filter = url2ImgFilter
+  url2ImgFilter.on("ready", function( filter ){
+    var loadedImage = filter.getOutput();
+
+    // the factor image just apply a different weight on each channel
+    var factorImage = new pixpipe.Image2D({
+      width: loadedImage.getWidth(),
+      height: loadedImage.getHeight(),
+      color: [0.5, 0.1, 1.5, 1.]
+    })
+
+    // the multiply filter and both output, of category 0 and 1 (mandatory)
+    var multiplyFilter = new pixpipe.MultiplyImageFilter();
+    multiplyFilter.addInput(loadedImage, 0);
+    multiplyFilter.addInput(factorImage, 1);
+    multiplyFilter.update();
+
+    // showing the original image
+    imageToCanvasFilter.addInput( loadedImage );
+    imageToCanvasFilter.update();
+
+    // showing the weighter image
+    imageToCanvasFilter.addInput( multiplyFilter.getOutput() );
+    imageToCanvasFilter.update();
+  })
+
+  // Ask to fetch the image from URL
+  url2ImgFilter.update();
+
+
+  </script>
+
+</body>
+</html>

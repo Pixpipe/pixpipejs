@@ -68,7 +68,9 @@
     forEachPixelFilter.update();
 
     // use the output of the UrlImageReader as the input for CanvasImageWriter
-    imageToCanvasFilter.addInput( forEachPixelFilter.getOutput() );
+    var outputImg = forEachPixelFilter.getOutput();
+    console.log("min: " + outputImg.getMin() + " max: " + outputImg.getMax() + " avg: " + outputImg.getAvg());
+    imageToCanvasFilter.addInput( outputImg );
     // actually copy the data from the Image2D into the inner HTML5 canvas
     imageToCanvasFilter.update();
   });

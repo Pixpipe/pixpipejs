@@ -18,7 +18,8 @@ import { Image3D } from '../core/Image3D.js';
 * The input, specified by `.addInput(...)` must be an ArrayBuffer
 * (from an `UrlToArrayBufferFilter`, an `UrlToArrayBufferReader` or anothrer source ).
 *
-* usage: examples/pixpFileToImage2D.html
+* **Usage**
+* - [examples/pixpFileToImage2D.html](../examples/pixpFileToImage2D.html)
 */
 class PixpDecoder extends Filter {
   constructor(){
