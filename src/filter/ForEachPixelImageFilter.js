@@ -18,7 +18,8 @@ import { ImageToImageFilter } from '../core/ImageToImageFilter.js';
 * This callback must return, or null (original color not modified),
 * or a array of color (same dimension as the one in arguments).
 *
-* Usage: examples/forEachPixel.html
+* **Usage**
+* - [examples/forEachPixel.html](../examples/forEachPixel.html)
 *
 * @example
 * var forEachPixelFilter = new pixpipe.ForEachPixelImageFilter();
@@ -57,11 +58,10 @@ class ForEachPixelImageFilter extends ImageToImageFilter {
 
     var bufferCopy = inputImage2D.getDataCopy();
 
-    this._forEachPixelOfSuch(firstPixel, lastPixel, increment );
+    this._forEachPixelOfSuch(bufferCopy, firstPixel, lastPixel, increment );
 
     // 1 - init the output
     var outputImg = this.getOutput();
-    console.log(outputImg.getUuid);
 
     // 2 - tune the output
     outputImg.setData(
@@ -81,7 +81,7 @@ class ForEachPixelImageFilter extends ImageToImageFilter {
   * @param {Number} lastPixel - Index of the last pixel in 1D array
   * @param {Number} increment - jump gap from a pixel to another (in a 1D style)
   */
-  _forEachPixelOfSuch(firstPixel, lastPixel, increment ){
+  _forEachPixelOfSuch(buffer, firstPixel, lastPixel, increment ){
     // abort if no callback per pixel
     if( ! "pixel" in this._events){
       console.warn("No function to apply per pixel was specified.");
@@ -89,7 +89,7 @@ class ForEachPixelImageFilter extends ImageToImageFilter {
     }
 
     var inputImage2D = this._getInput();
-    var inputBuffer = this._inputBuffer;
+    var inputBuffer = inputImage2D.getData();
     var componentPerPixel = inputImage2D.getComponentsPerPixel();
 
     var currentColor = null;
@@ -103,7 +103,7 @@ class ForEachPixelImageFilter extends ImageToImageFilter {
 
       if(newColor && newColor.length == componentPerPixel){
         for(var i=0; i<componentPerPixel; i++){
-          inputBuffer[firstCompoPos1D + i] = newColor[i];
+          buffer[firstCompoPos1D + i] = newColor[i];
         }
       }
 

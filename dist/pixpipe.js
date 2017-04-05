@@ -316,6 +316,16 @@ class Filter extends PixpipeObject {
 
 
   /**
+  * Look up the input to check if an input of a given category is present
+  * @param {String} category - a category to look for.
+  * @return {Boolean} true if an input of the given
+  */
+  hasInputOfCategory( category ){
+    return (category in this._input);
+  }
+
+
+  /**
   * @return {Array} all the input categories as an array of string
   */
   getInputCategories(){
@@ -405,9 +415,15 @@ class Filter extends PixpipeObject {
   * @return {Number} the elapsed time in ms between fromRecord and toRecord.
   * Return -1 if one or both time record
   */
-  getTime(fromRecord, toRecord){
+  getTime(fromRecord, toRecord, print=false){
     if( fromRecord in this._timer && toRecord in this._timer ){
-      return Math.abs(this._timer[toRecord] - this._timer[fromRecord])
+      var t = Math.abs(this._timer[toRecord] - this._timer[fromRecord]);
+
+      if(print){
+        console.log("> Time: [" + fromRecord + " , " + toRecord + "] is " + t + " millisec.");
+      }
+
+      return t;
     }else{
       console.warn("The two given record name must exist in the time record table.");
       return -1;
@@ -530,6 +546,7 @@ class Image2D extends PixpipeContainer{
           for(var i=0; i<this._data.length; i++){
             this._data[i] = color[i%ncpp];
           }
+          this.performSimpleStat();
         }else{
           this._data.fill(0);
         }
@@ -576,13 +593,15 @@ class Image2D extends PixpipeContainer{
     }
 
     if(deepCopy){
-      this._data =  array.slice();
+      this._data = new array.constructor( array );
     }else{
       this._data = array;
     }
 
     this.setMetadata("width", width);
     this.setMetadata("height", height);
+
+    this.performSimpleStat();
   }
 
 
@@ -591,7 +610,13 @@ class Image2D extends PixpipeContainer{
   * @param {Object} position - 2D position in form {x, y}
   * @param {Array} color - color, must have the same numb of components per pix than the image
   */
-  setPixel( position, color ){
+  setPixel( position, color, computeStat=true ){
+
+    if(!this._data){
+      console.warn("The image is empty");
+      return;
+    }
+
     var ncpp = this.getMetadata("ncpp");
 
     if("x" in position && position.x >=0 && position.x < this.getMetadata("width") &&
@@ -605,6 +630,10 @@ class Image2D extends PixpipeContainer{
         this._data[ pos1D + i] = color[i];
       }
 
+      if( computeStat ){
+        this.computeStat();
+      }
+
     }else{
       console.error("x and y position have to be within the image dimensions and color size must be the same as the original image.");
     }
@@ -616,6 +645,11 @@ class Image2D extends PixpipeContainer{
   * @return {Array} the color of the given pixel.
   */
   getPixel( position ){
+    if(!this._data){
+      console.warn("The image is empty");
+      return;
+    }
+
     if("x" in position && position.x >=0 && position.x < this.getMetadata("width") &&
        "y" in position && position.y >=0 && position.y < this.getMetadata("height"))
     {
@@ -659,7 +693,6 @@ class Image2D extends PixpipeContainer{
   * in case of doubt, use  getDataCopy()
   */
   getData(){
-    //return this._data.slice();  // return a copy
     return this._data;  // return the actual array, editable!
   }
 
@@ -668,7 +701,8 @@ class Image2D extends PixpipeContainer{
   * @return {Float32Array} a deep copy of the data
   */
   getDataCopy(){
-    return this._data.slice();
+    return new this._data.constructor( this._data );
+    //return new Float32Array( this._data );
   }
 
 
@@ -696,6 +730,60 @@ class Image2D extends PixpipeContainer{
     return (position.x + position.y*this.getMetadata("width"));
   }
 
+
+  /**
+  * Compute "min" "max" and "avg" and store them in metadata
+  */
+  performSimpleStat(){
+    if(!this._data){
+      console.warn("The image is empty");
+      return;
+    }
+
+    var min = +Infinity;
+    var max = -Infinity;
+    var total = 0;
+
+    for(var i=0; i<this._data.length; i++){
+      min = Math.min(min, this._data[i]);
+      max = Math.max(min, this._data[i]);
+      total += this._data[i];
+    }
+
+    this.setMetadata("min", min);
+    this.setMetadata("max", max);
+    this.setMetadata("avg", total/this._data.length);
+  }
+
+
+  /**
+  * @return {Number} the minimum value of the data
+  */
+  getMin(){
+    if(this.hasMetadata("min")){
+      return this.getMetadata("min");
+    }
+  }
+
+
+  /**
+  * @return {Number} the maximum value of the data
+  */
+  getMax(){
+    if(this.hasMetadata("max")){
+      return this.getMetadata("max");
+    }
+  }
+
+
+  /**
+  * @return {Number} the average value of the data
+  */
+  getAvg(){
+    if(this.hasMetadata("avg")){
+      return this.getMetadata("avg");
+    }
+  }
 
 } /* END of class Image2D */
 
@@ -1157,9 +1245,6 @@ class ImageToImageFilter extends Filter {
   constructor(){
     super();
     this._inputValidator[ 0 ] = Image2D.TYPE();
-
-    // will be a copy of the input Image2D buffer
-    this._inputBuffer = null;
   }
 
 
@@ -1429,15 +1514,6 @@ class MniVolume extends Image3D{
   }
 
 
-
-
-
-
-
-
-
-
-
 } /* END of class Image3D */
 
 /*
@@ -1571,6 +1647,7 @@ class CanvasImageWriter extends Filter{
     // input image is RGBA
     if(ncppSrc == 4){
       // copying the data into the canvas array (clamped uint8)
+      /*
       originalImageDataArray.forEach( function(value, index){
         if(!useAlphaBand && index%4 == 3){
           canvasImageDataArray[index] = 255;
@@ -1578,9 +1655,19 @@ class CanvasImageWriter extends Filter{
           canvasImageDataArray[index] = that._stretchMinMax(value);
         }
       });
+      */
+
+      for(var i=0; i<originalImageDataArray.length; i++){
+        if(!useAlphaBand && i%4 == 3){
+          canvasImageDataArray[i] = 255;
+        }else{
+          canvasImageDataArray[i] = this._stretchMinMax( originalImageDataArray[ i ] );
+        }
+      }
 
     // input image is mono chanel
     }else if(ncppSrc == 1){
+      /*
       originalImageDataArray.forEach( function(value, index){
         var index1D = index*4;
         var stretchedValue = that._stretchMinMax(value);
@@ -1589,11 +1676,21 @@ class CanvasImageWriter extends Filter{
         canvasImageDataArray[index1D + 2] = stretchedValue;
         canvasImageDataArray[index1D + 3] = 255;
       });
+      */
+      for(var i=0; i<originalImageDataArray.length; i++){
+        var index1D = i*4;
+        var stretchedValue = this._stretchMinMax(originalImageDataArray[i]);
+        canvasImageDataArray[index1D] = stretchedValue;
+        canvasImageDataArray[index1D + 1] = stretchedValue;
+        canvasImageDataArray[index1D + 2] = stretchedValue;
+        canvasImageDataArray[index1D + 3] = 255;
+      }
 
     // input image is RGB
     }else if(ncppSrc == 3){
       console.warn("From RGB Image2D to RGBA canvas, not sure of this implementation.");
       var destCounter = 0;
+      /*
       originalImageDataArray.forEach( function(value, index){
         // adding the Alpha chanel
         if( index%4 == 3){
@@ -1605,6 +1702,20 @@ class CanvasImageWriter extends Filter{
         canvasImageDataArray[destCounter] = that._stretchMinMax(value);
         destCounter ++;
       });
+      */
+
+      for(var i=0; i<originalImageDataArray.length; i++){
+        // adding the Alpha chanel
+        if( i%4 == 3){
+          canvasImageDataArray[destCounter] = 255;
+          destCounter++;
+        }
+
+        // regular RGB
+        canvasImageDataArray[destCounter] = this._stretchMinMax(value);
+        destCounter ++;
+      }
+
     }
 
     this._ctx.putImageData(canvasImageData, 0, 0);
@@ -12121,17 +12232,16 @@ class ForEachPixelImageFilter extends ImageToImageFilter {
     var lastPixel = inputImage2D.getWidth() * inputImage2D.getHeight();
     var increment = 1;
 
-    this._inputBuffer = inputImage2D.getDataCopy();
+    var bufferCopy = inputImage2D.getDataCopy();
 
-    this._forEachPixelOfSuch(firstPixel, lastPixel, increment );
+    this._forEachPixelOfSuch(bufferCopy, firstPixel, lastPixel, increment );
 
     // 1 - init the output
     var outputImg = this.getOutput();
-    console.log(outputImg.getUuid);
 
     // 2 - tune the output
     outputImg.setData(
-      this._inputBuffer,
+      bufferCopy,
       inputImage2D.getWidth(),
       inputImage2D.getHeight(),
       inputImage2D.getComponentsPerPixel()
@@ -12147,7 +12257,7 @@ class ForEachPixelImageFilter extends ImageToImageFilter {
   * @param {Number} lastPixel - Index of the last pixel in 1D array
   * @param {Number} increment - jump gap from a pixel to another (in a 1D style)
   */
-  _forEachPixelOfSuch(firstPixel, lastPixel, increment ){
+  _forEachPixelOfSuch(buffer, firstPixel, lastPixel, increment ){
     // abort if no callback per pixel
     if( ! "pixel" in this._events){
       console.warn("No function to apply per pixel was specified.");
@@ -12155,7 +12265,7 @@ class ForEachPixelImageFilter extends ImageToImageFilter {
     }
 
     var inputImage2D = this._getInput();
-    var inputBuffer = this._inputBuffer;
+    var inputBuffer = inputImage2D.getData();
     var componentPerPixel = inputImage2D.getComponentsPerPixel();
 
     var currentColor = null;
@@ -12169,7 +12279,7 @@ class ForEachPixelImageFilter extends ImageToImageFilter {
 
       if(newColor && newColor.length == componentPerPixel){
         for(var i=0; i<componentPerPixel; i++){
-          inputBuffer[firstCompoPos1D + i] = newColor[i];
+          buffer[firstCompoPos1D + i] = newColor[i];
         }
       }
 
@@ -13619,7 +13729,7 @@ class ImageBlendExpressionFilter extends ImageToImageFilter {
     }
 
     if(!this.getNumberOfInputs()){
-      console.warn("A filter of type ImageBlendExpressionFilter requires at least one inpupt.");
+      console.warn("A filter of type ImageBlendExpressionFilter requires at least one input.");
       return;
     }
 
@@ -13654,6 +13764,62 @@ class ImageBlendExpressionFilter extends ImageToImageFilter {
 
 
 } /* END of class ImageBlendExpressionFilter */
+
+class MultiplyImageFilter extends ImageToImageFilter {
+
+  constructor(){
+    super();
+    this._addOutput( Image2D );
+  }
+
+
+  _run(){
+
+    if( !this.hasSameNcppInput() || !this.hasSameSizeInput() ){
+      return;
+    }
+
+    if(!this.hasInputOfCategory(0) || !this.hasInputOfCategory(1) ){
+      console.warn("A filter of type MultiplyImageFilter requires 1 input of category '0' and one input of category '1'.");
+      return;
+    }
+
+    this.addTimeRecord("step1");
+
+    var img0 = this._getInput( 0 );
+    var img1 = this._getInput( 1 );
+
+
+    var img1Buffer = img1.getData();
+    this.addTimeRecord("step1.5");
+    var outputBuffer = img0.getDataCopy();
+
+    this.addTimeRecord("step2");
+
+    for(var i=0; i<outputBuffer.length; i++){
+      outputBuffer[ i ] *= img1Buffer[ i ];
+    }
+
+    this.addTimeRecord("step3");
+
+
+
+    var img2D = this.getOutput();
+
+    img2D.setData(
+      outputBuffer,
+      img0.getWidth(),
+      img0.getHeight()
+    );
+
+    this.addTimeRecord("step4");
+    this.getTime("step1", "step1.5", true);
+    this.getTime("step1.5", "step2", true);
+    this.getTime("step2", "step3", true);
+    this.getTime("step3", "step4", true);
+  }
+
+} /* END class MultiplyImageFilter */
 
 /*
 * Author   Jonathan Lurie - http://me.jonahanlurie.fr
@@ -13789,6 +13955,7 @@ exports.PixpDecoder = PixpDecoder;
 exports.ForEachPixelImageFilter = ForEachPixelImageFilter;
 exports.SpectralScaleImageFilter = SpectralScaleImageFilter;
 exports.ImageBlendExpressionFilter = ImageBlendExpressionFilter;
+exports.MultiplyImageFilter = MultiplyImageFilter;
 exports.Image3DToMosaicFilter = Image3DToMosaicFilter;
 
 Object.defineProperty(exports, '__esModule', { value: true });

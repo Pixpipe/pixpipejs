@@ -1,3 +1,6 @@
+@import url(fonts/source-sans-pro/source-sans-pro.css);
+@import url(fonts/source-code-pro/source-code-pro.css);
+
 .documentation a {
   color: #1184CE;
 }
@@ -84,12 +87,11 @@ h4:hover .anchorjs-link {
 }
 
 .fix-3 {
-  width: 25%;
-  max-width: 244px;
+  width: 20vw;
 }
 
 @media (min-width: 52em) {
   .fix-margin-3 {
-    margin-left: 25%;
+    margin-left: 20vw;
   }
 }

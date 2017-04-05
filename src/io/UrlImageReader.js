@@ -20,7 +20,9 @@ import { Filter } from '../core/Filter.js';
 *
 * UrlImageReader can also load multiple images and call the "ready" event
 * only when all of them are loaded.
-* Usage: examples/urlToImage2D_multiple.html
+*
+* **Usage**
+* - [examples/urlToImage2D_multiple.html](../examples/urlToImage2D_multiple.html)
 *
 *
 * @example

@@ -17,7 +17,8 @@ import { Filter } from '../core/Filter.js';
 * setMetadata("min", xxx ) default: 0
 * setMetadata("max", xxx ) default: 255
 *
-* usage: examples/imageToCanvasFilter.html
+* **Usage**
+* - [examples/imageToCanvasFilter.html](../examples/imageToCanvasFilter.html)
 *
 * @example
 // create an image
@@ -131,41 +132,43 @@ class CanvasImageWriter extends Filter{
 
     // input image is RGBA
     if(ncppSrc == 4){
-      // copying the data into the canvas array (clamped uint8)
-      originalImageDataArray.forEach( function(value, index){
-        if(!useAlphaBand && index%4 == 3){
-          canvasImageDataArray[index] = 255;
+      for(var i=0; i<originalImageDataArray.length; i++){
+        if(!useAlphaBand && i%4 == 3){
+          canvasImageDataArray[i] = 255;
         }else{
-          canvasImageDataArray[index] = that._stretchMinMax(value);
+          canvasImageDataArray[i] = this._stretchMinMax( originalImageDataArray[ i ] );
         }
-      });
+      }
 
     // input image is mono chanel
     }else if(ncppSrc == 1){
-      originalImageDataArray.forEach( function(value, index){
-        var index1D = index*4;
-        var stretchedValue = that._stretchMinMax(value);
+
+      for(var i=0; i<originalImageDataArray.length; i++){
+        var index1D = i*4;
+        var stretchedValue = this._stretchMinMax(originalImageDataArray[i]);
         canvasImageDataArray[index1D] = stretchedValue;
         canvasImageDataArray[index1D + 1] = stretchedValue;
         canvasImageDataArray[index1D + 2] = stretchedValue;
         canvasImageDataArray[index1D + 3] = 255;
-      });
+      }
 
     // input image is RGB
     }else if(ncppSrc == 3){
       console.warn("From RGB Image2D to RGBA canvas, not sure of this implementation.");
       var destCounter = 0;
-      originalImageDataArray.forEach( function(value, index){
+
+      for(var i=0; i<originalImageDataArray.length; i++){
         // adding the Alpha chanel
-        if( index%4 == 3){
+        if( i%4 == 3){
           canvasImageDataArray[destCounter] = 255;
           destCounter++;
         }
 
         // regular RGB
-        canvasImageDataArray[destCounter] = that._stretchMinMax(value);
+        canvasImageDataArray[destCounter] = this._stretchMinMax(value);
         destCounter ++;
-      });
+      }
+
     }
 
     this._ctx.putImageData(canvasImageData, 0, 0);

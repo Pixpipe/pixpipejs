@@ -5,6 +5,7 @@ This cookbook will help you to become familiar with the architecture of **Pixpip
 
 # Table of content
 - [Overview](#overview)
+- [Projects used in Pixpipe](#projects-used-in-pixpipe)
 - [Core architecture](#core-architecture)
   - [PixpipeObject](#pixpipeobject)
   - [PixpipeContainer](pixpipecontainer)
@@ -19,15 +20,22 @@ This cookbook will help you to become familiar with the architecture of **Pixpip
 
 # Overview
 The point of Pixpipe is to be easy to use and easy to contribute to. This goal leads to take some decision:  
-1. using a source bundler ([Rollup](http://rollupjs.org/))
-2. properly define a folder hierarchy within `src`:
+- using a source bundler ([Rollup](http://rollupjs.org/))
+- properly define a folder hierarchy within `src`:
   - `core` for the most low level *interfaces* and *classes*
   - `decoder` for specific file decoding and encoding
   - `filter` for all the filters (this could, maybe, be better arranged)
   - `io` for dowloading/reading/writing files from the filesystem or AJAX
   - `pixpipe.js` the main entry point where are listed all the modules
-3. A modular approach and a clear separation of objects.
-4. A single output file after build, located in `dist` so that's it's easy to import
+- A modular approach and a clear separation of objects.
+- Once built, Pixpipe is only a single file, located in `dist`, so that's it's easy to import
+
+# Projects used in Pixpipe
+Sometimes, it's just not worth reiventing the wheel. Here are the libraries Pixpipe uses and includes at build time:
+- [Pako](https://github.com/nodeca/pako), for high speed file compression/decompression in JS.
+- [FileSaver.js](https://github.com/eligrey/FileSaver.js), to easly trigger file downloading to the user
+- [expr-eval](https://github.com/silentmatt/expr-eval), to evaluate math expression and create quick filter prototype
+
 
 # Core architecture
 Pixpipe is strongly *object oriented* and relies a lot on inheritance. As said in the `readme`, it was inpired by *ITK* for its genericity because it make the pipeline scalable and modular.  
