@@ -471,8 +471,7 @@ hr {
 }
 
 .container {
-  max-width: 64em;
-  margin-left: auto;
+  max-width: 80vw;
   margin-right: auto;
 }
 .col {
@@ -848,3 +847,11 @@ hr {
 .bg-lighten-4 { background-color: rgba(255,255,255,.5) }
 
 
+/* ADDED BY JO */
+.bg-blue-alpha { background-color: rgba(17, 132, 206, 0.1) }
+.bg-pink-alpha { background-color: rgba(255, 145, 215, 0.14) }
+
+.code-sample {
+  background-color: rgba(86, 173, 216, 0.08);
+  padding: 10px;
+}

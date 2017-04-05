@@ -153,7 +153,7 @@ class Image3D extends PixpipeContainer{
 
     // deep of shallow copy
     if(options && "deepCopy" in options && options.deepCopy){
-      this._data = array.slice();
+      this._data = new array.constructor( array );
     }else{
       this._data = array;
     }
@@ -212,10 +212,10 @@ class Image3D extends PixpipeContainer{
     var min = +Infinity;
     var max = -Infinity;
 
-    this._data.forEach( function(value){
-      min = Math.min(min, value);
-      max = Math.max(max, value);
-    })
+    for(var i=0; i<this._data.length; i++){
+      min = Math.min(min, this._data[i]);
+      max = Math.max(max, this._data[i]);
+    }
 
     this.setMetadata("voxel_min", min);
     this.setMetadata("voxel_max", max);
@@ -260,7 +260,6 @@ class Image3D extends PixpipeContainer{
   * in case of doubt, use  getDataCopy()
   */
   getData(){
-    //return this._data.slice();  // return a copy
     return this._data;  // return the actual array, editable!
   }
 
@@ -269,7 +268,7 @@ class Image3D extends PixpipeContainer{
   * @return {Float32Array} a deep copy of the data
   */
   getDataCopy(){
-    return this._data.slice();
+    return new this._data.constructor( this._data );
   }
 
 

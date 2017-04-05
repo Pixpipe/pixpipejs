@@ -11,6 +11,9 @@ import { PixpipeContainer } from './PixpipeContainer.js';
 * Image2D class is one of the few base element of Pixpipejs.
 * It is always considered to be 4 channels (RGBA) and stored as a Float32Array
 * typed array.
+* 
+* **Usage**
+* - [examples/image2DToCanvas.html](../examples/image2DToCanvas.html)
 */
 class Image2D extends PixpipeContainer{
 
@@ -49,6 +52,7 @@ class Image2D extends PixpipeContainer{
           for(var i=0; i<this._data.length; i++){
             this._data[i] = color[i%ncpp];
           }
+          this.performSimpleStat();
         }else{
           this._data.fill(0);
         }
@@ -95,13 +99,15 @@ class Image2D extends PixpipeContainer{
     }
 
     if(deepCopy){
-      this._data =  array.slice();
+      this._data = new array.constructor( array );
     }else{
       this._data = array;
     }
 
     this.setMetadata("width", width)
     this.setMetadata("height", height)
+
+    this.performSimpleStat();
   }
 
 
@@ -110,7 +116,13 @@ class Image2D extends PixpipeContainer{
   * @param {Object} position - 2D position in form {x, y}
   * @param {Array} color - color, must have the same numb of components per pix than the image
   */
-  setPixel( position, color ){
+  setPixel( position, color, computeStat=true ){
+
+    if(!this._data){
+      console.warn("The image is empty");
+      return;
+    }
+
     var ncpp = this.getMetadata("ncpp");
 
     if("x" in position && position.x >=0 && position.x < this.getMetadata("width") &&
@@ -124,6 +136,10 @@ class Image2D extends PixpipeContainer{
         this._data[ pos1D + i] = color[i];
       }
 
+      if( computeStat ){
+        this.computeStat();
+      }
+
     }else{
       console.error("x and y position have to be within the image dimensions and color size must be the same as the original image.");
     }
@@ -135,6 +151,11 @@ class Image2D extends PixpipeContainer{
   * @return {Array} the color of the given pixel.
   */
   getPixel( position ){
+    if(!this._data){
+      console.warn("The image is empty");
+      return;
+    }
+
     if("x" in position && position.x >=0 && position.x < this.getMetadata("width") &&
        "y" in position && position.y >=0 && position.y < this.getMetadata("height"))
     {
@@ -150,6 +171,7 @@ class Image2D extends PixpipeContainer{
 
 
   /**
+  * Get the width of the image
   * @return {Number} the width of the Image2D
   */
   getWidth(){
@@ -158,6 +180,7 @@ class Image2D extends PixpipeContainer{
 
 
   /**
+  * Get the height of the image
   * @return {Number} the height of the Image2D
   */
   getHeight(){
@@ -166,6 +189,7 @@ class Image2D extends PixpipeContainer{
 
 
   /**
+  * Get the number of components per pixel
   * @return {Number} the number of components per pixel
   */
   getComponentsPerPixel(){
@@ -174,20 +198,21 @@ class Image2D extends PixpipeContainer{
 
 
   /**
+  * Get the internal image data (pointer)
   * @return {Float32Array} the original data, dont mess up with this one.
   * in case of doubt, use  getDataCopy()
   */
   getData(){
-    //return this._data.slice();  // return a copy
     return this._data;  // return the actual array, editable!
   }
 
 
   /**
+  * Get a copy of the data
   * @return {Float32Array} a deep copy of the data
   */
   getDataCopy(){
-    return this._data.slice();
+    return new this._data.constructor( this._data );
   }
 
 
@@ -215,6 +240,63 @@ class Image2D extends PixpipeContainer{
     return (position.x + position.y*this.getMetadata("width"));
   }
 
+
+  /**
+  * Compute "min" "max" and "avg" and store them in metadata
+  */
+  performSimpleStat(){
+    if(!this._data){
+      console.warn("The image is empty");
+      return;
+    }
+
+    var min = +Infinity;
+    var max = -Infinity;
+    var total = 0;
+
+    for(var i=0; i<this._data.length; i++){
+      min = Math.min(min, this._data[i]);
+      max = Math.max(min, this._data[i]);
+      total += this._data[i];
+    }
+
+    this.setMetadata("min", min);
+    this.setMetadata("max", max);
+    this.setMetadata("avg", total/this._data.length);
+  }
+
+
+  /**
+  * Get the lowest intensity of the image
+  * @return {Number} the minimum value of the data
+  */
+  getMin(){
+    if(this.hasMetadata("min")){
+      return this.getMetadata("min");
+    }
+  }
+
+
+  /**
+  * Get the highest intensity of the image
+  * @return {Number} the maximum value of the data
+  */
+  getMax(){
+    if(this.hasMetadata("max")){
+      return this.getMetadata("max");
+    }
+  }
+
+
+  /**
+  * Get the average intensity of the image
+  * @return {Number} the average value of the data
+  */
+  getAvg(){
+    if(this.hasMetadata("avg")){
+      return this.getMetadata("avg");
+    }
+  }
 
 } /* END of class Image2D */
 

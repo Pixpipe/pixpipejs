@@ -16,7 +16,8 @@ import { Filter } from '../core/Filter.js';
 * Once ready, all the outputs are accecible using the same uniqueID with the
 * method `getOutput("uniqueID")`
 *
-* usage: examples/fileToArrayBuffer.html
+* **Usage**
+* - [examples/fileToArrayBuffer.html](../examples/fileToArrayBuffer.html)
 */
 class FileToArrayBufferReader extends Filter {
 

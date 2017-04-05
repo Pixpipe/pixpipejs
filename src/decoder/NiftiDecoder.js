@@ -12,6 +12,13 @@ import { Filter } from '../core/Filter.js';
 import { MniVolume } from '../core/MniVolume.js';
 
 
+/**
+* Decodes a NIfTI file.
+* Takes an ArrayBuffer as input (0) and output a `MniVolume` (which inherit `Image3D`).
+*
+* **Usage**
+* - [examples/fileToNifti.html](../examples/fileToNifti.html)
+*/
 class NiftiDecoder extends Filter {
 
   constructor(){

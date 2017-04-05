@@ -10,11 +10,12 @@ import { Filter } from '../core/Filter.js';
 
 /**
 * Open a files as ArrayBuffer using their URL. You must specify one or several URL
-* (String) using `addInput("...")`` and add function to the event "ready" using
+* (String) using `addInput("...")` and add function to the event "ready" using
 * `.on( "ready", function(filter){ ... })`.
 * The "ready" event will be called only when all input are loaded.
 *
-* usage: examples/urlFileToArrayBuffer.html
+* **Usage**
+* - [examples/urlFileToArrayBuffer.html](../examples/urlFileToArrayBuffer.html)
 */
 class UrlToArrayBufferReader extends Filter {
 

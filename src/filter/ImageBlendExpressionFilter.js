@@ -24,9 +24,10 @@ import { ImageToImageFilter } from '../core/ImageToImageFilter.js';
 * To speed-up your process, it is recomended to develop a new filter that does
 * exactly (and only) the blending method you want.
 *
-* usage: examples/imageBlending.html
-* usage: examples/imageBlending2.html
-* usage: examples/forEachPixelGradientBlend.html
+* **usage**  
+* - [examples/imageBlending.html](../examples/imageBlending.html)
+* - [examples/imageBlending2.html](../examples/imageBlending2.html)
+* - [examples/forEachPixelGradientBlend.html](../examples/forEachPixelGradientBlend.html)
 *
 */
 class ImageBlendExpressionFilter extends ImageToImageFilter {
@@ -51,7 +52,7 @@ class ImageBlendExpressionFilter extends ImageToImageFilter {
     }
 
     if(!this.getNumberOfInputs()){
-      console.warn("A filter of type ImageBlendExpressionFilter requires at least one inpupt.");
+      console.warn("A filter of type ImageBlendExpressionFilter requires at least one input.");
       return;
     }
 

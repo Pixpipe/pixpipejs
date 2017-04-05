@@ -17,7 +17,8 @@ import { PixpipeObject } from './PixpipeObject.js';
 * Every input and output can be arranged by category, so that internaly, a filter
 * can use and output diferent kind of data.
 *
-* usage: examples/fileToArrayBuffer.html
+* **Usage**
+* - [examples/fileToArrayBuffer.html](../examples/fileToArrayBuffer.html)
 *
 */
 class Filter extends PixpipeObject {
@@ -172,6 +173,16 @@ class Filter extends PixpipeObject {
 
 
   /**
+  * Look up the input to check if an input of a given category is present
+  * @param {String} category - a category to look for.
+  * @return {Boolean} true if an input of the given
+  */
+  hasInputOfCategory( category ){
+    return (category in this._input);
+  }
+
+
+  /**
   * @return {Array} all the input categories as an array of string
   */
   getInputCategories(){
@@ -261,9 +272,15 @@ class Filter extends PixpipeObject {
   * @return {Number} the elapsed time in ms between fromRecord and toRecord.
   * Return -1 if one or both time record
   */
-  getTime(fromRecord, toRecord){
+  getTime(fromRecord, toRecord, print=false){
     if( fromRecord in this._timer && toRecord in this._timer ){
-      return Math.abs(this._timer[toRecord] - this._timer[fromRecord])
+      var t = Math.abs(this._timer[toRecord] - this._timer[fromRecord])
+
+      if(print){
+        console.log("> Time: [" + fromRecord + " , " + toRecord + "] is " + t + " millisec.");
+      }
+
+      return t;
     }else{
       console.warn("The two given record name must exist in the time record table.");
       return -1;
