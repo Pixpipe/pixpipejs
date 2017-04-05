@@ -23,7 +23,8 @@ import { Image3D } from '../core/Image3D.js';
 * when calling the method `.download()`. The gzip blob could also be sent over AJAX
 * using a third party library.
 *
-* usage: examples/savePixpFile.html
+* **Usage**
+* - [examples/savePixpFile.html](../examples/savePixpFile.html)
 */
 class PixpEncoder extends Filter {
   constructor(){

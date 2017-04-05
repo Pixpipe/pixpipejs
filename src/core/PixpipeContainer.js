@@ -6,7 +6,7 @@
 */
 
 
-import { PipelineElement } from './PipelineElement.js';
+import { PixpipeObject } from './PixpipeObject.js';
 
 
 /**
@@ -14,7 +14,7 @@ import { PipelineElement } from './PipelineElement.js';
 * (and possibly some other future formats).
 * Should not be used as-is.
 */
-class PixpipeContainer extends PipelineElement {
+class PixpipeContainer extends PixpipeObject {
   constructor(){
     super();
     this._data = null;

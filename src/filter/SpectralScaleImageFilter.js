@@ -15,7 +15,8 @@ import { ImageToImageFilter } from '../core/ImageToImageFilter.js';
 * and `addInput( myImg2, "1" )`. The input "0" can have 1 or more bands while
 * the input "1" can have only one band since the same scale is apply to each band.
 *
-* usage: examples/forEachPixelGadient.html
+* **Usage**
+* - [examples/forEachPixelGadient.html](../examples/forEachPixelGadient.html)
 */
 class SpectralScaleImageFilter extends ImageToImageFilter {
 

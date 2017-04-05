@@ -15,8 +15,12 @@ import { MniVolume } from '../core/MniVolume.js';
 /**
 * Decode a HDF5 file, but is most likely to be restricted to the features that are
 * used for Minc2 file format.
-* The input "0" is an array buffer, the metadata "debug" can be set to true to
+* The metadata "debug" can be set to true to
 * enable a verbose mode.
+* Takes an ArrayBuffer as input (0) and output a `MniVolume` (which inherit `Image3D`).
+*
+* **Usage**
+* - [examples/fileToMinc2.html](../examples/fileToMinc2.html)
 */
 class Minc2Decoder extends Filter{
 
