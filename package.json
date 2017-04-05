@@ -10,7 +10,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "rollup -c",
     "build-min": "npm run build && printf \"// Build date: $(date '+%Y-%m%-dT%H:%M:%S')\n\n\" > dist/pixpipe.min.js && cat header.txt >> dist/pixpipe.min.js && google-closure-compiler-js --languageOut ES5 dist/pixpipe.js >> dist/pixpipe.min.js",
-    "doc": "documentation --config doc/config.yml --format html --name Pixpipe.js --theme ./doc/themes/default src/pixpipe.js  -o ./doc/ "
+    "doc": "documentation --format html --name Pixpipejs --theme ./doc/themes/default -o ./doc/ --config ./doc/documentation.json src/pixpipe.js"
   },
   "repository": {
     "type": "git",
