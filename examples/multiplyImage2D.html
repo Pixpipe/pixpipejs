@@ -14,7 +14,9 @@
   This does the following :
   <ul>
     <li>opening a distant image file with AJAX request, using <code>pixpipe.UrlImageReader</code></li>
-    <li>displaying it in a canvas using <code>pixpipe.CanvasImageWriter</code></li>
+    <li>creating a weight <code>pixpipe.Image2D</code> of the same size</li>
+    <li>multiplying the two with <code>pixpipe.MultiplyImageFilter</code></li>
+    <li>displaying the result in a canvas using <code>pixpipe.CanvasImageWriter</code></li>
   </ul>
   </p>
 

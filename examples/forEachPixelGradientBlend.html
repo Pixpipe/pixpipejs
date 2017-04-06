@@ -19,7 +19,7 @@
     <li>blend the loaded image and the gradient using a <code>pixpipe.ImageBlendExpressionFilter</code></li>
     <li>displaying the final output in a canvas using <code>pixpipe.CanvasImageWriter</code></li>
   </ul>
-
+  <span>Note that using a parametric math expression with <code>pixpipe.ImageBlendExpressionFilter</code> is generally slower.</span>
   </p>
 
   <p>
@@ -82,11 +82,8 @@
 
     blendingFilter.setMetadata("expression", "A*B");
 
-    var t0 = performance.now();
     // apply the gradient on the loaded image
     blendingFilter.update();
-    var t1 = performance.now();
-    console.log("Call to doSomething took " + (t1 - t0) + " milliseconds.");
 
     // create a filter to write the image into a canvas
     var imageToCanvasFilter = new pixpipe.CanvasImageWriter( );
