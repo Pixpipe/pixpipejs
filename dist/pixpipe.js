@@ -161,7 +161,8 @@ class PixpipeObject {
 * Every input and output can be arranged by category, so that internaly, a filter
 * can use and output diferent kind of data.
 *
-* usage: examples/fileToArrayBuffer.html
+* **Usage**
+* - [examples/fileToArrayBuffer.html](../examples/fileToArrayBuffer.html)
 *
 */
 class Filter extends PixpipeObject {
@@ -508,6 +509,9 @@ class PixpipeContainer extends PixpipeObject {
 * Image2D class is one of the few base element of Pixpipejs.
 * It is always considered to be 4 channels (RGBA) and stored as a Float32Array
 * typed array.
+* 
+* **Usage**
+* - [examples/image2DToCanvas.html](../examples/image2DToCanvas.html)
 */
 class Image2D extends PixpipeContainer{
 
@@ -546,7 +550,7 @@ class Image2D extends PixpipeContainer{
           for(var i=0; i<this._data.length; i++){
             this._data[i] = color[i%ncpp];
           }
-          this.performSimpleStat();
+          this.computeSimpleStat();
         }else{
           this._data.fill(0);
         }
@@ -601,7 +605,7 @@ class Image2D extends PixpipeContainer{
     this.setMetadata("width", width);
     this.setMetadata("height", height);
 
-    this.performSimpleStat();
+    this.computeSimpleStat();
   }
 
 
@@ -610,7 +614,7 @@ class Image2D extends PixpipeContainer{
   * @param {Object} position - 2D position in form {x, y}
   * @param {Array} color - color, must have the same numb of components per pix than the image
   */
-  setPixel( position, color, computeStat=true ){
+  setPixel( position, color, computeStat=false ){
 
     if(!this._data){
       console.warn("The image is empty");
@@ -631,7 +635,7 @@ class Image2D extends PixpipeContainer{
       }
 
       if( computeStat ){
-        this.computeStat();
+        this.computeSimpleStat();
       }
 
     }else{
@@ -665,6 +669,7 @@ class Image2D extends PixpipeContainer{
 
 
   /**
+  * Get the width of the image
   * @return {Number} the width of the Image2D
   */
   getWidth(){
@@ -673,6 +678,7 @@ class Image2D extends PixpipeContainer{
 
 
   /**
+  * Get the height of the image
   * @return {Number} the height of the Image2D
   */
   getHeight(){
@@ -681,6 +687,7 @@ class Image2D extends PixpipeContainer{
 
 
   /**
+  * Get the number of components per pixel
   * @return {Number} the number of components per pixel
   */
   getComponentsPerPixel(){
@@ -689,6 +696,7 @@ class Image2D extends PixpipeContainer{
 
 
   /**
+  * Get the internal image data (pointer)
   * @return {Float32Array} the original data, dont mess up with this one.
   * in case of doubt, use  getDataCopy()
   */
@@ -698,11 +706,11 @@ class Image2D extends PixpipeContainer{
 
 
   /**
+  * Get a copy of the data
   * @return {Float32Array} a deep copy of the data
   */
   getDataCopy(){
     return new this._data.constructor( this._data );
-    //return new Float32Array( this._data );
   }
 
 
@@ -734,7 +742,7 @@ class Image2D extends PixpipeContainer{
   /**
   * Compute "min" "max" and "avg" and store them in metadata
   */
-  performSimpleStat(){
+  computeSimpleStat(){
     if(!this._data){
       console.warn("The image is empty");
       return;
@@ -757,6 +765,7 @@ class Image2D extends PixpipeContainer{
 
 
   /**
+  * Get the lowest intensity of the image
   * @return {Number} the minimum value of the data
   */
   getMin(){
@@ -767,6 +776,7 @@ class Image2D extends PixpipeContainer{
 
 
   /**
+  * Get the highest intensity of the image
   * @return {Number} the maximum value of the data
   */
   getMax(){
@@ -777,6 +787,7 @@ class Image2D extends PixpipeContainer{
 
 
   /**
+  * Get the average intensity of the image
   * @return {Number} the average value of the data
   */
   getAvg(){
@@ -939,7 +950,7 @@ class Image3D extends PixpipeContainer{
 
     // deep of shallow copy
     if(options && "deepCopy" in options && options.deepCopy){
-      this._data = array.slice();
+      this._data = new array.constructor( array );
     }else{
       this._data = array;
     }
@@ -998,10 +1009,10 @@ class Image3D extends PixpipeContainer{
     var min = +Infinity;
     var max = -Infinity;
 
-    this._data.forEach( function(value){
-      min = Math.min(min, value);
-      max = Math.max(max, value);
-    });
+    for(var i=0; i<this._data.length; i++){
+      min = Math.min(min, this._data[i]);
+      max = Math.max(max, this._data[i]);
+    }
 
     this.setMetadata("voxel_min", min);
     this.setMetadata("voxel_max", max);
@@ -1046,7 +1057,6 @@ class Image3D extends PixpipeContainer{
   * in case of doubt, use  getDataCopy()
   */
   getData(){
-    //return this._data.slice();  // return a copy
     return this._data;  // return the actual array, editable!
   }
 
@@ -1055,7 +1065,7 @@ class Image3D extends PixpipeContainer{
   * @return {Float32Array} a deep copy of the data
   */
   getDataCopy(){
-    return this._data.slice();
+    return new this._data.constructor( this._data );
   }
 
 
@@ -1532,7 +1542,8 @@ class MniVolume extends Image3D{
 * setMetadata("min", xxx ) default: 0
 * setMetadata("max", xxx ) default: 255
 *
-* usage: examples/imageToCanvasFilter.html
+* **Usage**
+* - [examples/imageToCanvasFilter.html](../examples/imageToCanvasFilter.html)
 *
 * @example
 // create an image
@@ -1646,17 +1657,6 @@ class CanvasImageWriter extends Filter{
 
     // input image is RGBA
     if(ncppSrc == 4){
-      // copying the data into the canvas array (clamped uint8)
-      /*
-      originalImageDataArray.forEach( function(value, index){
-        if(!useAlphaBand && index%4 == 3){
-          canvasImageDataArray[index] = 255;
-        }else{
-          canvasImageDataArray[index] = that._stretchMinMax(value);
-        }
-      });
-      */
-
       for(var i=0; i<originalImageDataArray.length; i++){
         if(!useAlphaBand && i%4 == 3){
           canvasImageDataArray[i] = 255;
@@ -1667,16 +1667,7 @@ class CanvasImageWriter extends Filter{
 
     // input image is mono chanel
     }else if(ncppSrc == 1){
-      /*
-      originalImageDataArray.forEach( function(value, index){
-        var index1D = index*4;
-        var stretchedValue = that._stretchMinMax(value);
-        canvasImageDataArray[index1D] = stretchedValue;
-        canvasImageDataArray[index1D + 1] = stretchedValue;
-        canvasImageDataArray[index1D + 2] = stretchedValue;
-        canvasImageDataArray[index1D + 3] = 255;
-      });
-      */
+
       for(var i=0; i<originalImageDataArray.length; i++){
         var index1D = i*4;
         var stretchedValue = this._stretchMinMax(originalImageDataArray[i]);
@@ -1690,19 +1681,6 @@ class CanvasImageWriter extends Filter{
     }else if(ncppSrc == 3){
       console.warn("From RGB Image2D to RGBA canvas, not sure of this implementation.");
       var destCounter = 0;
-      /*
-      originalImageDataArray.forEach( function(value, index){
-        // adding the Alpha chanel
-        if( index%4 == 3){
-          canvasImageDataArray[destCounter] = 255;
-          destCounter++;
-        }
-
-        // regular RGB
-        canvasImageDataArray[destCounter] = that._stretchMinMax(value);
-        destCounter ++;
-      });
-      */
 
       for(var i=0; i<originalImageDataArray.length; i++){
         // adding the Alpha chanel
@@ -1760,7 +1738,9 @@ class CanvasImageWriter extends Filter{
 *
 * UrlImageReader can also load multiple images and call the "ready" event
 * only when all of them are loaded.
-* Usage: examples/urlToImage2D_multiple.html
+*
+* **Usage**
+* - [examples/urlToImage2D_multiple.html](../examples/urlToImage2D_multiple.html)
 *
 *
 * @example
@@ -1853,7 +1833,8 @@ class UrlImageReader extends Filter {
 *
 *
 *
-* Usage: examples/fileToImage2D.html
+* **Usage**
+* - [examples/fileToImage2D.html](../examples/fileToImage2D.html)
 *
 * @example
 * var file2ImgFilter = new pixpipe.file2ImgFilter( ... );
@@ -1941,7 +1922,8 @@ class FileImageReader extends Filter {
 * Once ready, all the outputs are accecible using the same uniqueID with the
 * method `getOutput("uniqueID")`
 *
-* usage: examples/fileToArrayBuffer.html
+* **Usage**
+* - [examples/fileToArrayBuffer.html](../examples/fileToArrayBuffer.html)
 */
 class FileToArrayBufferReader extends Filter {
 
@@ -2012,11 +1994,12 @@ class FileToArrayBufferReader extends Filter {
 
 /**
 * Open a files as ArrayBuffer using their URL. You must specify one or several URL
-* (String) using `addInput("...")`` and add function to the event "ready" using
+* (String) using `addInput("...")` and add function to the event "ready" using
 * `.on( "ready", function(filter){ ... })`.
 * The "ready" event will be called only when all input are loaded.
 *
-* usage: examples/urlFileToArrayBuffer.html
+* **Usage**
+* - [examples/urlFileToArrayBuffer.html](../examples/urlFileToArrayBuffer.html)
 */
 class UrlToArrayBufferReader extends Filter {
 
@@ -8666,8 +8649,12 @@ var index = pako;
 /**
 * Decode a HDF5 file, but is most likely to be restricted to the features that are
 * used for Minc2 file format.
-* The input "0" is an array buffer, the metadata "debug" can be set to true to
+* The metadata "debug" can be set to true to
 * enable a verbose mode.
+* Takes an ArrayBuffer as input (0) and output a `MniVolume` (which inherit `Image3D`).
+*
+* **Usage**
+* - [examples/fileToMinc2.html](../examples/fileToMinc2.html)
 */
 class Minc2Decoder extends Filter{
 
@@ -11501,6 +11488,13 @@ class Minc2Decoder extends Filter{
 * Lab       MCIN - Montreal Neurological Institute
 */
 
+/**
+* Decodes a NIfTI file.
+* Takes an ArrayBuffer as input (0) and output a `MniVolume` (which inherit `Image3D`).
+*
+* **Usage**
+* - [examples/fileToNifti.html](../examples/fileToNifti.html)
+*/
 class NiftiDecoder extends Filter {
 
   constructor(){
@@ -12023,7 +12017,8 @@ if ('object' !== "undefined" && module.exports) {
 * when calling the method `.download()`. The gzip blob could also be sent over AJAX
 * using a third party library.
 *
-* usage: examples/savePixpFile.html
+* **Usage**
+* - [examples/savePixpFile.html](../examples/savePixpFile.html)
 */
 class PixpEncoder extends Filter {
   constructor(){
@@ -12107,7 +12102,8 @@ class PixpEncoder extends Filter {
 * The input, specified by `.addInput(...)` must be an ArrayBuffer
 * (from an `UrlToArrayBufferFilter`, an `UrlToArrayBufferReader` or anothrer source ).
 *
-* usage: examples/pixpFileToImage2D.html
+* **Usage**
+* - [examples/pixpFileToImage2D.html](../examples/pixpFileToImage2D.html)
 */
 class PixpDecoder extends Filter {
   constructor(){
@@ -12195,7 +12191,8 @@ class PixpDecoder extends Filter {
 * This callback must return, or null (original color not modified),
 * or a array of color (same dimension as the one in arguments).
 *
-* Usage: examples/forEachPixel.html
+* **Usage**
+* - [examples/forEachPixel.html](../examples/forEachPixel.html)
 *
 * @example
 * var forEachPixelFilter = new pixpipe.ForEachPixelImageFilter();
@@ -12303,7 +12300,8 @@ class ForEachPixelImageFilter extends ImageToImageFilter {
 * and `addInput( myImg2, "1" )`. The input "0" can have 1 or more bands while
 * the input "1" can have only one band since the same scale is apply to each band.
 *
-* usage: examples/forEachPixelGadient.html
+* **Usage**
+* - [examples/forEachPixelGadient.html](../examples/forEachPixelGadient.html)
 */
 class SpectralScaleImageFilter extends ImageToImageFilter {
 
@@ -13702,9 +13700,10 @@ return parser;
 * To speed-up your process, it is recomended to develop a new filter that does
 * exactly (and only) the blending method you want.
 *
-* usage: examples/imageBlending.html
-* usage: examples/imageBlending2.html
-* usage: examples/forEachPixelGradientBlend.html
+* **usage**  
+* - [examples/imageBlending.html](../examples/imageBlending.html)
+* - [examples/imageBlending2.html](../examples/imageBlending2.html)
+* - [examples/forEachPixelGradientBlend.html](../examples/forEachPixelGradientBlend.html)
 *
 */
 class ImageBlendExpressionFilter extends ImageToImageFilter {
@@ -13765,6 +13764,24 @@ class ImageBlendExpressionFilter extends ImageToImageFilter {
 
 } /* END of class ImageBlendExpressionFilter */
 
+/*
+* Author   Jonathan Lurie - http://me.jonahanlurie.fr
+* License  MIT
+* Link      https://github.com/jonathanlurie/pixpipejs
+* Lab       MCIN - Montreal Neurological Institute
+*/
+
+
+/**
+* Multiply two Image2D pixel by pixel. They must have the same number of components per pixel
+* and the same size.
+* Output an new Image3D.
+* Equivalent to `SpectralScaleImageFilter`.
+*
+* **Usage**
+*  - [examples/multiplyImage2D.html](../examples/multiplyImage2D.html)
+*
+*/
 class MultiplyImageFilter extends ImageToImageFilter {
 
   constructor(){
@@ -13841,7 +13858,8 @@ class MultiplyImageFilter extends ImageToImageFilter {
 * Image2D will be created and accessible through `getOutput(n)`.
 * All output image have the same size so that the last one may have dead space.
 *
-* usage: examples/niftiToMosaic.html
+* **Usage**
+* - [examples/niftiToMosaic.html](../examples/niftiToMosaic.html)
 */
 class Image3DToMosaicFilter extends Filter{
 

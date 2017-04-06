@@ -80,6 +80,7 @@ A `Filter` should **NEVER** modify the input data.
 - [Create a pattern and blend it with an image using a math expression evaluator](http://me.jonathanlurie.fr/pixpipejs/examples/forEachPixelGradientBlend.html)
 - [Save a Image2D to a `*.pixp` file](http://me.jonathanlurie.fr/pixpipejs/examples/savePixpFile.html)
 - [Load a `*.pixp` file that contains an Image2D and display it](http://me.jonathanlurie.fr/pixpipejs/examples/pixpFileToImage2D.html)
+- [Multiply an image by another](http://me.jonathanlurie.fr/pixpipejs/examples/multiplyImage2D.html)
 
 ## Playing with 3D medical dataset
 - [Open a local Minc2 file, extract 3 orthogonal slices and display in canvas](http://me.jonathanlurie.fr/pixpipejs/examples/fileToMinc2.html)
