@@ -52,7 +52,7 @@ class Image2D extends PixpipeContainer{
           for(var i=0; i<this._data.length; i++){
             this._data[i] = color[i%ncpp];
           }
-          this.performSimpleStat();
+          this.computeSimpleStat();
         }else{
           this._data.fill(0);
         }
@@ -107,7 +107,7 @@ class Image2D extends PixpipeContainer{
     this.setMetadata("width", width)
     this.setMetadata("height", height)
 
-    this.performSimpleStat();
+    this.computeSimpleStat();
   }
 
 
@@ -116,7 +116,7 @@ class Image2D extends PixpipeContainer{
   * @param {Object} position - 2D position in form {x, y}
   * @param {Array} color - color, must have the same numb of components per pix than the image
   */
-  setPixel( position, color, computeStat=true ){
+  setPixel( position, color, computeStat=false ){
 
     if(!this._data){
       console.warn("The image is empty");
@@ -137,7 +137,7 @@ class Image2D extends PixpipeContainer{
       }
 
       if( computeStat ){
-        this.computeStat();
+        this.computeSimpleStat();
       }
 
     }else{
@@ -244,7 +244,7 @@ class Image2D extends PixpipeContainer{
   /**
   * Compute "min" "max" and "avg" and store them in metadata
   */
-  performSimpleStat(){
+  computeSimpleStat(){
     if(!this._data){
       console.warn("The image is empty");
       return;
@@ -271,9 +271,10 @@ class Image2D extends PixpipeContainer{
   * @return {Number} the minimum value of the data
   */
   getMin(){
-    if(this.hasMetadata("min")){
-      return this.getMetadata("min");
+    if(!this.hasMetadata("min")){
+      this.computeSimpleStat();
     }
+    return this.getMetadata("min");
   }
 
 
@@ -282,9 +283,10 @@ class Image2D extends PixpipeContainer{
   * @return {Number} the maximum value of the data
   */
   getMax(){
-    if(this.hasMetadata("max")){
-      return this.getMetadata("max");
+    if(!this.hasMetadata("max")){
+      this.computeSimpleStat();
     }
+    return this.getMetadata("max");
   }
 
 
@@ -293,9 +295,10 @@ class Image2D extends PixpipeContainer{
   * @return {Number} the average value of the data
   */
   getAvg(){
-    if(this.hasMetadata("avg")){
-      return this.getMetadata("avg");
+    if(!this.hasMetadata("avg")){
+      this.computeSimpleStat();
     }
+    return this.getMetadata("avg");
   }
 
 } /* END of class Image2D */
