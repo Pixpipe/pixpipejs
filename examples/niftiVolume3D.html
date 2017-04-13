@@ -1,0 +1,443 @@
+<html>
+<head>
+  <title>Nifti volume 3D</title>
+  
+  <script src="https://threejs.org/build/three.min.js"></script>
+  <script src='https://threejs.org/examples/js/libs/dat.gui.min.js'></script>
+  <script src="https://threejs.org/examples/js/controls/OrbitControls.js"></script>
+  
+  <script src="../dist/pixpipe.js"></script>
+  <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700,900" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  
+  <style>
+  body {
+    margin:0;
+    /*font-family: "Lucida Console", monospace;*/
+    font-size: 15px;
+    line-height: 18px;
+    overflow: hidden;
+  }
+  
+  #info{
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    text-align: center;
+    padding: 5px;
+    font-family: inherit;
+  }
+  </style>
+</head>
+<body>
+
+
+  <div id="info">
+    <div>
+  		Select an file:
+  		<input type="file" id="fileInput">
+      <br>
+      <span id="fileInfo"></span>
+  	</div>
+
+    <div id="output">
+
+    </div>
+  </div>
+
+  <script>
+
+  var fileInput = document.getElementById('fileInput');
+
+  // The filter to read image from URL
+  var file2Buff = new pixpipe.FileToArrayBufferReader();
+    
+    var gui = null
+    var guiParam = {};
+    var spaceLength = {
+      x: 176,
+      y: 256,
+      z: 256
+    }
+    var renderer = null
+    var scene = null
+    var camera = null
+    var container = null
+    var shaderMat = null;
+    var boxHelper = null;
+    var screenContainer = null;
+
+    var textureLoader = null;
+    var texturePaths = [
+      //'data/176_256_256_zspace_23x12.jpg',  // 1/1
+      
+      //'data/176_256_256_zspace_23x8_0.png',  // 1/2
+      //'data/176_256_256_zspace_23x8_1.png',  // 2/2
+      
+      'data/176_256_256_zspace_23x4_0.jpg',  // 1/3
+      'data/176_256_256_zspace_23x4_1.jpg',  // 2/3
+      'data/176_256_256_zspace_23x4_2.jpg',  // 3/3
+    ];
+    
+    var sliceMatrixSize = {
+      x: 0,
+      y: 0
+    }
+
+    var textures = [];
+  
+  
+  
+    function initEnv3D(){
+
+      // init renderer
+      renderer = new THREE.WebGLRenderer( { antialias: false } );
+      renderer.setPixelRatio( window.devicePixelRatio );
+      renderer.setSize( window.innerWidth, window.innerHeight );
+      renderer.setClearColor( 0xEEEEEE, 1 );
+      document.body.appendChild( renderer.domElement );
+      textureLoader = new THREE.TextureLoader();
+
+      // THREE environment
+      scene = new THREE.Scene();
+      var axisHelper = new THREE.AxisHelper( 10 );
+      scene.add( axisHelper );
+
+      camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
+      var orbit = new THREE.OrbitControls( camera, renderer.domElement );
+
+      container = new THREE.Object3D();
+      scene.add( container );
+
+      initGui();
+      initBox();
+
+      //loadingImage();
+      addTexture(0);
+      }
+
+
+
+
+    function addTexture( textureIndex ){
+      var infoDiv = document.getElementById("info");
+
+      textureLoader.load(
+        // resource URL
+        texturePaths[textureIndex],
+
+        // Function when resource is loaded
+        function ( texture ) {
+          texture.magFilter = THREE.NearestFilter;
+          texture.minFilter = THREE.NearestFilter;
+          texture.flipY = false;
+
+          textures.push( texture );
+
+          infoDiv.innerHTML = textures.length + "/" + texturePaths.length + " texture files loaded...";
+
+          if(textures.length == texturePaths.length){
+            initScreen();
+            infoDiv.innerHTML = "texture loaded."
+          }else{
+            addTexture(textureIndex+1);
+          }
+
+        },
+
+        // Function called when download progresses
+        function ( xhr ) {
+          console.log( (xhr.loaded / xhr.total * 100) + '% loaded' );
+        },
+
+        // Function called when download errors
+        function ( xhr ) {
+          console.log( 'An error happened' );
+        }
+      );
+    }
+
+
+
+    function initGui(){
+      gui = new dat.GUI();
+
+      guiParam.xPos = Math.floor(spaceLength.x / 2);
+      gui.add(guiParam, 'xPos', 0, spaceLength.x)
+      .step(0.05)
+      .onChange(function(val){
+        screenContainer.position.x = val - spaceLength.x / 2;
+      })
+
+      guiParam.yPos = Math.floor(spaceLength.y / 2);
+      gui.add(guiParam, 'yPos', 0, spaceLength.y)
+      .step(0.05)
+      .onChange(function(val){
+        screenContainer.position.y = val - spaceLength.y / 2;
+      })
+
+      guiParam.zPos = Math.floor(spaceLength.z / 2);
+      gui.add(guiParam, 'zPos', 0, spaceLength.z)
+      .step(0.05)
+      .onChange(function(val){
+        screenContainer.position.z = val - spaceLength.z / 2;
+      })
+
+      guiParam.xRot = 0;
+      gui.add(guiParam, 'xRot', -Math.PI/2, Math.PI/2)
+      .step(Math.PI/2 / 500)
+      .onChange(function(val){
+        screenContainer.rotation.x = val;
+      })
+
+      guiParam.yRot = 0;
+      gui.add(guiParam, 'yRot', -Math.PI/2, Math.PI/2)
+      .step(Math.PI/2 / 500)
+      .onChange(function(val){
+        screenContainer.rotation.y = val;
+      })
+
+      guiParam.zRot = 0;
+      gui.add(guiParam, 'zRot', -Math.PI/2, Math.PI/2)
+      .step(Math.PI/2 / 500)
+      .onChange(function(val){
+        screenContainer.rotation.z = val;
+      })
+      
+      guiParam.triliInterpol = false;
+      gui.add(guiParam, 'triliInterpol').name('Interpolate')
+      .onChange(function(val){
+        shaderMat.uniforms.trilinearInterpol.value = val;
+      })
+
+    }
+
+    /**
+    * Initialize the ouside box
+    */
+    function initBox(xspaceLength, yspaceLength, zspaceLength){
+      var boxMaterial = new THREE.MeshBasicMaterial();
+      var boxGeom = new THREE.CubeGeometry(
+        spaceLength.x,
+        spaceLength.y,
+        spaceLength.z
+      );
+      var boxMesh = new THREE.Mesh( boxGeom, boxMaterial )
+      boxHelper = new THREE.EdgesHelper( boxMesh, 0xff9999 );
+      container.add( boxHelper );
+      // adjust the camera to the box
+      camera.position.z = spaceLength.z;
+    }
+
+
+
+    function initScreen(){
+      screenContainer = new THREE.Object3D();
+
+      shaderMat = new THREE.ShaderMaterial( {
+        uniforms: {
+          // the textures
+          nbOfTextureUsed: {
+            type: "i",
+            value: textures.length
+          },
+          // the number of slice per row
+          nbSlicePerRow: {
+            type: "f",
+            value: sliceMatrixSize.x
+          },
+          // the number of slice per column
+          nbSlicePerCol: {
+            type: "f",
+            value: sliceMatrixSize.y
+          },
+          // the number of slice in total
+          nbSliceTotal: {
+            type: "f",
+            value: spaceLength.z  // because along zspace
+          },
+          // xspace length
+          xspaceLength: {
+            type: "f",
+            value: spaceLength.x
+          },
+          // yspace length
+          yspaceLength: {
+            type: "f",
+            value: spaceLength.y
+          },
+          // zspace length
+          zspaceLength: {
+            type: "f",
+            value: spaceLength.z
+          },
+          textures: {
+            type: "t",
+            value:  textures
+          },
+          trilinearInterpol: {
+            type: 'b',
+            value: guiParam.triliInterpol
+          }
+        }
+        ,
+        vertexShader: shaders.vertex,
+        fragmentShader: shaders.fragmentMultipleInterpolation,
+        side: THREE.DoubleSide,
+        transparent: true
+      });
+
+      var largestSide = Math.sqrt(spaceLength.x*spaceLength.x + spaceLength.y*spaceLength.y + spaceLength.z*spaceLength.z) * 2;
+
+      var zPlaneGeometry = new THREE.PlaneBufferGeometry( largestSide, largestSide, 1 );
+      var zPlaneMesh = new THREE.Mesh( zPlaneGeometry, shaderMat );
+      screenContainer.add( zPlaneMesh );
+
+      var xPlaneGeometry = new THREE.PlaneBufferGeometry( largestSide, largestSide, 1 );
+      var xPlaneMesh = new THREE.Mesh( xPlaneGeometry, shaderMat );
+      xPlaneMesh.rotation.y = Math.PI / 2;
+      screenContainer.add( xPlaneMesh );
+
+      var zPlaneGeometry = new THREE.PlaneBufferGeometry( largestSide, largestSide, 1 );
+      var zPlaneMesh = new THREE.Mesh( zPlaneGeometry, shaderMat );
+      zPlaneMesh.rotation.x = Math.PI / 2;
+      screenContainer.add( zPlaneMesh );
+
+      screenContainer.position.x = guiParam.xPos - spaceLength.x / 2;
+      screenContainer.position.y = guiParam.yPos - spaceLength.y / 2;
+      screenContainer.position.z = guiParam.zPos - spaceLength.z / 2;
+      
+      screenContainer.rotation.x = guiParam.xRot;
+      screenContainer.rotation.y = guiParam.yRot;
+      screenContainer.rotation.z = guiParam.zRot;
+      
+      container.add( screenContainer );
+    }
+
+
+    function render() {
+      requestAnimationFrame( render );
+      renderer.render( scene, camera );
+    };
+
+
+    window.addEventListener( 'resize', function () {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize( window.innerWidth, window.innerHeight );
+    }, false );
+      
+      
+      
+    
+
+    
+
+    // the image is loaded...
+    // here, filter = url2ImgFilter
+    file2Buff.on("ready", function( filter ){
+
+      var filenames = filter.getMetadata("filenames");
+
+      var niftiBuff = filter.getOutput();
+
+      var niftiDecoder = new pixpipe.NiftiDecoder();
+      niftiDecoder.addInput( niftiBuff );
+      niftiDecoder.update();
+
+      var mniVolume = niftiDecoder.getOutput();
+
+      if(mniVolume){
+
+        var mosaicFilter = new pixpipe.Image3DToMosaicFilter();
+
+        // niftiDecoder ouputs a pixpipe.MniVolume, which iherit pixpipe.Image3D
+        // making it compatible with pixpipe.Image3DToMosaicFilter
+        mosaicFilter.addInput( mniVolume );
+
+        // which axis do we want the picture of?
+        var space = "zspace";
+        mosaicFilter.setMetadata( "axis", space);
+
+        var spaceInfo = mniVolume.getMetadata(space);
+        document.getElementById('fileInfo').innerHTML += "<br>" + filenames[0] + " is composed of "
+          + spaceInfo.space_length + " slices of size "
+          + spaceInfo.width + "x" + spaceInfo.height + "px <br>";
+
+        // default is 4096 * 4096 but we can print a canvas in a more "parametric"
+        // way so that we have 10 images for each row. Be aware HTML5 Canvas have
+        // size/area limits. See http://bit.ly/2nIlyoi for more info.
+
+        // set the max size allowed
+        //mosaicFilter.setMetadata("maxWidth", 9 * mniVolume.getMetadata(space).width );
+        mosaicFilter.setMetadata("maxHeight", 4 * mniVolume.getMetadata(space).height);
+
+        // or print in one big canvas;
+        // mosaicFilter.setMetadata("maxHeight", Math.ceil(mniVolume.getMetadata(space).space_length / 10) * mniVolume.getMetadata(space).height);
+
+        // run the filter
+        mosaicFilter.update();
+
+        // display the output in multiple canvas if needed
+        for(var nbOut=0; nbOut<mosaicFilter.getNumberOfOutputs(); nbOut++){
+          var outputMosaic = mosaicFilter.getOutput(nbOut);
+
+          document.getElementById('fileInfo').innerHTML += "Output " + nbOut + ": " + outputMosaic.getWidth() + "x" + outputMosaic.getHeight() + "px (while the max output size allowed is " + mosaicFilter.getMetadata("maxWidth") + "x" + mosaicFilter.getMetadata("maxHeight") + "px )";
+          
+          var data = outputMosaic.getData();
+          console.log( outputMosaic._metadata );
+
+          //var texture = new THREE.DataTexture(data, outputMosaic.getWidth(), outputMosaic.getHeight(), );
+          
+          textures.push();
+        }
+
+        sliceMatrixSize.x = mosaicFilter.getMetadata("gridWidth");
+        sliceMatrixSize.y = mosaicFilter.getMetadata("gridHeight");
+        
+        spaceLength.x = mniVolume.getMetadata("xspace").spaceLength;
+        spaceLength.y = mniVolume.getMetadata("yspace").spaceLength;
+        spaceLength.z = mniVolume.getMetadata("zspace").spaceLength;
+
+        //initEnv3D();
+      }else{
+        console.warn("Non-existant output for niftiDecoder.");
+      }
+    });
+
+
+    // event listener of the file input
+    fileInput.addEventListener('change', function(e) {
+      var files = e.target.files;
+      var filenames = {};
+
+      for(var i=0; i<files.length; i++){
+        // set the input, an HTML5 File object and a category (ID)
+        file2Buff.addInput(files[i], i);
+        filenames[i] = files[i].name ;
+      }
+
+      file2Buff.setMetadata("filenames", filenames);
+
+      // Perform the reading + conversion ibto ArrayBuffer
+      file2Buff.update();
+		});
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  </script>
+
+</body>
+</html>

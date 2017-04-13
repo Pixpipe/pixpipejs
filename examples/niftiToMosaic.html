@@ -75,8 +75,8 @@
         // size/area limits. See http://bit.ly/2nIlyoi for more info.
 
         // set the max size allowed
-        //mosaicFilter.setMetadata("maxWidth", mniVolume.getMetadata(space).width * 10 );
-        //mosaicFilter.setMetadata("maxHeight",  10 * mniVolume.getMetadata(space).height);
+        //mosaicFilter.setMetadata("maxWidth", 9 * mniVolume.getMetadata(space).width );
+        mosaicFilter.setMetadata("maxHeight", 4 * mniVolume.getMetadata(space).height);
 
         // or print in one big canvas;
         // mosaicFilter.setMetadata("maxHeight", Math.ceil(mniVolume.getMetadata(space).space_length / 10) * mniVolume.getMetadata(space).height);
@@ -95,12 +95,14 @@
         for(var nbOut=0; nbOut<mosaicFilter.getNumberOfOutputs(); nbOut++){
           var outputMosaic = mosaicFilter.getOutput(nbOut);
 
-          document.getElementById('fileInfo').innerHTML += "Output " + nbOut + ": " + outputMosaic.getWidth() + "x" + outputMosaic.getHeight() + "px (while the max output size allowed is " + mosaicFilter.getMetadata("maxWidth") + "x" + mosaicFilter.getMetadata("maxHeight") + "px )";
+          document.getElementById('fileInfo').innerHTML += "<p>Output " + nbOut + ": " + outputMosaic.getWidth() + "x" + outputMosaic.getHeight() + "px (while the max output size allowed is " + mosaicFilter.getMetadata("maxWidth") + "x" + mosaicFilter.getMetadata("maxHeight") + "px )</p>";
 
           imageToCanvasFilter.setMetadata( "parentDivID", "output" );
           imageToCanvasFilter.addInput( outputMosaic );
           imageToCanvasFilter.update();
         }
+        
+        document.getElementById('fileInfo').innerHTML += "<p>Each mosaic is " + mosaicFilter.getMetadata("gridWidth") + " slices large and " + mosaicFilter.getMetadata("gridHeight") + " slices high.</p>";
 
 
       }else{
