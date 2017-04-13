@@ -769,9 +769,10 @@ class Image2D extends PixpipeContainer{
   * @return {Number} the minimum value of the data
   */
   getMin(){
-    if(this.hasMetadata("min")){
-      return this.getMetadata("min");
+    if(!this.hasMetadata("min")){
+      this.computeSimpleStat();
     }
+    return this.getMetadata("min");
   }
 
 
@@ -780,9 +781,10 @@ class Image2D extends PixpipeContainer{
   * @return {Number} the maximum value of the data
   */
   getMax(){
-    if(this.hasMetadata("max")){
-      return this.getMetadata("max");
+    if(!this.hasMetadata("max")){
+      this.computeSimpleStat();
     }
+    return this.getMetadata("max");
   }
 
 
@@ -791,9 +793,10 @@ class Image2D extends PixpipeContainer{
   * @return {Number} the average value of the data
   */
   getAvg(){
-    if(this.hasMetadata("avg")){
-      return this.getMetadata("avg");
+    if(!this.hasMetadata("avg")){
+      this.computeSimpleStat();
     }
+    return this.getMetadata("avg");
   }
 
 } /* END of class Image2D */
@@ -13857,6 +13860,9 @@ class MultiplyImageFilter extends ImageToImageFilter {
 * If mosaicing the whole given Image3D does not fit in maxWidth*maxHeight, more
 * Image2D will be created and accessible through `getOutput(n)`.
 * All output image have the same size so that the last one may have dead space.
+* To know precisely the size of the output mosaic use `getMetadata("gridWidth")`
+* and `getMetadata("gridHeight")`, this will give the number of slices used in
+* horizontal and vertical respectively.
 *
 * **Usage**
 * - [examples/niftiToMosaic.html](../examples/niftiToMosaic.html)
@@ -13894,6 +13900,9 @@ class Image3DToMosaicFilter extends Filter{
     // number of image we can fit in the with of an output image
     var widthFit = Math.floor( this.getMetadata("maxWidth") / width );
     var heightFit = Math.floor( this.getMetadata("maxHeight") / height );
+    
+    this.setMetadata("gridWidth", widthFit);
+    this.setMetadata("gridHeight", heightFit);
 
     // size of the ouput image(s)
     var outputWidth = widthFit * width;
