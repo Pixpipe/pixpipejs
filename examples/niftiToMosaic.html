@@ -76,7 +76,7 @@
 
         // set the max size allowed
         //mosaicFilter.setMetadata("maxWidth", 9 * mniVolume.getMetadata(space).width );
-        mosaicFilter.setMetadata("maxHeight", 4 * mniVolume.getMetadata(space).height);
+        //mosaicFilter.setMetadata("maxHeight", 4 * mniVolume.getMetadata(space).height);
 
         // or print in one big canvas;
         // mosaicFilter.setMetadata("maxHeight", Math.ceil(mniVolume.getMetadata(space).space_length / 10) * mniVolume.getMetadata(space).height);
@@ -101,7 +101,7 @@
           imageToCanvasFilter.addInput( outputMosaic );
           imageToCanvasFilter.update();
         }
-        
+
         document.getElementById('fileInfo').innerHTML += "<p>Each mosaic is " + mosaicFilter.getMetadata("gridWidth") + " slices large and " + mosaicFilter.getMetadata("gridHeight") + " slices high.</p>";
 
 

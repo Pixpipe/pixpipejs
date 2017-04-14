@@ -1,0 +1,95 @@
+<html>
+<head>
+  <title>Nifti volume 3D</title>
+
+  <script src="https://threejs.org/build/three.min.js"></script>
+  <script src='https://threejs.org/examples/js/libs/dat.gui.min.js'></script>
+  <script src="https://threejs.org/examples/js/controls/OrbitControls.js"></script>
+
+
+
+  <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700,900" rel="stylesheet">
+  <!--<link rel="stylesheet" href="css/style.css">-->
+
+  <style>
+  body {
+    margin:0;
+    /*font-family: "Lucida Console", monospace;*/
+    font-size: 15px;
+    line-height: 18px;
+    overflow: hidden;
+  }
+
+  #info{
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    text-align: center;
+    padding: 5px;
+    font-family: inherit;
+  }
+  </style>
+</head>
+<body>
+
+
+
+  <script>
+
+
+
+
+    function initEnv3D(){
+      console.log("initEnv3D...");
+
+      // init renderer
+      renderer = new THREE.WebGLRenderer( { antialias: false } );
+      renderer.setPixelRatio( window.devicePixelRatio );
+      renderer.setSize( window.innerWidth, window.innerHeight );
+      renderer.setClearColor( 0xEEEEEE, 1 );
+      document.body.appendChild( renderer.domElement );
+      textureLoader = new THREE.TextureLoader();
+
+      // THREE environment
+      scene = new THREE.Scene();
+      var axisHelper = new THREE.AxisHelper( 10 );
+      scene.add( axisHelper );
+
+      camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
+      camera.position.z = 30;
+      var orbit = new THREE.OrbitControls( camera, renderer.domElement );
+
+      container = new THREE.Object3D();
+      scene.add( container );
+
+
+
+      var geometry = new THREE.BoxGeometry( 10, 10, 10 );
+      var material = new THREE.MeshBasicMaterial( {color: 0x00ff00} );
+      var cube = new THREE.Mesh( geometry, material );
+      scene.add( cube );
+
+      render();
+    }
+
+    function render() {
+    requestAnimationFrame( render );
+    renderer.render( scene, camera );
+    };
+
+
+    initEnv3D();
+
+
+
+
+
+
+
+
+
+  </script>
+
+</body>
+</html>

@@ -62,9 +62,6 @@ class Image3DToMosaicFilter extends Filter{
     // number of image we can fit in the with of an output image
     var widthFit = Math.floor( this.getMetadata("maxWidth") / width );
     var heightFit = Math.floor( this.getMetadata("maxHeight") / height );
-    
-    this.setMetadata("gridWidth", widthFit);
-    this.setMetadata("gridHeight", heightFit);
 
     // size of the ouput image(s)
     var outputWidth = widthFit * width;
@@ -78,6 +75,9 @@ class Image3DToMosaicFilter extends Filter{
     if( outputNecessary == 1){
       outputHeight = Math.ceil( numOfSlices / widthFit ) * height;
     }
+
+    this.setMetadata("gridWidth", outputWidth / width);
+    this.setMetadata("gridHeight", outputHeight / height);
 
     var outputCounter = 0;
     var sliceIndex = 0;
