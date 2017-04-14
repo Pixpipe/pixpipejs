@@ -91,6 +91,7 @@ A `Filter` should **NEVER** modify the input data.
 ## Advanced
 - [Open a local  NIfTI file and display a mosaic of all the slices](http://me.jonathanlurie.fr/pixpipejs/examples/niftiToMosaic.html)
 - [Open a local file as an ArrayBuffer](http://me.jonathanlurie.fr/pixpipejs/examples/fileToArrayBuffer.html). Good starting point to create a new binary file parser
+- [Open a Structural NIfTI, build a 3D texture and display volume with obliques](http://me.jonathanlurie.fr/pixpipejs/examples/niftiVolume3D.html)
 
 # Todo
 - Doc and tutorials for developers
