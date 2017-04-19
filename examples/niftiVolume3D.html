@@ -280,8 +280,8 @@
 
       var niftiBuff = filter.getOutput();
 
-      //var niftiDecoder = new pixpipe.NiftiDecoder();
-      var niftiDecoder = new pixpipe.Minc2Decoder();
+      var niftiDecoder = new pixpipe.NiftiDecoder();
+      //var niftiDecoder = new pixpipe.Minc2Decoder();
       niftiDecoder.addInput( niftiBuff );
       niftiDecoder.update();
 
