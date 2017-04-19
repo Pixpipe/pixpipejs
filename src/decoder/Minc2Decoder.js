@@ -2843,6 +2843,6 @@ class Minc2Decoder extends Filter{
 
 
 
-} /* END of class Hdf5Decoder */
+} /* END of class Minc2Decoder */
 
 export { Minc2Decoder }

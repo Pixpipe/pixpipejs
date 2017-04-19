@@ -22,6 +22,7 @@ export { Minc2Decoder } from './decoder/Minc2Decoder.js';
 export { NiftiDecoder } from './decoder/NiftiDecoder.js';
 export { PixpEncoder } from './decoder/PixpEncoder.js';
 export { PixpDecoder } from './decoder/PixpDecoder.js';
+export { Image3DGenericDecoder } from './decoder/Image3DGenericDecoder.js';
 
 // filters - processing of Images2D
 export { ForEachPixelImageFilter } from './filter/ForEachPixelImageFilter.js';

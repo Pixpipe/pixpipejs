@@ -509,7 +509,7 @@ class PixpipeContainer extends PixpipeObject {
 * Image2D class is one of the few base element of Pixpipejs.
 * It is always considered to be 4 channels (RGBA) and stored as a Float32Array
 * typed array.
-* 
+*
 * **Usage**
 * - [examples/image2DToCanvas.html](../examples/image2DToCanvas.html)
 */
@@ -697,7 +697,7 @@ class Image2D extends PixpipeContainer{
 
   /**
   * Get the internal image data (pointer)
-  * @return {Float32Array} the original data, dont mess up with this one.
+  * @return {TypedArray} the original data (most likely a Float32Array), dont mess up with this one.
   * in case of doubt, use  getDataCopy()
   */
   getData(){
@@ -707,12 +707,34 @@ class Image2D extends PixpipeContainer{
 
   /**
   * Get a copy of the data
-  * @return {Float32Array} a deep copy of the data
+  * @return {TypedArray} a deep copy of the data (most likely a Float32Array)
   */
   getDataCopy(){
     return new this._data.constructor( this._data );
   }
 
+
+  /**
+  * No matter the original type of the internal data, scale it into a [0, 255] uInt8Array
+  * @return {Uint8Array} scaled data
+  */
+  getDataAsUInt8Array(){
+    if(! this._data){
+      console.warn("No data, cannot make a copy of it.");
+      return;
+    }
+
+    var min = this.getMin();
+    var max = this.getMax();
+
+    var uintData = new Uint8Array(this._data.length);
+
+    for(var i=0; i<this._data.length; i++){
+      uintData[i] = ((this._data[i] - min) / max) * 256;
+    }
+
+    return uintData;
+  }
 
   /**
   * Compute the (x, y) position from a position in a 1D array.
@@ -769,9 +791,10 @@ class Image2D extends PixpipeContainer{
   * @return {Number} the minimum value of the data
   */
   getMin(){
-    if(this.hasMetadata("min")){
-      return this.getMetadata("min");
+    if(!this.hasMetadata("min")){
+      this.computeSimpleStat();
     }
+    return this.getMetadata("min");
   }
 
 
@@ -780,9 +803,10 @@ class Image2D extends PixpipeContainer{
   * @return {Number} the maximum value of the data
   */
   getMax(){
-    if(this.hasMetadata("max")){
-      return this.getMetadata("max");
+    if(!this.hasMetadata("max")){
+      this.computeSimpleStat();
     }
+    return this.getMetadata("max");
   }
 
 
@@ -791,9 +815,10 @@ class Image2D extends PixpipeContainer{
   * @return {Number} the average value of the data
   */
   getAvg(){
-    if(this.hasMetadata("avg")){
-      return this.getMetadata("avg");
+    if(!this.hasMetadata("avg")){
+      this.computeSimpleStat();
     }
+    return this.getMetadata("avg");
   }
 
 } /* END of class Image2D */
@@ -1906,156 +1931,6 @@ class FileImageReader extends Filter {
 
 
 } /* END of class UrlImageReader */
-
-/*
-* Author   Jonathan Lurie - http://me.jonahanlurie.fr
-* License  MIT
-* Link      https://github.com/jonathanlurie/pixpipejs
-* Lab       MCIN - Montreal Neurological Institute
-*/
-
-/**
-* Takes the File inputs from a HTML input of type "file" (aka. a file dialog), and reads it as a ArrayBuffer.
-* Every File given in input should be added separately using `addInput( file[i], 'uniqueID' )`.
-* The event "ready" must be set up ( using .on("ready", function(){}) ) and will
-* be triggered when all the files given in input are translated into ArrayBuffers.
-* Once ready, all the outputs are accecible using the same uniqueID with the
-* method `getOutput("uniqueID")`
-*
-* **Usage**
-* - [examples/fileToArrayBuffer.html](../examples/fileToArrayBuffer.html)
-*/
-class FileToArrayBufferReader extends Filter {
-
-  constructor(){
-    super();
-    this._outputCounter = 0;
-  }
-
-
-  _run(){
-    var that = this;
-    this._outputCounter = 0;
-    var inputCategories = this.getInputCategories();
-
-    inputCategories.forEach( function(category){
-      that._loadFile( category );
-    });
-  }
-
-
-  /**
-  * [PRIVATE]
-  * Perform the loading for the input of the given category
-  * @param {String} category - input category
-   */
-  _loadFile( category ){
-    var that = this;
-    var reader = new FileReader();
-
-    reader.onloadend = function(event) {
-        var result = event.target.result;
-        that._output[ category ] = result;
-        that._fileLoadCount();
-    };
-
-    reader.onerror = function() {
-      this._output[ category ] = null;
-      that._fileLoadCount();
-      console.warn( "error reading file from category " + category );
-      //throw new Error(error_message);
-    };
-
-    reader.readAsArrayBuffer( this._getInput(category) );
-  }
-
-
-  /**
-  * [PRIVATE]
-  * Launch the "ready" event if all files are loaded
-  */
-  _fileLoadCount(){
-    var that = this;
-    this._outputCounter ++;
-
-    if( this._outputCounter == this.getNumberOfInputs() ){
-      that._events.ready( this );
-    }
-  }
-
-} /* END of class FileToArrayBufferReader */
-
-/*
-* Author   Jonathan Lurie - http://me.jonahanlurie.fr
-* License  MIT
-* Link      https://github.com/jonathanlurie/pixpipejs
-* Lab       MCIN - Montreal Neurological Institute
-*/
-
-/**
-* Open a files as ArrayBuffer using their URL. You must specify one or several URL
-* (String) using `addInput("...")` and add function to the event "ready" using
-* `.on( "ready", function(filter){ ... })`.
-* The "ready" event will be called only when all input are loaded.
-*
-* **Usage**
-* - [examples/urlFileToArrayBuffer.html](../examples/urlFileToArrayBuffer.html)
-*/
-class UrlToArrayBufferReader extends Filter {
-
-  constructor(){
-    super();
-    this._outputCounter = 0;
-  }
-
-
-  _run(){
-    var that = this;
-
-    if(! this.getNumberOfInputs() ){
-      console.warn("No input was specified, cannot run this filer.");
-      return;
-    }
-
-
-    this._forEachInput( function(category, input){
-      that._loadUrl(category, input);
-    });
-
-  }
-
-
-  /**
-  * [PRIVATE]
-  * Perform a XMLHttpRequest with the given url and adds it to the output
-  */
-  _loadUrl( category, url ){
-    var that = this;
-
-    var xhr = new XMLHttpRequest();
-    xhr.open("GET", url, true);
-    xhr.responseType = "arraybuffer";
-
-    xhr.onload = function(event) {
-      var arrayBuff = xhr.response;
-      that._output[ category ] = arrayBuff;
-
-      that._outputCounter ++;
-
-      if( that._outputCounter == that.getNumberOfInputs() && "ready" in that._events){
-        that._events.ready( that );
-      }
-    };
-
-    xhr.error = function(){
-      console.log("here go the error");
-    };
-
-    xhr.send();
-  }
-
-
-} /* END of class UrlToArrayBufferReader */
 
 var commonjsGlobal = typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
 
@@ -3558,7 +3433,7 @@ var BS_FINISH_DONE    = 4; /* finish done, accept no more input or output */
 
 var OS_CODE = 0x03; // Unix :) . Don't detect, use this default.
 
-function err(strm, errorCode) {
+function err$1(strm, errorCode) {
   strm.msg = messages[errorCode];
   return errorCode;
 }
@@ -4718,7 +4593,7 @@ function deflateResetKeep(strm) {
   var s;
 
   if (!strm || !strm.state) {
-    return err(strm, Z_STREAM_ERROR);
+    return err$1(strm, Z_STREAM_ERROR);
   }
 
   strm.total_in = strm.total_out = 0;
@@ -4784,7 +4659,7 @@ function deflateInit2(strm, level, method, windowBits, memLevel, strategy) {
   if (memLevel < 1 || memLevel > MAX_MEM_LEVEL || method !== Z_DEFLATED$1 ||
     windowBits < 8 || windowBits > 15 || level < 0 || level > 9 ||
     strategy < 0 || strategy > Z_FIXED) {
-    return err(strm, Z_STREAM_ERROR);
+    return err$1(strm, Z_STREAM_ERROR);
   }
 
 
@@ -4849,7 +4724,7 @@ function deflate$1(strm, flush) {
 
   if (!strm || !strm.state ||
     flush > Z_BLOCK || flush < 0) {
-    return strm ? err(strm, Z_STREAM_ERROR) : Z_STREAM_ERROR;
+    return strm ? err$1(strm, Z_STREAM_ERROR) : Z_STREAM_ERROR;
   }
 
   s = strm.state;
@@ -4857,7 +4732,7 @@ function deflate$1(strm, flush) {
   if (!strm.output ||
       (!strm.input && strm.avail_in !== 0) ||
       (s.status === FINISH_STATE && flush !== Z_FINISH$1)) {
-    return err(strm, (strm.avail_out === 0) ? Z_BUF_ERROR : Z_STREAM_ERROR);
+    return err$1(strm, (strm.avail_out === 0) ? Z_BUF_ERROR : Z_STREAM_ERROR);
   }
 
   s.strm = strm; /* just in case */
@@ -5084,12 +4959,12 @@ function deflate$1(strm, flush) {
      */
   } else if (strm.avail_in === 0 && rank(flush) <= rank(old_flush) &&
     flush !== Z_FINISH$1) {
-    return err(strm, Z_BUF_ERROR);
+    return err$1(strm, Z_BUF_ERROR);
   }
 
   /* User must not provide more input after the first FINISH: */
   if (s.status === FINISH_STATE && strm.avail_in !== 0) {
-    return err(strm, Z_BUF_ERROR);
+    return err$1(strm, Z_BUF_ERROR);
   }
 
   /* Start a new block or continue the current one.
@@ -5193,12 +5068,12 @@ function deflateEnd(strm) {
     status !== BUSY_STATE &&
     status !== FINISH_STATE
   ) {
-    return err(strm, Z_STREAM_ERROR);
+    return err$1(strm, Z_STREAM_ERROR);
   }
 
   strm.state = null;
 
-  return status === BUSY_STATE ? err(strm, Z_DATA_ERROR) : Z_OK$1;
+  return status === BUSY_STATE ? err$1(strm, Z_DATA_ERROR) : Z_OK$1;
 }
 
 
@@ -8638,6 +8513,187 @@ assign(pako, deflate_1, inflate_1, constants);
 var index = pako;
 
 /*
+* Author   Jonathan Lurie - http://me.jonahanlurie.fr
+* License  MIT
+* Link      https://github.com/jonathanlurie/pixpipejs
+* Lab       MCIN - Montreal Neurological Institute
+*/
+
+
+/**
+* Takes the File inputs from a HTML input of type "file" (aka. a file dialog), and reads it as a ArrayBuffer.
+* Every File given in input should be added separately using `addInput( file[i], 'uniqueID' )`.
+* The event "ready" must be set up ( using .on("ready", function(){}) ) and will
+* be triggered when all the files given in input are translated into ArrayBuffers.
+* Once ready, all the outputs are accecible using the same uniqueID with the
+* method `getOutput("uniqueID")`.
+* Gzip compressed files will be uncompressed.
+*
+* **Usage**
+* - [examples/fileToArrayBuffer.html](../examples/fileToArrayBuffer.html)
+*/
+class FileToArrayBufferReader extends Filter {
+
+  constructor(){
+    super();
+    this._outputCounter = 0;
+  }
+
+
+  _run(){
+    var that = this;
+    this._outputCounter = 0;
+    var inputCategories = this.getInputCategories();
+
+    inputCategories.forEach( function(category){
+      that._loadFile( category );
+    });
+  }
+
+
+  /**
+  * [PRIVATE]
+  * Perform the loading for the input of the given category
+  * @param {String} category - input category
+   */
+  _loadFile( category ){
+    var that = this;
+    var reader = new FileReader();
+
+    reader.onloadend = function(event) {
+        var result = event.target.result;
+        
+
+        var extension = that._getInput(category).name.split('.').pop();
+
+        if( extension.localeCompare("pixp") ){
+          // trying to un-gzip it with Pako
+          try {
+            result = index.inflate(result).buffer;
+            console.log("File was un-gziped successfully");
+          } catch (err) {
+            console.log("Pako: " + err + " (this content is not gziped)");
+          }
+        }
+        
+        that._output[ category ] = result;
+        that._fileLoadCount();
+    };
+
+    reader.onerror = function() {
+      this._output[ category ] = null;
+      that._fileLoadCount();
+      console.warn( "error reading file from category " + category );
+      //throw new Error(error_message);
+    };
+
+    reader.readAsArrayBuffer( this._getInput(category) );
+  }
+
+
+  /**
+  * [PRIVATE]
+  * Launch the "ready" event if all files are loaded
+  */
+  _fileLoadCount(){
+    var that = this;
+    this._outputCounter ++;
+
+    if( this._outputCounter == this.getNumberOfInputs() ){
+      that._events.ready( this );
+    }
+  }
+
+} /* END of class FileToArrayBufferReader */
+
+/*
+* Author   Jonathan Lurie - http://me.jonahanlurie.fr
+* License  MIT
+* Link      https://github.com/jonathanlurie/pixpipejs
+* Lab       MCIN - Montreal Neurological Institute
+*/
+
+
+/**
+* Open a files as ArrayBuffer using their URL. You must specify one or several URL
+* (String) using `addInput("...")` and add function to the event "ready" using
+* `.on( "ready", function(filter){ ... })`.
+* The "ready" event will be called only when all input are loaded.
+* Gzip compressed files will be uncompressed.
+*
+* **Usage**
+* - [examples/urlFileToArrayBuffer.html](../examples/urlFileToArrayBuffer.html)
+*/
+class UrlToArrayBufferReader extends Filter {
+
+  constructor(){
+    super();
+    this._outputCounter = 0;
+  }
+
+
+  _run(){
+    var that = this;
+
+    if(! this.getNumberOfInputs() ){
+      console.warn("No input was specified, cannot run this filer.");
+      return;
+    }
+
+
+    this._forEachInput( function(category, input){
+      that._loadUrl(category, input);
+    });
+
+  }
+
+
+  /**
+  * [PRIVATE]
+  * Perform a XMLHttpRequest with the given url and adds it to the output
+  */
+  _loadUrl( category, url ){
+    var that = this;
+
+    var xhr = new XMLHttpRequest();
+    xhr.open("GET", url, true);
+    xhr.responseType = "arraybuffer";
+
+    xhr.onload = function(event) {
+      var arrayBuff = xhr.response;
+      
+      var extension = url.split('.').pop();
+
+      // trying to un-gzip it with Pako for non pixp files
+      if( extension.localeCompare("pixp") ){
+        try {
+          arrayBuff = index.inflate(arrayBuff).buffer;
+          console.log("File was un-gziped successfully");
+        } catch (err) {
+          console.log("Pako: " + err + " (this content is not gziped)");
+        }
+      }
+      
+      that._output[ category ] = arrayBuff;
+
+      that._outputCounter ++;
+
+      if( that._outputCounter == that.getNumberOfInputs() && "ready" in that._events){
+        that._events.ready( that );
+      }
+    };
+
+    xhr.error = function(){
+      console.log("here go the error");
+    };
+
+    xhr.send();
+  }
+
+
+} /* END of class UrlToArrayBufferReader */
+
+/*
 * Author    Jonathan Lurie - http://me.jonahanlurie.fr
 *           Robert D. Vincent
 *
@@ -11477,7 +11533,7 @@ class Minc2Decoder extends Filter{
 
 
 
-} /* END of class Hdf5Decoder */
+} /* END of class Minc2Decoder */
 
 /*
 * Author    Jonathan Lurie - http://me.jonahanlurie.fr
@@ -12131,7 +12187,7 @@ class PixpDecoder extends Filter {
 
     var input = this._getInput();
 
-    //var pixpString2 = pako.inflate(input, { to: 'string' });
+    //var pixpString2 = pako.inflate(input /*, { to: 'string' }*/);
     //var pixpObject = JSON.parse( pixpString2 );
 
     var inflator = new index.Inflate({
@@ -12141,12 +12197,19 @@ class PixpDecoder extends Filter {
 
     inflator.push( input, true );
 
+    // quit if not a gz file
+    if( inflator.err ){
+      console.warn("This file is not a Pixp file.");
+      return;
+    }
+    
     var pixpObject = null;
 
     try{
       pixpObject = JSON.parse( inflator.result );
     }catch(e){
       console.warn("Could not parse pixp file.");
+      console.error(e);
       return;
     }
 
@@ -12173,6 +12236,67 @@ class PixpDecoder extends Filter {
 
 
 } /* END of class PixpDecoder */
+
+/*
+* Author    Jonathan Lurie - http://me.jonahanlurie.fr
+*
+* License   MIT
+* Link      https://github.com/jonathanlurie/pixpipejs
+* Lab       MCIN - Montreal Neurological Institute
+*/
+
+
+// decoders
+/**
+* An instance of Image3DGenericDecoder takes a ArrayBuffer 
+* as input 0 (`.addInput(myArrayBuffer)`) and output an Image3D.
+* The `update` method will perform several decoding attempts, using the readers
+* specified in the constructor.
+* In case of success (one of the registered decoder was compatible to the data)
+* the metadata `decoderConstructor` and `decoderName` are made accessible and give
+* information about the file format. If no decoder managed to decode the input buffer,
+* this filter will not have any output.
+*
+* Developers: if a new 3D dataset decoder is added, reference it here.
+*/
+class Image3DGenericDecoder extends Filter {
+  
+  constructor(){
+    super();
+    
+    this._decoders = [
+      Minc2Decoder,
+      NiftiDecoder,
+      PixpDecoder
+    ];
+  }
+  
+  
+  _run(){
+    var inputBuffer = this._getInput(0);
+    
+    if(!inputBuffer){
+      console.warn("The input buffer must not be null.");
+      return;
+    }
+    
+    // try with each decoder
+    for(var d=0; d<this._decoders.length; d++){
+      var decoder = new this._decoders[d]();
+      decoder.addInput( inputBuffer );
+      decoder.update();
+      
+      if(decoder.getNumberOfOutputs()){
+        this._output[0] = decoder.getOutput();
+        this.setMetadata("decoderConstructor", this._decoders[d]);
+        this.setMetadata("decoderName", this._decoders[d].name);
+        break;
+      }
+    }
+  }
+  
+  
+} /* END of class Image3DGenericDecoder */
 
 /*
 * Author   Jonathan Lurie - http://me.jonahanlurie.fr
@@ -13857,6 +13981,9 @@ class MultiplyImageFilter extends ImageToImageFilter {
 * If mosaicing the whole given Image3D does not fit in maxWidth*maxHeight, more
 * Image2D will be created and accessible through `getOutput(n)`.
 * All output image have the same size so that the last one may have dead space.
+* To know precisely the size of the output mosaic use `getMetadata("gridWidth")`
+* and `getMetadata("gridHeight")`, this will give the number of slices used in
+* horizontal and vertical respectively.
 *
 * **Usage**
 * - [examples/niftiToMosaic.html](../examples/niftiToMosaic.html)
@@ -13907,6 +14034,9 @@ class Image3DToMosaicFilter extends Filter{
     if( outputNecessary == 1){
       outputHeight = Math.ceil( numOfSlices / widthFit ) * height;
     }
+
+    this.setMetadata("gridWidth", outputWidth / width);
+    this.setMetadata("gridHeight", outputHeight / height);
 
     var outputCounter = 0;
     var sliceIndex = 0;
@@ -13970,6 +14100,7 @@ exports.Minc2Decoder = Minc2Decoder;
 exports.NiftiDecoder = NiftiDecoder;
 exports.PixpEncoder = PixpEncoder;
 exports.PixpDecoder = PixpDecoder;
+exports.Image3DGenericDecoder = Image3DGenericDecoder;
 exports.ForEachPixelImageFilter = ForEachPixelImageFilter;
 exports.SpectralScaleImageFilter = SpectralScaleImageFilter;
 exports.ImageBlendExpressionFilter = ImageBlendExpressionFilter;

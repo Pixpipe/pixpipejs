@@ -11,7 +11,7 @@ import { PixpipeContainer } from './PixpipeContainer.js';
 * Image2D class is one of the few base element of Pixpipejs.
 * It is always considered to be 4 channels (RGBA) and stored as a Float32Array
 * typed array.
-* 
+*
 * **Usage**
 * - [examples/image2DToCanvas.html](../examples/image2DToCanvas.html)
 */
@@ -199,7 +199,7 @@ class Image2D extends PixpipeContainer{
 
   /**
   * Get the internal image data (pointer)
-  * @return {Float32Array} the original data, dont mess up with this one.
+  * @return {TypedArray} the original data (most likely a Float32Array), dont mess up with this one.
   * in case of doubt, use  getDataCopy()
   */
   getData(){
@@ -209,12 +209,34 @@ class Image2D extends PixpipeContainer{
 
   /**
   * Get a copy of the data
-  * @return {Float32Array} a deep copy of the data
+  * @return {TypedArray} a deep copy of the data (most likely a Float32Array)
   */
   getDataCopy(){
     return new this._data.constructor( this._data );
   }
 
+
+  /**
+  * No matter the original type of the internal data, scale it into a [0, 255] uInt8Array
+  * @return {Uint8Array} scaled data
+  */
+  getDataAsUInt8Array(){
+    if(! this._data){
+      console.warn("No data, cannot make a copy of it.");
+      return;
+    }
+
+    var min = this.getMin();
+    var max = this.getMax();
+
+    var uintData = new Uint8Array(this._data.length);
+
+    for(var i=0; i<this._data.length; i++){
+      uintData[i] = ((this._data[i] - min) / max) * 256;
+    }
+
+    return uintData;
+  }
 
   /**
   * Compute the (x, y) position from a position in a 1D array.
