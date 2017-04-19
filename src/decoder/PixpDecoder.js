@@ -47,7 +47,7 @@ class PixpDecoder extends Filter {
 
     var input = this._getInput();
 
-    //var pixpString2 = pako.inflate(input, { to: 'string' });
+    //var pixpString2 = pako.inflate(input /*, { to: 'string' }*/);
     //var pixpObject = JSON.parse( pixpString2 );
 
     var inflator = new pako.Inflate({
@@ -57,12 +57,19 @@ class PixpDecoder extends Filter {
 
     inflator.push( input, true );
 
+    // quit if not a gz file
+    if( inflator.err ){
+      console.warn("This file is not a Pixp file.");
+      return;
+    }
+    
     var pixpObject = null;
 
     try{
       pixpObject = JSON.parse( inflator.result );
     }catch(e){
       console.warn("Could not parse pixp file.");
+      console.error(e);
       return;
     }
 

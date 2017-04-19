@@ -8563,11 +8563,17 @@ class FileToArrayBufferReader extends Filter {
     reader.onloadend = function(event) {
         var result = event.target.result;
         
-        // trying to un-gzip it with Pako
-        try {
-          result = index.inflate(result).buffer;
-        } catch (err) {
-          console.log("Pako: " + err + " (this content is not gziped)");
+
+        var extension = that._getInput(category).name.split('.').pop();
+
+        if( extension.localeCompare("pixp") ){
+          // trying to un-gzip it with Pako
+          try {
+            result = index.inflate(result).buffer;
+            console.log("File was un-gziped successfully");
+          } catch (err) {
+            console.log("Pako: " + err + " (this content is not gziped)");
+          }
         }
         
         that._output[ category ] = result;
@@ -8656,11 +8662,16 @@ class UrlToArrayBufferReader extends Filter {
     xhr.onload = function(event) {
       var arrayBuff = xhr.response;
       
-      // trying to un-gzip it with Pako
-      try {
-        arrayBuff = index.inflate(arrayBuff).buffer;
-      } catch (err) {
-        console.log("Pako: " + err + " (this content is not gziped)");
+      var extension = url.split('.').pop();
+
+      // trying to un-gzip it with Pako for non pixp files
+      if( extension.localeCompare("pixp") ){
+        try {
+          arrayBuff = index.inflate(arrayBuff).buffer;
+          console.log("File was un-gziped successfully");
+        } catch (err) {
+          console.log("Pako: " + err + " (this content is not gziped)");
+        }
       }
       
       that._output[ category ] = arrayBuff;
@@ -11522,7 +11533,7 @@ class Minc2Decoder extends Filter{
 
 
 
-} /* END of class Hdf5Decoder */
+} /* END of class Minc2Decoder */
 
 /*
 * Author    Jonathan Lurie - http://me.jonahanlurie.fr
@@ -12176,7 +12187,7 @@ class PixpDecoder extends Filter {
 
     var input = this._getInput();
 
-    //var pixpString2 = pako.inflate(input, { to: 'string' });
+    //var pixpString2 = pako.inflate(input /*, { to: 'string' }*/);
     //var pixpObject = JSON.parse( pixpString2 );
 
     var inflator = new index.Inflate({
@@ -12186,12 +12197,19 @@ class PixpDecoder extends Filter {
 
     inflator.push( input, true );
 
+    // quit if not a gz file
+    if( inflator.err ){
+      console.warn("This file is not a Pixp file.");
+      return;
+    }
+    
     var pixpObject = null;
 
     try{
       pixpObject = JSON.parse( inflator.result );
     }catch(e){
       console.warn("Could not parse pixp file.");
+      console.error(e);
       return;
     }
 
@@ -12218,6 +12236,67 @@ class PixpDecoder extends Filter {
 
 
 } /* END of class PixpDecoder */
+
+/*
+* Author    Jonathan Lurie - http://me.jonahanlurie.fr
+*
+* License   MIT
+* Link      https://github.com/jonathanlurie/pixpipejs
+* Lab       MCIN - Montreal Neurological Institute
+*/
+
+
+// decoders
+/**
+* An instance of Image3DGenericDecoder takes a ArrayBuffer 
+* as input 0 (`.addInput(myArrayBuffer)`) and output an Image3D.
+* The `update` method will perform several decoding attempts, using the readers
+* specified in the constructor.
+* In case of success (one of the registered decoder was compatible to the data)
+* the metadata `decoderConstructor` and `decoderName` are made accessible and give
+* information about the file format. If no decoder managed to decode the input buffer,
+* this filter will not have any output.
+*
+* Developers: if a new 3D dataset decoder is added, reference it here.
+*/
+class Image3DGenericDecoder extends Filter {
+  
+  constructor(){
+    super();
+    
+    this._decoders = [
+      Minc2Decoder,
+      NiftiDecoder,
+      PixpDecoder
+    ];
+  }
+  
+  
+  _run(){
+    var inputBuffer = this._getInput(0);
+    
+    if(!inputBuffer){
+      console.warn("The input buffer must not be null.");
+      return;
+    }
+    
+    // try with each decoder
+    for(var d=0; d<this._decoders.length; d++){
+      var decoder = new this._decoders[d]();
+      decoder.addInput( inputBuffer );
+      decoder.update();
+      
+      if(decoder.getNumberOfOutputs()){
+        this._output[0] = decoder.getOutput();
+        this.setMetadata("decoderConstructor", this._decoders[d]);
+        this.setMetadata("decoderName", this._decoders[d].name);
+        break;
+      }
+    }
+  }
+  
+  
+} /* END of class Image3DGenericDecoder */
 
 /*
 * Author   Jonathan Lurie - http://me.jonahanlurie.fr
@@ -14021,6 +14100,7 @@ exports.Minc2Decoder = Minc2Decoder;
 exports.NiftiDecoder = NiftiDecoder;
 exports.PixpEncoder = PixpEncoder;
 exports.PixpDecoder = PixpDecoder;
+exports.Image3DGenericDecoder = Image3DGenericDecoder;
 exports.ForEachPixelImageFilter = ForEachPixelImageFilter;
 exports.SpectralScaleImageFilter = SpectralScaleImageFilter;
 exports.ImageBlendExpressionFilter = ImageBlendExpressionFilter;

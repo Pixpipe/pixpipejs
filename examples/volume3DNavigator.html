@@ -1,6 +1,6 @@
 <html>
 <head>
-  <title>Nifti volume 3D</title>
+  <title>volume 3D Navigator</title>
 
   <script src="https://threejs.org/build/three.min.js"></script>
   <script src='https://threejs.org/examples/js/libs/dat.gui.min.js'></script>
@@ -46,7 +46,7 @@
 
   <div id="info">
     <div id="fileOpener">
-  		Open a structural NIfTI file
+  		Open a structural volume file (NIfTI, Minc2, Pixp)
   		<input type="file" id="fileInput">
       <br>
   	</div>
@@ -73,6 +73,7 @@
     var textures = [];
 
 
+    // initialize the 3D environment
     function initEnv3D(){
       console.log("initEnv3D...");
 
@@ -89,7 +90,7 @@
       scene.add( axisHelper );
 
       camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
-      //camera.position.x = 30;
+      camera.position.z = 30;
       var orbit = new THREE.OrbitControls( camera, renderer.domElement );
 
       container = new THREE.Object3D();
@@ -101,14 +102,16 @@
       render();
     }
 
+
+    // called max 60 times per sec
     function render() {
       requestAnimationFrame( render );
       renderer.render( scene, camera );
     };
 
 
+    // the GUI widget on the top right
     function initGui(){
-
       guiParam.xPos = Math.floor(spaceLength.x / 2);
       gui.add(guiParam, 'xPos', 0, spaceLength.x)
       .step(0.05)
@@ -160,7 +163,7 @@
     }
 
     /**
-    * Initialize the ouside box
+    * Initialize the red wireframe bounding box
     */
     function initBox(xspaceLength, yspaceLength, zspaceLength){
 
@@ -174,12 +177,13 @@
       boxHelper = new THREE.EdgesHelper( boxMesh, 0xff9999 );
       container.add( boxHelper );
       // adjust the camera to the box
-      camera.position.x =  - spaceLength.x;
-      console.log(container);
+      camera.position.z =  - spaceLength.z;
+      camera.lookAt(new THREE.Vector3(0,0,0));
     }
 
 
-
+    // screens are the planes on which are projected the images.
+    // Here, we create a their custom materials and all
     function initScreen(){
       screenContainer = new THREE.Object3D();
 
@@ -264,7 +268,7 @@
     }
 
 
-
+    // to refresh the aspect ratio when the windows is resized
     window.addEventListener( 'resize', function () {
       camera.aspect = window.innerWidth / window.innerHeight;
       camera.updateProjectionMatrix();
@@ -278,30 +282,32 @@
 
       var filenames = filter.getMetadata("filenames");
 
-      var niftiBuff = filter.getOutput();
+      var volBuff = filter.getOutput();
 
-      var niftiDecoder = new pixpipe.NiftiDecoder();
-      //var niftiDecoder = new pixpipe.Minc2Decoder();
-      niftiDecoder.addInput( niftiBuff );
-      niftiDecoder.update();
+      var genericDecoder = new pixpipe.Image3DGenericDecoder();
+      //var genericDecoder = new pixpipe.Minc2Decoder();
+      genericDecoder.addInput( volBuff );
+      genericDecoder.update();
 
-      var mniVolume = niftiDecoder.getOutput();
+      // if nothing was decoded, we exit 
+      if(!genericDecoder.getNumberOfOutputs()){
+        document.getElementById('fileInfo').innerHTML = "Error. This file can not be decoded :(";
+        return;
+      }
+
+      var mniVolume = genericDecoder.getOutput();
 
       if(mniVolume){
 
         var mosaicFilter = new pixpipe.Image3DToMosaicFilter();
 
-        // niftiDecoder ouputs a pixpipe.MniVolume, which iherit pixpipe.Image3D
+        // genericDecoder ouputs a pixpipe.MniVolume, which iherit pixpipe.Image3D
         // making it compatible with pixpipe.Image3DToMosaicFilter
         mosaicFilter.addInput( mniVolume );
 
         // which axis do we want the picture of?
         var space = "zspace";
         mosaicFilter.setMetadata( "axis", space);
-
-        // set the max size allowed
-        //mosaicFilter.setMetadata("maxWidth", 9 * mniVolume.getMetadata(space).width );
-        //mosaicFilter.setMetadata("maxHeight", 4 * mniVolume.getMetadata(space).height);
 
         // run the filter
         mosaicFilter.update();
@@ -339,21 +345,17 @@
           textures.push(texture);
         }
 
-        console.log(mosaicFilter._metadata);
-
         sliceMatrixSize.x = mosaicFilter.getMetadata("gridWidth");
         sliceMatrixSize.y = mosaicFilter.getMetadata("gridHeight");
-        
-        console.log("Nb textures: " + mosaicFilter.getNumberOfOutputs());
-        console.log(sliceMatrixSize);
 
         spaceLength.x = mniVolume.getMetadata("xspace").space_length;
         spaceLength.y = mniVolume.getMetadata("yspace").space_length;
         spaceLength.z = mniVolume.getMetadata("zspace").space_length;
 
+        // since the volume is loaded, we can create the 3D env
         initEnv3D();
       }else{
-        console.warn("Non-existant output for niftiDecoder.");
+        console.warn("Non-existant output for genericDecoder.");
       }
     });
 
@@ -372,11 +374,10 @@
       file2Buff.setMetadata("filenames", filenames);
 
       document.getElementById("fileOpener").style.display = "none";
-      document.getElementById('fileInfo').textContent = "Decoding NIfTI file and building 3D texture...";
+      document.getElementById('fileInfo').textContent = "Decoding volume file file and building 3D texture...";
       // Perform the reading + conversion ibto ArrayBuffer
       file2Buff.update();
 		});
-
 
   </script>
 
