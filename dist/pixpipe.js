@@ -1932,156 +1932,6 @@ class FileImageReader extends Filter {
 
 } /* END of class UrlImageReader */
 
-/*
-* Author   Jonathan Lurie - http://me.jonahanlurie.fr
-* License  MIT
-* Link      https://github.com/jonathanlurie/pixpipejs
-* Lab       MCIN - Montreal Neurological Institute
-*/
-
-/**
-* Takes the File inputs from a HTML input of type "file" (aka. a file dialog), and reads it as a ArrayBuffer.
-* Every File given in input should be added separately using `addInput( file[i], 'uniqueID' )`.
-* The event "ready" must be set up ( using .on("ready", function(){}) ) and will
-* be triggered when all the files given in input are translated into ArrayBuffers.
-* Once ready, all the outputs are accecible using the same uniqueID with the
-* method `getOutput("uniqueID")`
-*
-* **Usage**
-* - [examples/fileToArrayBuffer.html](../examples/fileToArrayBuffer.html)
-*/
-class FileToArrayBufferReader extends Filter {
-
-  constructor(){
-    super();
-    this._outputCounter = 0;
-  }
-
-
-  _run(){
-    var that = this;
-    this._outputCounter = 0;
-    var inputCategories = this.getInputCategories();
-
-    inputCategories.forEach( function(category){
-      that._loadFile( category );
-    });
-  }
-
-
-  /**
-  * [PRIVATE]
-  * Perform the loading for the input of the given category
-  * @param {String} category - input category
-   */
-  _loadFile( category ){
-    var that = this;
-    var reader = new FileReader();
-
-    reader.onloadend = function(event) {
-        var result = event.target.result;
-        that._output[ category ] = result;
-        that._fileLoadCount();
-    };
-
-    reader.onerror = function() {
-      this._output[ category ] = null;
-      that._fileLoadCount();
-      console.warn( "error reading file from category " + category );
-      //throw new Error(error_message);
-    };
-
-    reader.readAsArrayBuffer( this._getInput(category) );
-  }
-
-
-  /**
-  * [PRIVATE]
-  * Launch the "ready" event if all files are loaded
-  */
-  _fileLoadCount(){
-    var that = this;
-    this._outputCounter ++;
-
-    if( this._outputCounter == this.getNumberOfInputs() ){
-      that._events.ready( this );
-    }
-  }
-
-} /* END of class FileToArrayBufferReader */
-
-/*
-* Author   Jonathan Lurie - http://me.jonahanlurie.fr
-* License  MIT
-* Link      https://github.com/jonathanlurie/pixpipejs
-* Lab       MCIN - Montreal Neurological Institute
-*/
-
-/**
-* Open a files as ArrayBuffer using their URL. You must specify one or several URL
-* (String) using `addInput("...")` and add function to the event "ready" using
-* `.on( "ready", function(filter){ ... })`.
-* The "ready" event will be called only when all input are loaded.
-*
-* **Usage**
-* - [examples/urlFileToArrayBuffer.html](../examples/urlFileToArrayBuffer.html)
-*/
-class UrlToArrayBufferReader extends Filter {
-
-  constructor(){
-    super();
-    this._outputCounter = 0;
-  }
-
-
-  _run(){
-    var that = this;
-
-    if(! this.getNumberOfInputs() ){
-      console.warn("No input was specified, cannot run this filer.");
-      return;
-    }
-
-
-    this._forEachInput( function(category, input){
-      that._loadUrl(category, input);
-    });
-
-  }
-
-
-  /**
-  * [PRIVATE]
-  * Perform a XMLHttpRequest with the given url and adds it to the output
-  */
-  _loadUrl( category, url ){
-    var that = this;
-
-    var xhr = new XMLHttpRequest();
-    xhr.open("GET", url, true);
-    xhr.responseType = "arraybuffer";
-
-    xhr.onload = function(event) {
-      var arrayBuff = xhr.response;
-      that._output[ category ] = arrayBuff;
-
-      that._outputCounter ++;
-
-      if( that._outputCounter == that.getNumberOfInputs() && "ready" in that._events){
-        that._events.ready( that );
-      }
-    };
-
-    xhr.error = function(){
-      console.log("here go the error");
-    };
-
-    xhr.send();
-  }
-
-
-} /* END of class UrlToArrayBufferReader */
-
 var commonjsGlobal = typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
 
 
@@ -2196,27 +2046,6 @@ exports.setTyped = function (on) {
 
 exports.setTyped(TYPED_OK);
 });
-
-// (C) 1995-2013 Jean-loup Gailly and Mark Adler
-// (C) 2014-2017 Vitaly Puzrin and Andrey Tupitsin
-//
-// This software is provided 'as-is', without any express or implied
-// warranty. In no event will the authors be held liable for any damages
-// arising from the use of this software.
-//
-// Permission is granted to anyone to use this software for any purpose,
-// including commercial applications, and to alter it and redistribute it
-// freely, subject to the following restrictions:
-//
-// 1. The origin of this software must not be misrepresented; you must not
-//   claim that you wrote the original software. If you use this software
-//   in a product, an acknowledgment in the product documentation would be
-//   appreciated but is not required.
-// 2. Altered source versions must be plainly marked as such, and must not be
-//   misrepresented as being the original software.
-// 3. This notice may not be removed or altered from any source distribution.
-
-
 
 /* Public constants ==========================================================*/
 /* ===========================================================================*/
@@ -3428,25 +3257,6 @@ var trees = {
 // It doesn't worth to make additional optimizationa as in original.
 // Small size is preferable.
 
-// (C) 1995-2013 Jean-loup Gailly and Mark Adler
-// (C) 2014-2017 Vitaly Puzrin and Andrey Tupitsin
-//
-// This software is provided 'as-is', without any express or implied
-// warranty. In no event will the authors be held liable for any damages
-// arising from the use of this software.
-//
-// Permission is granted to anyone to use this software for any purpose,
-// including commercial applications, and to alter it and redistribute it
-// freely, subject to the following restrictions:
-//
-// 1. The origin of this software must not be misrepresented; you must not
-//   claim that you wrote the original software. If you use this software
-//   in a product, an acknowledgment in the product documentation would be
-//   appreciated but is not required.
-// 2. Altered source versions must be plainly marked as such, and must not be
-//   misrepresented as being the original software.
-// 3. This notice may not be removed or altered from any source distribution.
-
 function adler32(adler, buf, len, pos) {
   var s1 = (adler & 0xffff) |0,
       s2 = ((adler >>> 16) & 0xffff) |0,
@@ -3478,24 +3288,6 @@ var adler32_1 = adler32;
 // So write code to minimize size - no pregenerated tables
 // and array tools dependencies.
 
-// (C) 1995-2013 Jean-loup Gailly and Mark Adler
-// (C) 2014-2017 Vitaly Puzrin and Andrey Tupitsin
-//
-// This software is provided 'as-is', without any express or implied
-// warranty. In no event will the authors be held liable for any damages
-// arising from the use of this software.
-//
-// Permission is granted to anyone to use this software for any purpose,
-// including commercial applications, and to alter it and redistribute it
-// freely, subject to the following restrictions:
-//
-// 1. The origin of this software must not be misrepresented; you must not
-//   claim that you wrote the original software. If you use this software
-//   in a product, an acknowledgment in the product documentation would be
-//   appreciated but is not required.
-// 2. Altered source versions must be plainly marked as such, and must not be
-//   misrepresented as being the original software.
-// 3. This notice may not be removed or altered from any source distribution.
 
 // Use ordinary array, since untyped makes no boost here
 function makeTable() {
@@ -3532,25 +3324,6 @@ function crc32(crc, buf, len, pos) {
 
 var crc32_1 = crc32;
 
-// (C) 1995-2013 Jean-loup Gailly and Mark Adler
-// (C) 2014-2017 Vitaly Puzrin and Andrey Tupitsin
-//
-// This software is provided 'as-is', without any express or implied
-// warranty. In no event will the authors be held liable for any damages
-// arising from the use of this software.
-//
-// Permission is granted to anyone to use this software for any purpose,
-// including commercial applications, and to alter it and redistribute it
-// freely, subject to the following restrictions:
-//
-// 1. The origin of this software must not be misrepresented; you must not
-//   claim that you wrote the original software. If you use this software
-//   in a product, an acknowledgment in the product documentation would be
-//   appreciated but is not required.
-// 2. Altered source versions must be plainly marked as such, and must not be
-//   misrepresented as being the original software.
-// 3. This notice may not be removed or altered from any source distribution.
-
 var messages = {
   2:      'need dictionary',     /* Z_NEED_DICT       2  */
   1:      'stream end',          /* Z_STREAM_END      1  */
@@ -3562,31 +3335,6 @@ var messages = {
   '-5':   'buffer error',        /* Z_BUF_ERROR     (-5) */
   '-6':   'incompatible version' /* Z_VERSION_ERROR (-6) */
 };
-
-// (C) 1995-2013 Jean-loup Gailly and Mark Adler
-// (C) 2014-2017 Vitaly Puzrin and Andrey Tupitsin
-//
-// This software is provided 'as-is', without any express or implied
-// warranty. In no event will the authors be held liable for any damages
-// arising from the use of this software.
-//
-// Permission is granted to anyone to use this software for any purpose,
-// including commercial applications, and to alter it and redistribute it
-// freely, subject to the following restrictions:
-//
-// 1. The origin of this software must not be misrepresented; you must not
-//   claim that you wrote the original software. If you use this software
-//   in a product, an acknowledgment in the product documentation would be
-//   appreciated but is not required.
-// 2. Altered source versions must be plainly marked as such, and must not be
-//   misrepresented as being the original software.
-// 3. This notice may not be removed or altered from any source distribution.
-
-
-
-
-
-
 
 /* Public constants ==========================================================*/
 /* ===========================================================================*/
@@ -3685,7 +3433,7 @@ var BS_FINISH_DONE    = 4; /* finish done, accept no more input or output */
 
 var OS_CODE = 0x03; // Unix :) . Don't detect, use this default.
 
-function err(strm, errorCode) {
+function err$1(strm, errorCode) {
   strm.msg = messages[errorCode];
   return errorCode;
 }
@@ -4845,7 +4593,7 @@ function deflateResetKeep(strm) {
   var s;
 
   if (!strm || !strm.state) {
-    return err(strm, Z_STREAM_ERROR);
+    return err$1(strm, Z_STREAM_ERROR);
   }
 
   strm.total_in = strm.total_out = 0;
@@ -4911,7 +4659,7 @@ function deflateInit2(strm, level, method, windowBits, memLevel, strategy) {
   if (memLevel < 1 || memLevel > MAX_MEM_LEVEL || method !== Z_DEFLATED$1 ||
     windowBits < 8 || windowBits > 15 || level < 0 || level > 9 ||
     strategy < 0 || strategy > Z_FIXED) {
-    return err(strm, Z_STREAM_ERROR);
+    return err$1(strm, Z_STREAM_ERROR);
   }
 
 
@@ -4976,7 +4724,7 @@ function deflate$1(strm, flush) {
 
   if (!strm || !strm.state ||
     flush > Z_BLOCK || flush < 0) {
-    return strm ? err(strm, Z_STREAM_ERROR) : Z_STREAM_ERROR;
+    return strm ? err$1(strm, Z_STREAM_ERROR) : Z_STREAM_ERROR;
   }
 
   s = strm.state;
@@ -4984,7 +4732,7 @@ function deflate$1(strm, flush) {
   if (!strm.output ||
       (!strm.input && strm.avail_in !== 0) ||
       (s.status === FINISH_STATE && flush !== Z_FINISH$1)) {
-    return err(strm, (strm.avail_out === 0) ? Z_BUF_ERROR : Z_STREAM_ERROR);
+    return err$1(strm, (strm.avail_out === 0) ? Z_BUF_ERROR : Z_STREAM_ERROR);
   }
 
   s.strm = strm; /* just in case */
@@ -5211,12 +4959,12 @@ function deflate$1(strm, flush) {
      */
   } else if (strm.avail_in === 0 && rank(flush) <= rank(old_flush) &&
     flush !== Z_FINISH$1) {
-    return err(strm, Z_BUF_ERROR);
+    return err$1(strm, Z_BUF_ERROR);
   }
 
   /* User must not provide more input after the first FINISH: */
   if (s.status === FINISH_STATE && strm.avail_in !== 0) {
-    return err(strm, Z_BUF_ERROR);
+    return err$1(strm, Z_BUF_ERROR);
   }
 
   /* Start a new block or continue the current one.
@@ -5320,12 +5068,12 @@ function deflateEnd(strm) {
     status !== BUSY_STATE &&
     status !== FINISH_STATE
   ) {
-    return err(strm, Z_STREAM_ERROR);
+    return err$1(strm, Z_STREAM_ERROR);
   }
 
   strm.state = null;
 
-  return status === BUSY_STATE ? err(strm, Z_DATA_ERROR) : Z_OK$1;
+  return status === BUSY_STATE ? err$1(strm, Z_DATA_ERROR) : Z_OK$1;
 }
 
 
@@ -5634,25 +5382,6 @@ var strings = {
 	buf2string: buf2string,
 	utf8border: utf8border
 };
-
-// (C) 1995-2013 Jean-loup Gailly and Mark Adler
-// (C) 2014-2017 Vitaly Puzrin and Andrey Tupitsin
-//
-// This software is provided 'as-is', without any express or implied
-// warranty. In no event will the authors be held liable for any damages
-// arising from the use of this software.
-//
-// Permission is granted to anyone to use this software for any purpose,
-// including commercial applications, and to alter it and redistribute it
-// freely, subject to the following restrictions:
-//
-// 1. The origin of this software must not be misrepresented; you must not
-//   claim that you wrote the original software. If you use this software
-//   in a product, an acknowledgment in the product documentation would be
-//   appreciated but is not required.
-// 2. Altered source versions must be plainly marked as such, and must not be
-//   misrepresented as being the original software.
-// 3. This notice may not be removed or altered from any source distribution.
 
 function ZStream() {
   /* next input byte */
@@ -6080,25 +5809,6 @@ var deflate_1 = {
 	gzip: gzip_1
 };
 
-// (C) 1995-2013 Jean-loup Gailly and Mark Adler
-// (C) 2014-2017 Vitaly Puzrin and Andrey Tupitsin
-//
-// This software is provided 'as-is', without any express or implied
-// warranty. In no event will the authors be held liable for any damages
-// arising from the use of this software.
-//
-// Permission is granted to anyone to use this software for any purpose,
-// including commercial applications, and to alter it and redistribute it
-// freely, subject to the following restrictions:
-//
-// 1. The origin of this software must not be misrepresented; you must not
-//   claim that you wrote the original software. If you use this software
-//   in a product, an acknowledgment in the product documentation would be
-//   appreciated but is not required.
-// 2. Altered source versions must be plainly marked as such, and must not be
-//   misrepresented as being the original software.
-// 3. This notice may not be removed or altered from any source distribution.
-
 // See state defs from inflate.js
 var BAD$1 = 30;       /* got a data error -- remain here until reset */
 var TYPE$1 = 12;      /* i: waiting for type bits, including last-flag bit */
@@ -6424,27 +6134,6 @@ var inffast = function inflate_fast(strm, start) {
   return;
 };
 
-// (C) 1995-2013 Jean-loup Gailly and Mark Adler
-// (C) 2014-2017 Vitaly Puzrin and Andrey Tupitsin
-//
-// This software is provided 'as-is', without any express or implied
-// warranty. In no event will the authors be held liable for any damages
-// arising from the use of this software.
-//
-// Permission is granted to anyone to use this software for any purpose,
-// including commercial applications, and to alter it and redistribute it
-// freely, subject to the following restrictions:
-//
-// 1. The origin of this software must not be misrepresented; you must not
-//   claim that you wrote the original software. If you use this software
-//   in a product, an acknowledgment in the product documentation would be
-//   appreciated but is not required.
-// 2. Altered source versions must be plainly marked as such, and must not be
-//   misrepresented as being the original software.
-// 3. This notice may not be removed or altered from any source distribution.
-
-
-
 var MAXBITS = 15;
 var ENOUGH_LENS$1 = 852;
 var ENOUGH_DISTS$1 = 592;
@@ -6765,31 +6454,6 @@ var inftrees = function inflate_table(type, lens, lens_index, codes, table, tabl
   opts.bits = root;
   return 0;
 };
-
-// (C) 1995-2013 Jean-loup Gailly and Mark Adler
-// (C) 2014-2017 Vitaly Puzrin and Andrey Tupitsin
-//
-// This software is provided 'as-is', without any express or implied
-// warranty. In no event will the authors be held liable for any damages
-// arising from the use of this software.
-//
-// Permission is granted to anyone to use this software for any purpose,
-// including commercial applications, and to alter it and redistribute it
-// freely, subject to the following restrictions:
-//
-// 1. The origin of this software must not be misrepresented; you must not
-//   claim that you wrote the original software. If you use this software
-//   in a product, an acknowledgment in the product documentation would be
-//   appreciated but is not required.
-// 2. Altered source versions must be plainly marked as such, and must not be
-//   misrepresented as being the original software.
-// 3. This notice may not be removed or altered from any source distribution.
-
-
-
-
-
-
 
 var CODES = 0;
 var LENS = 1;
@@ -8335,25 +7999,6 @@ var inflate_1$2 = {
 	inflateInfo: inflateInfo
 };
 
-// (C) 1995-2013 Jean-loup Gailly and Mark Adler
-// (C) 2014-2017 Vitaly Puzrin and Andrey Tupitsin
-//
-// This software is provided 'as-is', without any express or implied
-// warranty. In no event will the authors be held liable for any damages
-// arising from the use of this software.
-//
-// Permission is granted to anyone to use this software for any purpose,
-// including commercial applications, and to alter it and redistribute it
-// freely, subject to the following restrictions:
-//
-// 1. The origin of this software must not be misrepresented; you must not
-//   claim that you wrote the original software. If you use this software
-//   in a product, an acknowledgment in the product documentation would be
-//   appreciated but is not required.
-// 2. Altered source versions must be plainly marked as such, and must not be
-//   misrepresented as being the original software.
-// 3. This notice may not be removed or altered from any source distribution.
-
 var constants = {
 
   /* Allowed flush values; see deflate() and inflate() below for details */
@@ -8401,25 +8046,6 @@ var constants = {
   Z_DEFLATED:               8
   //Z_NULL:                 null // Use -1 or null inline, depending on var type
 };
-
-// (C) 1995-2013 Jean-loup Gailly and Mark Adler
-// (C) 2014-2017 Vitaly Puzrin and Andrey Tupitsin
-//
-// This software is provided 'as-is', without any express or implied
-// warranty. In no event will the authors be held liable for any damages
-// arising from the use of this software.
-//
-// Permission is granted to anyone to use this software for any purpose,
-// including commercial applications, and to alter it and redistribute it
-// freely, subject to the following restrictions:
-//
-// 1. The origin of this software must not be misrepresented; you must not
-//   claim that you wrote the original software. If you use this software
-//   in a product, an acknowledgment in the product documentation would be
-//   appreciated but is not required.
-// 2. Altered source versions must be plainly marked as such, and must not be
-//   misrepresented as being the original software.
-// 3. This notice may not be removed or altered from any source distribution.
 
 function GZheader() {
   /* true if compressed data believed to be text */
@@ -8885,6 +8511,176 @@ var pako = {};
 assign(pako, deflate_1, inflate_1, constants);
 
 var index = pako;
+
+/*
+* Author   Jonathan Lurie - http://me.jonahanlurie.fr
+* License  MIT
+* Link      https://github.com/jonathanlurie/pixpipejs
+* Lab       MCIN - Montreal Neurological Institute
+*/
+
+
+/**
+* Takes the File inputs from a HTML input of type "file" (aka. a file dialog), and reads it as a ArrayBuffer.
+* Every File given in input should be added separately using `addInput( file[i], 'uniqueID' )`.
+* The event "ready" must be set up ( using .on("ready", function(){}) ) and will
+* be triggered when all the files given in input are translated into ArrayBuffers.
+* Once ready, all the outputs are accecible using the same uniqueID with the
+* method `getOutput("uniqueID")`.
+* Gzip compressed files will be uncompressed.
+*
+* **Usage**
+* - [examples/fileToArrayBuffer.html](../examples/fileToArrayBuffer.html)
+*/
+class FileToArrayBufferReader extends Filter {
+
+  constructor(){
+    super();
+    this._outputCounter = 0;
+  }
+
+
+  _run(){
+    var that = this;
+    this._outputCounter = 0;
+    var inputCategories = this.getInputCategories();
+
+    inputCategories.forEach( function(category){
+      that._loadFile( category );
+    });
+  }
+
+
+  /**
+  * [PRIVATE]
+  * Perform the loading for the input of the given category
+  * @param {String} category - input category
+   */
+  _loadFile( category ){
+    var that = this;
+    var reader = new FileReader();
+
+    reader.onloadend = function(event) {
+        var result = event.target.result;
+        
+        // trying to un-gzip it with Pako
+        try {
+          result = index.inflate(result).buffer;
+        } catch (err) {
+          console.log("Pako: " + err + " (this content is not gziped)");
+        }
+        
+        that._output[ category ] = result;
+        that._fileLoadCount();
+    };
+
+    reader.onerror = function() {
+      this._output[ category ] = null;
+      that._fileLoadCount();
+      console.warn( "error reading file from category " + category );
+      //throw new Error(error_message);
+    };
+
+    reader.readAsArrayBuffer( this._getInput(category) );
+  }
+
+
+  /**
+  * [PRIVATE]
+  * Launch the "ready" event if all files are loaded
+  */
+  _fileLoadCount(){
+    var that = this;
+    this._outputCounter ++;
+
+    if( this._outputCounter == this.getNumberOfInputs() ){
+      that._events.ready( this );
+    }
+  }
+
+} /* END of class FileToArrayBufferReader */
+
+/*
+* Author   Jonathan Lurie - http://me.jonahanlurie.fr
+* License  MIT
+* Link      https://github.com/jonathanlurie/pixpipejs
+* Lab       MCIN - Montreal Neurological Institute
+*/
+
+
+/**
+* Open a files as ArrayBuffer using their URL. You must specify one or several URL
+* (String) using `addInput("...")` and add function to the event "ready" using
+* `.on( "ready", function(filter){ ... })`.
+* The "ready" event will be called only when all input are loaded.
+* Gzip compressed files will be uncompressed.
+*
+* **Usage**
+* - [examples/urlFileToArrayBuffer.html](../examples/urlFileToArrayBuffer.html)
+*/
+class UrlToArrayBufferReader extends Filter {
+
+  constructor(){
+    super();
+    this._outputCounter = 0;
+  }
+
+
+  _run(){
+    var that = this;
+
+    if(! this.getNumberOfInputs() ){
+      console.warn("No input was specified, cannot run this filer.");
+      return;
+    }
+
+
+    this._forEachInput( function(category, input){
+      that._loadUrl(category, input);
+    });
+
+  }
+
+
+  /**
+  * [PRIVATE]
+  * Perform a XMLHttpRequest with the given url and adds it to the output
+  */
+  _loadUrl( category, url ){
+    var that = this;
+
+    var xhr = new XMLHttpRequest();
+    xhr.open("GET", url, true);
+    xhr.responseType = "arraybuffer";
+
+    xhr.onload = function(event) {
+      var arrayBuff = xhr.response;
+      
+      // trying to un-gzip it with Pako
+      try {
+        arrayBuff = index.inflate(arrayBuff).buffer;
+      } catch (err) {
+        console.log("Pako: " + err + " (this content is not gziped)");
+      }
+      
+      that._output[ category ] = arrayBuff;
+
+      that._outputCounter ++;
+
+      if( that._outputCounter == that.getNumberOfInputs() && "ready" in that._events){
+        that._events.ready( that );
+      }
+    };
+
+    xhr.error = function(){
+      console.log("here go the error");
+    };
+
+    xhr.send();
+  }
+
+
+} /* END of class UrlToArrayBufferReader */
 
 /*
 * Author    Jonathan Lurie - http://me.jonahanlurie.fr

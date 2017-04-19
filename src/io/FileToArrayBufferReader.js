@@ -5,6 +5,8 @@
 * Lab       MCIN - Montreal Neurological Institute
 */
 
+
+import pako from 'pako'
 import { Filter } from '../core/Filter.js';
 
 
@@ -14,7 +16,8 @@ import { Filter } from '../core/Filter.js';
 * The event "ready" must be set up ( using .on("ready", function(){}) ) and will
 * be triggered when all the files given in input are translated into ArrayBuffers.
 * Once ready, all the outputs are accecible using the same uniqueID with the
-* method `getOutput("uniqueID")`
+* method `getOutput("uniqueID")`.
+* Gzip compressed files will be uncompressed.
 *
 * **Usage**
 * - [examples/fileToArrayBuffer.html](../examples/fileToArrayBuffer.html)
@@ -49,6 +52,14 @@ class FileToArrayBufferReader extends Filter {
 
     reader.onloadend = function(event) {
         var result = event.target.result;
+        
+        // trying to un-gzip it with Pako
+        try {
+          result = pako.inflate(result).buffer;
+        } catch (err) {
+          console.log("Pako: " + err + " (this content is not gziped)");
+        }
+        
         that._output[ category ] = result;
         that._fileLoadCount();
     }
