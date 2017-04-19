@@ -53,11 +53,17 @@ class FileToArrayBufferReader extends Filter {
     reader.onloadend = function(event) {
         var result = event.target.result;
         
-        // trying to un-gzip it with Pako
-        try {
-          result = pako.inflate(result).buffer;
-        } catch (err) {
-          console.log("Pako: " + err + " (this content is not gziped)");
+
+        var extension = that._getInput(category).name.split('.').pop();
+
+        if( extension.localeCompare("pixp") ){
+          // trying to un-gzip it with Pako
+          try {
+            result = pako.inflate(result).buffer;
+            console.log("File was un-gziped successfully");
+          } catch (err) {
+            console.log("Pako: " + err + " (this content is not gziped)");
+          }
         }
         
         that._output[ category ] = result;
