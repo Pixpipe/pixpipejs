@@ -89,7 +89,7 @@
       scene.add( axisHelper );
 
       camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
-      camera.position.z = 30;
+      //camera.position.x = 30;
       var orbit = new THREE.OrbitControls( camera, renderer.domElement );
 
       container = new THREE.Object3D();
@@ -174,7 +174,7 @@
       boxHelper = new THREE.EdgesHelper( boxMesh, 0xff9999 );
       container.add( boxHelper );
       // adjust the camera to the box
-      camera.position.z = spaceLength.z;
+      camera.position.x =  - spaceLength.x;
       console.log(container);
     }
 
@@ -182,8 +182,6 @@
 
     function initScreen(){
       screenContainer = new THREE.Object3D();
-
-      console.log(textures);
 
       shaderMat = new THREE.ShaderMaterial( {
         uniforms: {
@@ -282,7 +280,8 @@
 
       var niftiBuff = filter.getOutput();
 
-      var niftiDecoder = new pixpipe.NiftiDecoder();
+      //var niftiDecoder = new pixpipe.NiftiDecoder();
+      var niftiDecoder = new pixpipe.Minc2Decoder();
       niftiDecoder.addInput( niftiBuff );
       niftiDecoder.update();
 
@@ -302,7 +301,7 @@
 
         // set the max size allowed
         //mosaicFilter.setMetadata("maxWidth", 9 * mniVolume.getMetadata(space).width );
-        mosaicFilter.setMetadata("maxHeight", 4 * mniVolume.getMetadata(space).height);
+        //mosaicFilter.setMetadata("maxHeight", 4 * mniVolume.getMetadata(space).height);
 
         // run the filter
         mosaicFilter.update();
@@ -344,6 +343,9 @@
 
         sliceMatrixSize.x = mosaicFilter.getMetadata("gridWidth");
         sliceMatrixSize.y = mosaicFilter.getMetadata("gridHeight");
+        
+        console.log("Nb textures: " + mosaicFilter.getNumberOfOutputs());
+        console.log(sliceMatrixSize);
 
         spaceLength.x = mniVolume.getMetadata("xspace").space_length;
         spaceLength.y = mniVolume.getMetadata("yspace").space_length;
