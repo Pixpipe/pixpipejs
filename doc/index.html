@@ -633,6 +633,11 @@
                   clone
                 </a>
                 <a
+                  href='#Image2D.computeSimpleStat'
+                  class='regular block'>
+                  computeSimpleStat
+                </a>
+                <a
                   href='#Image2D.constructor'
                   class='regular block'>
                   constructor
@@ -663,6 +668,11 @@
                   getData
                 </a>
                 <a
+                  href='#Image2D.getDataAsUInt8Array'
+                  class='regular block'>
+                  getDataAsUInt8Array
+                </a>
+                <a
                   href='#Image2D.getDataCopy'
                   class='regular block'>
                   getDataCopy
@@ -691,11 +701,6 @@
                   href='#Image2D.getWidth'
                   class='regular block'>
                   getWidth
-                </a>
-                <a
-                  href='#Image2D.performSimpleStat'
-                  class='regular block'>
-                  performSimpleStat
                 </a>
                 <a
                   href='#Image2D.setData'
@@ -797,6 +802,11 @@
                   class='regular block'>
                   hasSameSizeInput
                 </a>
+              <a
+                href='#Image3DGenericDecoder'
+                class='block bold h3 bg-pink-alpha'>
+                Image3DGenericDecoder
+              </a>
               <a
                 href='#Image3DToMosaicFilter'
                 class='block bold h3 bg-pink-alpha'>
@@ -1455,7 +1465,8 @@ Every File given in input should be added separately using <code>addInput( file[
 The event &quot;ready&quot; must be set up ( using .on(&quot;ready&quot;, function(){}) ) and will
 be triggered when all the files given in input are translated into ArrayBuffers.
 Once ready, all the outputs are accecible using the same uniqueID with the
-method <code>getOutput(&quot;uniqueID&quot;)</code></p>
+method <code>getOutput(&quot;uniqueID&quot;)</code>.
+Gzip compressed files will be uncompressed.</p>
 <p><strong>Usage</strong></p>
 <ul>
 <li><a href="../examples/fileToArrayBuffer.html">examples/fileToArrayBuffer.html</a></li>
@@ -2549,7 +2560,8 @@ The <em>this</em> object will be in argument of this callback.</p>
   <p>Open a files as ArrayBuffer using their URL. You must specify one or several URL
 (String) using <code>addInput(&quot;...&quot;)</code> and add function to the event &quot;ready&quot; using
 <code>.on( &quot;ready&quot;, function(filter){ ... })</code>.
-The &quot;ready&quot; event will be called only when all input are loaded.</p>
+The &quot;ready&quot; event will be called only when all input are loaded.
+Gzip compressed files will be uncompressed.</p>
 <p><strong>Usage</strong></p>
 <ul>
 <li><a href="../examples/urlFileToArrayBuffer.html">examples/urlFileToArrayBuffer.html</a></li>
@@ -4635,6 +4647,26 @@ typed array.</p>
 </section>
           </div>
         </div>
+        <div class='collapsible' id='Image2D.computeSimpleStat'>
+          <a href='#Image2D.computeSimpleStat'>
+            <code>
+              computeSimpleStat<span class='gray'></span>
+            </code>
+            <div class='force-inline'>
+              <p>Compute &quot;min&quot; &quot;max&quot; and &quot;avg&quot; and store them in metadata</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2'>
+<section class='py2 clearfix'>
+  <h2 id='Image2D.computeSimpleStat' class='mt0'>
+    computeSimpleStat<span class='gray'></span>
+  </h2>
+  <p>Compute &quot;min&quot; &quot;max&quot; and &quot;avg&quot; and store them in metadata</p>
+
+</section>
+          </div>
+        </div>
         <div class='collapsible' id='Image2D.constructor'>
           <a href='#Image2D.constructor'>
             <code>
@@ -4820,11 +4852,38 @@ This has nothing to do with the number of components per pixel.</p>
   <p>Get the internal image data (pointer)</p>
 
       <h4>Returns</h4>
-      <code><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Float32Array">Float32Array</a></code></code>
+      <code><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/TypedArray">TypedArray</a></code></code>
       :
       <div class='force-inline'>
-        <p>the original data, dont mess up with this one.
+        <p>the original data (most likely a Float32Array), dont mess up with this one.
 in case of doubt, use  getDataCopy()</p>
+
+      </div>
+</section>
+          </div>
+        </div>
+        <div class='collapsible' id='Image2D.getDataAsUInt8Array'>
+          <a href='#Image2D.getDataAsUInt8Array'>
+            <code>
+              getDataAsUInt8Array<span class='gray'></span>
+            </code>
+            <div class='force-inline'>
+              <p>No matter the original type of the internal data, scale it into a [0, 255] uInt8Array</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2'>
+<section class='py2 clearfix'>
+  <h2 id='Image2D.getDataAsUInt8Array' class='mt0'>
+    getDataAsUInt8Array<span class='gray'></span>
+  </h2>
+  <p>No matter the original type of the internal data, scale it into a [0, 255] uInt8Array</p>
+
+      <h4>Returns</h4>
+      <code><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array">Uint8Array</a></code></code>
+      :
+      <div class='force-inline'>
+        <p>scaled data</p>
 
       </div>
 </section>
@@ -4848,10 +4907,10 @@ in case of doubt, use  getDataCopy()</p>
   <p>Get a copy of the data</p>
 
       <h4>Returns</h4>
-      <code><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Float32Array">Float32Array</a></code></code>
+      <code><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/TypedArray">TypedArray</a></code></code>
       :
       <div class='force-inline'>
-        <p>a deep copy of the data</p>
+        <p>a deep copy of the data (most likely a Float32Array)</p>
 
       </div>
 </section>
@@ -5000,26 +5059,6 @@ in case of doubt, use  getDataCopy()</p>
 </section>
           </div>
         </div>
-        <div class='collapsible' id='Image2D.performSimpleStat'>
-          <a href='#Image2D.performSimpleStat'>
-            <code>
-              performSimpleStat<span class='gray'></span>
-            </code>
-            <div class='force-inline'>
-              <p>Compute &quot;min&quot; &quot;max&quot; and &quot;avg&quot; and store them in metadata</p>
-
-            </div>
-          </a>
-          <div class='collapser border px2'>
-<section class='py2 clearfix'>
-  <h2 id='Image2D.performSimpleStat' class='mt0'>
-    performSimpleStat<span class='gray'></span>
-  </h2>
-  <p>Compute &quot;min&quot; &quot;max&quot; and &quot;avg&quot; and store them in metadata</p>
-
-</section>
-          </div>
-        </div>
         <div class='collapsible' id='Image2D.setData'>
           <a href='#Image2D.setData'>
             <code>
@@ -5112,7 +5151,7 @@ in case of doubt, use  getDataCopy()</p>
           </div>
         </li>
         <li> <strong>computeStat</strong>
-            (default <code>true</code>)
+            (default <code>false</code>)
           :
           <div class='force-inline'>
             
@@ -5657,6 +5696,21 @@ This class does not overload the update() method.</p>
         </div>
 </section>
 </div><div class='py1'><section class='py2 clearfix'>
+  <h2 id='Image3DGenericDecoder' class='mt0'>
+    Image3DGenericDecoder<span class='gray'></span>
+  </h2>
+  <p>An instance of Image3DGenericDecoder takes a ArrayBuffer
+as input 0 (<code>.addInput(myArrayBuffer)</code>) and output an Image3D.
+The <code>update</code> method will perform several decoding attempts, using the readers
+specified in the constructor.
+In case of success (one of the registered decoder was compatible to the data)
+the metadata <code>decoderConstructor</code> and <code>decoderName</code> are made accessible and give
+information about the file format. If no decoder managed to decode the input buffer,
+this filter will not have any output.</p>
+<p>Developers: if a new 3D dataset decoder is added, reference it here.</p>
+
+</section>
+</div><div class='py1'><section class='py2 clearfix'>
   <h2 id='Image3DToMosaicFilter' class='mt0'>
     Image3DToMosaicFilter<span class='gray'></span>
   </h2>
@@ -5669,7 +5723,10 @@ These are boundaries so the size of the output image(s) will possibly be lower
 to not contain unused space.
 If mosaicing the whole given Image3D does not fit in maxWidth*maxHeight, more
 Image2D will be created and accessible through <code>getOutput(n)</code>.
-All output image have the same size so that the last one may have dead space.</p>
+All output image have the same size so that the last one may have dead space.
+To know precisely the size of the output mosaic use <code>getMetadata(&quot;gridWidth&quot;)</code>
+and <code>getMetadata(&quot;gridHeight&quot;)</code>, this will give the number of slices used in
+horizontal and vertical respectively.</p>
 <p><strong>Usage</strong></p>
 <ul>
 <li><a href="../examples/niftiToMosaic.html">examples/niftiToMosaic.html</a></li>

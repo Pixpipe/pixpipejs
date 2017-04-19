@@ -1,6 +1,6 @@
 <html>
 <head>
-  <title>Nifti to mosaic</title>
+  <title>Image3D compatible file to mosaic</title>
 
   <script src="../dist/pixpipe.js"></script>
   <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700,900" rel="stylesheet">
@@ -11,11 +11,11 @@
   <p>
   This does the following :
   <ul>
-    <li>open a local NIfTI file, using <code>pixpipe.FileToArrayBufferReader</code></li>
-    <li>redirect the file buffer into a <code>pixpipe.NiftiDecoder</code> to extract NIfTI dataset and metadata</li>
-    <li>get the output as a generique <code>pixpipe.MniVolume</code> object</li>
-    <li>produce multiple 10x10 mosaics (Image2Ds) of slices using <code>pixpipe.Image3DToMosaicFilter</code></li>
-    <li>display the mosaics in a canvas using a single instance of <code>pixpipe.CanvasImageWriter</code></li>
+    <li>open a local Image3D compatible file (NIfTI, Minc2, Pixp), using <code>pixpipe.FileToArrayBufferReader</code></li>
+    <li>redirect the file buffer into a <code>pixpipe.Image3DGenericDecoder</code> to extract the dataset and metadata</li>
+    <li>get the output as a generique <code>pixpipe.Image3D</code> object</li>
+    <li>produce multiple NxM mosaics (Image2Ds) of slices using <code>pixpipe.Image3DToMosaicFilter</code></li>
+    <li>display the mosaic in a canvas using a single instance of <code>pixpipe.CanvasImageWriter</code></li>
   </ul>
 
   </p>
@@ -45,19 +45,24 @@
 
       var filenames = filter.getMetadata("filenames");
 
-      var niftiBuff = filter.getOutput();
+      var imgBuff = filter.getOutput();
 
-      var niftiDecoder = new pixpipe.NiftiDecoder();
-      niftiDecoder.addInput( niftiBuff );
-      niftiDecoder.update();
+      var img3DGenDecoder = new pixpipe.Image3DGenericDecoder();
+      img3DGenDecoder.addInput( imgBuff );
+      img3DGenDecoder.update();
+      
+      if( !img3DGenDecoder.getNumberOfOutputs() ){
+        document.getElementById('fileInfo').innerHTML += "This file is not compatible."
+        return;
+      }
 
-      var mniVolume = niftiDecoder.getOutput();
+      var mniVolume = img3DGenDecoder.getOutput();
 
       if(mniVolume){
 
         var mosaicFilter = new pixpipe.Image3DToMosaicFilter();
-
-        // niftiDecoder ouputs a pixpipe.MniVolume, which iherit pixpipe.Image3D
+        
+        // img3DGenDecoder ouputs a pixpipe.MniVolume, which iherit pixpipe.Image3D
         // making it compatible with pixpipe.Image3DToMosaicFilter
         mosaicFilter.addInput( mniVolume );
 
@@ -104,9 +109,11 @@
 
         document.getElementById('fileInfo').innerHTML += "<p>Each mosaic is " + mosaicFilter.getMetadata("gridWidth") + " slices large and " + mosaicFilter.getMetadata("gridHeight") + " slices high.</p>";
 
+        document.getElementById('fileInfo').innerHTML += "<p>File decoder used: " + img3DGenDecoder.getMetadata("decoderName") + "</p>"
+        
 
       }else{
-        console.warn("Non-existant output for niftiDecoder.");
+        console.warn("Non-existant output for img3DGenDecoder.");
       }
     });
 

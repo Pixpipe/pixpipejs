@@ -5,6 +5,8 @@
 * Lab       MCIN - Montreal Neurological Institute
 */
 
+
+import pako from 'pako'
 import { Filter } from '../core/Filter.js';
 
 
@@ -13,6 +15,7 @@ import { Filter } from '../core/Filter.js';
 * (String) using `addInput("...")` and add function to the event "ready" using
 * `.on( "ready", function(filter){ ... })`.
 * The "ready" event will be called only when all input are loaded.
+* Gzip compressed files will be uncompressed.
 *
 * **Usage**
 * - [examples/urlFileToArrayBuffer.html](../examples/urlFileToArrayBuffer.html)
@@ -54,6 +57,19 @@ class UrlToArrayBufferReader extends Filter {
 
     xhr.onload = function(event) {
       var arrayBuff = xhr.response;
+      
+      var extension = url.split('.').pop();
+
+      // trying to un-gzip it with Pako for non pixp files
+      if( extension.localeCompare("pixp") ){
+        try {
+          arrayBuff = pako.inflate(arrayBuff).buffer;
+          console.log("File was un-gziped successfully");
+        } catch (err) {
+          console.log("Pako: " + err + " (this content is not gziped)");
+        }
+      }
+      
       that._output[ category ] = arrayBuff
 
       that._outputCounter ++;

@@ -22,6 +22,9 @@ import { Image3D } from '../core/Image3D.js';
 * If mosaicing the whole given Image3D does not fit in maxWidth*maxHeight, more
 * Image2D will be created and accessible through `getOutput(n)`.
 * All output image have the same size so that the last one may have dead space.
+* To know precisely the size of the output mosaic use `getMetadata("gridWidth")`
+* and `getMetadata("gridHeight")`, this will give the number of slices used in
+* horizontal and vertical respectively.
 *
 * **Usage**
 * - [examples/niftiToMosaic.html](../examples/niftiToMosaic.html)
@@ -72,6 +75,9 @@ class Image3DToMosaicFilter extends Filter{
     if( outputNecessary == 1){
       outputHeight = Math.ceil( numOfSlices / widthFit ) * height;
     }
+
+    this.setMetadata("gridWidth", outputWidth / width);
+    this.setMetadata("gridHeight", outputHeight / height);
 
     var outputCounter = 0;
     var sliceIndex = 0;
