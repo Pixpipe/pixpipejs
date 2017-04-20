@@ -95,7 +95,6 @@ A `Filter` should **NEVER** modify the input data.
 
 # Todo
 - Export Image2D as png (and trigger a download)
-- Add a generic Image3D decoder so that a user does not have to care about format
 - Doc and tutorials for developers
 - Integrate wokers with Rollup
 - 2D FFT
@@ -104,6 +103,7 @@ A `Filter` should **NEVER** modify the input data.
 - Oblique sampling for Image3D
 - Better test time series with NIfTI (maybe add an example)
 - Add an efficient way to minify the code
+- ~~Add a generic Image3D decoder so that a user does not have to care about format~~
 - ~~Load a file as a ArrayBuffer with a AJAX~~
 - ~~Export `Image2D`, `Image3D` or generic `*.pixp` file (using serialization and Pako)~~
 - ~~Load a file as a ArrayBuffer with a file dialog~~ DONE: `FileToArrayBufferReader`
