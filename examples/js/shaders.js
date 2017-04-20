@@ -137,7 +137,27 @@ shaders.fragmentMultipleInterpolation = `
       color = texture2D(textures[14], posInTexture);
     }else if(indexTextureInUse == 15){
       color = texture2D(textures[15], posInTexture);
-    }
+    }/*else if(indexTextureInUse == 16){
+      color = texture2D(textures[16], posInTexture);
+    }else if(indexTextureInUse == 17){
+      color = texture2D(textures[17], posInTexture);
+    }else if(indexTextureInUse == 18){
+      color = texture2D(textures[18], posInTexture);
+    }else if(indexTextureInUse == 19){
+      color = texture2D(textures[19], posInTexture);
+    }else if(indexTextureInUse == 20){
+      color = texture2D(textures[20], posInTexture);
+    }else if(indexTextureInUse == 21){
+      color = texture2D(textures[21], posInTexture);
+    }else if(indexTextureInUse == 22){
+      color = texture2D(textures[22], posInTexture);
+    }else if(indexTextureInUse == 23){
+      color = texture2D(textures[23], posInTexture);
+    }else if(indexTextureInUse == 24){
+      color = texture2D(textures[24], posInTexture);
+    }else if(indexTextureInUse == 25){
+      color = texture2D(textures[25], posInTexture);
+    }*/
 
     return color;
   }
