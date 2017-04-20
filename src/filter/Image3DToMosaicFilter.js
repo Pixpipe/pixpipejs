@@ -85,6 +85,7 @@ class Image3DToMosaicFilter extends Filter{
 
     var outImage = null;
 
+    
 
     // for each slice
     for(var sliceIndex; sliceIndex<numOfSlices; sliceIndex++){
@@ -107,6 +108,7 @@ class Image3DToMosaicFilter extends Filter{
 
       var offsetPixelCol = col * width;
       var offsetPixelRow = row * height;
+
 
       // for each row of the input slice
       for(var y=0; y<height; y++){
