@@ -183,8 +183,8 @@ class CanvasImageWriter extends Filter{
   * @return {Number} the adjusted number
   */
   _stretchMinMax( intensity ){
-    var min = this.getMetadata("min");
-    var max = this.getMetadata("max");
+    var min = this._metadata.min;
+    var max = this._metadata.max;
 
     if(min == 0 && max == 255){
       return intensity;

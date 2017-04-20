@@ -621,18 +621,24 @@ class Image2D extends PixpipeContainer{
       return;
     }
 
-    var ncpp = this.getMetadata("ncpp");
+    var ncpp = this._metadata.ncpp;
 
-    if("x" in position && position.x >=0 && position.x < this.getMetadata("width") &&
-       "y" in position && position.y >=0 && position.y < this.getMetadata("height") &&
+    if("x" in position && position.x >=0 && position.x < this._metadata.width &&
+       "y" in position && position.y >=0 && position.y < this._metadata.height &&
        color.length == ncpp)
     {
 
-      var pos1D = this.get1dIndexFrom2dPosition( position ) * ncpp;
+      var pos1D = this.get1dIndexFrom2dPosition( position );
 
-      for(var i=0; i<ncpp; i++){
-        this._data[ pos1D + i] = color[i];
+      if(ncpp == 1){
+        this._data[ pos1D ] = color[0];
+      }else{
+        pos1D *= ncpp;
+        for(var i=0; i<ncpp; i++){
+          this._data[ pos1D + i] = color[i];
+        }
       }
+      
 
       if( computeStat ){
         this.computeSimpleStat();
@@ -654,11 +660,22 @@ class Image2D extends PixpipeContainer{
       return;
     }
 
-    if("x" in position && position.x >=0 && position.x < this.getMetadata("width") &&
-       "y" in position && position.y >=0 && position.y < this.getMetadata("height"))
+    if("x" in position && position.x >=0 && position.x < this._metadata.width &&
+       "y" in position && position.y >=0 && position.y < this._metadata.height )
     {
-      var pos1D = this.get1dIndexFrom2dPosition( position ) * this.getMetadata("ncpp");
-      var color = this._data.slice(pos1D, pos1D + this.getMetadata("ncpp"));
+      //var ncpp = this.getMetadata("ncpp");
+      var ncpp = this._metadata.ncpp;
+      var color = null;
+      var pos1D = this.get1dIndexFrom2dPosition( position );
+
+      // 
+      if(ncpp == 1){
+        color = [this._data[pos1D]];
+      }else{
+        pos1D *= ncpp;
+        color = this._data.slice(pos1D, pos1D + ncpp);
+      }
+      
       return color;
 
     }else{
@@ -673,7 +690,7 @@ class Image2D extends PixpipeContainer{
   * @return {Number} the width of the Image2D
   */
   getWidth(){
-    return this.getMetadata("width");
+    return this._metadata.width;
   }
 
 
@@ -682,7 +699,7 @@ class Image2D extends PixpipeContainer{
   * @return {Number} the height of the Image2D
   */
   getHeight(){
-    return this.getMetadata("height");
+    return this._metadata.height;
   }
 
 
@@ -691,7 +708,7 @@ class Image2D extends PixpipeContainer{
   * @return {Number} the number of components per pixel
   */
   getComponentsPerPixel(){
-    return this.getMetadata("ncpp");
+    return this._metadata.ncpp;
   }
 
 
@@ -744,8 +761,8 @@ class Image2D extends PixpipeContainer{
   */
   get2dPositionFrom1dIndex( i ){
     return {
-      x: i % this.getMetadata("width"),
-      y: Math.floor(i / this.getMetadata("width"))
+      x: i % this._metadata.width,
+      y: Math.floor(i / this._metadata.width)
     }
   }
 
@@ -757,7 +774,8 @@ class Image2D extends PixpipeContainer{
   * @return {Number} the 1D position within the buffer
   */
   get1dIndexFrom2dPosition( position ){
-    return (position.x + position.y*this.getMetadata("width"));
+    //return (position.x + position.y*this.getMetadata("width"));
+    return (position.x + position.y*this._metadata.width); // faster when querried a lot
   }
 
 
@@ -1733,8 +1751,8 @@ class CanvasImageWriter extends Filter{
   * @return {Number} the adjusted number
   */
   _stretchMinMax( intensity ){
-    var min = this.getMetadata("min");
-    var max = this.getMetadata("max");
+    var min = this._metadata.min;
+    var max = this._metadata.max;
 
     if(min == 0 && max == 255){
       return intensity;
@@ -14044,6 +14062,7 @@ class Image3DToMosaicFilter extends Filter{
 
     var outImage = null;
 
+    
 
     // for each slice
     for(var sliceIndex; sliceIndex<numOfSlices; sliceIndex++){
@@ -14066,6 +14085,7 @@ class Image3DToMosaicFilter extends Filter{
 
       var offsetPixelCol = col * width;
       var offsetPixelRow = row * height;
+
 
       // for each row of the input slice
       for(var y=0; y<height; y++){
