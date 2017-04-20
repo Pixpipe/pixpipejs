@@ -43,6 +43,9 @@ shaders.fragmentMultipleInterpolation = `
   uniform float yspaceLength;
   uniform float zspaceLength;
 
+  uniform float forcedAlpha;
+  
+  
   // a texture will contain a certain number of slices
   uniform sampler2D textures[maxNbOfTextures];
 
@@ -243,15 +246,18 @@ shaders.fragmentMultipleInterpolation = `
         return;
     }
 
-
     vec4 color;
 
+    // interpolation (or not)
     if(trilinearInterpol){
       color = getIntensityWorldTrilinear(worldCoordShifted);
     }else{
       color = getIntensityWorldNearest(worldCoordShifted);
     }
 
+    // forcing a lower alpha (when given)
+    color.a = min(color.a, forcedAlpha);
+    
     gl_FragColor = color;
   }
 `
