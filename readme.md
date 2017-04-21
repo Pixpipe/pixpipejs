@@ -102,7 +102,11 @@ A `Filter` should **NEVER** modify the input data.
 - Write about the features in this readme
 - Oblique sampling for Image3D
 - Better test time series with NIfTI (maybe add an example)
-- Add an efficient way to minify the code
+- crop an Image2D or Image3D
+- Add a checksum for file loading so that we can recognize them for sure
+- Add an example like volume3DNavigator but with autoload
+- Texture 16bit for volume3DNavigator
+- ~~Add an efficient way to minify the code~~
 - ~~Add a generic Image3D decoder so that a user does not have to care about format~~
 - ~~Load a file as a ArrayBuffer with a AJAX~~
 - ~~Export `Image2D`, `Image3D` or generic `*.pixp` file (using serialization and Pako)~~
