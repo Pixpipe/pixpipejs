@@ -1467,6 +1467,11 @@ be triggered when all the files given in input are translated into ArrayBuffers.
 Once ready, all the outputs are accecible using the same uniqueID with the
 method <code>getOutput(&quot;uniqueID&quot;)</code>.
 Gzip compressed files will be uncompressed.</p>
+<p>Once the filter is <em>updated</em>, you can query the <code>filenames</code> metadata (sorted by categories)
+and also the <code>checksums</code> metadata using <code>.getMetadata()</code>. This later metadata
+give a unique <em>md5</em>, very convenient to compare if two files are actually the same.
+Note that in case the file is <em>gziped</em>, the checksum is computed on the raw file,
+not on the <em>un-gziped</em> buffer.</p>
 <p><strong>Usage</strong></p>
 <ul>
 <li><a href="../examples/fileToArrayBuffer.html">examples/fileToArrayBuffer.html</a></li>
@@ -2561,7 +2566,12 @@ The <em>this</em> object will be in argument of this callback.</p>
 (String) using <code>addInput(&quot;...&quot;)</code> and add function to the event &quot;ready&quot; using
 <code>.on( &quot;ready&quot;, function(filter){ ... })</code>.
 The &quot;ready&quot; event will be called only when all input are loaded.
-Gzip compressed files will be uncompressed.</p>
+Gzip compressed files will be uncompressed.
+Once the filter is <em>updated</em>, you can query the <code>filenames</code> metadata (sorted by categories)
+and also the <code>checksums</code> metadata using <code>.getMetadata()</code>. This later metadata
+give a unique <em>md5</em>, very convenient to compare if two files are actually the same.
+Note that in case the file is <em>gziped</em>, the checksum is computed on the raw file,
+not on the <em>un-gziped</em> buffer.</p>
 <p><strong>Usage</strong></p>
 <ul>
 <li><a href="../examples/urlFileToArrayBuffer.html">examples/urlFileToArrayBuffer.html</a></li>

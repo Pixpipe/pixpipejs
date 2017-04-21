@@ -83,7 +83,7 @@ class ForEachPixelImageFilter extends ImageToImageFilter {
   */
   _forEachPixelOfSuch(buffer, firstPixel, lastPixel, increment ){
     // abort if no callback per pixel
-    if( ! "pixel" in this._events){
+    if( ! ("pixel" in this._events)){
       console.warn("No function to apply per pixel was specified.");
       return;
     }
