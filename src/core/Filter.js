@@ -247,7 +247,10 @@ class Filter extends PixpipeObject {
     this._run();
     this.addTimeRecord("end");
     console.log("Running time for filter " + this.constructor.name + ": " + this.getTime("begin", "end") + "ms.");
-    this.setOutputAsReady();
+    
+    if(this.getNumberOfOutputs()){
+      this.setOutputAsReady();
+    }
   }
 
 
