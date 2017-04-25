@@ -64,6 +64,11 @@ class Filter extends PixpipeObject {
   */
   addInput( inputObject, category=0){
 
+    if(!inputObject){
+      console.warn("A null input cannot be added.");
+      return;
+    }
+
     // the category may not exist, we create it
     if( !(category in this._input) ){
       this._input[category] = null;
@@ -216,6 +221,21 @@ class Filter extends PixpipeObject {
     this._isOutputReady = true;
   }
 
+
+  /**
+  * Add an entry to the input validator. Made for be used with hasValidInput
+  * @param {String} category - category of input (can also be integer)
+  * @param {Type} InputType - the type of the expected input, like Image2D, Image3D, etc. without quotes
+  */
+  addInputValidator( category, InputType ){
+    if("TYPE" in InputType){
+      this._inputValidator[ category ] = InputType.TYPE();
+    }else{
+      this._inputValidator[ category ] = InputType;
+    }
+  }
+
+
   /**
   * Validate the input data using a model defined in _inputValidator.
   * Every class that implement Filter must implement their own _inputValidator.
@@ -225,9 +245,32 @@ class Filter extends PixpipeObject {
     var that = this;
     var inputCategories = Object.keys( this._inputValidator );
     var valid = true;
+    
+    if(inputCategories.length == 0){
+      valid = false;
+      console.warn("No input validator was added. Filter cannot run. Use addInputValidator(...) to specify input types.");
+    }
 
     inputCategories.forEach( function(key){
-      valid = valid && that._getInput( key ).isOfType( that._inputValidator[ key ] )
+      var inputOfCategory = that._getInput( key );
+      
+      if(inputOfCategory){
+        if("isOfType" in inputOfCategory){
+          valid = valid && inputOfCategory.isOfType( that._inputValidator[ key ] )
+        }else{
+          try{
+            valid = valid && (inputOfCategory instanceof that._inputValidator[ key ] );
+          }catch(e){
+            valid = false;
+          }
+        }
+          
+      }
+      // input simply not existing!
+      else{
+        valid = false;
+      }
+    
     });
 
     if(!valid){

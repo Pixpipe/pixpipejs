@@ -24,7 +24,7 @@ import { Image3D } from '../core/Image3D.js';
 class PixpDecoder extends Filter {
   constructor(){
     super();
-
+    this.addInputValidator(0, ArrayBuffer);
   }
 
 
@@ -39,6 +39,8 @@ class PixpDecoder extends Filter {
 
 
   _run(){
+
+    console.log(this._input);
 
     if(! this.hasValidInput() ){
       console.warn("PixpDecoder can only decode ArrayBuffer.");

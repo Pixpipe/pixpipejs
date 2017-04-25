@@ -34,7 +34,6 @@ class ImageBlendExpressionFilter extends ImageToImageFilter {
 
   constructor(){
     super();
-    this._addOutput( Image2D );
   }
 
 
@@ -73,7 +72,7 @@ class ImageBlendExpressionFilter extends ImageToImageFilter {
     }
 
     // building the output
-    var img2D = this.getOutput();
+    var img2D = this._addOutput( Image2D );
 
     img2D.setData(
       outputBuffer,

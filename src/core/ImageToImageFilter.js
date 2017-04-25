@@ -17,7 +17,7 @@ class ImageToImageFilter extends Filter {
 
   constructor(){
     super();
-    this._inputValidator[ 0 ] = Image2D.TYPE();
+    this.addInputValidator(0, Image2D);
   }
 
 
