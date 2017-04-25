@@ -33,7 +33,7 @@ class Image3DToMosaicFilter extends Filter{
 
   constructor(){
     super();
-    this._inputValidator[ 0 ] = Image3D.TYPE();
+    this.addInputValidator(0, Image3D);
 
     // default settings
     this.setMetadata("maxWidth", 4096);

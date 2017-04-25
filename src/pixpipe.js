@@ -30,6 +30,7 @@ export { SpectralScaleImageFilter } from './filter/SpectralScaleImageFilter.js';
 export { ImageBlendExpressionFilter } from './filter/ImageBlendExpressionFilter.js';
 //export { SpatialConvolutionFilter } from './filter/SpatialConvolutionFilter.js';
 export { MultiplyImageFilter } from './filter/MultiplyImageFilter.js';
+export { SimpleThresholdFilter } from './filter/SimpleThresholdFilter.js';
 
 // filters - processing of Image3D
 export { Image3DToMosaicFilter } from './filter/Image3DToMosaicFilter.js';

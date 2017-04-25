@@ -15,8 +15,22 @@ This cookbook will help you to become familiar with the architecture of **Pixpip
   - [Filter](#filter)
   - [ImageToImageFilter](#imagetoimagefilter)
 - [Building Pixpipe](#building-pixpipe)
-- Create a custom filter
-- Validate input (input validator)
+- [Building the documentation](#building-the-documentation)
+- [Learning with examples](#learning-with-examples)
+- [Create your own custom filter](#create-your-own-custom-filter)
+  - [What should my filter inherit from](#what-should-my-filter-inherit-from)
+  - [What are inputs and outputs](#what-are-inputs-and-outputs)
+  - [What are metadata](#what-are-metadata)
+  - [Can I had class attributes](#can-i-had-class-attributes)
+  - [How to make the filter runable](#how-to-make-the-filter-runable)
+  - [Keep in mind](#keep-in-mind)
+  - [Register your filter](#register-your-filter)
+  - [Simple example](#simple-example)
+    - [First, the structure](#first-the-structure)
+    - [Adding the constructor](#adding-the-constructor)
+    - [The _run() method](#the-run-method)
+    - [Could we do it another way](#could-we-do-it-another-way)
+- [Various optimizations](#various-optimizations)
 
 # Overview
 The point of Pixpipe is to be easy to use and easy to contribute to. This goal leads to take some decision:  
@@ -35,7 +49,7 @@ Sometimes, it's just not worth reiventing the wheel. Here are the libraries Pixp
 - [Pako](https://github.com/nodeca/pako), for high speed file compression/decompression in JS.
 - [FileSaver.js](https://github.com/eligrey/FileSaver.js), to easly trigger file downloading to the user
 - [expr-eval](https://github.com/silentmatt/expr-eval), to evaluate math expression and create quick filter prototype
-
+- [js-md5](https://github.com/emn178/js-md5), to generate a unique checksum for each loaded files
 
 # Core architecture
 Pixpipe is strongly *object oriented* and relies a lot on inheritance. As said in the `readme`, it was inpired by *ITK* for its genericity because it make the pipeline scalable and modular.  
@@ -93,3 +107,494 @@ This extends `Filter` but still does not process anything. This is again an inte
 
 
 # Building Pixpipe
+By default, Pixpipe already comes with a built version in the `dist` directory. Still, if you modify it, you may want to build your own version.  
+In this case, clone it or download it from the *master*, then, open a terminal, and:  
+
+```bash
+$ cd pixpipejs
+$ npm install
+$ npm run build
+```
+
+This will generate a *bundled* file in the `dist` directory (replacing the default one). This single source file can be imported in a *html* page like any other js file:
+
+```html
+<script src="a/path/to/pixpipe.js"></script>
+```
+
+Note that Pixpipejs is developed using ES6 and might not be compatible with older browser -- Google closure compiler to the rescue! In addition to provide a nice and easy way to minify the built version, it also transpiles the codebase into ES5. Here is the command:
+
+```bash
+$ npm run build
+$ npm run min
+```
+
+**Note** Pixpipe does not use a npm minifier plugin beacause it's codebase is too large, thus it uses directly the closure compiler from Google (see `closurecompiler` folder).
+
+# Building the documentation
+Pixpipejs uses [DocumentationJS](http://documentation.js.org/) to generate a HTML documentation. It uses *JSDoc* syntax and is generated with the following command:
+
+```bash
+$ npm run doc
+```
+
+Then, the documentaion is accessible in the `doc` folder, or can be directly read [here](http://me.jonathanlurie.fr/pixpipejs/doc/).
+
+
+# Learning with examples
+The following examples are a nice and easy way to progressivelly go through using Pixpipe, from the basics to advanced. It is important to understand how to use Pixpipe before trying to develop your own filters in order to respect the coherence that makes it easy to use on the long shot.  
+Before starting, remember these two things:
+- When it comes to data (Image2D, Image3D) a filter takes one or more input (`addInput(...)`), must be ran using `update()` and gives one or more output (`getOutput()`).
+- When it comes to metadata (particular setting, overwriting a default algorithm value, etc.), the filter method `.setMetadata(...)` must be called.
+
+Processing images usually take a bit of time but there is not always a graphic feedback. Open your javascript console so that you can see the filter feedback in the log.  
+All the following examples are in the [example folder](https://github.com/jonathanlurie/pixpipejs/tree/master/examples).
+
+## basics
+Here, we will learn what is an `Image2D`, how to display it in a canvas using `CanvasImageWriter`. In addition, we have two different ways to load an existing image: from its URL (using a `UrlImageReader`) or with a file dialog (using a `FileImageReader`).
+- [Create an Image2D and display it](http://me.jonathanlurie.fr/pixpipejs/examples/image2DToCanvas.html) ([source](https://github.com/jonathanlurie/pixpipejs/tree/master/examples/image2DToCanvas.html))
+- [Create an Image2D from an image URL and display it](http://me.jonathanlurie.fr/pixpipejs/examples/urlToImage2D.html) ([source](https://github.com/jonathanlurie/pixpipejs/tree/master/examples/urlToImage2D.html))
+- [Same but with multiple images](http://me.jonathanlurie.fr/pixpipejs/examples/urlToImage2D_multiple.html) ([source](https://github.com/jonathanlurie/pixpipejs/tree/master/examples/urlToImage2D_multiple.html)))
+- [Create an Image2D from a local file and display it](http://me.jonathanlurie.fr/pixpipejs/examples/fileToImage2D.html) ([source](https://github.com/jonathanlurie/pixpipejs/tree/master/examples/fileToImage2D.html))
+
+## Simple filters for Image2D
+See a `Filter` as a *box* that takes one or more input and produces one or more output. If some parameters are needed to make the filter work properly, this must happen using `setMetadata()`. To ask the filter to do its job, just call `update()`.  
+A `Filter` should **NEVER** modify the input data.
+- [The filter that lets you apply a treatment at a pixel level](http://me.jonathanlurie.fr/pixpipejs/examples/forEachPixel.html) ([source](https://github.com/jonathanlurie/pixpipejs/tree/master/examples/forEachPixel.html))
+- [A pixel-wise filter that uses pixel position to adapt its behaviour](http://me.jonathanlurie.fr/pixpipejs/examples/forEachPixelGradient.html) ([source](https://github.com/jonathanlurie/pixpipejs/tree/master/examples/forEachPixelGradient.html))
+- [Use a math expression evaluator to blend an image and a mask](http://me.jonathanlurie.fr/pixpipejs/examples/imageBlending.html) ([source](https://github.com/jonathanlurie/pixpipejs/tree/master/examples/imageBlending.html))
+- [Use a math expression evaluator to blend two images](http://me.jonathanlurie.fr/pixpipejs/examples/imageBlending2.html) ([source](https://github.com/jonathanlurie/pixpipejs/tree/master/examples/imageBlending2.html))
+- [Create a pattern and blend it with an image using a math expression evaluator](http://me.jonathanlurie.fr/pixpipejs/examples/forEachPixelGradientBlend.html) ([source](https://github.com/jonathanlurie/pixpipejs/tree/master/examples/forEachPixelGradientBlend.html))
+- [Save a Image2D to a `*.pixp` file](http://me.jonathanlurie.fr/pixpipejs/examples/savePixpFile.html) ([source](https://github.com/jonathanlurie/pixpipejs/tree/master/examples/savePixpFile.html))
+- [Load a `*.pixp` file that contains an Image2D and display it](http://me.jonathanlurie.fr/pixpipejs/examples/pixpFileToImage2D.html) ([source](https://github.com/jonathanlurie/pixpipejs/tree/master/examples/pixpFileToImage2D.html))
+- [Multiply an image by another](http://me.jonathanlurie.fr/pixpipejs/examples/multiplyImage2D.html) ([source](https://github.com/jonathanlurie/pixpipejs/tree/master/examples/multiplyImage2D.html))
+
+## Playing with 3D medical dataset
+- [Open a local Minc2 file, extract 3 orthogonal slices and display in canvas](http://me.jonathanlurie.fr/pixpipejs/examples/fileToMinc2.html) ([source](https://github.com/jonathanlurie/pixpipejs/tree/master/examples/fileToMinc2.html))
+- [Open a local  NIfTI file, extract 3 orthogonal slices and display in canvas](http://me.jonathanlurie.fr/pixpipejs/examples/fileToNifti.html) ([source](https://github.com/jonathanlurie/pixpipejs/tree/master/examples/fileToNifti.html))
+- [Convert a Minc2 file into a generic `*.pixp` file](http://me.jonathanlurie.fr/pixpipejs/examples/Minc2ToPixpFile.html) ([source](https://github.com/jonathanlurie/pixpipejs/tree/master/examples/Minc2ToPixpFile.html))
+- [Open a `*.pixp` containing an Image3D file and display 3 otho slices](http://me.jonathanlurie.fr/pixpipejs/examples/Minc2ToPixpFile.html) ([source](https://github.com/jonathanlurie/pixpipejs/tree/master/examples/Minc2ToPixpFile.html)))
+
+## Advanced
+- [Open a local  NIfTI file and display a mosaic of all the slices](http://me.jonathanlurie.fr/pixpipejs/examples/niftiToMosaic.html) ([source](https://github.com/jonathanlurie/pixpipejs/tree/master/examples/niftiToMosaic.html))
+- [Open a local file as an ArrayBuffer](http://me.jonathanlurie.fr/pixpipejs/examples/fileToArrayBuffer.html) ([source](https://github.com/jonathanlurie/pixpipejs/tree/master/examples/fileToArrayBuffer.html)). Good starting point to create a new binary file parser
+- [Open a Structural volume file (NIfTI, Minc2, Pixp), build a 3D texture and display volume with obliques](http://me.jonathanlurie.fr/pixpipejs/examples/volume3DNavigator.html) ([source](https://github.com/jonathanlurie/pixpipejs/tree/master/examples/volume3DNavigator.html))
+
+# Create your own custom filter
+As mentioned earlier, a filter must take at least one input et retrieve at least one output, in between the method `.update()` must be called. The only exception to that are `io` filters which are opening or writing from/to a file or a HTML5 canvas.  
+
+## What should my filter inherit from?
+All filter should inherit from `Filter`, but some subtypes can also be used. For example, your custom filter can inherit from the class/interface `ImageToImageFilter`, which has the advantage of having some Image2D checking method already built-in.
+
+The class `ImageToImageFilter` itself also inherit from `Filter` and we could imagine creating other *interface* filters that carry some specific logic but no actual data processing. 
+
+## What are inputs and outputs?
+Input and ouput data can be of different types but are usually `Image2D` or `Image3D`. They are stored in the already-existing `Filter`'s class attribute `this._input` and `this._output`. These two objects are actually *maps* and need an ID, here called a **category**.
+
+A *category* is just a way to give an identifier when adding an input (externally) or an output (internally, to create it). If your filter needs only a single input, adding a category is optional (*"0"* will be given). Same thing for the output, if your filter creates only one, then it's category should be *"0"* because the method `.getOutput()` uses a default value *"0"* for the *category* argument. The concept of *category* comes very handy when your filter has to manage multiple I/O.
+
+From ouside of your custom filter, here are the methods you can use, without having to implement them since they are part of `Filter` class:
+
+```javascript
+// Create a instance of your custom filter 
+var myFilter = new pixpipe.MyCustomFilterType();
+
+// we have only one input, no need to specify a category
+myFilter.addInput( myImage2D );
+
+// if we have more than one input, we identify them with a "category"
+myFilter.addInput( myImage2D_1, 0);
+myFilter.addInput( myImage2D_2, 1);
+
+// Note that the category can also be a String
+myFilter.addInput( myImage2D_1, "image_one");
+myFilter.addInput( myImage2D_2, "image_two");
+...
+
+// run the filter
+myFilter.update()
+...
+
+// If your filter has a single output, no need to 
+var myOutput = myFilter.getOutput();
+
+// If your filter has more than one output
+var myFirstOutput = myFilter.getOutput(0);
+var myFirstOutput = myFilter.getOutput(1);
+
+// Note that the category can also be a String
+var myFirstOutput = myFilter.getOutput("the_noise_image");
+var myFirstOutput = myFilter.getOutput("the_signal_image");
+
+// get the number of input categories (already given)
+var numOfInputs = myFilter.getNumberOfInputs();
+
+// get the number of output categories
+var numOfOutputs = myFilter.getNumberOfOutputs();
+
+// You can also batch process the outputs
+myFilter.forEachOutput( function( category, outputObject ){
+  // do something
+});
+
+// to know if a filter has an output of a given category
+if( myFilter.hasInputOfCategory("the_signal_image") ){
+  // do something
+}
+
+// get the list of all input categories given to the filter
+var allInputCat = myFilter.getInputCategories();
+
+// get the list of all output categories given to the filter
+var allOutputCat = myFilter.getOutputCategories();
+
+// tells if after calling update() there is at least one output created
+var isReady = myFilter.hasOutputReady();
+
+```
+
+From the inside of your filter, there are a few other (suposedly private) I/O-related methods:
+
+```javascript
+// get an input when we know we have only one
+var theInput = this._getInput();
+
+// get an input of a given category
+var theInput = this._getInput("image_one");
+
+// batch process the inputs, when we have many of them
+this._forEachInput( function(category, inputObject){
+  // do something with each input
+})
+
+// add a new ouput of a given type that ecapsulate the category checking
+this._addOutput( Image2D );
+
+// the same but with a given category
+this._addOutput( Image2D, "the_first_output" );
+
+// then retrieve the blank output 
+var outputImg = this.getOutput();
+
+// and initialize it with real values
+outputImg.setData(
+  bufferCopy,
+  inputImage2D.getWidth(),
+  inputImage2D.getHeight(),
+  inputImage2D.getComponentsPerPixel()
+);
+
+```
+
+## What are metadata?
+A filter can also accept any kind of metadata so that it can do it's job properly.  
+In the case of a filter that perform an algorithm, all the settings must be stored as *metadata* and we strongly discourage to use *class attributes* for that. As show on the [diagram](#core-architecture), the metadata logic is hosted by the class/interface `PixpipeObject`, of which inherits `Filter` and every other objects that belong to the Pixpipe project.
+
+Here are the metadata-related methods you can use from the outside:
+
+```javascript
+// Create a instance of your custom filter 
+var myFilter = new pixpipe.MyCustomFilterType();
+
+// Specify a metadata
+myFilter.setMetadata("threshold", 100);
+
+// retrieve a metadata
+var threshold = getMetadata("threshold");
+
+// check the existance of a given metadata
+if( myFilter.hasMetadata( "threshold" ) ){
+  // do something
+}
+
+// retrieve all the metadata names already specified
+var allMetaNames = myFilter.getMetadataKeys();
+
+// Copy all the metadata from another object
+myFilter.copyMetadataFrom( anotherFilter );
+```
+
+## Can I had class attributes?
+Yes, like any other *class*, your custom filter can use attributes to store temporary data, but not for inputs, outputs or metadata of major importance.
+
+## How to make the filter runable?
+As seen earlier, to run a filter, the method `.update()` should be called, though, the method that should be implemented in every new custom filter is `_run()`.  
+
+The `_run()` method is called by `update()` along with some others. It should perform the reading of inputs, the processing and the writing of outputs. 
+
+**A FILTER SHOULD NEVER ALTER THE INPUT**.
+
+## Keep in mind
+A filter may need to be compatible with different kind of inputs and it is to the discredion to the developper to make it properly. For example, an filter that takes *Image2D* as input has to deal with a variable number of component per pixel so that it behaves in an expected way with a single-band image (b&w) but also with a RGB or RGBA image.  
+
+If a filter can deal only with a certain kind of input, it should be explicitely stated in the documentation.
+
+## Register your filter
+To make your custom filter accessible when building Pixpipe, you must register it in the file `src/pixpipe.js`.
+
+## Simple example
+The filter `filter/SimpleThresholdFilter.js` is a pretty simple example of how it works. A simple way to see how it works is by checking the example `examples/imageThresholding.html`. The following is a step-by-step explanation of what happens in this filter.
+
+### First, the structure  
+The structure is quite basic and very ES6-style.
+```javascript
+// make Image2D and ImageToImageFilter visible from here because we will use them
+import { Image2D } from '../core/Image2D.js';
+import { ImageToImageFilter } from '../core/ImageToImageFilter.js';
+
+// Our new class SimpleThresholdFilter extends from the interface ImageToImageFilter
+class SimpleThresholdFilter extends ImageToImageFilter {
+  constructor(){
+    // ... to be implemented
+  }
+  
+  _run(){
+    // ... to be implemented
+  }
+  
+} /* END of class SimpleThresholdFilter */
+
+// make SimpleThresholdFilter importable
+export { SimpleThresholdFilter }
+```
+
+Depending on what your own filter will do, you may want to inherit directly from `Filter` rather than from `ImageToImageFilter`. It's up to you and like usually in programming, it's not like there is a single right answer.
+
+### Adding the constructor
+Since we inherit from a class, the first thing to do in the constructor is to call the constructor of the parent class using `super()`:
+
+```javascript
+// make Image2D and ImageToImageFilter visible from here because we will use them
+import { Image2D } from '../core/Image2D.js';
+import { ImageToImageFilter } from '../core/ImageToImageFilter.js';
+
+// Our new class SimpleThresholdFilter extends from the interface ImageToImageFilter
+class SimpleThresholdFilter extends ImageToImageFilter {
+
+  constructor(){
+    super();
+    
+    // default values
+    this.setMetadata("threshold", 128);
+    this.setMetadata("lowValue", 0);
+    this.setMetadata("highValue", 255);
+    this.setMetadata("preserveAlpha", true);
+  }
+  
+  
+  _run(){
+    // ... to be implemented
+  }
+  
+} /* END of class SimpleThresholdFilter */
+
+// make SimpleThresholdFilter importable
+export { SimpleThresholdFilter }
+```
+You know how a threshold works, right? under a certain value a pixel is set to black and over, it's set to white. But, we have to take in consideration two more things:
+1. Our image may have more than 8bit per pixel (standard [0, 255]) but could be float [0.0, 1.0], 12bit ints [0, 4096], 16bits ints [0, 65535], etc.
+2. Our image may have 1, or 3 or 4 or more channels. For the sake of simplicity, we will make this filter compatible with single band (intensity), 3 bands (RGB) and 4 bands (RGBA).
+
+Still, we want out filter to have buit-in default values for the `threshold`, the value to give when under(`lowValue`), the value to give when over (`highValue`) and also if we should preserve the transparency in case of RGBA images (`preserveAlpha`).
+
+### The \_run() method
+All the following takes place in the scope of the `_run()` method, like here:
+
+```javascript
+...
+
+_run(){
+  // HERE!
+}
+
+...
+```
+
+Remember `_run()` is called when you explicitely call `update()`, and you should not call `_run()` directly!  
+At this stage, if your filter *runs*, it means it **should** already have an input. Let's make sure of it:
+
+```javascript
+// the input checking
+// the input checking
+if( ! this.hasValidInput())
+  return;
+...
+```
+
+The method `hasValidInput()` is a legacy from the class `Filter`. It checks if a filters input is actually like it should be. Since our filter inherits from `ImageToImageFilter`, it's constructor (when calling `super()`) already register that the filter should expect a input of type `Image2D` and of *category* "0".  
+
+To manually add an expected input, just add an entry to the `inputValidator` by calling the method `this.addInputValidator` from the constructor (after `super()`). For example, if our filter was requiring 2 `Image2D` of category 0 and 1, then we would add that to the constructor:
+
+```javascript
+this.addInputValidator(0, Image2D);
+this.addInputValidator(1, Image2D);
+```
+
+Then, in `_run()`, calling `hasValidInput()` in a *if* statement would make sure our input are actually two `Image2D` of the given categories.  
+If we have no input, we just quit with a warnnig message. There is no exception to launch, we just don't have any input, it's not a big deal and we may want to add one later.
+
+Next, we build some local variables. In Pixpipe, we will often be fetching very large TypedArrays think of it like that: a 1000px by 1000px png (most likely RGBA) is already an array of size 4 million! And nowadays, 1000px by 1000px is not that much so we always have to think about little optimisations because on a large scale, they will matter **a lot**.  
+So, why local variables? Simply because in Javascript they are faster to fetch than complex object. Here is how:
+
+```javascript
+...
+
+var inputImg = this._getInput( 0 );
+
+// Number of bands
+var ncpp = inputImg.getComponentsPerPixel();
+
+// having a local value is faster than fetching an object
+var threshold = this.getMetadata("threshold");
+var lowValue = this.getMetadata("lowValue");
+var highValue = this.getMetadata("highValue");
+
+...
+```
+
+Then we will start to create the content of our output image, but not the `Image2D` object yet. First we *copy* the data array of the input image - copy in the sens of **duplicate** (and not copy of *reference*):
+
+```javascript
+...
+
+// get a copy of the input buffer so that we dont overwrite it!
+var outputBuffer = inputImg.getDataCopy();
+
+...
+```
+
+If we wanted to get a reference to the original data array of the input image, we would have used `inputImg.getData()` instead of `inputImg.getDataCopy()`. Then modifying the array would change the content of the input image and we dont want that.
+
+Now, we are dealing with checking the number of components per pixel, remember, we want this filter to accept only 1, 3 and 4 components images:
+
+```javascript
+...
+
+// if the input image has:
+// - a single band, OR
+// - three bands (assuming RGB), OR
+// - four bands (assuming RGBA)
+if(ncpp == 1 || ncpp == 3 || ncpp == 4){
+
+  // later, a few things will go here
+  
+}else{
+  outputBuffer = null;
+  console.warn("The input data must have 1, 3 or 4 components per pixel.");
+  return;
+}
+
+...
+```
+
+As you can see, if the number of components per pixel (aka. `ncpp` or as previously said *channels*) is not like we want, we just quit the function before having mapped any output. Still, we want to rush the *garbage collector* and remain with a potentially large array copied in memory, so we call `outputBuffer = null;`. Though, this is not mandatory and the *garbage collector* will come anyway.
+
+Then, let's fill this `if`:
+
+```javascript
+...
+if(ncpp == 1 || ncpp == 3 || ncpp == 4){
+
+
+  /**************** PART 1 *********************************************/
+  
+  // we want to preserve transparency ( = not affected by thresholding)
+  if( this.getMetadata("preserveAlpha") && ncpp == 4){
+    
+  /**************** PART 1.1 *********************************************/
+    for(var i=0; i<outputBuffer.length; i++){
+      // every four band is an alpha band
+      if(i%4 == 3){
+        continue;
+      }
+      outputBuffer[i] = outputBuffer[i] < threshold ? lowValue : highValue;
+    }
+    
+  // transparency is altered by the threshold like any other channel
+  }else{
+  /**************** PART 1.2 *********************************************/
+    for(var i=0; i<outputBuffer.length; i++){
+      outputBuffer[i] = outputBuffer[i] < threshold ? lowValue : highValue;
+    }
+  }
+
+  /**************** PART 2 *********************************************/
+  
+  /**************** PART 2.1 *********************************************/
+  // creating a blank Image2D output and getting the ref
+  var outputImg = this._addOutput( Image2D );
+
+  /**************** PART 2.2 *********************************************/
+  // filling it with actual data
+  outputImg.setData(
+    outputBuffer,
+    inputImg.getWidth(),
+    inputImg.getHeight(),
+    ncpp
+  );
+  
+  
+  
+}else{
+  outputBuffer = null;
+  console.warn("The input data must have 1, 3 or 4 components per pixel.");
+  return;
+}
+...
+```
+
+For the sake of readability, the content was split in different parts.
+
+**Part 1** is about filling the output array based on its own content. In **Part 1.1** we do care about the alpha channel when we have 4 components, which consists in *continuing* every 4 channel. In **Part 1.2**, we don't care of what channel we are processing, we threshold them all.  
+
+**Part 2** is about creating the output `Image2D`. In **Part 2.1**, we can consider `_addOutput` as a sort of factory that will create a *constructed but blank* instance of `Image2D` and will automatically map it as an output of this filter. We could have given this output a specific *category* by adding another argument: `this._addOutput( Image2D, "myOutputCategory" );`. Since we call it without any *categrory* argument, the default will be *"0"*.  
+*Part 2.2* is about associating the typed array we just modified in the loop to the freshly created ouput image. For that we give the array, but also the size and the number of components per pixel.
+
+Then, don't forget to [register your filter](#register-your-filter) so that you can actually use it!
+
+### Could we do it another way?
+Sure, in may other other ways. A simple alternative would have been to:
+
+Make a clone of the input image:
+
+```javascript
+...
+var inputImg = this._getInput( 0 );
+var outputImage = inputImg.clone();
+var outputBuffer = outputImage.getData();
+...
+```
+
+Process `outputBuffer` the very same way, and in the end, creating mapping manually `outputImage` as an output with explicitely giving the category (*"0"* in this case):
+
+```javascript
+...
+this._output[0] = outputImage;
+...
+```
+And that's all, no need to call `this._addOutput` or `outputImg.setData` because since `outputImg` is a clone, it already carries the informations about size and number of components.
+
+This method is actually faster and potentially even easier to understand. The only disadvantage is that it lets the developper dealing with the output *category*, which might be a source of error when running the filter.
+
+# Various optimizations
+As said the [step-by-step](#simple-example) part, processing an image means processing very large typed arrays, and saving a single millisecond per pixel really matters!
+
+For some algorithm, you may need to use information from metadata extensivelly (ie. in a loop). If such metadata is initialized in the constructor or above in your code, using it like that:
+
+```javascript
+this._metadata.width
+```
+
+is faster than that:
+
+```javascript
+this._metadata["width"]
+```
+
+which is faster than that:
+
+```javascript
+this.getMetadata("width")
+```
+
+Using the getter is nice because it provides a layer of control and return null if the metadata does not exist but it's slower, so as long as your are using a metadata internally (from `this`) and that you know what you are doing (you are **sure** this metadata actually exists), then it's ok to call it like a regular object.

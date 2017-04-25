@@ -39,7 +39,8 @@ class CanvasImageWriter extends Filter{
     // call Filter constructor
     super();
 
-    this._inputValidator[ 0 ] = Image2D.TYPE();
+    this.addInputValidator(0, Image2D);
+    
     this.setMetadata("alpha", false);
     this.setMetadata("min", 0);
     this.setMetadata("max", 255);
@@ -57,6 +58,7 @@ class CanvasImageWriter extends Filter{
   * Initialize a new canvas object
   */
   _init(){
+
 
     var parentElem = document.getElementById( this.getMetadata("parentDivID") );
 

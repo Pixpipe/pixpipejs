@@ -6,6 +6,7 @@
 */
 
 
+import md5 from 'js-md5'
 import pako from 'pako'
 import { Filter } from '../core/Filter.js';
 
@@ -19,6 +20,12 @@ import { Filter } from '../core/Filter.js';
 * method `getOutput("uniqueID")`.
 * Gzip compressed files will be uncompressed.
 *
+* Once the filter is *updated*, you can query the `filenames` metadata (sorted by categories)
+* and also the `checksums` metadata using `.getMetadata()`. This later metadata 
+* give a unique *md5*, very convenient to compare if two files are actually the same.
+* Note that in case the file is *gziped*, the checksum is computed on the raw file,
+* not on the *un-gziped* buffer.
+*
 * **Usage**
 * - [examples/fileToArrayBuffer.html](../examples/fileToArrayBuffer.html)
 */
@@ -27,6 +34,12 @@ class FileToArrayBufferReader extends Filter {
   constructor(){
     super();
     this._outputCounter = 0;
+    
+    // filenames by categories
+    this.setMetadata("filenames", {});
+    
+    // md5 checksum by categories
+    this.setMetadata("checksums", {});
   }
 
 
@@ -53,8 +66,14 @@ class FileToArrayBufferReader extends Filter {
     reader.onloadend = function(event) {
         var result = event.target.result;
         
-
-        var extension = that._getInput(category).name.split('.').pop();
+        var filename = that._getInput(category).name;
+        var basename = filename.split(/[\\/]/).pop();
+        var extension = basename.split('.').pop();
+        var checksum = md5( result );
+        
+        // few metadata for recognizing files (potentially)
+        that._metadata.filenames[ category ] = basename;
+        that._metadata.checksums[ category ] = checksum;
 
         if( extension.localeCompare("pixp") ){
           // trying to un-gzip it with Pako

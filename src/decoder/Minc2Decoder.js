@@ -26,6 +26,7 @@ class Minc2Decoder extends Filter{
 
   constructor(){
     super();
+    this.addInputValidator(0, ArrayBuffer);
 
     this.setMetadata("debug", false);
 

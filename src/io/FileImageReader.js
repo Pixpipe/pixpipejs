@@ -30,9 +30,7 @@ class FileImageReader extends Filter {
 
   constructor(){
     super();
-
     this._allowedTypes = /image.*/;
-    this._addOutput( Image2D, 0 );
   }
 
 
@@ -44,7 +42,7 @@ class FileImageReader extends Filter {
     var file = this._getInput();
 
     if (file && file.type.match( this._allowedTypes )) {
-      this._isInputValid = true;
+      valid = true;
     }else{
       console.error("The file must be an image (jpg/png). The type " + file.type + " is not compatible with FileImageReader.");
     }
@@ -58,33 +56,38 @@ class FileImageReader extends Filter {
   */
   _run(){
 
-    if(! this.hasValidInput)
+    if(! this.hasValidInput() )
       return
 
     var that = this;
     var file = this._getInput();
 		var reader = new FileReader();
+    
+    reader.onload = function(e) {
+      var img = new Image();
+    
+      img.onload = function(){
+        
+        var tmpCanvas = document.createElement("canvas");
+        tmpCanvas.width = img.width;
+        tmpCanvas.height = img.height;
+        var canvasContext = tmpCanvas.getContext('2d');
+        canvasContext.drawImage(img, 0, 0);
+        var imageData = canvasContext.getImageData(0, 0, img.width, img.height);
+        var dataArray = imageData.data;
 
-		reader.onload = function(e) {
+        var img2D = that._addOutput( Image2D, 0 );
+        img2D.setData( dataArray, img.width, img.height);
 
-			var img = new Image();
-			img.src = reader.result;
-      var tmpCanvas = document.createElement("canvas");
-      tmpCanvas.width = img.width;
-      tmpCanvas.height = img.height;
-      var canvasContext = tmpCanvas.getContext('2d');
-      canvasContext.drawImage(img, 0, 0);
-      var imageData = canvasContext.getImageData(0, 0, tmpCanvas.width, tmpCanvas.height);
-      var dataArray = imageData.data;
-
-      var img2D = that.getOutput();
-      img2D.setData( dataArray, img.width, img.height);
-
-      if("ready" in that._events){
-        that._events.ready( that )
+        if("ready" in that._events){
+          that._events.ready( that )
+        }
       }
-		}
 
+      img.src = reader.result;
+    }
+    
+    
 		reader.readAsDataURL( file );
   }
 

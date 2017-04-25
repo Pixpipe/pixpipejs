@@ -58,6 +58,11 @@
                   addInput
                 </a>
                 <a
+                  href='#Filter.addInputValidator'
+                  class='regular block'>
+                  addInputValidator
+                </a>
+                <a
                   href='#Filter.addTimeRecord'
                   class='regular block'>
                   addTimeRecord
@@ -233,16 +238,6 @@
                   _run
                 </a>
               <a
-                href='#PixpDecoder'
-                class='block bold h3 bg-pink-alpha'>
-                PixpDecoder
-              </a>
-                <a
-                  href='#PixpDecoder._hasValidInput'
-                  class='regular block'>
-                  _hasValidInput
-                </a>
-              <a
                 href='#PixpEncoder'
                 class='block bold h3 bg-pink-alpha'>
                 PixpEncoder
@@ -256,6 +251,16 @@
                   href='#PixpEncoder.download'
                   class='regular block'>
                   download
+                </a>
+              <a
+                href='#PixpDecoder'
+                class='block bold h3 bg-pink-alpha'>
+                PixpDecoder
+              </a>
+                <a
+                  href='#PixpDecoder._hasValidInput'
+                  class='regular block'>
+                  _hasValidInput
                 </a>
               <a
                 href='#CanvasImageWriter'
@@ -313,16 +318,6 @@
                   _loadUrl
                 </a>
               <a
-                href='#SpectralScaleImageFilter'
-                class='block bold h3 bg-pink-alpha'>
-                SpectralScaleImageFilter
-              </a>
-                <a
-                  href='#SpectralScaleImageFilter._run'
-                  class='regular block'>
-                  _run
-                </a>
-              <a
                 href='#FileImageReader'
                 class='block bold h3 bg-pink-alpha'>
                 FileImageReader
@@ -336,6 +331,16 @@
                   href='#FileImageReader.hasValidInput'
                   class='regular block'>
                   hasValidInput
+                </a>
+              <a
+                href='#SpectralScaleImageFilter'
+                class='block bold h3 bg-pink-alpha'>
+                SpectralScaleImageFilter
+              </a>
+                <a
+                  href='#SpectralScaleImageFilter._run'
+                  class='regular block'>
+                  _run
                 </a>
               <a
                 href='#MniVolume'
@@ -837,6 +842,11 @@
                   class='regular block'>
                   setRawMetadata
                 </a>
+              <a
+                href='#SimpleThresholdFilter'
+                class='block bold h3 bg-pink-alpha'>
+                SimpleThresholdFilter
+              </a>
           </div>
         </div>
       </div>
@@ -1049,6 +1059,43 @@ should noly be used by the class that inherit Filter.</p>
           :
           <div class='force-inline'>
             <p>in case we want to get data from diferent categories.</p>
+
+          </div>
+        </li>
+    </ul>
+</section>
+          </div>
+        </div>
+        <div class='collapsible' id='Filter.addInputValidator'>
+          <a href='#Filter.addInputValidator'>
+            <code>
+              addInputValidator<span class='gray'>(category, InputType)</span>
+            </code>
+            <div class='force-inline'>
+              <p>Add an entry to the input validator. Made for be used with hasValidInput</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2'>
+<section class='py2 clearfix'>
+  <h2 id='Filter.addInputValidator' class='mt0'>
+    addInputValidator<span class='gray'>(category, InputType)</span>
+  </h2>
+  <p>Add an entry to the input validator. Made for be used with hasValidInput</p>
+
+    <h4>Parameters</h4>
+    <ul class='suppress-p-margin'>
+        <li><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a></code> <strong>category</strong>
+          :
+          <div class='force-inline'>
+            <p>category of input (can also be integer)</p>
+
+          </div>
+        </li>
+        <li><code>Type</code> <strong>InputType</strong>
+          :
+          <div class='force-inline'>
+            <p>the type of the expected input, like Image2D, Image3D, etc. without quotes</p>
 
           </div>
         </li>
@@ -1467,6 +1514,11 @@ be triggered when all the files given in input are translated into ArrayBuffers.
 Once ready, all the outputs are accecible using the same uniqueID with the
 method <code>getOutput(&quot;uniqueID&quot;)</code>.
 Gzip compressed files will be uncompressed.</p>
+<p>Once the filter is <em>updated</em>, you can query the <code>filenames</code> metadata (sorted by categories)
+and also the <code>checksums</code> metadata using <code>.getMetadata()</code>. This later metadata
+give a unique <em>md5</em>, very convenient to compare if two files are actually the same.
+Note that in case the file is <em>gziped</em>, the checksum is computed on the raw file,
+not on the <em>un-gziped</em> buffer.</p>
 <p><strong>Usage</strong></p>
 <ul>
 <li><a href="../examples/fileToArrayBuffer.html">examples/fileToArrayBuffer.html</a></li>
@@ -2209,42 +2261,6 @@ generic function for painting row, colum or whole</p>
         </div>
 </section>
 </div><div class='py1'><section class='py2 clearfix'>
-  <h2 id='PixpDecoder' class='mt0'>
-    PixpDecoder<span class='gray'></span>
-  </h2>
-  <p>A PixpDecoder instance decodes a *.pixp file and output an Image2D or Image3D.
-The input, specified by <code>.addInput(...)</code> must be an ArrayBuffer
-(from an <code>UrlToArrayBufferFilter</code>, an <code>UrlToArrayBufferReader</code> or anothrer source ).</p>
-<p><strong>Usage</strong></p>
-<ul>
-<li><a href="../examples/pixpFileToImage2D.html">examples/pixpFileToImage2D.html</a></li>
-</ul>
-
-      <h4>Instance members</h4>
-        <div class='collapsible' id='PixpDecoder._hasValidInput'>
-          <a href='#PixpDecoder._hasValidInput'>
-            <code>
-              _hasValidInput<span class='gray'></span>
-            </code>
-            <div class='force-inline'>
-              <p>[PRIVATE]
-Only accept Image2D and Image3D</p>
-
-            </div>
-          </a>
-          <div class='collapser border px2'>
-<section class='py2 clearfix'>
-  <h2 id='PixpDecoder._hasValidInput' class='mt0'>
-    _hasValidInput<span class='gray'></span>
-  </h2>
-  <p>[PRIVATE]
-Only accept Image2D and Image3D</p>
-
-</section>
-          </div>
-        </div>
-</section>
-</div><div class='py1'><section class='py2 clearfix'>
   <h2 id='PixpEncoder' class='mt0'>
     PixpEncoder<span class='gray'></span>
   </h2>
@@ -2299,6 +2315,42 @@ Only accept Image2D and Image3D</p>
     download<span class='gray'></span>
   </h2>
   <p>Download the generated file</p>
+
+</section>
+          </div>
+        </div>
+</section>
+</div><div class='py1'><section class='py2 clearfix'>
+  <h2 id='PixpDecoder' class='mt0'>
+    PixpDecoder<span class='gray'></span>
+  </h2>
+  <p>A PixpDecoder instance decodes a *.pixp file and output an Image2D or Image3D.
+The input, specified by <code>.addInput(...)</code> must be an ArrayBuffer
+(from an <code>UrlToArrayBufferFilter</code>, an <code>UrlToArrayBufferReader</code> or anothrer source ).</p>
+<p><strong>Usage</strong></p>
+<ul>
+<li><a href="../examples/pixpFileToImage2D.html">examples/pixpFileToImage2D.html</a></li>
+</ul>
+
+      <h4>Instance members</h4>
+        <div class='collapsible' id='PixpDecoder._hasValidInput'>
+          <a href='#PixpDecoder._hasValidInput'>
+            <code>
+              _hasValidInput<span class='gray'></span>
+            </code>
+            <div class='force-inline'>
+              <p>[PRIVATE]
+Only accept Image2D and Image3D</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2'>
+<section class='py2 clearfix'>
+  <h2 id='PixpDecoder._hasValidInput' class='mt0'>
+    _hasValidInput<span class='gray'></span>
+  </h2>
+  <p>[PRIVATE]
+Only accept Image2D and Image3D</p>
 
 </section>
           </div>
@@ -2561,7 +2613,12 @@ The <em>this</em> object will be in argument of this callback.</p>
 (String) using <code>addInput(&quot;...&quot;)</code> and add function to the event &quot;ready&quot; using
 <code>.on( &quot;ready&quot;, function(filter){ ... })</code>.
 The &quot;ready&quot; event will be called only when all input are loaded.
-Gzip compressed files will be uncompressed.</p>
+Gzip compressed files will be uncompressed.
+Once the filter is <em>updated</em>, you can query the <code>filenames</code> metadata (sorted by categories)
+and also the <code>checksums</code> metadata using <code>.getMetadata()</code>. This later metadata
+give a unique <em>md5</em>, very convenient to compare if two files are actually the same.
+Note that in case the file is <em>gziped</em>, the checksum is computed on the raw file,
+not on the <em>un-gziped</em> buffer.</p>
 <p><strong>Usage</strong></p>
 <ul>
 <li><a href="../examples/urlFileToArrayBuffer.html">examples/urlFileToArrayBuffer.html</a></li>
@@ -2602,42 +2659,6 @@ Perform a XMLHttpRequest with the given url and adds it to the output</p>
           </div>
         </li>
     </ul>
-</section>
-          </div>
-        </div>
-</section>
-</div><div class='py1'><section class='py2 clearfix'>
-  <h2 id='SpectralScaleImageFilter' class='mt0'>
-    SpectralScaleImageFilter<span class='gray'></span>
-  </h2>
-  <p>Multiply an image by the other, like a scaling function.
-The image requires two inputs named &quot;0&quot; and &quot;1&quot;.
-Simply use <code>addInput( myImg1, &quot;0&quot; )</code>
-and <code>addInput( myImg2, &quot;1&quot; )</code>. The input &quot;0&quot; can have 1 or more bands while
-the input &quot;1&quot; can have only one band since the same scale is apply to each band.</p>
-<p><strong>Usage</strong></p>
-<ul>
-<li><a href="../examples/forEachPixelGadient.html">examples/forEachPixelGadient.html</a></li>
-</ul>
-
-      <h4>Instance members</h4>
-        <div class='collapsible' id='SpectralScaleImageFilter._run'>
-          <a href='#SpectralScaleImageFilter._run'>
-            <code>
-              _run<span class='gray'></span>
-            </code>
-            <div class='force-inline'>
-              <p>Run the filter</p>
-
-            </div>
-          </a>
-          <div class='collapser border px2'>
-<section class='py2 clearfix'>
-  <h2 id='SpectralScaleImageFilter._run' class='mt0'>
-    _run<span class='gray'></span>
-  </h2>
-  <p>Run the filter</p>
-
 </section>
           </div>
         </div>
@@ -2698,6 +2719,42 @@ file2ImgFilter.update();</pre>
     hasValidInput<span class='gray'></span>
   </h2>
   <p>Overload the default method because HTML5 File is not a Pixpipe type</p>
+
+</section>
+          </div>
+        </div>
+</section>
+</div><div class='py1'><section class='py2 clearfix'>
+  <h2 id='SpectralScaleImageFilter' class='mt0'>
+    SpectralScaleImageFilter<span class='gray'></span>
+  </h2>
+  <p>Multiply an image by the other, like a scaling function.
+The image requires two inputs named &quot;0&quot; and &quot;1&quot;.
+Simply use <code>addInput( myImg1, &quot;0&quot; )</code>
+and <code>addInput( myImg2, &quot;1&quot; )</code>. The input &quot;0&quot; can have 1 or more bands while
+the input &quot;1&quot; can have only one band since the same scale is apply to each band.</p>
+<p><strong>Usage</strong></p>
+<ul>
+<li><a href="../examples/forEachPixelGadient.html">examples/forEachPixelGadient.html</a></li>
+</ul>
+
+      <h4>Instance members</h4>
+        <div class='collapsible' id='SpectralScaleImageFilter._run'>
+          <a href='#SpectralScaleImageFilter._run'>
+            <code>
+              _run<span class='gray'></span>
+            </code>
+            <div class='force-inline'>
+              <p>Run the filter</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2'>
+<section class='py2 clearfix'>
+  <h2 id='SpectralScaleImageFilter._run' class='mt0'>
+    _run<span class='gray'></span>
+  </h2>
+  <p>Run the filter</p>
 
 </section>
           </div>
@@ -5838,6 +5895,23 @@ Should not be used as-is.</p>
 </section>
           </div>
         </div>
+</section>
+</div><div class='py1'><section class='py2 clearfix'>
+  <h2 id='SimpleThresholdFilter' class='mt0'>
+    SimpleThresholdFilter<span class='gray'></span>
+  </h2>
+  <p>An instance of SimpleThresholdFilter perform a threshold on an input image.
+The input must be an Image2D with 1, 3 or 4 bands.
+The default threshold can be changed using <code>.setMetadata(&quot;threshold&quot;, 128)</code>
+and the low and high value can be replaced using <code>.setMetadata(&quot;lowValue&quot;, 0)</code>
+and <code>.setMetadata(&quot;highValue&quot;, 255)</code>. In addition, in case of dealing with a
+RGBA image, you can decide of preserving the alpha channel or not, using
+<code>.setMetadata(&quot;preserveAlpha&quot;, true)</code>.</p>
+<p><strong>Usage</strong></p>
+<ul>
+<li><a href="../examples/imageThresholding.html">examples/imageThresholding.html</a></li>
+</ul>
+
 </section>
 </div>
         </div>

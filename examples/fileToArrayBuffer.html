@@ -39,7 +39,13 @@
       var filenames = filter.getMetadata("filenames");
 
       filter.forEachOutput( function( category, output){
-        document.getElementById('fileInfo').innerHTML += "<br><b>" + filenames[category] + "</b> successfully loaded (" + output.byteLength + " bytes)";
+        //document.getElementById('fileInfo').innerHTML += "<br><b>" + filenames[category] + "</b> successfully loaded (" + output.byteLength + " bytes)";
+        
+        var info = "<br><b>" + file2Buff.getMetadata("filenames")[ category ] + " - </b> " + 
+                    output.byteLength + "bytes  - " +
+                    " <b>md5:</b> " + file2Buff.getMetadata("checksums")[ category ] + " ";
+
+        document.getElementById('fileInfo').innerHTML += info;
       })
 
     });
