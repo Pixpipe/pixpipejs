@@ -24,21 +24,13 @@ import { Image3D } from '../core/Image3D.js';
 class PixpDecoder extends Filter {
   constructor(){
     super();
-
-  }
-
-
-  /**
-  * [PRIVATE]
-  * Only accept Image2D and Image3D
-  */
-  _hasValidInput(){
-    var input = this._getInput();
-    return input &&  input instanceof ArrayBuffer;
+    this.addInputValidator(0, ArrayBuffer);
   }
 
 
   _run(){
+
+    console.log(this._input);
 
     if(! this.hasValidInput() ){
       console.warn("PixpDecoder can only decode ArrayBuffer.");

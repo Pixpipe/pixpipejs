@@ -34,7 +34,11 @@
     urlArrBuff.on("ready", function( filter ){
 
       urlArrBuff.forEachOutput( function(category, output){
-        document.getElementById('fileInfo').innerHTML += "<br><b>output " + category+ ":</b> successfully loaded (" + output.byteLength + " bytes)";
+        var info = "<br><b>" + urlArrBuff.getMetadata("filenames")[ category ] + " - </b> " + 
+                    output.byteLength + "bytes  - " +
+                    " <b>md5:</b> " + urlArrBuff.getMetadata("checksums")[ category ] + " ";
+
+        document.getElementById('fileInfo').innerHTML += info;
       });
 
     })

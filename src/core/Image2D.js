@@ -214,6 +214,7 @@ class Image2D extends PixpipeContainer{
   }
 
 
+
   /**
   * Get the internal image data (pointer)
   * @return {TypedArray} the original data (most likely a Float32Array), dont mess up with this one.
