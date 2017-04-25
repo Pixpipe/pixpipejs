@@ -40,7 +40,6 @@ class ForEachPixelImageFilter extends ImageToImageFilter {
 
   constructor(){
     super();
-    this._addOutput( Image2D );
   }
 
 
@@ -48,7 +47,7 @@ class ForEachPixelImageFilter extends ImageToImageFilter {
   * Run the filter
   */
   _run(){
-    if( ! this.hasValidInput())
+    if( ! this.hasValidInput() )
       return;
 
     var inputImage2D = this._getInput();
@@ -61,7 +60,7 @@ class ForEachPixelImageFilter extends ImageToImageFilter {
     this._forEachPixelOfSuch(bufferCopy, firstPixel, lastPixel, increment );
 
     // 1 - init the output
-    var outputImg = this.getOutput();
+    var outputImg = this._addOutput( Image2D );
 
     // 2 - tune the output
     outputImg.setData(

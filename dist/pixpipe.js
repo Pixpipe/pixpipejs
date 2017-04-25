@@ -208,6 +208,11 @@ class Filter extends PixpipeObject {
   */
   addInput( inputObject, category=0){
 
+    if(!inputObject){
+      console.warn("A null input cannot be added.");
+      return;
+    }
+
     // the category may not exist, we create it
     if( !(category in this._input) ){
       this._input[category] = null;
@@ -360,6 +365,21 @@ class Filter extends PixpipeObject {
     this._isOutputReady = true;
   }
 
+
+  /**
+  * Add an entry to the input validator. Made for be used with hasValidInput
+  * @param {String} category - category of input (can also be integer)
+  * @param {Type} InputType - the type of the expected input, like Image2D, Image3D, etc. without quotes
+  */
+  addInputValidator( category, InputType ){
+    if("TYPE" in InputType){
+      this._inputValidator[ category ] = InputType.TYPE();
+    }else{
+      this._inputValidator[ category ] = InputType;
+    }
+  }
+
+
   /**
   * Validate the input data using a model defined in _inputValidator.
   * Every class that implement Filter must implement their own _inputValidator.
@@ -369,9 +389,32 @@ class Filter extends PixpipeObject {
     var that = this;
     var inputCategories = Object.keys( this._inputValidator );
     var valid = true;
+    
+    if(inputCategories.length == 0){
+      valid = false;
+      console.warn("No input validator was added. Filter cannot run. Use addInputValidator(...) to specify input types.");
+    }
 
     inputCategories.forEach( function(key){
-      valid = valid && that._getInput( key ).isOfType( that._inputValidator[ key ] );
+      var inputOfCategory = that._getInput( key );
+      
+      if(inputOfCategory){
+        if("isOfType" in inputOfCategory){
+          valid = valid && inputOfCategory.isOfType( that._inputValidator[ key ] );
+        }else{
+          try{
+            valid = valid && (inputOfCategory instanceof that._inputValidator[ key ] );
+          }catch(e){
+            valid = false;
+          }
+        }
+          
+      }
+      // input simply not existing!
+      else{
+        valid = false;
+      }
+    
     });
 
     if(!valid){
@@ -1301,7 +1344,7 @@ class ImageToImageFilter extends Filter {
 
   constructor(){
     super();
-    this._inputValidator[ 0 ] = Image2D.TYPE();
+    this.addInputValidator(0, Image2D);
   }
 
 
@@ -1611,7 +1654,8 @@ class CanvasImageWriter extends Filter{
     // call Filter constructor
     super();
 
-    this._inputValidator[ 0 ] = Image2D.TYPE();
+    this.addInputValidator(0, Image2D);
+    
     this.setMetadata("alpha", false);
     this.setMetadata("min", 0);
     this.setMetadata("max", 255);
@@ -1629,6 +1673,7 @@ class CanvasImageWriter extends Filter{
   * Initialize a new canvas object
   */
   _init(){
+
 
     var parentElem = document.getElementById( this.getMetadata("parentDivID") );
 
@@ -1892,9 +1937,7 @@ class FileImageReader extends Filter {
 
   constructor(){
     super();
-
     this._allowedTypes = /image.*/;
-    this._addOutput( Image2D, 0 );
   }
 
 
@@ -1906,7 +1949,7 @@ class FileImageReader extends Filter {
     var file = this._getInput();
 
     if (file && file.type.match( this._allowedTypes )) {
-      this._isInputValid = true;
+      valid = true;
     }else{
       console.error("The file must be an image (jpg/png). The type " + file.type + " is not compatible with FileImageReader.");
     }
@@ -1920,33 +1963,38 @@ class FileImageReader extends Filter {
   */
   _run(){
 
-    if(! this.hasValidInput)
+    if(! this.hasValidInput() )
       return
 
     var that = this;
     var file = this._getInput();
 		var reader = new FileReader();
+    
+    reader.onload = function(e) {
+      var img = new Image();
+    
+      img.onload = function(){
+        
+        var tmpCanvas = document.createElement("canvas");
+        tmpCanvas.width = img.width;
+        tmpCanvas.height = img.height;
+        var canvasContext = tmpCanvas.getContext('2d');
+        canvasContext.drawImage(img, 0, 0);
+        var imageData = canvasContext.getImageData(0, 0, img.width, img.height);
+        var dataArray = imageData.data;
 
-		reader.onload = function(e) {
+        var img2D = that._addOutput( Image2D, 0 );
+        img2D.setData( dataArray, img.width, img.height);
 
-			var img = new Image();
-			img.src = reader.result;
-      var tmpCanvas = document.createElement("canvas");
-      tmpCanvas.width = img.width;
-      tmpCanvas.height = img.height;
-      var canvasContext = tmpCanvas.getContext('2d');
-      canvasContext.drawImage(img, 0, 0);
-      var imageData = canvasContext.getImageData(0, 0, tmpCanvas.width, tmpCanvas.height);
-      var dataArray = imageData.data;
+        if("ready" in that._events){
+          that._events.ready( that );
+        }
+      };
 
-      var img2D = that.getOutput();
-      img2D.setData( dataArray, img.width, img.height);
-
-      if("ready" in that._events){
-        that._events.ready( that );
-      }
-		};
-
+      img.src = reader.result;
+    };
+    
+    
 		reader.readAsDataURL( file );
   }
 
@@ -11612,6 +11660,7 @@ class Minc2Decoder extends Filter{
 
   constructor(){
     super();
+    this.addInputValidator(0, ArrayBuffer);
 
     this.setMetadata("debug", false);
 
@@ -14451,6 +14500,7 @@ class NiftiDecoder extends Filter {
 
   constructor(){
     super();
+    this.addInputValidator(0, ArrayBuffer);
     this.setMetadata("debug", false);
   }
 
@@ -15060,7 +15110,7 @@ class PixpEncoder extends Filter {
 class PixpDecoder extends Filter {
   constructor(){
     super();
-
+    this.addInputValidator(0, ArrayBuffer);
   }
 
 
@@ -15075,6 +15125,8 @@ class PixpDecoder extends Filter {
 
 
   _run(){
+
+    console.log(this._input);
 
     if(! this.hasValidInput() ){
       console.warn("PixpDecoder can only decode ArrayBuffer.");
@@ -15233,7 +15285,6 @@ class ForEachPixelImageFilter extends ImageToImageFilter {
 
   constructor(){
     super();
-    this._addOutput( Image2D );
   }
 
 
@@ -15241,7 +15292,7 @@ class ForEachPixelImageFilter extends ImageToImageFilter {
   * Run the filter
   */
   _run(){
-    if( ! this.hasValidInput())
+    if( ! this.hasValidInput() )
       return;
 
     var inputImage2D = this._getInput();
@@ -15254,7 +15305,7 @@ class ForEachPixelImageFilter extends ImageToImageFilter {
     this._forEachPixelOfSuch(bufferCopy, firstPixel, lastPixel, increment );
 
     // 1 - init the output
-    var outputImg = this.getOutput();
+    var outputImg = this._addOutput( Image2D );
 
     // 2 - tune the output
     outputImg.setData(
@@ -15329,10 +15380,10 @@ class SpectralScaleImageFilter extends ImageToImageFilter {
     super();
 
     // both input are images.
-    this._inputValidator[ 0 ] = Image2D.TYPE();
-    this._inputValidator[ 1 ] = Image2D.TYPE();
+    this.addInputValidator(0, Image2D);
+    this.addInputValidator(1, Image2D);
 
-    this._addOutput( Image2D );
+    
   }
 
 
@@ -15340,6 +15391,10 @@ class SpectralScaleImageFilter extends ImageToImageFilter {
   * Run the filter
   */
   _run(){
+    if(! this.hasValidInput() ){
+      return;
+    }
+    
     // filter must have valid input of the same size
     if( !this.hasSameSizeInput() || !this.hasValidInput()){
       return;
@@ -15368,7 +15423,7 @@ class SpectralScaleImageFilter extends ImageToImageFilter {
     }
 
     // building the output
-    var img2D = this.getOutput();
+    var img2D = this._addOutput( Image2D );
     img2D.setData(
       data0,
       dataImg0.getWidth(),
@@ -16730,7 +16785,6 @@ class ImageBlendExpressionFilter extends ImageToImageFilter {
 
   constructor(){
     super();
-    this._addOutput( Image2D );
   }
 
 
@@ -16769,7 +16823,7 @@ class ImageBlendExpressionFilter extends ImageToImageFilter {
     }
 
     // building the output
-    var img2D = this.getOutput();
+    var img2D = this._addOutput( Image2D );
 
     img2D.setData(
       outputBuffer,
@@ -16806,18 +16860,20 @@ class MultiplyImageFilter extends ImageToImageFilter {
 
   constructor(){
     super();
-    this._addOutput( Image2D );
+    this.addInputValidator(0, Image2D);
+    this.addInputValidator(1, Image2D);
   }
 
 
   _run(){
 
-    if( !this.hasSameNcppInput() || !this.hasSameSizeInput() ){
+    // the input checking
+    if( ! this.hasValidInput()){
+      console.warn("A filter of type MultiplyImageFilter requires 1 input of category '0' and one input of category '1'.");
       return;
     }
-
-    if(!this.hasInputOfCategory(0) || !this.hasInputOfCategory(1) ){
-      console.warn("A filter of type MultiplyImageFilter requires 1 input of category '0' and one input of category '1'.");
+      
+    if( !this.hasSameNcppInput() || !this.hasSameSizeInput() ){
       return;
     }
 
@@ -16841,7 +16897,7 @@ class MultiplyImageFilter extends ImageToImageFilter {
 
 
 
-    var img2D = this.getOutput();
+    var img2D = this._addOutput( Image2D );
 
     img2D.setData(
       outputBuffer,
@@ -16892,16 +16948,13 @@ class SimpleThresholdFilter extends ImageToImageFilter {
   
   _run(){
     // the input checking
-    if(!this.hasInputOfCategory(0)){
-      console.warn("A filter of type SimpleThresholdFilter requires 1 input of category '0'.");
+    if( ! this.hasValidInput())
       return;
-    }
     
     var inputImg = this._getInput( 0 );
-    
-    // creating a blank Image2D output
-    this._addOutput( Image2D );
-    
+
+    var outputImage = inputImg.clone();
+
     // Number of bands
     var ncpp = inputImg.getComponentsPerPixel();
     
@@ -16911,15 +16964,15 @@ class SimpleThresholdFilter extends ImageToImageFilter {
     var highValue = this.getMetadata("highValue");
     
     // get a copy of the input buffer so that we dont overwrite it!
-    var outputBuffer = inputImg.getDataCopy();
+    var outputBuffer = outputImage.getData();
     
     // if the input image has:
     // - a single band, OR
     // - three bands (assuming RGB), OR
-    // - four bands (assuming RGBA) but we do NOT want to preserve the transparency
+    // - four bands (assuming RGBA)
     if(ncpp == 1 || ncpp == 3 || ncpp == 4){
-      
-      if( this.getMetadata("preserveAlpha") ){
+      // we want to preserve transparency ( = not affected by thresholding)
+      if( this.getMetadata("preserveAlpha") && ncpp == 4){
         
         for(var i=0; i<outputBuffer.length; i++){
           // every four band is an alpha band
@@ -16929,24 +16982,31 @@ class SimpleThresholdFilter extends ImageToImageFilter {
           outputBuffer[i] = outputBuffer[i] < threshold ? lowValue : highValue;
         }
         
+      // transparency is altered by the threshold like any other channel
       }else{
-        
         for(var i=0; i<outputBuffer.length; i++){
-          outputBuffer[i] == outputBuffer[i] < threshold ? lowValue : highValue;
+          outputBuffer[i] = outputBuffer[i] < threshold ? lowValue : highValue;
         }
         
       }
       
-      // filling the output image
-      var outputImg = this.getOutput();
+      this._output[0] = outputImage;
+      
+      /*
+      // creating a blank Image2D output and getting the ref
+      var outputImg = this._addOutput( Image2D );
+      
+      // filling it with actual data
       outputImg.setData(
         outputBuffer,
         inputImg.getWidth(),
         inputImg.getHeight(),
         ncpp
       );
+      */
       
     }else{
+      outputBuffer = null;
       console.warn("The input data must have 1, 3 or 4 components per pixel.");
       return;
     }
@@ -16987,7 +17047,7 @@ class Image3DToMosaicFilter extends Filter{
 
   constructor(){
     super();
-    this._inputValidator[ 0 ] = Image3D.TYPE();
+    this.addInputValidator(0, Image3D);
 
     // default settings
     this.setMetadata("maxWidth", 4096);

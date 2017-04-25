@@ -24,18 +24,20 @@ class MultiplyImageFilter extends ImageToImageFilter {
 
   constructor(){
     super();
-    this._addOutput( Image2D );
+    this.addInputValidator(0, Image2D);
+    this.addInputValidator(1, Image2D);
   }
 
 
   _run(){
 
-    if( !this.hasSameNcppInput() || !this.hasSameSizeInput() ){
+    // the input checking
+    if( ! this.hasValidInput()){
+      console.warn("A filter of type MultiplyImageFilter requires 1 input of category '0' and one input of category '1'.");
       return;
     }
-
-    if(!this.hasInputOfCategory(0) || !this.hasInputOfCategory(1) ){
-      console.warn("A filter of type MultiplyImageFilter requires 1 input of category '0' and one input of category '1'.");
+      
+    if( !this.hasSameNcppInput() || !this.hasSameSizeInput() ){
       return;
     }
 
@@ -59,7 +61,7 @@ class MultiplyImageFilter extends ImageToImageFilter {
 
 
 
-    var img2D = this.getOutput();
+    var img2D = this._addOutput( Image2D );
 
     img2D.setData(
       outputBuffer,

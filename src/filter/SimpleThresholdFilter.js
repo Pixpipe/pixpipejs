@@ -30,22 +30,19 @@ class SimpleThresholdFilter extends ImageToImageFilter {
     this.setMetadata("threshold", 128);
     this.setMetadata("lowValue", 0);
     this.setMetadata("highValue", 255);
-    this.setMetadata("preserveAlpha", false);
+    this.setMetadata("preserveAlpha", true);
   }
   
   
   _run(){
     // the input checking
-    if(!this.hasInputOfCategory(0)){
-      console.warn("A filter of type SimpleThresholdFilter requires 1 input of category '0'.");
+    if( ! this.hasValidInput())
       return;
-    }
     
     var inputImg = this._getInput( 0 );
-    
-    // creating a blank Image2D output
-    this._addOutput( Image2D );
-    
+
+    var outputImage = inputImg.clone();
+
     // Number of bands
     var ncpp = inputImg.getComponentsPerPixel();
     
@@ -55,15 +52,15 @@ class SimpleThresholdFilter extends ImageToImageFilter {
     var highValue = this.getMetadata("highValue");
     
     // get a copy of the input buffer so that we dont overwrite it!
-    var outputBuffer = inputImg.getDataCopy();
+    var outputBuffer = outputImage.getData();
     
     // if the input image has:
     // - a single band, OR
     // - three bands (assuming RGB), OR
     // - four bands (assuming RGBA)
     if(ncpp == 1 || ncpp == 3 || ncpp == 4){
-      
-      if( this.getMetadata("preserveAlpha") ){
+      // we want to preserve transparency ( = not affected by thresholding)
+      if( this.getMetadata("preserveAlpha") && ncpp == 4){
         
         for(var i=0; i<outputBuffer.length; i++){
           // every four band is an alpha band
@@ -73,24 +70,31 @@ class SimpleThresholdFilter extends ImageToImageFilter {
           outputBuffer[i] = outputBuffer[i] < threshold ? lowValue : highValue;
         }
         
+      // transparency is altered by the threshold like any other channel
       }else{
-        // if 
         for(var i=0; i<outputBuffer.length; i++){
-          outputBuffer[i] == outputBuffer[i] < threshold ? lowValue : highValue;
+          outputBuffer[i] = outputBuffer[i] < threshold ? lowValue : highValue;
         }
         
       }
       
-      // filling the output image
-      var outputImg = this.getOutput();
+      this._output[0] = outputImage;
+      
+      /*
+      // creating a blank Image2D output and getting the ref
+      var outputImg = this._addOutput( Image2D );
+      
+      // filling it with actual data
       outputImg.setData(
         outputBuffer,
         inputImg.getWidth(),
         inputImg.getHeight(),
         ncpp
       );
+      */
       
     }else{
+      outputBuffer = null;
       console.warn("The input data must have 1, 3 or 4 components per pixel.");
       return;
     }
