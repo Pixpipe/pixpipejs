@@ -1,7 +1,7 @@
 ![Pixpipe.js](images/pixpipe256.png)
 
 # Cookbook
-This cookbook will help you to become familiar with the architecture of **Pixpipe.js**, to understand the code samples and eventually, create your own pipeline.
+This cookbook will help you to become familiar with the architecture of **Pixpipe.js**, to understand the code samples and eventually, create your own filters and structures.
 
 # Table of content
 - [Overview](#overview)
@@ -18,27 +18,27 @@ This cookbook will help you to become familiar with the architecture of **Pixpip
 - [Building the documentation](#building-the-documentation)
 - [Learning with examples](#learning-with-examples)
 - [Create your own custom filter](#create-your-own-custom-filter)
-  - [What should my filter inherit from](#what-should-my-filter-inherit-from)
-  - [What are inputs and outputs](#what-are-inputs-and-outputs)
-  - [What are metadata](#what-are-metadata)
-  - [Can I had class attributes](#can-i-had-class-attributes)
-  - [How to make the filter runable](#how-to-make-the-filter-runable)
+  - [What should my filter inherit from?](#what-should-my-filter-inherit-from)
+  - [What are inputs and outputs?](#what-are-inputs-and-outputs)
+  - [What are metadata?](#what-are-metadata)
+  - [Can I add class attributes?](#can-i-add-class-attributes)
+  - [How to make the filter runnable?](#how-to-make-the-filter-runnable)
   - [Keep in mind](#keep-in-mind)
   - [Register your filter](#register-your-filter)
   - [Simple example](#simple-example)
     - [First, the structure](#first-the-structure)
     - [Adding the constructor](#adding-the-constructor)
     - [The _run() method](#the-run-method)
-    - [Could we do it another way](#could-we-do-it-another-way)
+    - [Could we do it another way?](#could-we-do-it-another-way)
 - [Various optimizations](#various-optimizations)
 
 # Overview
-The point of Pixpipe is to be easy to use and easy to contribute to. This goal leads to take some decision:  
+The point of Pixpipe is to be easy to use and easy to contribute to. This goal leads to take some decisions:  
 - using a source bundler ([Rollup](http://rollupjs.org/))
 - properly define a folder hierarchy within `src`:
   - `core` for the most low level *interfaces* and *classes*
   - `decoder` for specific file decoding and encoding
-  - `filter` for all the filters (this could, maybe, be better arranged)
+  - `filter` for all the filters (this could be arraged in a better way)
   - `io` for dowloading/reading/writing files from the filesystem or AJAX
   - `pixpipe.js` the main entry point where are listed all the modules
 - A modular approach and a clear separation of objects.
@@ -47,7 +47,7 @@ The point of Pixpipe is to be easy to use and easy to contribute to. This goal l
 # Projects used in Pixpipe
 Sometimes, it's just not worth reiventing the wheel. Here are the libraries Pixpipe uses and includes at build time:
 - [Pako](https://github.com/nodeca/pako), for high speed file compression/decompression in JS.
-- [FileSaver.js](https://github.com/eligrey/FileSaver.js), to easly trigger file downloading to the user
+- [FileSaver.js](https://github.com/eligrey/FileSaver.js), to easily trigger file downloading to the user side
 - [expr-eval](https://github.com/silentmatt/expr-eval), to evaluate math expression and create quick filter prototype
 - [js-md5](https://github.com/emn178/js-md5), to generate a unique checksum for each loaded files
 
@@ -314,10 +314,10 @@ var allMetaNames = myFilter.getMetadataKeys();
 myFilter.copyMetadataFrom( anotherFilter );
 ```
 
-## Can I had class attributes?
+## Can I add class attributes?
 Yes, like any other *class*, your custom filter can use attributes to store temporary data, but not for inputs, outputs or metadata of major importance.
 
-## How to make the filter runable?
+## How to make the filter runnable?
 As seen earlier, to run a filter, the method `.update()` should be called, though, the method that should be implemented in every new custom filter is `_run()`.  
 
 The `_run()` method is called by `update()` along with some others. It should perform the reading of inputs, the processing and the writing of outputs. 
