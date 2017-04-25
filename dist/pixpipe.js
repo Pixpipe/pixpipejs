@@ -15032,9 +15032,10 @@ class PixpEncoder extends Filter {
 
   /**
   * [PRIVATE]
+  * overwrite the original from Filter
   * Only accept Image2D and Image3D
   */
-  _hasValidInput(){
+  hasValidInput(){
     var input = this._getInput();
     return input && ( input.isOfType(Image2D.TYPE()) || input.isOfType(Image3D.TYPE()) );
   }
@@ -15111,16 +15112,6 @@ class PixpDecoder extends Filter {
   constructor(){
     super();
     this.addInputValidator(0, ArrayBuffer);
-  }
-
-
-  /**
-  * [PRIVATE]
-  * Only accept Image2D and Image3D
-  */
-  _hasValidInput(){
-    var input = this._getInput();
-    return input &&  input instanceof ArrayBuffer;
   }
 
 
