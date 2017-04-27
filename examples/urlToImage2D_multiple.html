@@ -32,15 +32,15 @@
   url2ImgFilter.addInput( "images/gaspe.jpg", 1 );
 
   // the image is loaded...
-  // here, filter = url2ImgFilter
-  url2ImgFilter.on("ready", function( filter ){
+  // here, this = url2ImgFilter
+  url2ImgFilter.on("ready", function(){
 
     // Image 1
     // create a filter to write the image into a canvas
     var imageToCanvasFilter = new pixpipe.CanvasImageWriter();
     imageToCanvasFilter.setMetadata( "parentDivID", "myDiv_0" );
     // use the output of the UrlImageReader as the input for CanvasImageWriter
-    imageToCanvasFilter.addInput( filter.getOutput( 0 ) );
+    imageToCanvasFilter.addInput( this.getOutput( 0 ) );
     // actually copy the data from the Image2D into the inner HTML5 canvas
     imageToCanvasFilter.update();
 
@@ -50,7 +50,7 @@
     var imageToCanvasFilter2 = new pixpipe.CanvasImageWriter();
     imageToCanvasFilter2.setMetadata( "parentDivID", "myDiv_1" );
     // use the output of the UrlImageReader as the input for CanvasImageWriter
-    imageToCanvasFilter2.addInput( filter.getOutput( 1 ) );
+    imageToCanvasFilter2.addInput( this.getOutput( 1 ) );
     // actually copy the data from the Image2D into the inner HTML5 canvas
     imageToCanvasFilter2.update();
 

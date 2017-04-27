@@ -42,16 +42,16 @@
   url2ImgFilter.addInput( "images/mask.png", 1 );
 
   // the image is loaded...
-  // here, filter = url2ImgFilter
-  url2ImgFilter.on( "ready", function(filter){
+  // here, this = url2ImgFilter
+  url2ImgFilter.on( "ready", function(){
     var loadedImage = url2ImgFilter.getOutput();
 
 
     var blendingFilter = new pixpipe.ImageBlendExpressionFilter();
     // input "0" : the image to be scale spectrally
-    blendingFilter.addInput( url2ImgFilter.getOutput(0), "A" );
+    blendingFilter.addInput( this.getOutput(0), "A" );
     // input "1" : the image with spectral factor
-    blendingFilter.addInput( url2ImgFilter.getOutput(1), "B" );
+    blendingFilter.addInput( this.getOutput(1), "B" );
 
     // only shows where the mask is white
     blendingFilter.setMetadata("expression", "A * (B/255)");
