@@ -109,7 +109,7 @@ class FileToArrayBufferReader extends Filter {
     this._outputCounter ++;
 
     if( this._outputCounter == this.getNumberOfInputs() ){
-      that._events.ready( this );
+      that.triggerEvent("ready");
     }
   }
 

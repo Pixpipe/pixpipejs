@@ -36,9 +36,9 @@
   url2ImgFilter.addInput( "images/sd.jpg" );
 
   // the image is loaded...
-  // here, filter = url2ImgFilter
-  url2ImgFilter.on("ready", function( filter ){
-    var loadedImage = filter.getOutput();
+  // here, this = url2ImgFilter
+  url2ImgFilter.on("ready", function(){
+    var loadedImage = this.getOutput();
 
     // the factor image just apply a different weight on each channel
     var factorImage = new pixpipe.Image2D({

@@ -95,7 +95,7 @@ class Filter extends PixpipeObject {
 
 
   /**
-  * Perform an action for each output.
+  * Perform an action for each output. Within the callback, "this" is this filter.
   * @param {function} cb - callback function called for evey single output
   * with 2 args: the output category and the outpub object.
   */
@@ -107,14 +107,14 @@ class Filter extends PixpipeObject {
     var outputCategories = this.getOutputCategories();
 
     for(var o=0; o<outputCategories.length; o++){
-      cb( outputCategories[o], this.getOutput(outputCategories[o]) );
+      cb.call(this, outputCategories[o], this.getOutput(outputCategories[o]) );
     }
   }
 
 
   /**
   * [PRIVATE]
-  * Perform an action for each input.
+  * Perform an action for each input. Within the callback, "this" is this filter.
   * @param {function} cb - callback function to call for every single input
   * with 2 args: the output category and the outpub object.
   */
@@ -127,7 +127,7 @@ class Filter extends PixpipeObject {
     var inputCategories = this.getInputCategories();
 
     for(var i=0; i<inputCategories.length; i++){
-      cb( inputCategories[i], this._getInput(inputCategories[i]) );
+      cb.call(this, inputCategories[i], this._getInput(inputCategories[i]) );
     }
   }
 
@@ -339,6 +339,45 @@ class Filter extends PixpipeObject {
   */
   on(eventId, callback){
     this._events[ eventId ] = callback;
+  }
+
+
+  /**
+  * Call an event with arguments.
+  * Inside the callback, the "this" object will be the filter.
+  * @param {String} eventName - name of the event to trigger
+  * @param {Object} any other param can follow
+  */
+  triggerEvent( eventName /* any other arguments to follow */ ){
+    var returnValue = null;
+    
+    if(this.hasEvent(eventName)){
+      if( arguments.length > 1 ){
+        
+        // a-la-mano slicing argument array to comply with V8 JS engine optimization...
+        var argToSend = [];
+        for(var i=1; i<arguments.length; i++){
+          argToSend.push( arguments[i] );
+        }
+        
+        returnValue = this._events[eventName].apply(this, argToSend )
+      }else{
+        returnValue = this._events[eventName].call(this);
+      }
+    }else{
+      console.warn("The event " + eventName + " does not exist.");
+    }
+    
+    return returnValue;
+  }
+
+
+  /**
+  * Tells if an event of such name was registered
+  * @return {Boolean} true if registred, false if not
+  */
+  hasEvent( eventName ){
+    return (eventName in this._events);
   }
 
 

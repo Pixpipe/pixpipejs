@@ -239,7 +239,7 @@ class Filter extends PixpipeObject {
 
 
   /**
-  * Perform an action for each output.
+  * Perform an action for each output. Within the callback, "this" is this filter.
   * @param {function} cb - callback function called for evey single output
   * with 2 args: the output category and the outpub object.
   */
@@ -251,14 +251,14 @@ class Filter extends PixpipeObject {
     var outputCategories = this.getOutputCategories();
 
     for(var o=0; o<outputCategories.length; o++){
-      cb( outputCategories[o], this.getOutput(outputCategories[o]) );
+      cb.call(this, outputCategories[o], this.getOutput(outputCategories[o]) );
     }
   }
 
 
   /**
   * [PRIVATE]
-  * Perform an action for each input.
+  * Perform an action for each input. Within the callback, "this" is this filter.
   * @param {function} cb - callback function to call for every single input
   * with 2 args: the output category and the outpub object.
   */
@@ -271,7 +271,7 @@ class Filter extends PixpipeObject {
     var inputCategories = this.getInputCategories();
 
     for(var i=0; i<inputCategories.length; i++){
-      cb( inputCategories[i], this._getInput(inputCategories[i]) );
+      cb.call(this, inputCategories[i], this._getInput(inputCategories[i]) );
     }
   }
 
@@ -483,6 +483,45 @@ class Filter extends PixpipeObject {
   */
   on(eventId, callback){
     this._events[ eventId ] = callback;
+  }
+
+
+  /**
+  * Call an event with arguments.
+  * Inside the callback, the "this" object will be the filter.
+  * @param {String} eventName - name of the event to trigger
+  * @param {Object} any other param can follow
+  */
+  triggerEvent( eventName /* any other arguments to follow */ ){
+    var returnValue = null;
+    
+    if(this.hasEvent(eventName)){
+      if( arguments.length > 1 ){
+        
+        // a-la-mano slicing argument array to comply with V8 JS engine optimization...
+        var argToSend = [];
+        for(var i=1; i<arguments.length; i++){
+          argToSend.push( arguments[i] );
+        }
+        
+        returnValue = this._events[eventName].apply(this, argToSend );
+      }else{
+        returnValue = this._events[eventName].call(this);
+      }
+    }else{
+      console.warn("The event " + eventName + " does not exist.");
+    }
+    
+    return returnValue;
+  }
+
+
+  /**
+  * Tells if an event of such name was registered
+  * @return {Boolean} true if registred, false if not
+  */
+  hasEvent( eventName ){
+    return (eventName in this._events);
   }
 
 
@@ -1893,8 +1932,8 @@ class UrlImageReader extends Filter {
         that._loadedCounter ++;
 
         // call the loaded callback only when all images are loaded
-        if(that._loadedCounter == that.getNumberOfInputs() && "ready" in that._events){
-          that._events.ready( that );
+        if(that._loadedCounter == that.getNumberOfInputs()){
+          that.triggerEvent("ready");
         }
 
       }catch(e){
@@ -1986,9 +2025,8 @@ class FileImageReader extends Filter {
         var img2D = that._addOutput( Image2D, 0 );
         img2D.setData( dataArray, img.width, img.height);
 
-        if("ready" in that._events){
-          that._events.ready( that );
-        }
+        // the "ready" can now be called
+        that.triggerEvent("ready");
       };
 
       img.src = reader.result;
@@ -11526,7 +11564,7 @@ class FileToArrayBufferReader extends Filter {
     this._outputCounter ++;
 
     if( this._outputCounter == this.getNumberOfInputs() ){
-      that._events.ready( this );
+      that.triggerEvent("ready");
     }
   }
 
@@ -11622,8 +11660,8 @@ class UrlToArrayBufferReader extends Filter {
 
       that._outputCounter ++;
 
-      if( that._outputCounter == that.getNumberOfInputs() && "ready" in that._events){
-        that._events.ready( that );
+      if( that._outputCounter == that.getNumberOfInputs()){
+        that.triggerEvent("ready");
       }
     };
 
@@ -15318,7 +15356,8 @@ class ForEachPixelImageFilter extends ImageToImageFilter {
   */
   _forEachPixelOfSuch(buffer, firstPixel, lastPixel, increment ){
     // abort if no callback per pixel
-    if( ! ("pixel" in this._events)){
+    //if( ! ("pixel" in this._events)){
+    if( ! ( this.hasEvent("pixel"))){
       console.warn("No function to apply per pixel was specified.");
       return;
     }
@@ -15334,7 +15373,7 @@ class ForEachPixelImageFilter extends ImageToImageFilter {
       var position2D = inputImage2D.get2dPositionFrom1dIndex(p);
       currentColor = inputBuffer.slice(firstCompoPos1D, firstCompoPos1D + componentPerPixel);
 
-      var newColor = this._events.pixel( position2D, currentColor);
+      var newColor = this.triggerEvent("pixel", position2D, currentColor);
 
       if(newColor && newColor.length == componentPerPixel){
         for(var i=0; i<componentPerPixel; i++){

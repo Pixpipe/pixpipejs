@@ -83,8 +83,8 @@ class UrlImageReader extends Filter {
         that._loadedCounter ++;
 
         // call the loaded callback only when all images are loaded
-        if(that._loadedCounter == that.getNumberOfInputs() && "ready" in that._events){
-          that._events.ready( that )
+        if(that._loadedCounter == that.getNumberOfInputs()){
+          that.triggerEvent("ready");
         }
 
       }catch(e){

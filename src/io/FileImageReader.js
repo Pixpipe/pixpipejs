@@ -79,9 +79,8 @@ class FileImageReader extends Filter {
         var img2D = that._addOutput( Image2D, 0 );
         img2D.setData( dataArray, img.width, img.height);
 
-        if("ready" in that._events){
-          that._events.ready( that )
-        }
+        // the "ready" can now be called
+        that.triggerEvent("ready");
       }
 
       img.src = reader.result;

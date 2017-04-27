@@ -82,7 +82,8 @@ class ForEachPixelImageFilter extends ImageToImageFilter {
   */
   _forEachPixelOfSuch(buffer, firstPixel, lastPixel, increment ){
     // abort if no callback per pixel
-    if( ! ("pixel" in this._events)){
+    //if( ! ("pixel" in this._events)){
+    if( ! ( this.hasEvent("pixel"))){
       console.warn("No function to apply per pixel was specified.");
       return;
     }
@@ -98,7 +99,7 @@ class ForEachPixelImageFilter extends ImageToImageFilter {
       var position2D = inputImage2D.get2dPositionFrom1dIndex(p);
       currentColor = inputBuffer.slice(firstCompoPos1D, firstCompoPos1D + componentPerPixel)
 
-      var newColor = this._events.pixel( position2D, currentColor);
+      var newColor = this.triggerEvent("pixel", position2D, currentColor);
 
       if(newColor && newColor.length == componentPerPixel){
         for(var i=0; i<componentPerPixel; i++){

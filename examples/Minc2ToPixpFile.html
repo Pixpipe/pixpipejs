@@ -35,9 +35,10 @@
     urlArrBuff.addInput( "images/mri_t2w.mnc", 0 );
 
     // define what to do when all input URL are loaded into ArrayBuffer
-    urlArrBuff.on("ready", function( filter ){
+    // here, this = urlArrBuff
+    urlArrBuff.on("ready", function( ){
       // undefined buffer
-      var buff = urlArrBuff.getOutput();
+      var buff = this.getOutput();
 
       // Decoding the minc2 dataset from the buffer
       var minc2Decoder = new pixpipe.Minc2Decoder();

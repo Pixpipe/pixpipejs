@@ -40,9 +40,9 @@
   url2ImgFilter.addInput( "images/sd.jpg" );
 
   // the image is loaded...
-  // here, filter = url2ImgFilter
-  url2ImgFilter.on( "ready", function(filter){
-    var loadedImage = url2ImgFilter.getOutput();
+  // here, this = url2ImgFilter
+  url2ImgFilter.on( "ready", function(){
+    var loadedImage = this.getOutput();
 
     // create an image, monoband, init to black (0)
     var myGradientImage = new pixpipe.Image2D({width: loadedImage.getWidth(), height: loadedImage.getHeight(), color: [0, 0, 0, 0]})
