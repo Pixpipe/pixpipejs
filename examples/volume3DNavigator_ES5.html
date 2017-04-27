@@ -351,11 +351,13 @@
 
     // the image is loaded...
     // here, filter = url2ImgFilter
-    file2Buff.on("ready", function( filter ){
+    file2Buff.on("ready", function( ){
+      
+      console.log(this);
 
-      var filenames = filter.getMetadata("filenames");
+      var filenames = this.getMetadata("filenames");
 
-      var volBuff = filter.getOutput();
+      var volBuff = this.getOutput();
 
       var genericDecoder = new pixpipe.Image3DGenericDecoder();
       //var genericDecoder = new pixpipe.Minc2Decoder();

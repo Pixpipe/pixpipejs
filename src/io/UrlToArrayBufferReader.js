@@ -93,8 +93,8 @@ class UrlToArrayBufferReader extends Filter {
 
       that._outputCounter ++;
 
-      if( that._outputCounter == that.getNumberOfInputs() && "ready" in that._events){
-        that._events.ready( that );
+      if( that._outputCounter == that.getNumberOfInputs()){
+        that.triggerEvent("ready");
       }
     };
 

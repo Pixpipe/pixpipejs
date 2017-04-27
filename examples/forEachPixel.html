@@ -40,13 +40,13 @@
   var url2ImgFilter = new pixpipe.UrlImageReader();
 
   // the image is loaded...
-  // here, filter = url2ImgFilter
-  url2ImgFilter.on( "ready", function(filter){
+  // here, this = url2ImgFilter
+  url2ImgFilter.on( "ready", function(){
 
     var forEachPixelFilter = new pixpipe.ForEachPixelImageFilter();
 
     // add the input input
-    forEachPixelFilter.addInput( url2ImgFilter.getOutput() );
+    forEachPixelFilter.addInput( this.getOutput() );
 
     // Apply this treatment to each pixel of the image.
     // args:

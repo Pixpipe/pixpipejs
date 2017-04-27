@@ -29,9 +29,10 @@
     urlArrBuff.addInput( "images/sd.pixp" );
 
     // define what to do when all input URL are loaded into ArrayBuffer
-    urlArrBuff.on("ready", function( filter ){
+    // here, this = urlArrBuff
+    urlArrBuff.on("ready", function(){
 
-      var buffer = urlArrBuff.getOutput();
+      var buffer = this.getOutput();
 
       var decoder = new pixpipe.PixpDecoder();
       decoder.addInput( buffer );

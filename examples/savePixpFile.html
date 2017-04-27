@@ -34,9 +34,9 @@
   var encoder = new pixpipe.PixpEncoder();
 
   // the image is loaded...
-  // here, filter = url2ImgFilter
-  url2ImgFilter.on( "ready", function(filter){
-    var image = filter.getOutput();
+  // here, this = url2ImgFilter
+  url2ImgFilter.on( "ready", function(){
+    var image = this.getOutput();
     //var image = new pixpipe.Image2D({width: 10, height: 5, color: [255, 128, 64, 255]})
 
     encoder.setMetadata("filename", "sd.pixp"); // optional, default: untitled.pixp
