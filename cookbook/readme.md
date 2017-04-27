@@ -1,4 +1,4 @@
-![Pixpipe.js](images/pixpipe256.png)
+[![Pixpipe.js](images/pixpipe256.png)](https://github.com/jonathanlurie/pixpipejs)
 
 
 # Cookbook
