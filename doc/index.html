@@ -103,6 +103,11 @@
                   getTime
                 </a>
                 <a
+                  href='#Filter.hasEvent'
+                  class='regular block'>
+                  hasEvent
+                </a>
+                <a
                   href='#Filter.hasInputOfCategory'
                   class='regular block'>
                   hasInputOfCategory
@@ -121,6 +126,11 @@
                   href='#Filter.setMetadata'
                   class='regular block'>
                   setMetadata
+                </a>
+                <a
+                  href='#Filter.triggerEvent'
+                  class='regular block'>
+                  triggerEvent
                 </a>
                 <a
                   href='#Filter.update'
@@ -293,6 +303,16 @@
                   _loadUrl
                 </a>
               <a
+                href='#SpectralScaleImageFilter'
+                class='block bold h3 bg-pink-alpha'>
+                SpectralScaleImageFilter
+              </a>
+                <a
+                  href='#SpectralScaleImageFilter._run'
+                  class='regular block'>
+                  _run
+                </a>
+              <a
                 href='#FileImageReader'
                 class='block bold h3 bg-pink-alpha'>
                 FileImageReader
@@ -306,16 +326,6 @@
                   href='#FileImageReader.hasValidInput'
                   class='regular block'>
                   hasValidInput
-                </a>
-              <a
-                href='#SpectralScaleImageFilter'
-                class='block bold h3 bg-pink-alpha'>
-                SpectralScaleImageFilter
-              </a>
-                <a
-                  href='#SpectralScaleImageFilter._run'
-                  class='regular block'>
-                  _run
                 </a>
               <a
                 href='#MniVolume'
@@ -941,7 +951,7 @@ If no input was Initialized, it creates one.</p>
             </code>
             <div class='force-inline'>
               <p>[PRIVATE]
-Perform an action for each input.</p>
+Perform an action for each input. Within the callback, &quot;this&quot; is this filter.</p>
 
             </div>
           </a>
@@ -951,7 +961,7 @@ Perform an action for each input.</p>
     _forEachInput<span class='gray'>(cb)</span>
   </h2>
   <p>[PRIVATE]
-Perform an action for each input.</p>
+Perform an action for each input. Within the callback, &quot;this&quot; is this filter.</p>
 
     <h4>Parameters</h4>
     <ul class='suppress-p-margin'>
@@ -1134,7 +1144,7 @@ should noly be used by the class that inherit Filter.</p>
               forEachOutput<span class='gray'>(cb)</span>
             </code>
             <div class='force-inline'>
-              <p>Perform an action for each output.</p>
+              <p>Perform an action for each output. Within the callback, &quot;this&quot; is this filter.</p>
 
             </div>
           </a>
@@ -1143,7 +1153,7 @@ should noly be used by the class that inherit Filter.</p>
   <h2 id='Filter.forEachOutput' class='mt0'>
     forEachOutput<span class='gray'>(cb)</span>
   </h2>
-  <p>Perform an action for each output.</p>
+  <p>Perform an action for each output. Within the callback, &quot;this&quot; is this filter.</p>
 
     <h4>Parameters</h4>
     <ul class='suppress-p-margin'>
@@ -1344,6 +1354,42 @@ Return -1 if one or both time record</p>
 </section>
           </div>
         </div>
+        <div class='collapsible' id='Filter.hasEvent'>
+          <a href='#Filter.hasEvent'>
+            <code>
+              hasEvent<span class='gray'>(eventName)</span>
+            </code>
+            <div class='force-inline'>
+              <p>Tells if an event of such name was registered</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2'>
+<section class='py2 clearfix'>
+  <h2 id='Filter.hasEvent' class='mt0'>
+    hasEvent<span class='gray'>(eventName)</span>
+  </h2>
+  <p>Tells if an event of such name was registered</p>
+
+    <h4>Parameters</h4>
+    <ul class='suppress-p-margin'>
+        <li> <strong>eventName</strong>
+          :
+          <div class='force-inline'>
+            
+          </div>
+        </li>
+    </ul>
+      <h4>Returns</h4>
+      <code><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean">Boolean</a></code></code>
+      :
+      <div class='force-inline'>
+        <p>true if registred, false if not</p>
+
+      </div>
+</section>
+          </div>
+        </div>
         <div class='collapsible' id='Filter.hasInputOfCategory'>
           <a href='#Filter.hasInputOfCategory'>
             <code>
@@ -1469,6 +1515,45 @@ Not mandatory to use, still a good practice.</p>
           :
           <div class='force-inline'>
             
+          </div>
+        </li>
+    </ul>
+</section>
+          </div>
+        </div>
+        <div class='collapsible' id='Filter.triggerEvent'>
+          <a href='#Filter.triggerEvent'>
+            <code>
+              triggerEvent<span class='gray'>(eventName, any)</span>
+            </code>
+            <div class='force-inline'>
+              <p>Call an event with arguments.
+Inside the callback, the &quot;this&quot; object will be the filter.</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2'>
+<section class='py2 clearfix'>
+  <h2 id='Filter.triggerEvent' class='mt0'>
+    triggerEvent<span class='gray'>(eventName, any)</span>
+  </h2>
+  <p>Call an event with arguments.
+Inside the callback, the &quot;this&quot; object will be the filter.</p>
+
+    <h4>Parameters</h4>
+    <ul class='suppress-p-margin'>
+        <li><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a></code> <strong>eventName</strong>
+          :
+          <div class='force-inline'>
+            <p>name of the event to trigger</p>
+
+          </div>
+        </li>
+        <li><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a></code> <strong>any</strong>
+          :
+          <div class='force-inline'>
+            <p>other param can follow</p>
+
           </div>
         </li>
     </ul>
@@ -2563,6 +2648,42 @@ Perform a XMLHttpRequest with the given url and adds it to the output</p>
         </div>
 </section>
 </div><div class='py1'><section class='py2 clearfix'>
+  <h2 id='SpectralScaleImageFilter' class='mt0'>
+    SpectralScaleImageFilter<span class='gray'></span>
+  </h2>
+  <p>Multiply an image by the other, like a scaling function.
+The image requires two inputs named &quot;0&quot; and &quot;1&quot;.
+Simply use <code>addInput( myImg1, &quot;0&quot; )</code>
+and <code>addInput( myImg2, &quot;1&quot; )</code>. The input &quot;0&quot; can have 1 or more bands while
+the input &quot;1&quot; can have only one band since the same scale is apply to each band.</p>
+<p><strong>Usage</strong></p>
+<ul>
+<li><a href="../examples/forEachPixelGadient.html">examples/forEachPixelGadient.html</a></li>
+</ul>
+
+      <h4>Instance members</h4>
+        <div class='collapsible' id='SpectralScaleImageFilter._run'>
+          <a href='#SpectralScaleImageFilter._run'>
+            <code>
+              _run<span class='gray'></span>
+            </code>
+            <div class='force-inline'>
+              <p>Run the filter</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2'>
+<section class='py2 clearfix'>
+  <h2 id='SpectralScaleImageFilter._run' class='mt0'>
+    _run<span class='gray'></span>
+  </h2>
+  <p>Run the filter</p>
+
+</section>
+          </div>
+        </div>
+</section>
+</div><div class='py1'><section class='py2 clearfix'>
   <h2 id='FileImageReader' class='mt0'>
     FileImageReader<span class='gray'></span>
   </h2>
@@ -2618,42 +2739,6 @@ file2ImgFilter.update();</pre>
     hasValidInput<span class='gray'></span>
   </h2>
   <p>Overload the default method because HTML5 File is not a Pixpipe type</p>
-
-</section>
-          </div>
-        </div>
-</section>
-</div><div class='py1'><section class='py2 clearfix'>
-  <h2 id='SpectralScaleImageFilter' class='mt0'>
-    SpectralScaleImageFilter<span class='gray'></span>
-  </h2>
-  <p>Multiply an image by the other, like a scaling function.
-The image requires two inputs named &quot;0&quot; and &quot;1&quot;.
-Simply use <code>addInput( myImg1, &quot;0&quot; )</code>
-and <code>addInput( myImg2, &quot;1&quot; )</code>. The input &quot;0&quot; can have 1 or more bands while
-the input &quot;1&quot; can have only one band since the same scale is apply to each band.</p>
-<p><strong>Usage</strong></p>
-<ul>
-<li><a href="../examples/forEachPixelGadient.html">examples/forEachPixelGadient.html</a></li>
-</ul>
-
-      <h4>Instance members</h4>
-        <div class='collapsible' id='SpectralScaleImageFilter._run'>
-          <a href='#SpectralScaleImageFilter._run'>
-            <code>
-              _run<span class='gray'></span>
-            </code>
-            <div class='force-inline'>
-              <p>Run the filter</p>
-
-            </div>
-          </a>
-          <div class='collapser border px2'>
-<section class='py2 clearfix'>
-  <h2 id='SpectralScaleImageFilter._run' class='mt0'>
-    _run<span class='gray'></span>
-  </h2>
-  <p>Run the filter</p>
 
 </section>
           </div>
