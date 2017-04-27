@@ -44,13 +44,13 @@
     imageToCanvasFilter.setMetadata("reset", false);  // to display multiple canvas in a single div
     
     // the image is loaded...
-    // here, filter = url2ImgFilter
-    file2Buff.on("ready", function( filter ){
+    // here, this = url2ImgFilter
+    file2Buff.on("ready", function(){
 
-      var filenames = filter.getMetadata("filenames");
+      var filenames = this.getMetadata("filenames");
 
       // raw buffer from file
-      var buff = filter.getOutput();
+      var buff = this.getOutput();
 
       var pixpDecoder = new pixpipe.PixpDecoder();
       pixpDecoder.addInput( buff );

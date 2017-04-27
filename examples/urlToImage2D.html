@@ -33,10 +33,10 @@
   url2ImgFilter.addInput( "images/sd.jpg" );
 
   // the image is loaded...
-  // here, filter = url2ImgFilter
-  url2ImgFilter.on("ready", function( filter ){
+  // here, this = url2ImgFilter
+  url2ImgFilter.on("ready", function(){
     // use the output of the UrlImageReader as the input for CanvasImageWriter
-    imageToCanvasFilter.addInput( filter.getOutput() );
+    imageToCanvasFilter.addInput( this.getOutput() );
     // actually copy the data from the Image2D into the inner HTML5 canvas
     imageToCanvasFilter.update();
   })

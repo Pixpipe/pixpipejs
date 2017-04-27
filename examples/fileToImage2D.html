@@ -38,10 +38,10 @@
     var file2ImgFilter = new pixpipe.FileImageReader();
 
     // the image is loaded...
-    // here, filter = url2ImgFilter
-    file2ImgFilter.on("ready", function( filter ){
+    // here, this = url2ImgFilter
+    file2ImgFilter.on("ready", function(){
         // use the output of the UrlImageReader as the input for CanvasImageWriter
-        imageToCanvasFilter.addInput( filter.getOutput() );
+        imageToCanvasFilter.addInput( this.getOutput() );
         // actually copy the data from the Image2D into the inner HTML5 canvas
         imageToCanvasFilter.update();
     });

@@ -31,12 +31,14 @@
     urlArrBuff.addInput( "images/mask.png", 1 );
 
     // define what to do when all input URL are loaded into ArrayBuffer
-    urlArrBuff.on("ready", function( filter ){
+    // here, this = urlArrBuff
+    urlArrBuff.on("ready", function(){
 
-      urlArrBuff.forEachOutput( function(category, output){
-        var info = "<br><b>" + urlArrBuff.getMetadata("filenames")[ category ] + " - </b> " + 
+      this.forEachOutput( function(category, output){
+        console.log(this);
+        var info = "<br><b>" + this.getMetadata("filenames")[ category ] + " - </b> " + 
                     output.byteLength + "bytes  - " +
-                    " <b>md5:</b> " + urlArrBuff.getMetadata("checksums")[ category ] + " ";
+                    " <b>md5:</b> " + this.getMetadata("checksums")[ category ] + " ";
 
         document.getElementById('fileInfo').innerHTML += info;
       });
