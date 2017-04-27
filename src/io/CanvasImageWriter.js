@@ -105,8 +105,8 @@ class CanvasImageWriter extends Filter{
     var ncppSrc = image.getComponentsPerPixel();
 
     // only Image2d with 1 or 4 bands can be displayed
-    if( ncppSrc != 1 && ncppSrc != 4){
-      console.warn("Cannot write Image in canvas if contains other than 1 or 4 bands.");
+    if( ncppSrc != 1 && ncppSrc != 3 && ncppSrc != 4){
+      console.warn("Cannot write Image in canvas if contains other than 1, 3 or 4 bands.");
       return;
     }
 
@@ -167,7 +167,7 @@ class CanvasImageWriter extends Filter{
         }
 
         // regular RGB
-        canvasImageDataArray[destCounter] = this._stretchMinMax(value);
+        canvasImageDataArray[destCounter] = this._stretchMinMax(originalImageDataArray[i]);
         destCounter ++;
       }
 

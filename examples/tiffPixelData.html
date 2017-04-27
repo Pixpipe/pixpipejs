@@ -15,7 +15,8 @@
   <ul>
     <li>open a local tiff file, using <code>pixpipe.FileToArrayBufferReader</code></li>
     <li>redirect the file buffer into a <code>pixpipe.tiffDecoder</code> to extract tiff dataset and metadata</li>
-    <li>get the output as a generique <code>pixpipe.Image2D</code> object</li>
+    <li>get the output as a generic <code>pixpipe.Image2D</code> object</li>
+    <li>write all pixel values in csv format using <code>pixpipe.ForEachPixelImageFilter</code></li>
     <li>display the image using <code>pixpipe.CanvasImageWriter</code></li>
   </ul>
 
@@ -63,8 +64,6 @@
         imageToCanvasFilter.addInput( img );
         imageToCanvasFilter.update();
         
-        
-        
         var forEachPixelFilter = new pixpipe.ForEachPixelImageFilter();
         var descString = "# index; value; posX; posY\n";
         var counter = 0;
@@ -87,15 +86,10 @@
           return null;
         });
 
-        
-        
         // run the filter
-        forEachPixelFilter.update();
-        
+        forEachPixelFilter.update();        
         document.getElementById("outputStream").value = descString;
       }
-      
-
     });
 
 

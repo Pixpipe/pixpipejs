@@ -9,7 +9,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "rollup -c",
-    "min": "java -jar closurecompiler/compiler.jar --js dist/pixpipe.js --js_output_file dist/pixpipe.min.js_NO_HEADER && printf \"// Build date: $(date '+%Y-%m%-dT%H:%M:%S')\n\n\" > dist/pixpipe.min.js && cat header.txt >> dist/pixpipe.min.js && cat dist/pixpipe.min.js_NO_HEADER >> dist/pixpipe.min.js && rm dist/pixpipe.min.js_NO_HEADER",
+    "min": "java -jar closurecompiler/compiler.jar --language_out ECMASCRIPT5_STRICT --js dist/pixpipe.js --js_output_file dist/pixpipe.min.js_NO_HEADER && printf \"// Build date: $(date '+%Y-%m%-dT%H:%M:%S')\n\n\" > dist/pixpipe.min.js && cat header.txt >> dist/pixpipe.min.js && cat dist/pixpipe.min.js_NO_HEADER >> dist/pixpipe.min.js && rm dist/pixpipe.min.js_NO_HEADER",
     "doc": "documentation --format html --name Pixpipejs --theme ./doc/themes/default -o ./doc/ --config ./doc/documentation.json src/pixpipe.js"
   },
   "repository": {
