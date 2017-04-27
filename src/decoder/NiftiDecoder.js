@@ -7,7 +7,7 @@
 * Lab       MCIN - Montreal Neurological Institute
 */
 
-import pako from 'pako'
+import pako from 'pako';
 import { Filter } from '../core/Filter.js';
 import { MniVolume } from '../core/MniVolume.js';
 
