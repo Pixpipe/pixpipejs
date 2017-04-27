@@ -1,0 +1,86 @@
+<html>
+<head>
+  <title>File to Nifti</title>
+
+  <script src="../dist/pixpipe.js"></script>
+  <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700,900" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <h1><a href="https://github.com/jonathanlurie/pixpipejs"><span style="color: #ff91d7">Pixpipe</span><span style="color: #FFFFFF">js</span></a></h1>
+  <p>
+  This does the following :
+  <ul>
+    <li>open a local tiff file, using <code>pixpipe.FileToArrayBufferReader</code></li>
+    <li>redirect the file buffer into a <code>pixpipe.tiffDecoder</code> to extract tiff dataset and metadata</li>
+    <li>get the output as a generique <code>pixpipe.Image2D</code> object</li>
+    <li>display the image using <code>pixpipe.CanvasImageWriter</code></li>
+  </ul>
+
+  </p>
+
+  <div>
+		Select an file:
+		<input type="file" id="fileInput">
+    <br>
+    <span id="fileInfo"></span>
+	</div>
+
+  <div id="myDiv"></div>
+
+  <script>
+  window.onload = function() {
+
+    var fileInput = document.getElementById('fileInput');
+
+    // The filter to read image from URL
+    var file2Buff = new pixpipe.FileToArrayBufferReader();
+
+    // the image is loaded...
+    // here, this = url2ImgFilter
+    file2Buff.on("ready", function(){
+
+      var filenames = this.getMetadata("filenames");
+
+      var buff = this.getOutput();
+
+      var tiffDecoder = new pixpipe.TiffDecoder();
+      tiffDecoder.addInput( buff );
+      tiffDecoder.update();
+
+      if( tiffDecoder.getNumberOfOutputs() ){
+        var img = tiffDecoder.getOutput();
+        
+        // create a filter to write the image into a canvas
+        var imageToCanvasFilter = new pixpipe.CanvasImageWriter( );
+        imageToCanvasFilter.setMetadata( "parentDivID", "myDiv" );
+        imageToCanvasFilter.addInput( img );
+        imageToCanvasFilter.update();
+      }
+      
+
+    });
+
+
+    // event listener of the file input
+    fileInput.addEventListener('change', function(e) {
+      var files = e.target.files;
+      var filenames = {};
+
+      for(var i=0; i<files.length; i++){
+        // set the input, an HTML5 File object and a category (ID)
+        file2Buff.addInput(files[i], i);
+        filenames[i] = files[i].name ;
+      }
+
+      file2Buff.setMetadata("filenames", filenames);
+
+      // Perform the reading + conversion ibto ArrayBuffer
+      file2Buff.update();
+		});
+
+  }
+  </script>
+
+</body>
+</html>
