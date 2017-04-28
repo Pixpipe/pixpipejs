@@ -156,25 +156,19 @@ class CanvasImageWriter extends Filter{
 
     // input image is RGB
     }else if(ncppSrc == 3){
-      console.warn("From RGB Image2D to RGBA canvas, not sure of this implementation.");
-      var destCounter = 0;
+      var counter = 0;
 
-      for(var i=0; i<originalImageDataArray.length; i++){
-        // adding the Alpha chanel
-        if( i%4 == 3){
-          canvasImageDataArray[destCounter] = 255;
-          destCounter++;
+      for(var i=0; i<canvasImageDataArray.length; i++){
+        if(i%4 == 3){
+          canvasImageDataArray[i] = 255;
+        }else{
+          canvasImageDataArray[i] = this._stretchMinMax(originalImageDataArray[ counter ]);
+          counter ++;
         }
-
-        // regular RGB
-        canvasImageDataArray[destCounter] = this._stretchMinMax(originalImageDataArray[i]);
-        destCounter ++;
       }
-
     }
 
     this._ctx.putImageData(canvasImageData, 0, 0);
-
   }
 
 
