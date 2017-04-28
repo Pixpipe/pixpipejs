@@ -29,6 +29,7 @@ This [documentation](http://me.jonathanlurie.fr/pixpipejs/doc/)  is autogenerate
 Here is the list of compatible formats:
 - jpeg (to Image2D)
 - png (to Image2D)
+- tiff (to Image2D)
 - NIfTI (to Image3D / MniVolume)
 - Minc2 (to Image3D / MniVolume)
 - Pixp (generic *Pixpipe* format for both Image2D and Image3D )
@@ -80,6 +81,7 @@ For saving intermediate or final results to a local storage, Pixpipe needs a fil
 - Add an example like volume3DNavigator but with autoload
 - Texture 16bit for volume3DNavigator
 - Better manage voxel access in Image3D
+- Build an Image3D from a list of Image2D
 - ~~Add an efficient way to minify the code~~
 - ~~Add a generic Image3D decoder so that a user does not have to care about format~~
 - ~~Load a file as a ArrayBuffer with a AJAX~~

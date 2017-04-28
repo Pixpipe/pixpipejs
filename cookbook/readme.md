@@ -58,6 +58,7 @@ Sometimes, it's just not worth reinventing the wheel. Here are the libraries Pix
 - [FileSaver.js](https://github.com/eligrey/FileSaver.js), to easily trigger file downloading to the user side
 - [expr-eval](https://github.com/silentmatt/expr-eval), to evaluate math expression and create quick filter prototype
 - [js-md5](https://github.com/emn178/js-md5), to generate a unique checksum for each loaded files
+- [geotiff](https://github.com/constantinius/geotiff.js) to decode Tiff and BigTiff images
 
 
 # Core architecture
@@ -174,6 +175,7 @@ Here, we will learn what is an `Image2D`, how to display it in a canvas using `C
 - [Create an Image2D from an image URL and display it](http://me.jonathanlurie.fr/pixpipejs/examples/urlToImage2D.html) ([source](https://github.com/jonathanlurie/pixpipejs/tree/master/examples/urlToImage2D.html))
 - [Same but with multiple images](http://me.jonathanlurie.fr/pixpipejs/examples/urlToImage2D_multiple.html) ([source](https://github.com/jonathanlurie/pixpipejs/tree/master/examples/urlToImage2D_multiple.html)))
 - [Create an Image2D from a local file and display it](http://me.jonathanlurie.fr/pixpipejs/examples/fileToImage2D.html) ([source](https://github.com/jonathanlurie/pixpipejs/tree/master/examples/fileToImage2D.html))
+- [Open a Tiff and make it an Image2D](http://me.jonathanlurie.fr/pixpipejs/examples/fileToTiff.html) ([source](https://github.com/jonathanlurie/pixpipejs/tree/master/examples/fileToTiff.html))
 
 
 ## Simple filters for Image2D
@@ -187,6 +189,7 @@ A `Filter` should **NEVER** modify the input data.
 - [Save a Image2D to a `*.pixp` file](http://me.jonathanlurie.fr/pixpipejs/examples/savePixpFile.html) ([source](https://github.com/jonathanlurie/pixpipejs/tree/master/examples/savePixpFile.html))
 - [Load a `*.pixp` file that contains an Image2D and display it](http://me.jonathanlurie.fr/pixpipejs/examples/pixpFileToImage2D.html) ([source](https://github.com/jonathanlurie/pixpipejs/tree/master/examples/pixpFileToImage2D.html))
 - [Multiply an image by another](http://me.jonathanlurie.fr/pixpipejs/examples/multiplyImage2D.html) ([source](https://github.com/jonathanlurie/pixpipejs/tree/master/examples/multiplyImage2D.html))
+- [Open a Tiff and display its pixel values in csv format](http://me.jonathanlurie.fr/pixpipejs/examples/tiffPixelData.html) ([source](https://github.com/jonathanlurie/pixpipejs/tree/master/examples/tiffPixelData.html))
 
 
 ## Playing with 3D medical dataset
