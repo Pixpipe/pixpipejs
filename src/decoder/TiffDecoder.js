@@ -6,7 +6,6 @@
 */
 
 import geotiff from 'geotiff';
-
 import { Filter } from '../core/Filter.js';
 import { Image2D } from '../core/Image2D.js';
 
