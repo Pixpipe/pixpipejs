@@ -1853,9 +1853,9 @@ class CanvasImageWriter extends Filter{
 */
 
 /**
-* An instance of UrlImageReader takes an image URL as input and
+* An instance of UrlImageReader takes an image URL to jpeg or png as input and
 * returns an Image2D as output. Use the regular `addInput()` and `getOuput()`
-* with no argument for that.
+* with no argument for that. For Tiff format, use TiffDecoder instead.
 * Reading a file from URL takes an AJAX request, which is asynchronous. For this
 * reason, what happens next, once the Image2D is created must take place in the
 * callback defined by the event .on("ready", function(){ ... }).
@@ -1949,8 +1949,9 @@ class UrlImageReader extends Filter {
 */
 
 /**
-* An instance of FileImageReader takes a HTML5 File object as input and
-* returns an Image2D as output. The point is mainly to use it with a file dialog.
+* An instance of FileImageReader takes a HTML5 File object of a png or jpeg image 
+* as input and returns an Image2D as output.  For Tiff format, use TiffDecoder instead.
+* The point is mainly to use it with a file dialog.
 * Use the regular `addInput()` and `getOuput()` with no argument for that.
 * Reading a local file is an asynchronous process. For this
 * reason, what happens next, once the Image2D is created must take place in the
@@ -19270,11 +19271,17 @@ if (typeof window !== "undefined") {
 */
 
 /**
-* Read and decode Tiff format. This decoder is experimental.
-* Takes an ArrayBuffer as input and output a Image2D in case of successful rdecoding.
-* TiffDecoder uses two JS tiff reader: UTIF and tiff. The first is good for RGB and RGBA
+* Read and decode Tiff format. The decoder for BigTiff is experimental.
+* Takes an ArrayBuffer of a tiff file as input and the TiffDecoder outputs an Image2D.
+* Tiff format is very broad and this decoder, thanks to the Geotiff npm package
+* is compatible with single or multiband images, with or without compression, using
+* various bith depth and types (8bits, 32bits, etc.)
 *
 * Info: Tiff 6.0 specification http://www.npes.org/pdf/TIFF-v6.pdf
+*
+* **Usage**
+* - [examples/savePixpFile.html](../examples/fileToTiff.html)
+*
 */
 class TiffDecoder extends Filter {
   constructor() {
