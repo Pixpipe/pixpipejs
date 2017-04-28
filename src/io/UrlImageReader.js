@@ -10,9 +10,9 @@ import { Filter } from '../core/Filter.js';
 
 
 /**
-* An instance of UrlImageReader takes an image URL as input and
+* An instance of UrlImageReader takes an image URL to jpeg or png as input and
 * returns an Image2D as output. Use the regular `addInput()` and `getOuput()`
-* with no argument for that.
+* with no argument for that. For Tiff format, use TiffDecoder instead.
 * Reading a file from URL takes an AJAX request, which is asynchronous. For this
 * reason, what happens next, once the Image2D is created must take place in the
 * callback defined by the event .on("ready", function(){ ... }).

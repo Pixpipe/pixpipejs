@@ -1,8 +1,28 @@
+/*
+* Author   Jonathan Lurie - http://me.jonahanlurie.fr
+* License  MIT
+* Link      https://github.com/jonathanlurie/pixpipejs
+* Lab       MCIN - Montreal Neurological Institute
+*/
 
-import tiff from 'tiff';
+import geotiff from 'geotiff';
 import { Filter } from '../core/Filter.js';
 import { Image2D } from '../core/Image2D.js';
 
+
+/**
+* Read and decode Tiff format. The decoder for BigTiff is experimental.
+* Takes an ArrayBuffer of a tiff file as input and the TiffDecoder outputs an Image2D.
+* Tiff format is very broad and this decoder, thanks to the Geotiff npm package
+* is compatible with single or multiband images, with or without compression, using
+* various bith depth and types (8bits, 32bits, etc.)
+*
+* Info: Tiff 6.0 specification http://www.npes.org/pdf/TIFF-v6.pdf
+*
+* **Usage**
+* - [examples/savePixpFile.html](../examples/fileToTiff.html)
+*
+*/
 class TiffDecoder extends Filter {
   constructor() {
     super();
@@ -14,32 +34,30 @@ class TiffDecoder extends Filter {
     var inputBuffer = this._getInput(0);
 
     if(!inputBuffer){
-      console.warn("NiftiDecoder requires an ArrayBuffer as input \"0\". Unable to continue.");
+      console.warn("TiffDecoder requires an ArrayBuffer as input \"0\". Unable to continue.");
       return;
     }
     
-    var decoded = tiff.decode( inputBuffer )
+    var success = false;
     
-    if(decoded.length > 0){
-      var tiffIfd = decoded[0];
-      /*
-      console.log( tiffIfd.width );
-      console.log( tiffIfd.height );
-      console.log( tiffIfd.bitsPerSample );
-      console.log( tiffIfd.components );
-      console.log( tiffIfd.imageDescription );
-      console.log( tiffIfd );
-      */
-      
-      var outputImg = this._addOutput( Image2D );
-      outputImg.setData( tiffIfd.data, tiffIfd.width, tiffIfd.height, tiffIfd.components);
-
-    }else{
-      console.warn("Could no decode this tiff file.");
+    var tiffData = geotiff.parse(inputBuffer);
+    var tiffImage = tiffData.getImage();
+    
+    var data = tiffImage.readRasters( {interleave: true} );
+    var width = tiffImage.getWidth();
+    var height = tiffImage.getHeight();
+    var ncpp = tiffImage.getSamplesPerPixel();
+    
+    if(ncpp == (data.length / (width*height))){
+      success = true;
     }
     
-    
-    
+    if( success ){
+      var outputImg = this._addOutput( Image2D );
+      outputImg.setData( data, width, height, ncpp);
+    }else{
+      console.warn("Tiff support is experimental and this file is not compatible.");
+    }
     
   }
   

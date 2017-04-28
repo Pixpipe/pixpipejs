@@ -1759,8 +1759,8 @@ class CanvasImageWriter extends Filter{
     var ncppSrc = image.getComponentsPerPixel();
 
     // only Image2d with 1 or 4 bands can be displayed
-    if( ncppSrc != 1 && ncppSrc != 4){
-      console.warn("Cannot write Image in canvas if contains other than 1 or 4 bands.");
+    if( ncppSrc != 1 && ncppSrc != 3 && ncppSrc != 4){
+      console.warn("Cannot write Image in canvas if contains other than 1, 3 or 4 bands.");
       return;
     }
 
@@ -1810,25 +1810,19 @@ class CanvasImageWriter extends Filter{
 
     // input image is RGB
     }else if(ncppSrc == 3){
-      console.warn("From RGB Image2D to RGBA canvas, not sure of this implementation.");
-      var destCounter = 0;
+      var counter = 0;
 
-      for(var i=0; i<originalImageDataArray.length; i++){
-        // adding the Alpha chanel
-        if( i%4 == 3){
-          canvasImageDataArray[destCounter] = 255;
-          destCounter++;
+      for(var i=0; i<canvasImageDataArray.length; i++){
+        if(i%4 == 3){
+          canvasImageDataArray[i] = 255;
+        }else{
+          canvasImageDataArray[i] = this._stretchMinMax(originalImageDataArray[ counter ]);
+          counter ++;
         }
-
-        // regular RGB
-        canvasImageDataArray[destCounter] = this._stretchMinMax(value);
-        destCounter ++;
       }
-
     }
 
     this._ctx.putImageData(canvasImageData, 0, 0);
-
   }
 
 
@@ -15275,1094 +15269,4013 @@ class Image3DGenericDecoder extends Filter {
   
 } /* END of class Image3DGenericDecoder */
 
-const defaultByteLength = 1024 * 8;
-const charArray = [];
+//[4]   	NameStartChar	   ::=   	":" | [A-Z] | "_" | [a-z] | [#xC0-#xD6] | [#xD8-#xF6] | [#xF8-#x2FF] | [#x370-#x37D] | [#x37F-#x1FFF] | [#x200C-#x200D] | [#x2070-#x218F] | [#x2C00-#x2FEF] | [#x3001-#xD7FF] | [#xF900-#xFDCF] | [#xFDF0-#xFFFD] | [#x10000-#xEFFFF]
+//[4a]   	NameChar	   ::=   	NameStartChar | "-" | "." | [0-9] | #xB7 | [#x0300-#x036F] | [#x203F-#x2040]
+//[5]   	Name	   ::=   	NameStartChar (NameChar)*
+var nameStartChar = /[A-Z_a-z\xC0-\xD6\xD8-\xF6\u00F8-\u02FF\u0370-\u037D\u037F-\u1FFF\u200C-\u200D\u2070-\u218F\u2C00-\u2FEF\u3001-\uD7FF\uF900-\uFDCF\uFDF0-\uFFFD]/;//\u10000-\uEFFFF
+var nameChar = new RegExp("[\\-\\.0-9"+nameStartChar.source.slice(1,-1)+"\\u00B7\\u0300-\\u036F\\u203F-\\u2040]");
+var tagNamePattern = new RegExp('^'+nameStartChar.source+nameChar.source+'*(?:\:'+nameStartChar.source+nameChar.source+'*)?$');
+//var tagNamePattern = /^[a-zA-Z_][\w\-\.]*(?:\:[a-zA-Z_][\w\-\.]*)?$/
+//var handlers = 'resolveEntity,getExternalSubset,characters,endDocument,endElement,endPrefixMapping,ignorableWhitespace,processingInstruction,setDocumentLocator,skippedEntity,startDocument,startElement,startPrefixMapping,notationDecl,unparsedEntityDecl,error,fatalError,warning,attributeDecl,elementDecl,externalEntityDecl,internalEntityDecl,comment,endCDATA,endDTD,endEntity,startCDATA,startDTD,startEntity'.split(',')
 
-class IOBuffer {
-    constructor(data, options) {
-        options = options || {};
-        if (data === undefined) {
-            data = defaultByteLength;
-        }
-        if (typeof data === 'number') {
-            data = new ArrayBuffer(data);
-        }
-        let length = data.byteLength;
-        const offset = options.offset ? options.offset>>>0 : 0;
-        if (data.buffer) {
-            length = data.byteLength - offset;
-            if (data.byteLength !== data.buffer.byteLength) { // Node.js buffer from pool
-                data = data.buffer.slice(data.byteOffset + offset, data.byteOffset + data.byteLength);
-            } else if (offset) {
-                data = data.buffer.slice(offset);
-            } else {
-                data = data.buffer;
-            }
-        }
-        this.buffer = data;
-        this.length = length;
-        this.byteLength = length;
-        this.byteOffset = 0;
-        this.offset = 0;
-        this.littleEndian = true;
-        this._data = new DataView(this.buffer);
-        this._increment = length || defaultByteLength;
-        this._mark = 0;
+//S_TAG,	S_ATTR,	S_EQ,	S_ATTR_NOQUOT_VALUE
+//S_ATTR_SPACE,	S_ATTR_END,	S_TAG_SPACE, S_TAG_CLOSE
+var S_TAG = 0;//tag name offerring
+var S_ATTR = 1;//attr name offerring 
+var S_ATTR_SPACE=2;//attr name end and space offer
+var S_EQ = 3;//=space?
+var S_ATTR_NOQUOT_VALUE = 4;//attr value(no quot value only)
+var S_ATTR_END = 5;//attr value end and no space(quot end)
+var S_TAG_SPACE = 6;//(attr value end || tag end ) && (space offer)
+var S_TAG_CLOSE = 7;//closed el<el />
+
+function XMLReader(){
+	
+}
+
+XMLReader.prototype = {
+	parse:function(source,defaultNSMap,entityMap){
+		var domBuilder = this.domBuilder;
+		domBuilder.startDocument();
+		_copy(defaultNSMap ,defaultNSMap = {});
+		parse(source,defaultNSMap,entityMap,
+				domBuilder,this.errorHandler);
+		domBuilder.endDocument();
+	}
+};
+function parse(source,defaultNSMapCopy,entityMap,domBuilder,errorHandler){
+	function fixedFromCharCode(code) {
+		// String.prototype.fromCharCode does not supports
+		// > 2 bytes unicode chars directly
+		if (code > 0xffff) {
+			code -= 0x10000;
+			var surrogate1 = 0xd800 + (code >> 10)
+				, surrogate2 = 0xdc00 + (code & 0x3ff);
+
+			return String.fromCharCode(surrogate1, surrogate2);
+		} else {
+			return String.fromCharCode(code);
+		}
+	}
+	function entityReplacer(a){
+		var k = a.slice(1,-1);
+		if(k in entityMap){
+			return entityMap[k]; 
+		}else if(k.charAt(0) === '#'){
+			return fixedFromCharCode(parseInt(k.substr(1).replace('x','0x')))
+		}else{
+			errorHandler.error('entity not found:'+a);
+			return a;
+		}
+	}
+	function appendText(end){//has some bugs
+		if(end>start){
+			var xt = source.substring(start,end).replace(/&#?\w+;/g,entityReplacer);
+			locator&&position(start);
+			domBuilder.characters(xt,0,end-start);
+			start = end;
+		}
+	}
+	function position(p,m){
+		while(p>=lineEnd && (m = linePattern.exec(source))){
+			lineStart = m.index;
+			lineEnd = lineStart + m[0].length;
+			locator.lineNumber++;
+			//console.log('line++:',locator,startPos,endPos)
+		}
+		locator.columnNumber = p-lineStart+1;
+	}
+	var lineStart = 0;
+	var lineEnd = 0;
+	var linePattern = /.*(?:\r\n?|\n)|.*$/g;
+	var locator = domBuilder.locator;
+	
+	var parseStack = [{currentNSMap:defaultNSMapCopy}];
+	var closeMap = {};
+	var start = 0;
+	while(true){
+		try{
+			var tagStart = source.indexOf('<',start);
+			if(tagStart<0){
+				if(!source.substr(start).match(/^\s*$/)){
+					var doc = domBuilder.doc;
+	    			var text = doc.createTextNode(source.substr(start));
+	    			doc.appendChild(text);
+	    			domBuilder.currentElement = text;
+				}
+				return;
+			}
+			if(tagStart>start){
+				appendText(tagStart);
+			}
+			switch(source.charAt(tagStart+1)){
+			case '/':
+				var end = source.indexOf('>',tagStart+3);
+				var tagName = source.substring(tagStart+2,end);
+				var config = parseStack.pop();
+				if(end<0){
+					
+	        		tagName = source.substring(tagStart+2).replace(/[\s<].*/,'');
+	        		//console.error('#@@@@@@'+tagName)
+	        		errorHandler.error("end tag name: "+tagName+' is not complete:'+config.tagName);
+	        		end = tagStart+1+tagName.length;
+	        	}else if(tagName.match(/\s</)){
+	        		tagName = tagName.replace(/[\s<].*/,'');
+	        		errorHandler.error("end tag name: "+tagName+' maybe not complete');
+	        		end = tagStart+1+tagName.length;
+				}
+				//console.error(parseStack.length,parseStack)
+				//console.error(config);
+				var localNSMap = config.localNSMap;
+				var endMatch = config.tagName == tagName;
+				var endIgnoreCaseMach = endMatch || config.tagName&&config.tagName.toLowerCase() == tagName.toLowerCase();
+		        if(endIgnoreCaseMach){
+		        	domBuilder.endElement(config.uri,config.localName,tagName);
+					if(localNSMap){
+						for(var prefix in localNSMap){
+							domBuilder.endPrefixMapping(prefix) ;
+						}
+					}
+					if(!endMatch){
+		            	errorHandler.fatalError("end tag name: "+tagName+' is not match the current start tagName:'+config.tagName );
+					}
+		        }else{
+		        	parseStack.push(config);
+		        }
+				
+				end++;
+				break;
+				// end elment
+			case '?':// <?...?>
+				locator&&position(tagStart);
+				end = parseInstruction(source,tagStart,domBuilder);
+				break;
+			case '!':// <!doctype,<![CDATA,<!--
+				locator&&position(tagStart);
+				end = parseDCC(source,tagStart,domBuilder,errorHandler);
+				break;
+			default:
+				locator&&position(tagStart);
+				var el = new ElementAttributes();
+				var currentNSMap = parseStack[parseStack.length-1].currentNSMap;
+				//elStartEnd
+				var end = parseElementStartPart(source,tagStart,el,currentNSMap,entityReplacer,errorHandler);
+				var len = el.length;
+				
+				
+				if(!el.closed && fixSelfClosed(source,end,el.tagName,closeMap)){
+					el.closed = true;
+					if(!entityMap.nbsp){
+						errorHandler.warning('unclosed xml attribute');
+					}
+				}
+				if(locator && len){
+					var locator2 = copyLocator(locator,{});
+					//try{//attribute position fixed
+					for(var i = 0;i<len;i++){
+						var a = el[i];
+						position(a.offset);
+						a.locator = copyLocator(locator,{});
+					}
+					//}catch(e){console.error('@@@@@'+e)}
+					domBuilder.locator = locator2;
+					if(appendElement(el,domBuilder,currentNSMap)){
+						parseStack.push(el);
+					}
+					domBuilder.locator = locator;
+				}else{
+					if(appendElement(el,domBuilder,currentNSMap)){
+						parseStack.push(el);
+					}
+				}
+				
+				
+				
+				if(el.uri === 'http://www.w3.org/1999/xhtml' && !el.closed){
+					end = parseHtmlSpecialContent(source,end,el.tagName,entityReplacer,domBuilder);
+				}else{
+					end++;
+				}
+			}
+		}catch(e){
+			errorHandler.error('element parse error: '+e);
+			//errorHandler.error('element parse error: '+e);
+			end = -1;
+			//throw e;
+		}
+		if(end>start){
+			start = end;
+		}else{
+			//TODO: 这里有可能sax回退，有位置错误风险
+			appendText(Math.max(tagStart,start)+1);
+		}
+	}
+}
+function copyLocator(f,t){
+	t.lineNumber = f.lineNumber;
+	t.columnNumber = f.columnNumber;
+	return t;
+}
+
+/**
+ * @see #appendElement(source,elStartEnd,el,selfClosed,entityReplacer,domBuilder,parseStack);
+ * @return end of the elementStartPart(end of elementEndPart for selfClosed el)
+ */
+function parseElementStartPart(source,start,el,currentNSMap,entityReplacer,errorHandler){
+	var attrName;
+	var value;
+	var p = ++start;
+	var s = S_TAG;//status
+	while(true){
+		var c = source.charAt(p);
+		switch(c){
+		case '=':
+			if(s === S_ATTR){//attrName
+				attrName = source.slice(start,p);
+				s = S_EQ;
+			}else if(s === S_ATTR_SPACE){
+				s = S_EQ;
+			}else{
+				//fatalError: equal must after attrName or space after attrName
+				throw new Error('attribute equal must after attrName');
+			}
+			break;
+		case '\'':
+		case '"':
+			if(s === S_EQ || s === S_ATTR //|| s == S_ATTR_SPACE
+				){//equal
+				if(s === S_ATTR){
+					errorHandler.warning('attribute value must after "="');
+					attrName = source.slice(start,p);
+				}
+				start = p+1;
+				p = source.indexOf(c,start);
+				if(p>0){
+					value = source.slice(start,p).replace(/&#?\w+;/g,entityReplacer);
+					el.add(attrName,value,start-1);
+					s = S_ATTR_END;
+				}else{
+					//fatalError: no end quot match
+					throw new Error('attribute value no end \''+c+'\' match');
+				}
+			}else if(s == S_ATTR_NOQUOT_VALUE){
+				value = source.slice(start,p).replace(/&#?\w+;/g,entityReplacer);
+				//console.log(attrName,value,start,p)
+				el.add(attrName,value,start);
+				//console.dir(el)
+				errorHandler.warning('attribute "'+attrName+'" missed start quot('+c+')!!');
+				start = p+1;
+				s = S_ATTR_END;
+			}else{
+				//fatalError: no equal before
+				throw new Error('attribute value must after "="');
+			}
+			break;
+		case '/':
+			switch(s){
+			case S_TAG:
+				el.setTagName(source.slice(start,p));
+			case S_ATTR_END:
+			case S_TAG_SPACE:
+			case S_TAG_CLOSE:
+				s =S_TAG_CLOSE;
+				el.closed = true;
+			case S_ATTR_NOQUOT_VALUE:
+			case S_ATTR:
+			case S_ATTR_SPACE:
+				break;
+			//case S_EQ:
+			default:
+				throw new Error("attribute invalid close char('/')")
+			}
+			break;
+		case ''://end document
+			//throw new Error('unexpected end of input')
+			errorHandler.error('unexpected end of input');
+			if(s == S_TAG){
+				el.setTagName(source.slice(start,p));
+			}
+			return p;
+		case '>':
+			switch(s){
+			case S_TAG:
+				el.setTagName(source.slice(start,p));
+			case S_ATTR_END:
+			case S_TAG_SPACE:
+			case S_TAG_CLOSE:
+				break;//normal
+			case S_ATTR_NOQUOT_VALUE://Compatible state
+			case S_ATTR:
+				value = source.slice(start,p);
+				if(value.slice(-1) === '/'){
+					el.closed  = true;
+					value = value.slice(0,-1);
+				}
+			case S_ATTR_SPACE:
+				if(s === S_ATTR_SPACE){
+					value = attrName;
+				}
+				if(s == S_ATTR_NOQUOT_VALUE){
+					errorHandler.warning('attribute "'+value+'" missed quot(")!!');
+					el.add(attrName,value.replace(/&#?\w+;/g,entityReplacer),start);
+				}else{
+					if(currentNSMap[''] !== 'http://www.w3.org/1999/xhtml' || !value.match(/^(?:disabled|checked|selected)$/i)){
+						errorHandler.warning('attribute "'+value+'" missed value!! "'+value+'" instead!!');
+					}
+					el.add(value,value,start);
+				}
+				break;
+			case S_EQ:
+				throw new Error('attribute value missed!!');
+			}
+//			console.log(tagName,tagNamePattern,tagNamePattern.test(tagName))
+			return p;
+		/*xml space '\x20' | #x9 | #xD | #xA; */
+		case '\u0080':
+			c = ' ';
+		default:
+			if(c<= ' '){//space
+				switch(s){
+				case S_TAG:
+					el.setTagName(source.slice(start,p));//tagName
+					s = S_TAG_SPACE;
+					break;
+				case S_ATTR:
+					attrName = source.slice(start,p);
+					s = S_ATTR_SPACE;
+					break;
+				case S_ATTR_NOQUOT_VALUE:
+					var value = source.slice(start,p).replace(/&#?\w+;/g,entityReplacer);
+					errorHandler.warning('attribute "'+value+'" missed quot(")!!');
+					el.add(attrName,value,start);
+				case S_ATTR_END:
+					s = S_TAG_SPACE;
+					break;
+				//case S_TAG_SPACE:
+				//case S_EQ:
+				//case S_ATTR_SPACE:
+				//	void();break;
+				//case S_TAG_CLOSE:
+					//ignore warning
+				}
+			}else{//not space
+//S_TAG,	S_ATTR,	S_EQ,	S_ATTR_NOQUOT_VALUE
+//S_ATTR_SPACE,	S_ATTR_END,	S_TAG_SPACE, S_TAG_CLOSE
+				switch(s){
+				//case S_TAG:void();break;
+				//case S_ATTR:void();break;
+				//case S_ATTR_NOQUOT_VALUE:void();break;
+				case S_ATTR_SPACE:
+					var tagName =  el.tagName;
+					if(currentNSMap[''] !== 'http://www.w3.org/1999/xhtml' || !attrName.match(/^(?:disabled|checked|selected)$/i)){
+						errorHandler.warning('attribute "'+attrName+'" missed value!! "'+attrName+'" instead2!!');
+					}
+					el.add(attrName,attrName,start);
+					start = p;
+					s = S_ATTR;
+					break;
+				case S_ATTR_END:
+					errorHandler.warning('attribute space is required"'+attrName+'"!!');
+				case S_TAG_SPACE:
+					s = S_ATTR;
+					start = p;
+					break;
+				case S_EQ:
+					s = S_ATTR_NOQUOT_VALUE;
+					start = p;
+					break;
+				case S_TAG_CLOSE:
+					throw new Error("elements closed character '/' and '>' must be connected to");
+				}
+			}
+		}//end outer switch
+		//console.log('p++',p)
+		p++;
+	}
+}
+/**
+ * @return true if has new namespace define
+ */
+function appendElement(el,domBuilder,currentNSMap){
+	var tagName = el.tagName;
+	var localNSMap = null;
+	//var currentNSMap = parseStack[parseStack.length-1].currentNSMap;
+	var i = el.length;
+	while(i--){
+		var a = el[i];
+		var qName = a.qName;
+		var value = a.value;
+		var nsp = qName.indexOf(':');
+		if(nsp>0){
+			var prefix = a.prefix = qName.slice(0,nsp);
+			var localName = qName.slice(nsp+1);
+			var nsPrefix = prefix === 'xmlns' && localName;
+		}else{
+			localName = qName;
+			prefix = null;
+			nsPrefix = qName === 'xmlns' && '';
+		}
+		//can not set prefix,because prefix !== ''
+		a.localName = localName ;
+		//prefix == null for no ns prefix attribute 
+		if(nsPrefix !== false){//hack!!
+			if(localNSMap == null){
+				localNSMap = {};
+				//console.log(currentNSMap,0)
+				_copy(currentNSMap,currentNSMap={});
+				//console.log(currentNSMap,1)
+			}
+			currentNSMap[nsPrefix] = localNSMap[nsPrefix] = value;
+			a.uri = 'http://www.w3.org/2000/xmlns/';
+			domBuilder.startPrefixMapping(nsPrefix, value); 
+		}
+	}
+	var i = el.length;
+	while(i--){
+		a = el[i];
+		var prefix = a.prefix;
+		if(prefix){//no prefix attribute has no namespace
+			if(prefix === 'xml'){
+				a.uri = 'http://www.w3.org/XML/1998/namespace';
+			}if(prefix !== 'xmlns'){
+				a.uri = currentNSMap[prefix || ''];
+				
+				//{console.log('###'+a.qName,domBuilder.locator.systemId+'',currentNSMap,a.uri)}
+			}
+		}
+	}
+	var nsp = tagName.indexOf(':');
+	if(nsp>0){
+		prefix = el.prefix = tagName.slice(0,nsp);
+		localName = el.localName = tagName.slice(nsp+1);
+	}else{
+		prefix = null;//important!!
+		localName = el.localName = tagName;
+	}
+	//no prefix element has default namespace
+	var ns = el.uri = currentNSMap[prefix || ''];
+	domBuilder.startElement(ns,localName,tagName,el);
+	//endPrefixMapping and startPrefixMapping have not any help for dom builder
+	//localNSMap = null
+	if(el.closed){
+		domBuilder.endElement(ns,localName,tagName);
+		if(localNSMap){
+			for(prefix in localNSMap){
+				domBuilder.endPrefixMapping(prefix); 
+			}
+		}
+	}else{
+		el.currentNSMap = currentNSMap;
+		el.localNSMap = localNSMap;
+		//parseStack.push(el);
+		return true;
+	}
+}
+function parseHtmlSpecialContent(source,elStartEnd,tagName,entityReplacer,domBuilder){
+	if(/^(?:script|textarea)$/i.test(tagName)){
+		var elEndStart =  source.indexOf('</'+tagName+'>',elStartEnd);
+		var text = source.substring(elStartEnd+1,elEndStart);
+		if(/[&<]/.test(text)){
+			if(/^script$/i.test(tagName)){
+				//if(!/\]\]>/.test(text)){
+					//lexHandler.startCDATA();
+					domBuilder.characters(text,0,text.length);
+					//lexHandler.endCDATA();
+					return elEndStart;
+				//}
+			}//}else{//text area
+				text = text.replace(/&#?\w+;/g,entityReplacer);
+				domBuilder.characters(text,0,text.length);
+				return elEndStart;
+			//}
+			
+		}
+	}
+	return elStartEnd+1;
+}
+function fixSelfClosed(source,elStartEnd,tagName,closeMap){
+	//if(tagName in closeMap){
+	var pos = closeMap[tagName];
+	if(pos == null){
+		//console.log(tagName)
+		pos =  source.lastIndexOf('</'+tagName+'>');
+		if(pos<elStartEnd){//忘记闭合
+			pos = source.lastIndexOf('</'+tagName);
+		}
+		closeMap[tagName] =pos;
+	}
+	return pos<elStartEnd;
+	//} 
+}
+function _copy(source,target){
+	for(var n in source){target[n] = source[n];}
+}
+function parseDCC(source,start,domBuilder,errorHandler){//sure start with '<!'
+	var next= source.charAt(start+2);
+	switch(next){
+	case '-':
+		if(source.charAt(start + 3) === '-'){
+			var end = source.indexOf('-->',start+4);
+			//append comment source.substring(4,end)//<!--
+			if(end>start){
+				domBuilder.comment(source,start+4,end-start-4);
+				return end+3;
+			}else{
+				errorHandler.error("Unclosed comment");
+				return -1;
+			}
+		}else{
+			//error
+			return -1;
+		}
+	default:
+		if(source.substr(start+3,6) == 'CDATA['){
+			var end = source.indexOf(']]>',start+9);
+			domBuilder.startCDATA();
+			domBuilder.characters(source,start+9,end-start-9);
+			domBuilder.endCDATA(); 
+			return end+3;
+		}
+		//<!DOCTYPE
+		//startDTD(java.lang.String name, java.lang.String publicId, java.lang.String systemId) 
+		var matchs = split(source,start);
+		var len = matchs.length;
+		if(len>1 && /!doctype/i.test(matchs[0][0])){
+			var name = matchs[1][0];
+			var pubid = len>3 && /^public$/i.test(matchs[2][0]) && matchs[3][0];
+			var sysid = len>4 && matchs[4][0];
+			var lastMatch = matchs[len-1];
+			domBuilder.startDTD(name,pubid && pubid.replace(/^(['"])(.*?)\1$/,'$2'),
+					sysid && sysid.replace(/^(['"])(.*?)\1$/,'$2'));
+			domBuilder.endDTD();
+			
+			return lastMatch.index+lastMatch[0].length
+		}
+	}
+	return -1;
+}
+
+
+
+function parseInstruction(source,start,domBuilder){
+	var end = source.indexOf('?>',start);
+	if(end){
+		var match = source.substring(start,end).match(/^<\?(\S*)\s*([\s\S]*?)\s*$/);
+		if(match){
+			var len = match[0].length;
+			domBuilder.processingInstruction(match[1], match[2]) ;
+			return end+2;
+		}else{//error
+			return -1;
+		}
+	}
+	return -1;
+}
+
+/**
+ * @param source
+ */
+function ElementAttributes(source){
+	
+}
+ElementAttributes.prototype = {
+	setTagName:function(tagName){
+		if(!tagNamePattern.test(tagName)){
+			throw new Error('invalid tagName:'+tagName)
+		}
+		this.tagName = tagName;
+	},
+	add:function(qName,value,offset){
+		if(!tagNamePattern.test(qName)){
+			throw new Error('invalid attribute:'+qName)
+		}
+		this[this.length++] = {qName:qName,value:value,offset:offset};
+	},
+	length:0,
+	getLocalName:function(i){return this[i].localName},
+	getLocator:function(i){return this[i].locator},
+	getQName:function(i){return this[i].qName},
+	getURI:function(i){return this[i].uri},
+	getValue:function(i){return this[i].value}
+//	,getIndex:function(uri, localName)){
+//		if(localName){
+//			
+//		}else{
+//			var qName = uri
+//		}
+//	},
+//	getValue:function(){return this.getValue(this.getIndex.apply(this,arguments))},
+//	getType:function(uri,localName){}
+//	getType:function(i){},
+};
+
+
+
+
+function _set_proto_(thiz,parent){
+	thiz.__proto__ = parent;
+	return thiz;
+}
+if(!(_set_proto_({},_set_proto_.prototype) instanceof _set_proto_)){
+	_set_proto_ = function(thiz,parent){
+		function p(){}
+		p.prototype = parent;
+		p = new p();
+		for(parent in thiz){
+			p[parent] = thiz[parent];
+		}
+		return p;
+	};
+}
+
+function split(source,start){
+	var match;
+	var buf = [];
+	var reg = /'[^']+'|"[^"]+"|[^\s<>\/=]+=?|(\/?\s*>|<)/g;
+	reg.lastIndex = start;
+	reg.exec(source);//skip <
+	while(match = reg.exec(source)){
+		buf.push(match);
+		if(match[1])return buf;
+	}
+}
+
+var XMLReader_1 = XMLReader;
+
+var sax = {
+	XMLReader: XMLReader_1
+};
+
+/*
+ * DOM Level 2
+ * Object DOMException
+ * @see http://www.w3.org/TR/REC-DOM-Level-1/ecma-script-language-binding.html
+ * @see http://www.w3.org/TR/2000/REC-DOM-Level-2-Core-20001113/ecma-script-binding.html
+ */
+
+function copy(src,dest){
+	for(var p in src){
+		dest[p] = src[p];
+	}
+}
+/**
+^\w+\.prototype\.([_\w]+)\s*=\s*((?:.*\{\s*?[\r\n][\s\S]*?^})|\S.*?(?=[;\r\n]));?
+^\w+\.prototype\.([_\w]+)\s*=\s*(\S.*?(?=[;\r\n]));?
+ */
+function _extends(Class,Super){
+	var pt = Class.prototype;
+	if(Object.create){
+		var ppt = Object.create(Super.prototype);
+		pt.__proto__ = ppt;
+	}
+	if(!(pt instanceof Super)){
+		function t(){}
+		t.prototype = Super.prototype;
+		t = new t();
+		copy(pt,t);
+		Class.prototype = pt = t;
+	}
+	if(pt.constructor != Class){
+		if(typeof Class != 'function'){
+			console.error("unknow Class:"+Class);
+		}
+		pt.constructor = Class;
+	}
+}
+var htmlns = 'http://www.w3.org/1999/xhtml';
+// Node Types
+var NodeType = {};
+var ELEMENT_NODE                = NodeType.ELEMENT_NODE                = 1;
+var ATTRIBUTE_NODE              = NodeType.ATTRIBUTE_NODE              = 2;
+var TEXT_NODE                   = NodeType.TEXT_NODE                   = 3;
+var CDATA_SECTION_NODE          = NodeType.CDATA_SECTION_NODE          = 4;
+var ENTITY_REFERENCE_NODE       = NodeType.ENTITY_REFERENCE_NODE       = 5;
+var ENTITY_NODE                 = NodeType.ENTITY_NODE                 = 6;
+var PROCESSING_INSTRUCTION_NODE = NodeType.PROCESSING_INSTRUCTION_NODE = 7;
+var COMMENT_NODE                = NodeType.COMMENT_NODE                = 8;
+var DOCUMENT_NODE               = NodeType.DOCUMENT_NODE               = 9;
+var DOCUMENT_TYPE_NODE          = NodeType.DOCUMENT_TYPE_NODE          = 10;
+var DOCUMENT_FRAGMENT_NODE      = NodeType.DOCUMENT_FRAGMENT_NODE      = 11;
+var NOTATION_NODE               = NodeType.NOTATION_NODE               = 12;
+
+// ExceptionCode
+var ExceptionCode = {};
+var ExceptionMessage = {};
+var INDEX_SIZE_ERR              = ExceptionCode.INDEX_SIZE_ERR              = ((ExceptionMessage[1]="Index size error"),1);
+var DOMSTRING_SIZE_ERR          = ExceptionCode.DOMSTRING_SIZE_ERR          = ((ExceptionMessage[2]="DOMString size error"),2);
+var HIERARCHY_REQUEST_ERR       = ExceptionCode.HIERARCHY_REQUEST_ERR       = ((ExceptionMessage[3]="Hierarchy request error"),3);
+var WRONG_DOCUMENT_ERR          = ExceptionCode.WRONG_DOCUMENT_ERR          = ((ExceptionMessage[4]="Wrong document"),4);
+var INVALID_CHARACTER_ERR       = ExceptionCode.INVALID_CHARACTER_ERR       = ((ExceptionMessage[5]="Invalid character"),5);
+var NO_DATA_ALLOWED_ERR         = ExceptionCode.NO_DATA_ALLOWED_ERR         = ((ExceptionMessage[6]="No data allowed"),6);
+var NO_MODIFICATION_ALLOWED_ERR = ExceptionCode.NO_MODIFICATION_ALLOWED_ERR = ((ExceptionMessage[7]="No modification allowed"),7);
+var NOT_FOUND_ERR               = ExceptionCode.NOT_FOUND_ERR               = ((ExceptionMessage[8]="Not found"),8);
+var NOT_SUPPORTED_ERR           = ExceptionCode.NOT_SUPPORTED_ERR           = ((ExceptionMessage[9]="Not supported"),9);
+var INUSE_ATTRIBUTE_ERR         = ExceptionCode.INUSE_ATTRIBUTE_ERR         = ((ExceptionMessage[10]="Attribute in use"),10);
+//level2
+var INVALID_STATE_ERR        	= ExceptionCode.INVALID_STATE_ERR        	= ((ExceptionMessage[11]="Invalid state"),11);
+var SYNTAX_ERR               	= ExceptionCode.SYNTAX_ERR               	= ((ExceptionMessage[12]="Syntax error"),12);
+var INVALID_MODIFICATION_ERR 	= ExceptionCode.INVALID_MODIFICATION_ERR 	= ((ExceptionMessage[13]="Invalid modification"),13);
+var NAMESPACE_ERR            	= ExceptionCode.NAMESPACE_ERR           	= ((ExceptionMessage[14]="Invalid namespace"),14);
+var INVALID_ACCESS_ERR       	= ExceptionCode.INVALID_ACCESS_ERR      	= ((ExceptionMessage[15]="Invalid access"),15);
+
+
+function DOMException(code, message) {
+	if(message instanceof Error){
+		var error = message;
+	}else{
+		error = this;
+		Error.call(this, ExceptionMessage[code]);
+		this.message = ExceptionMessage[code];
+		if(Error.captureStackTrace) Error.captureStackTrace(this, DOMException);
+	}
+	error.code = code;
+	if(message) this.message = this.message + ": " + message;
+	return error;
+}
+DOMException.prototype = Error.prototype;
+copy(ExceptionCode,DOMException);
+/**
+ * @see http://www.w3.org/TR/2000/REC-DOM-Level-2-Core-20001113/core.html#ID-536297177
+ * The NodeList interface provides the abstraction of an ordered collection of nodes, without defining or constraining how this collection is implemented. NodeList objects in the DOM are live.
+ * The items in the NodeList are accessible via an integral index, starting from 0.
+ */
+function NodeList() {
+}
+NodeList.prototype = {
+	/**
+	 * The number of nodes in the list. The range of valid child node indices is 0 to length-1 inclusive.
+	 * @standard level1
+	 */
+	length:0, 
+	/**
+	 * Returns the indexth item in the collection. If index is greater than or equal to the number of nodes in the list, this returns null.
+	 * @standard level1
+	 * @param index  unsigned long 
+	 *   Index into the collection.
+	 * @return Node
+	 * 	The node at the indexth position in the NodeList, or null if that is not a valid index. 
+	 */
+	item: function(index) {
+		return this[index] || null;
+	},
+	toString:function(isHTML,nodeFilter){
+		for(var buf = [], i = 0;i<this.length;i++){
+			serializeToString(this[i],buf,isHTML,nodeFilter);
+		}
+		return buf.join('');
+	}
+};
+function LiveNodeList(node,refresh){
+	this._node = node;
+	this._refresh = refresh;
+	_updateLiveList(this);
+}
+function _updateLiveList(list){
+	var inc = list._node._inc || list._node.ownerDocument._inc;
+	if(list._inc != inc){
+		var ls = list._refresh(list._node);
+		//console.log(ls.length)
+		__set__(list,'length',ls.length);
+		copy(ls,list);
+		list._inc = inc;
+	}
+}
+LiveNodeList.prototype.item = function(i){
+	_updateLiveList(this);
+	return this[i];
+};
+
+_extends(LiveNodeList,NodeList);
+/**
+ * 
+ * Objects implementing the NamedNodeMap interface are used to represent collections of nodes that can be accessed by name. Note that NamedNodeMap does not inherit from NodeList; NamedNodeMaps are not maintained in any particular order. Objects contained in an object implementing NamedNodeMap may also be accessed by an ordinal index, but this is simply to allow convenient enumeration of the contents of a NamedNodeMap, and does not imply that the DOM specifies an order to these Nodes.
+ * NamedNodeMap objects in the DOM are live.
+ * used for attributes or DocumentType entities 
+ */
+function NamedNodeMap() {
+}
+
+function _findNodeIndex(list,node){
+	var i = list.length;
+	while(i--){
+		if(list[i] === node){return i}
+	}
+}
+
+function _addNamedNode(el,list,newAttr,oldAttr){
+	if(oldAttr){
+		list[_findNodeIndex(list,oldAttr)] = newAttr;
+	}else{
+		list[list.length++] = newAttr;
+	}
+	if(el){
+		newAttr.ownerElement = el;
+		var doc = el.ownerDocument;
+		if(doc){
+			oldAttr && _onRemoveAttribute(doc,el,oldAttr);
+			_onAddAttribute(doc,el,newAttr);
+		}
+	}
+}
+function _removeNamedNode(el,list,attr){
+	//console.log('remove attr:'+attr)
+	var i = _findNodeIndex(list,attr);
+	if(i>=0){
+		var lastIndex = list.length-1;
+		while(i<lastIndex){
+			list[i] = list[++i];
+		}
+		list.length = lastIndex;
+		if(el){
+			var doc = el.ownerDocument;
+			if(doc){
+				_onRemoveAttribute(doc,el,attr);
+				attr.ownerElement = null;
+			}
+		}
+	}else{
+		throw DOMException(NOT_FOUND_ERR,new Error(el.tagName+'@'+attr))
+	}
+}
+NamedNodeMap.prototype = {
+	length:0,
+	item:NodeList.prototype.item,
+	getNamedItem: function(key) {
+//		if(key.indexOf(':')>0 || key == 'xmlns'){
+//			return null;
+//		}
+		//console.log()
+		var i = this.length;
+		while(i--){
+			var attr = this[i];
+			//console.log(attr.nodeName,key)
+			if(attr.nodeName == key){
+				return attr;
+			}
+		}
+	},
+	setNamedItem: function(attr) {
+		var el = attr.ownerElement;
+		if(el && el!=this._ownerElement){
+			throw new DOMException(INUSE_ATTRIBUTE_ERR);
+		}
+		var oldAttr = this.getNamedItem(attr.nodeName);
+		_addNamedNode(this._ownerElement,this,attr,oldAttr);
+		return oldAttr;
+	},
+	/* returns Node */
+	setNamedItemNS: function(attr) {// raises: WRONG_DOCUMENT_ERR,NO_MODIFICATION_ALLOWED_ERR,INUSE_ATTRIBUTE_ERR
+		var el = attr.ownerElement, oldAttr;
+		if(el && el!=this._ownerElement){
+			throw new DOMException(INUSE_ATTRIBUTE_ERR);
+		}
+		oldAttr = this.getNamedItemNS(attr.namespaceURI,attr.localName);
+		_addNamedNode(this._ownerElement,this,attr,oldAttr);
+		return oldAttr;
+	},
+
+	/* returns Node */
+	removeNamedItem: function(key) {
+		var attr = this.getNamedItem(key);
+		_removeNamedNode(this._ownerElement,this,attr);
+		return attr;
+		
+		
+	},// raises: NOT_FOUND_ERR,NO_MODIFICATION_ALLOWED_ERR
+	
+	//for level2
+	removeNamedItemNS:function(namespaceURI,localName){
+		var attr = this.getNamedItemNS(namespaceURI,localName);
+		_removeNamedNode(this._ownerElement,this,attr);
+		return attr;
+	},
+	getNamedItemNS: function(namespaceURI, localName) {
+		var i = this.length;
+		while(i--){
+			var node = this[i];
+			if(node.localName == localName && node.namespaceURI == namespaceURI){
+				return node;
+			}
+		}
+		return null;
+	}
+};
+/**
+ * @see http://www.w3.org/TR/REC-DOM-Level-1/level-one-core.html#ID-102161490
+ */
+function DOMImplementation(/* Object */ features) {
+	this._features = {};
+	if (features) {
+		for (var feature in features) {
+			 this._features = features[feature];
+		}
+	}
+}
+
+DOMImplementation.prototype = {
+	hasFeature: function(/* string */ feature, /* string */ version) {
+		var versions = this._features[feature.toLowerCase()];
+		if (versions && (!version || version in versions)) {
+			return true;
+		} else {
+			return false;
+		}
+	},
+	// Introduced in DOM Level 2:
+	createDocument:function(namespaceURI,  qualifiedName, doctype){// raises:INVALID_CHARACTER_ERR,NAMESPACE_ERR,WRONG_DOCUMENT_ERR
+		var doc = new Document();
+		doc.implementation = this;
+		doc.childNodes = new NodeList();
+		doc.doctype = doctype;
+		if(doctype){
+			doc.appendChild(doctype);
+		}
+		if(qualifiedName){
+			var root = doc.createElementNS(namespaceURI,qualifiedName);
+			doc.appendChild(root);
+		}
+		return doc;
+	},
+	// Introduced in DOM Level 2:
+	createDocumentType:function(qualifiedName, publicId, systemId){// raises:INVALID_CHARACTER_ERR,NAMESPACE_ERR
+		var node = new DocumentType();
+		node.name = qualifiedName;
+		node.nodeName = qualifiedName;
+		node.publicId = publicId;
+		node.systemId = systemId;
+		// Introduced in DOM Level 2:
+		//readonly attribute DOMString        internalSubset;
+		
+		//TODO:..
+		//  readonly attribute NamedNodeMap     entities;
+		//  readonly attribute NamedNodeMap     notations;
+		return node;
+	}
+};
+
+
+/**
+ * @see http://www.w3.org/TR/2000/REC-DOM-Level-2-Core-20001113/core.html#ID-1950641247
+ */
+
+function Node() {
+}
+
+Node.prototype = {
+	firstChild : null,
+	lastChild : null,
+	previousSibling : null,
+	nextSibling : null,
+	attributes : null,
+	parentNode : null,
+	childNodes : null,
+	ownerDocument : null,
+	nodeValue : null,
+	namespaceURI : null,
+	prefix : null,
+	localName : null,
+	// Modified in DOM Level 2:
+	insertBefore:function(newChild, refChild){//raises 
+		return _insertBefore(this,newChild,refChild);
+	},
+	replaceChild:function(newChild, oldChild){//raises 
+		this.insertBefore(newChild,oldChild);
+		if(oldChild){
+			this.removeChild(oldChild);
+		}
+	},
+	removeChild:function(oldChild){
+		return _removeChild(this,oldChild);
+	},
+	appendChild:function(newChild){
+		return this.insertBefore(newChild,null);
+	},
+	hasChildNodes:function(){
+		return this.firstChild != null;
+	},
+	cloneNode:function(deep){
+		return cloneNode(this.ownerDocument||this,this,deep);
+	},
+	// Modified in DOM Level 2:
+	normalize:function(){
+		var child = this.firstChild;
+		while(child){
+			var next = child.nextSibling;
+			if(next && next.nodeType == TEXT_NODE && child.nodeType == TEXT_NODE){
+				this.removeChild(next);
+				child.appendData(next.data);
+			}else{
+				child.normalize();
+				child = next;
+			}
+		}
+	},
+  	// Introduced in DOM Level 2:
+	isSupported:function(feature, version){
+		return this.ownerDocument.implementation.hasFeature(feature,version);
+	},
+    // Introduced in DOM Level 2:
+    hasAttributes:function(){
+    	return this.attributes.length>0;
+    },
+    lookupPrefix:function(namespaceURI){
+    	var el = this;
+    	while(el){
+    		var map = el._nsMap;
+    		//console.dir(map)
+    		if(map){
+    			for(var n in map){
+    				if(map[n] == namespaceURI){
+    					return n;
+    				}
+    			}
+    		}
+    		el = el.nodeType == ATTRIBUTE_NODE?el.ownerDocument : el.parentNode;
+    	}
+    	return null;
+    },
+    // Introduced in DOM Level 3:
+    lookupNamespaceURI:function(prefix){
+    	var el = this;
+    	while(el){
+    		var map = el._nsMap;
+    		//console.dir(map)
+    		if(map){
+    			if(prefix in map){
+    				return map[prefix] ;
+    			}
+    		}
+    		el = el.nodeType == ATTRIBUTE_NODE?el.ownerDocument : el.parentNode;
+    	}
+    	return null;
+    },
+    // Introduced in DOM Level 3:
+    isDefaultNamespace:function(namespaceURI){
+    	var prefix = this.lookupPrefix(namespaceURI);
+    	return prefix == null;
     }
+};
 
-    available(byteLength) {
-        if (byteLength === undefined) byteLength = 1;
-        return (this.offset + byteLength) <= this.length;
-    }
 
-    isLittleEndian() {
-        return this.littleEndian;
-    }
+function _xmlEncoder(c){
+	return c == '<' && '&lt;' ||
+         c == '>' && '&gt;' ||
+         c == '&' && '&amp;' ||
+         c == '"' && '&quot;' ||
+         '&#'+c.charCodeAt()+';'
+}
 
-    setLittleEndian() {
-        this.littleEndian = true;
-    }
 
-    isBigEndian() {
-        return !this.littleEndian;
-    }
+copy(NodeType,Node);
+copy(NodeType,Node.prototype);
 
-    setBigEndian() {
-        this.littleEndian = false;
-    }
-
-    skip(n) {
-        if (n === undefined) n = 1;
-        this.offset += n;
-    }
-
-    seek(offset) {
-        this.offset = offset;
-    }
-
-    mark() {
-        this._mark = this.offset;
-    }
-
-    reset() {
-        this.offset = this._mark;
-    }
-
-    rewind() {
-        this.offset = 0;
-    }
-
-    ensureAvailable(byteLength) {
-        if (byteLength === undefined) byteLength = 1;
-        if (!this.available(byteLength)) {
-            const newIncrement = this._increment + this._increment;
-            this._increment = newIncrement;
-            const newLength = this.length + newIncrement;
-            const newArray = new Uint8Array(newLength);
-            newArray.set(new Uint8Array(this.buffer));
-            this.buffer = newArray.buffer;
-            this.length = newLength;
-            this._data = new DataView(this.buffer);
-        }
-    }
-
-    readBoolean() {
-        return this.readUint8() !== 0;
-    }
-
-    readInt8() {
-        return this._data.getInt8(this.offset++);
-    }
-
-    readUint8() {
-        return this._data.getUint8(this.offset++);
-    }
-
-    readByte() {
-        return this.readUint8();
-    }
-
-    readBytes(n) {
-        if (n === undefined) n = 1;
-        var bytes = new Uint8Array(n);
-        for (var i = 0; i < n; i++) {
-            bytes[i] = this.readByte();
-        }
-        return bytes;
-    }
-
-    readInt16() {
-        var value = this._data.getInt16(this.offset, this.littleEndian);
-        this.offset += 2;
-        return value;
-    }
-
-    readUint16() {
-        var value = this._data.getUint16(this.offset, this.littleEndian);
-        this.offset += 2;
-        return value;
-    }
-
-    readInt32() {
-        var value = this._data.getInt32(this.offset, this.littleEndian);
-        this.offset += 4;
-        return value;
-    }
-
-    readUint32() {
-        var value = this._data.getUint32(this.offset, this.littleEndian);
-        this.offset += 4;
-        return value;
-    }
-
-    readFloat32() {
-        var value = this._data.getFloat32(this.offset, this.littleEndian);
-        this.offset += 4;
-        return value;
-    }
-
-    readFloat64() {
-        var value = this._data.getFloat64(this.offset, this.littleEndian);
-        this.offset += 8;
-        return value;
-    }
-
-    readChar() {
-        return String.fromCharCode(this.readInt8());
-    }
-
-    readChars(n) {
-        if (n === undefined) n = 1;
-        charArray.length = n;
-        for (var i = 0; i < n; i++) {
-            charArray[i] = this.readChar();
-        }
-        return charArray.join('');
-    }
-
-    writeBoolean(bool) {
-        this.writeUint8(bool ? 0xff : 0x00);
-    }
-
-    writeInt8(value) {
-        this.ensureAvailable(1);
-        this._data.setInt8(this.offset++, value);
-    }
-
-    writeUint8(value) {
-        this.ensureAvailable(1);
-        this._data.setUint8(this.offset++, value);
-    }
-
-    writeByte(value) {
-        this.writeUint8(value);
-    }
-
-    writeBytes(bytes) {
-        this.ensureAvailable(bytes.length);
-        for (var i = 0; i < bytes.length; i++) {
-            this._data.setUint8(this.offset++, bytes[i]);
-        }
-    }
-
-    writeInt16(value) {
-        this.ensureAvailable(2);
-        this._data.setInt16(this.offset, value, this.littleEndian);
-        this.offset += 2;
-    }
-
-    writeUint16(value) {
-        this.ensureAvailable(2);
-        this._data.setUint16(this.offset, value, this.littleEndian);
-        this.offset += 2;
-    }
-
-    writeInt32(value) {
-        this.ensureAvailable(4);
-        this._data.setInt32(this.offset, value, this.littleEndian);
-        this.offset += 4;
-    }
-
-    writeUint32(value) {
-        this.ensureAvailable(4);
-        this._data.setUint32(this.offset, value, this.littleEndian);
-        this.offset += 4;
-    }
-
-    writeFloat32(value) {
-        this.ensureAvailable(4);
-        this._data.setFloat32(this.offset, value, this.littleEndian);
-        this.offset += 4;
-    }
-
-    writeFloat64(value) {
-        this.ensureAvailable(8);
-        this._data.setFloat64(this.offset, value, this.littleEndian);
-        this.offset += 8;
-    }
-
-    writeChar(str) {
-        this.writeUint8(str.charCodeAt(0));
-    }
-
-    writeChars(str) {
-        for (var i = 0; i < str.length; i++) {
-            this.writeUint8(str.charCodeAt(i));
-        }
-    }
-
-    toArray() {
-        return new Uint8Array(this.buffer, 0, this.offset);
+/**
+ * @param callback return true for continue,false for break
+ * @return boolean true: break visit;
+ */
+function _visitNode(node,callback){
+	if(callback(node)){
+		return true;
+	}
+	if(node = node.firstChild){
+		do{
+			if(_visitNode(node,callback)){return true}
+        }while(node=node.nextSibling)
     }
 }
 
-var IOBuffer_1 = IOBuffer;
 
-const tagsById = {
-    // Baseline tags
-    0x00FE: 'NewSubfileType',
-    0x00FF: 'SubfileType',
-    0x0100: 'ImageWidth',
-    0x0101: 'ImageLength',
-    0x0102: 'BitsPerSample',
-    0x0103: 'Compression',
-    0x0106: 'PhotometricInterpretation',
-    0x0107: 'Threshholding',
-    0x0108: 'CellWidth',
-    0x0109: 'CellLength',
-    0x010A: 'FillOrder',
-    0x010E: 'ImageDescription',
-    0x010F: 'Make',
-    0x0110: 'Model',
-    0x0111: 'StripOffsets',
-    0x0112: 'Orientation',
-    0x0115: 'SamplesPerPixel',
-    0x0116: 'RowsPerStrip',
-    0x0117: 'StripByteCounts',
-    0x0118: 'MinSampleValue',
-    0x0119: 'MaxSampleValue',
-    0x011A: 'XResolution',
-    0x011B: 'YResolution',
-    0x011C: 'PlanarConfiguration',
-    0x0120: 'FreeOffsets',
-    0x0121: 'FreeByteCounts',
-    0x0122: 'GrayResponseUnit',
-    0x0123: 'GrayResponseCurve',
-    0x0128: 'ResolutionUnit',
-    0x0131: 'Software',
-    0x0132: 'DateTime',
-    0x013B: 'Artist',
-    0x013C: 'HostComputer',
-    0x0140: 'ColorMap',
-    0x0152: 'ExtraSamples',
-    0x8298: 'Copyright',
 
-    // Extension tags
-    0x010D: 'DocumentName',
-    0x011D: 'PageName',
-    0x011E: 'XPosition',
-    0x011F: 'YPosition',
-    0x0124: 'T4Options',
-    0x0125: 'T6Options',
-    0x0129: 'PageNumber',
-    0x012D: 'TransferFunction',
-    0x013D: 'Predictor',
-    0x013E: 'WhitePoint',
-    0x013F: 'PrimaryChromaticities',
-    0x0141: 'HalftoneHints',
-    0x0142: 'TileWidth',
-    0x0143: 'TileLength',
-    0x0144: 'TileOffsets',
-    0x0145: 'TileByteCounts',
-    0x0146: 'BadFaxLines',
-    0x0147: 'CleanFaxData',
-    0x0148: 'ConsecutiveBadFaxLines',
-    0x014A: 'SubIFDs',
-    0x014C: 'InkSet',
-    0x014D: 'InkNames',
-    0x014E: 'NumberOfInks',
-    0x0150: 'DotRange',
-    0x0151: 'TargetPrinter',
-    0x0153: 'SampleFormat',
-    0x0154: 'SMinSampleValue',
-    0x0155: 'SMaxSampleValue',
-    0x0156: 'TransferRange',
-    0x0157: 'ClipPath',
-    0x0158: 'XClipPathUnits',
-    0x0159: 'YClipPathUnits',
-    0x015A: 'Indexed',
-    0x015B: 'JPEGTables',
-    0x015F: 'OPIProxy',
-    0x0190: 'GlobalParametersIFD',
-    0x0191: 'ProfileType',
-    0x0192: 'FaxProfile',
-    0x0193: 'CodingMethods',
-    0x0194: 'VersionYear',
-    0x0195: 'ModeNumber',
-    0x01B1: 'Decode',
-    0x01B2: 'DefaultImageColor',
-    0x0200: 'JPEGProc',
-    0x0201: 'JPEGInterchangeFormat',
-    0x0202: 'JPEGInterchangeFormatLength',
-    0x0203: 'JPEGRestartInterval',
-    0x0205: 'JPEGLosslessPredictors',
-    0x0206: 'JPEGPointTransforms',
-    0x0207: 'JPEGQTables',
-    0x0208: 'JPEGDCTables',
-    0x0209: 'JPEGACTables',
-    0x0211: 'YCbCrCoefficients',
-    0x0212: 'YCbCrSubSampling',
-    0x0213: 'YCbCrPositioning',
-    0x0214: 'ReferenceBlackWhite',
-    0x022F: 'StripRowCounts',
-    0x02BC: 'XMP',
-    0x800D: 'ImageID',
-    0x87AC: 'ImageLayer',
-
-    // Private tags
-    0x80A4: 'WangAnnotatio',
-    0x82A5: 'MDFileTag',
-    0x82A6: 'MDScalePixel',
-    0x82A7: 'MDColorTable',
-    0x82A8: 'MDLabName',
-    0x82A9: 'MDSampleInfo',
-    0x82AA: 'MDPrepDate',
-    0x82AB: 'MDPrepTime',
-    0x82AC: 'MDFileUnits',
-    0x830E: 'ModelPixelScaleTag',
-    0x83BB: 'IPTC',
-    0x847E: 'INGRPacketDataTag',
-    0x847F: 'INGRFlagRegisters',
-    0x8480: 'IrasBTransformationMatrix',
-    0x8482: 'ModelTiepointTag',
-    0x85D8: 'ModelTransformationTag',
-    0x8649: 'Photoshop',
-    0x8769: 'ExifIFD',
-    0x8773: 'ICCProfile',
-    0x87AF: 'GeoKeyDirectoryTag',
-    0x87B0: 'GeoDoubleParamsTag',
-    0x87B1: 'GeoAsciiParamsTag',
-    0x8825: 'GPSIFD',
-    0x885C: 'HylaFAXFaxRecvParams',
-    0x885D: 'HylaFAXFaxSubAddress',
-    0x885E: 'HylaFAXFaxRecvTime',
-    0x935C: 'ImageSourceData',
-    0xA005: 'InteroperabilityIFD',
-    0xA480: 'GDAL_METADATA',
-    0xA481: 'GDAL_NODATA',
-    0xC427: 'OceScanjobDescription',
-    0xC428: 'OceApplicationSelector',
-    0xC429: 'OceIdentificationNumber',
-    0xC42A: 'OceImageLogicCharacteristics',
-    0xC612: 'DNGVersion',
-    0xC613: 'DNGBackwardVersion',
-    0xC614: 'UniqueCameraModel',
-    0xC615: 'LocalizedCameraModel',
-    0xC616: 'CFAPlaneColor',
-    0xC617: 'CFALayout',
-    0xC618: 'LinearizationTable',
-    0xC619: 'BlackLevelRepeatDim',
-    0xC61A: 'BlackLevel',
-    0xC61B: 'BlackLevelDeltaH',
-    0xC61C: 'BlackLevelDeltaV',
-    0xC61D: 'WhiteLevel',
-    0xC61E: 'DefaultScale',
-    0xC61F: 'DefaultCropOrigin',
-    0xC620: 'DefaultCropSize',
-    0xC621: 'ColorMatrix1',
-    0xC622: 'ColorMatrix2',
-    0xC623: 'CameraCalibration1',
-    0xC624: 'CameraCalibration2',
-    0xC625: 'ReductionMatrix1',
-    0xC626: 'ReductionMatrix2',
-    0xC627: 'AnalogBalance',
-    0xC628: 'AsShotNeutral',
-    0xC629: 'AsShotWhiteXY',
-    0xC62A: 'BaselineExposure',
-    0xC62B: 'BaselineNoise',
-    0xC62C: 'BaselineSharpness',
-    0xC62D: 'BayerGreenSplit',
-    0xC62E: 'LinearResponseLimit',
-    0xC62F: 'CameraSerialNumber',
-    0xC630: 'LensInfo',
-    0xC631: 'ChromaBlurRadius',
-    0xC632: 'AntiAliasStrength',
-    0xC634: 'DNGPrivateData',
-    0xC635: 'MakerNoteSafety',
-    0xC65A: 'CalibrationIlluminant1',
-    0xC65B: 'CalibrationIlluminant2',
-    0xC65C: 'BestQualityScale',
-    0xC660: 'AliasLayerMetadata'
-};
-
-const tagsByName = {};
-for (var i in tagsById) {
-    tagsByName[tagsById[i]] = i;
+function Document(){
+}
+function _onAddAttribute(doc,el,newAttr){
+	doc && doc._inc++;
+	var ns = newAttr.namespaceURI;
+	if(ns == 'http://www.w3.org/2000/xmlns/'){
+		//update namespace
+		el._nsMap[newAttr.prefix?newAttr.localName:''] = newAttr.value;
+	}
+}
+function _onRemoveAttribute(doc,el,newAttr,remove){
+	doc && doc._inc++;
+	var ns = newAttr.namespaceURI;
+	if(ns == 'http://www.w3.org/2000/xmlns/'){
+		//update namespace
+		delete el._nsMap[newAttr.prefix?newAttr.localName:''];
+	}
+}
+function _onUpdateChild(doc,el,newChild){
+	if(doc && doc._inc){
+		doc._inc++;
+		//update childNodes
+		var cs = el.childNodes;
+		if(newChild){
+			cs[cs.length++] = newChild;
+		}else{
+			//console.log(1)
+			var child = el.firstChild;
+			var i = 0;
+			while(child){
+				cs[i++] = child;
+				child =child.nextSibling;
+			}
+			cs.length = i;
+		}
+	}
 }
 
-var standard = {
-    tagsById,
-    tagsByName
-};
+/**
+ * attributes;
+ * children;
+ * 
+ * writeable properties:
+ * nodeValue,Attr:value,CharacterData:data
+ * prefix
+ */
+function _removeChild(parentNode,child){
+	var previous = child.previousSibling;
+	var next = child.nextSibling;
+	if(previous){
+		previous.nextSibling = next;
+	}else{
+		parentNode.firstChild = next;
+	}
+	if(next){
+		next.previousSibling = previous;
+	}else{
+		parentNode.lastChild = previous;
+	}
+	_onUpdateChild(parentNode.ownerDocument,parentNode);
+	return child;
+}
+/**
+ * preformance key(refChild == null)
+ */
+function _insertBefore(parentNode,newChild,nextChild){
+	var cp = newChild.parentNode;
+	if(cp){
+		cp.removeChild(newChild);//remove and update
+	}
+	if(newChild.nodeType === DOCUMENT_FRAGMENT_NODE){
+		var newFirst = newChild.firstChild;
+		if (newFirst == null) {
+			return newChild;
+		}
+		var newLast = newChild.lastChild;
+	}else{
+		newFirst = newLast = newChild;
+	}
+	var pre = nextChild ? nextChild.previousSibling : parentNode.lastChild;
 
-const tagsById$1 = {
-    0x829A: 'ExposureTime',
-    0x829D: 'FNumber',
-    0x8822: 'ExposureProgram',
-    0x8824: 'SpectralSensitivity',
-    0x8827: 'ISOSpeedRatings',
-    0x8828: 'OECF',
-    0x8830: 'SensitivityType',
-    0x8831: 'StandardOutputSensitivity',
-    0x8832: 'RecommendedExposureIndex',
-    0x8833: 'ISOSpeed',
-    0x8834: 'ISOSpeedLatitudeyyy',
-    0x8835: 'ISOSpeedLatitudezzz',
-    0x9000: 'ExifVersion',
-    0x9003: 'DateTimeOriginal',
-    0x9004: 'DateTimeDigitized',
-    0x9101: 'ComponentsConfiguration',
-    0x9102: 'CompressedBitsPerPixel',
-    0x9201: 'ShutterSpeedValue',
-    0x9202: 'ApertureValue',
-    0x9203: 'BrightnessValue',
-    0x9204: 'ExposureBiasValue',
-    0x9205: 'MaxApertureValue',
-    0x9206: 'SubjectDistance',
-    0x9207: 'MeteringMode',
-    0x9208: 'LightSource',
-    0x9209: 'Flash',
-    0x920A: 'FocalLength',
-    0x9214: 'SubjectArea',
-    0x927C: 'MakerNote',
-    0x9286: 'UserComment',
-    0x9290: 'SubsecTime',
-    0x9291: 'SubsecTimeOriginal',
-    0x9292: 'SubsecTimeDigitized',
-    0xA000: 'FlashpixVersion',
-    0xA001: 'ColorSpace',
-    0xA002: 'PixelXDimension',
-    0xA003: 'PixelYDimension',
-    0xA004: 'RelatedSoundFile',
-    0xA20B: 'FlashEnergy',
-    0xA20C: 'SpatialFrequencyResponse',
-    0xA20E: 'FocalPlaneXResolution',
-    0xA20F: 'FocalPlaneYResolution',
-    0xA210: 'FocalPlaneResolutionUnit',
-    0xA214: 'SubjectLocation',
-    0xA215: 'ExposureIndex',
-    0xA217: 'SensingMethod',
-    0xA300: 'FileSource',
-    0xA301: 'SceneType',
-    0xA302: 'CFAPattern',
-    0xA401: 'CustomRendered',
-    0xA402: 'ExposureMode',
-    0xA403:	'WhiteBalance',
-    0xA404:	'DigitalZoomRatio',
-    0xA405:	'FocalLengthIn35mmFilm',
-    0xA406:	'SceneCaptureType',
-    0xA407:	'GainControl',
-    0xA408:	'Contrast',
-    0xA409:	'Saturation',
-    0xA40A:	'Sharpness',
-    0xA40B:	'DeviceSettingDescription',
-    0xA40C:	'SubjectDistanceRange',
-    0xA420:	'ImageUniqueID',
-    0xA430: 'CameraOwnerName',
-    0xA431: 'BodySerialNumber',
-    0xA432: 'LensSpecification',
-    0xA433: 'LensMake',
-    0xA434: 'LensModel',
-    0xA435: 'LensSerialNumber',
-    0xA500: 'Gamma'
+	newFirst.previousSibling = pre;
+	newLast.nextSibling = nextChild;
+	
+	
+	if(pre){
+		pre.nextSibling = newFirst;
+	}else{
+		parentNode.firstChild = newFirst;
+	}
+	if(nextChild == null){
+		parentNode.lastChild = newLast;
+	}else{
+		nextChild.previousSibling = newLast;
+	}
+	do{
+		newFirst.parentNode = parentNode;
+	}while(newFirst !== newLast && (newFirst= newFirst.nextSibling))
+	_onUpdateChild(parentNode.ownerDocument||parentNode,parentNode);
+	//console.log(parentNode.lastChild.nextSibling == null)
+	if (newChild.nodeType == DOCUMENT_FRAGMENT_NODE) {
+		newChild.firstChild = newChild.lastChild = null;
+	}
+	return newChild;
+}
+function _appendSingleChild(parentNode,newChild){
+	var cp = newChild.parentNode;
+	if(cp){
+		var pre = parentNode.lastChild;
+		cp.removeChild(newChild);//remove and update
+		var pre = parentNode.lastChild;
+	}
+	var pre = parentNode.lastChild;
+	newChild.parentNode = parentNode;
+	newChild.previousSibling = pre;
+	newChild.nextSibling = null;
+	if(pre){
+		pre.nextSibling = newChild;
+	}else{
+		parentNode.firstChild = newChild;
+	}
+	parentNode.lastChild = newChild;
+	_onUpdateChild(parentNode.ownerDocument,parentNode,newChild);
+	return newChild;
+	//console.log("__aa",parentNode.lastChild.nextSibling == null)
+}
+Document.prototype = {
+	//implementation : null,
+	nodeName :  '#document',
+	nodeType :  DOCUMENT_NODE,
+	doctype :  null,
+	documentElement :  null,
+	_inc : 1,
+	
+	insertBefore :  function(newChild, refChild){//raises 
+		if(newChild.nodeType == DOCUMENT_FRAGMENT_NODE){
+			var child = newChild.firstChild;
+			while(child){
+				var next = child.nextSibling;
+				this.insertBefore(child,refChild);
+				child = next;
+			}
+			return newChild;
+		}
+		if(this.documentElement == null && newChild.nodeType == ELEMENT_NODE){
+			this.documentElement = newChild;
+		}
+		
+		return _insertBefore(this,newChild,refChild),(newChild.ownerDocument = this),newChild;
+	},
+	removeChild :  function(oldChild){
+		if(this.documentElement == oldChild){
+			this.documentElement = null;
+		}
+		return _removeChild(this,oldChild);
+	},
+	// Introduced in DOM Level 2:
+	importNode : function(importedNode,deep){
+		return importNode(this,importedNode,deep);
+	},
+	// Introduced in DOM Level 2:
+	getElementById :	function(id){
+		var rtv = null;
+		_visitNode(this.documentElement,function(node){
+			if(node.nodeType == ELEMENT_NODE){
+				if(node.getAttribute('id') == id){
+					rtv = node;
+					return true;
+				}
+			}
+		});
+		return rtv;
+	},
+	
+	//document factory method:
+	createElement :	function(tagName){
+		var node = new Element();
+		node.ownerDocument = this;
+		node.nodeName = tagName;
+		node.tagName = tagName;
+		node.childNodes = new NodeList();
+		var attrs	= node.attributes = new NamedNodeMap();
+		attrs._ownerElement = node;
+		return node;
+	},
+	createDocumentFragment :	function(){
+		var node = new DocumentFragment();
+		node.ownerDocument = this;
+		node.childNodes = new NodeList();
+		return node;
+	},
+	createTextNode :	function(data){
+		var node = new Text();
+		node.ownerDocument = this;
+		node.appendData(data);
+		return node;
+	},
+	createComment :	function(data){
+		var node = new Comment();
+		node.ownerDocument = this;
+		node.appendData(data);
+		return node;
+	},
+	createCDATASection :	function(data){
+		var node = new CDATASection();
+		node.ownerDocument = this;
+		node.appendData(data);
+		return node;
+	},
+	createProcessingInstruction :	function(target,data){
+		var node = new ProcessingInstruction();
+		node.ownerDocument = this;
+		node.tagName = node.target = target;
+		node.nodeValue= node.data = data;
+		return node;
+	},
+	createAttribute :	function(name){
+		var node = new Attr();
+		node.ownerDocument	= this;
+		node.name = name;
+		node.nodeName	= name;
+		node.localName = name;
+		node.specified = true;
+		return node;
+	},
+	createEntityReference :	function(name){
+		var node = new EntityReference();
+		node.ownerDocument	= this;
+		node.nodeName	= name;
+		return node;
+	},
+	// Introduced in DOM Level 2:
+	createElementNS :	function(namespaceURI,qualifiedName){
+		var node = new Element();
+		var pl = qualifiedName.split(':');
+		var attrs	= node.attributes = new NamedNodeMap();
+		node.childNodes = new NodeList();
+		node.ownerDocument = this;
+		node.nodeName = qualifiedName;
+		node.tagName = qualifiedName;
+		node.namespaceURI = namespaceURI;
+		if(pl.length == 2){
+			node.prefix = pl[0];
+			node.localName = pl[1];
+		}else{
+			//el.prefix = null;
+			node.localName = qualifiedName;
+		}
+		attrs._ownerElement = node;
+		return node;
+	},
+	// Introduced in DOM Level 2:
+	createAttributeNS :	function(namespaceURI,qualifiedName){
+		var node = new Attr();
+		var pl = qualifiedName.split(':');
+		node.ownerDocument = this;
+		node.nodeName = qualifiedName;
+		node.name = qualifiedName;
+		node.namespaceURI = namespaceURI;
+		node.specified = true;
+		if(pl.length == 2){
+			node.prefix = pl[0];
+			node.localName = pl[1];
+		}else{
+			//el.prefix = null;
+			node.localName = qualifiedName;
+		}
+		return node;
+	}
 };
+_extends(Document,Node);
 
-const tagsByName$1 = {};
-for (var i$1 in tagsById$1) {
-    tagsByName$1[tagsById$1[i$1]] = i$1;
+
+function Element() {
+	this._nsMap = {};
+}
+Element.prototype = {
+	nodeType : ELEMENT_NODE,
+	hasAttribute : function(name){
+		return this.getAttributeNode(name)!=null;
+	},
+	getAttribute : function(name){
+		var attr = this.getAttributeNode(name);
+		return attr && attr.value || '';
+	},
+	getAttributeNode : function(name){
+		return this.attributes.getNamedItem(name);
+	},
+	setAttribute : function(name, value){
+		var attr = this.ownerDocument.createAttribute(name);
+		attr.value = attr.nodeValue = "" + value;
+		this.setAttributeNode(attr);
+	},
+	removeAttribute : function(name){
+		var attr = this.getAttributeNode(name);
+		attr && this.removeAttributeNode(attr);
+	},
+	
+	//four real opeartion method
+	appendChild:function(newChild){
+		if(newChild.nodeType === DOCUMENT_FRAGMENT_NODE){
+			return this.insertBefore(newChild,null);
+		}else{
+			return _appendSingleChild(this,newChild);
+		}
+	},
+	setAttributeNode : function(newAttr){
+		return this.attributes.setNamedItem(newAttr);
+	},
+	setAttributeNodeNS : function(newAttr){
+		return this.attributes.setNamedItemNS(newAttr);
+	},
+	removeAttributeNode : function(oldAttr){
+		//console.log(this == oldAttr.ownerElement)
+		return this.attributes.removeNamedItem(oldAttr.nodeName);
+	},
+	//get real attribute name,and remove it by removeAttributeNode
+	removeAttributeNS : function(namespaceURI, localName){
+		var old = this.getAttributeNodeNS(namespaceURI, localName);
+		old && this.removeAttributeNode(old);
+	},
+	
+	hasAttributeNS : function(namespaceURI, localName){
+		return this.getAttributeNodeNS(namespaceURI, localName)!=null;
+	},
+	getAttributeNS : function(namespaceURI, localName){
+		var attr = this.getAttributeNodeNS(namespaceURI, localName);
+		return attr && attr.value || '';
+	},
+	setAttributeNS : function(namespaceURI, qualifiedName, value){
+		var attr = this.ownerDocument.createAttributeNS(namespaceURI, qualifiedName);
+		attr.value = attr.nodeValue = "" + value;
+		this.setAttributeNode(attr);
+	},
+	getAttributeNodeNS : function(namespaceURI, localName){
+		return this.attributes.getNamedItemNS(namespaceURI, localName);
+	},
+	
+	getElementsByTagName : function(tagName){
+		return new LiveNodeList(this,function(base){
+			var ls = [];
+			_visitNode(base,function(node){
+				if(node !== base && node.nodeType == ELEMENT_NODE && (tagName === '*' || node.tagName == tagName)){
+					ls.push(node);
+				}
+			});
+			return ls;
+		});
+	},
+	getElementsByTagNameNS : function(namespaceURI, localName){
+		return new LiveNodeList(this,function(base){
+			var ls = [];
+			_visitNode(base,function(node){
+				if(node !== base && node.nodeType === ELEMENT_NODE && (namespaceURI === '*' || node.namespaceURI === namespaceURI) && (localName === '*' || node.localName == localName)){
+					ls.push(node);
+				}
+			});
+			return ls;
+			
+		});
+	}
+};
+Document.prototype.getElementsByTagName = Element.prototype.getElementsByTagName;
+Document.prototype.getElementsByTagNameNS = Element.prototype.getElementsByTagNameNS;
+
+
+_extends(Element,Node);
+function Attr() {
+}
+Attr.prototype.nodeType = ATTRIBUTE_NODE;
+_extends(Attr,Node);
+
+
+function CharacterData() {
+}
+CharacterData.prototype = {
+	data : '',
+	substringData : function(offset, count) {
+		return this.data.substring(offset, offset+count);
+	},
+	appendData: function(text) {
+		text = this.data+text;
+		this.nodeValue = this.data = text;
+		this.length = text.length;
+	},
+	insertData: function(offset,text) {
+		this.replaceData(offset,0,text);
+	
+	},
+	appendChild:function(newChild){
+		throw new Error(ExceptionMessage[HIERARCHY_REQUEST_ERR])
+	},
+	deleteData: function(offset, count) {
+		this.replaceData(offset,count,"");
+	},
+	replaceData: function(offset, count, text) {
+		var start = this.data.substring(0,offset);
+		var end = this.data.substring(offset+count);
+		text = start + text + end;
+		this.nodeValue = this.data = text;
+		this.length = text.length;
+	}
+};
+_extends(CharacterData,Node);
+function Text() {
+}
+Text.prototype = {
+	nodeName : "#text",
+	nodeType : TEXT_NODE,
+	splitText : function(offset) {
+		var text = this.data;
+		var newText = text.substring(offset);
+		text = text.substring(0, offset);
+		this.data = this.nodeValue = text;
+		this.length = text.length;
+		var newNode = this.ownerDocument.createTextNode(newText);
+		if(this.parentNode){
+			this.parentNode.insertBefore(newNode, this.nextSibling);
+		}
+		return newNode;
+	}
+};
+_extends(Text,CharacterData);
+function Comment() {
+}
+Comment.prototype = {
+	nodeName : "#comment",
+	nodeType : COMMENT_NODE
+};
+_extends(Comment,CharacterData);
+
+function CDATASection() {
+}
+CDATASection.prototype = {
+	nodeName : "#cdata-section",
+	nodeType : CDATA_SECTION_NODE
+};
+_extends(CDATASection,CharacterData);
+
+
+function DocumentType() {
+}
+DocumentType.prototype.nodeType = DOCUMENT_TYPE_NODE;
+_extends(DocumentType,Node);
+
+function Notation() {
+}
+Notation.prototype.nodeType = NOTATION_NODE;
+_extends(Notation,Node);
+
+function Entity() {
+}
+Entity.prototype.nodeType = ENTITY_NODE;
+_extends(Entity,Node);
+
+function EntityReference() {
+}
+EntityReference.prototype.nodeType = ENTITY_REFERENCE_NODE;
+_extends(EntityReference,Node);
+
+function DocumentFragment() {
+}
+DocumentFragment.prototype.nodeName =	"#document-fragment";
+DocumentFragment.prototype.nodeType =	DOCUMENT_FRAGMENT_NODE;
+_extends(DocumentFragment,Node);
+
+
+function ProcessingInstruction() {
+}
+ProcessingInstruction.prototype.nodeType = PROCESSING_INSTRUCTION_NODE;
+_extends(ProcessingInstruction,Node);
+function XMLSerializer(){}
+XMLSerializer.prototype.serializeToString = function(node,isHtml,nodeFilter){
+	return nodeSerializeToString.call(node,isHtml,nodeFilter);
+};
+Node.prototype.toString = nodeSerializeToString;
+function nodeSerializeToString(isHtml,nodeFilter){
+	var buf = [];
+	var refNode = this.nodeType == 9?this.documentElement:this;
+	var prefix = refNode.prefix;
+	var uri = refNode.namespaceURI;
+	
+	if(uri && prefix == null){
+		//console.log(prefix)
+		var prefix = refNode.lookupPrefix(uri);
+		if(prefix == null){
+			//isHTML = true;
+			var visibleNamespaces=[
+			{namespace:uri,prefix:null}
+			//{namespace:uri,prefix:''}
+			];
+		}
+	}
+	serializeToString(this,buf,isHtml,nodeFilter,visibleNamespaces);
+	//console.log('###',this.nodeType,uri,prefix,buf.join(''))
+	return buf.join('');
+}
+function needNamespaceDefine(node,isHTML, visibleNamespaces) {
+	var prefix = node.prefix||'';
+	var uri = node.namespaceURI;
+	if (!prefix && !uri){
+		return false;
+	}
+	if (prefix === "xml" && uri === "http://www.w3.org/XML/1998/namespace" 
+		|| uri == 'http://www.w3.org/2000/xmlns/'){
+		return false;
+	}
+	
+	var i = visibleNamespaces.length; 
+	//console.log('@@@@',node.tagName,prefix,uri,visibleNamespaces)
+	while (i--) {
+		var ns = visibleNamespaces[i];
+		// get namespace prefix
+		//console.log(node.nodeType,node.tagName,ns.prefix,prefix)
+		if (ns.prefix == prefix){
+			return ns.namespace != uri;
+		}
+	}
+	//console.log(isHTML,uri,prefix=='')
+	//if(isHTML && prefix ==null && uri == 'http://www.w3.org/1999/xhtml'){
+	//	return false;
+	//}
+	//node.flag = '11111'
+	//console.error(3,true,node.flag,node.prefix,node.namespaceURI)
+	return true;
+}
+function serializeToString(node,buf,isHTML,nodeFilter,visibleNamespaces){
+	if(nodeFilter){
+		node = nodeFilter(node);
+		if(node){
+			if(typeof node == 'string'){
+				buf.push(node);
+				return;
+			}
+		}else{
+			return;
+		}
+		//buf.sort.apply(attrs, attributeSorter);
+	}
+	switch(node.nodeType){
+	case ELEMENT_NODE:
+		if (!visibleNamespaces) visibleNamespaces = [];
+		var startVisibleNamespaces = visibleNamespaces.length;
+		var attrs = node.attributes;
+		var len = attrs.length;
+		var child = node.firstChild;
+		var nodeName = node.tagName;
+		
+		isHTML =  (htmlns === node.namespaceURI) ||isHTML; 
+		buf.push('<',nodeName);
+		
+		
+		
+		for(var i=0;i<len;i++){
+			// add namespaces for attributes
+			var attr = attrs.item(i);
+			if (attr.prefix == 'xmlns') {
+				visibleNamespaces.push({ prefix: attr.localName, namespace: attr.value });
+			}else if(attr.nodeName == 'xmlns'){
+				visibleNamespaces.push({ prefix: '', namespace: attr.value });
+			}
+		}
+		for(var i=0;i<len;i++){
+			var attr = attrs.item(i);
+			if (needNamespaceDefine(attr,isHTML, visibleNamespaces)) {
+				var prefix = attr.prefix||'';
+				var uri = attr.namespaceURI;
+				var ns = prefix ? ' xmlns:' + prefix : " xmlns";
+				buf.push(ns, '="' , uri , '"');
+				visibleNamespaces.push({ prefix: prefix, namespace:uri });
+			}
+			serializeToString(attr,buf,isHTML,nodeFilter,visibleNamespaces);
+		}
+		// add namespace for current node		
+		if (needNamespaceDefine(node,isHTML, visibleNamespaces)) {
+			var prefix = node.prefix||'';
+			var uri = node.namespaceURI;
+			var ns = prefix ? ' xmlns:' + prefix : " xmlns";
+			buf.push(ns, '="' , uri , '"');
+			visibleNamespaces.push({ prefix: prefix, namespace:uri });
+		}
+		
+		if(child || isHTML && !/^(?:meta|link|img|br|hr|input)$/i.test(nodeName)){
+			buf.push('>');
+			//if is cdata child node
+			if(isHTML && /^script$/i.test(nodeName)){
+				while(child){
+					if(child.data){
+						buf.push(child.data);
+					}else{
+						serializeToString(child,buf,isHTML,nodeFilter,visibleNamespaces);
+					}
+					child = child.nextSibling;
+				}
+			}else
+			{
+				while(child){
+					serializeToString(child,buf,isHTML,nodeFilter,visibleNamespaces);
+					child = child.nextSibling;
+				}
+			}
+			buf.push('</',nodeName,'>');
+		}else{
+			buf.push('/>');
+		}
+		// remove added visible namespaces
+		//visibleNamespaces.length = startVisibleNamespaces;
+		return;
+	case DOCUMENT_NODE:
+	case DOCUMENT_FRAGMENT_NODE:
+		var child = node.firstChild;
+		while(child){
+			serializeToString(child,buf,isHTML,nodeFilter,visibleNamespaces);
+			child = child.nextSibling;
+		}
+		return;
+	case ATTRIBUTE_NODE:
+		return buf.push(' ',node.name,'="',node.value.replace(/[<&"]/g,_xmlEncoder),'"');
+	case TEXT_NODE:
+		return buf.push(node.data.replace(/[<&]/g,_xmlEncoder));
+	case CDATA_SECTION_NODE:
+		return buf.push( '<![CDATA[',node.data,']]>');
+	case COMMENT_NODE:
+		return buf.push( "<!--",node.data,"-->");
+	case DOCUMENT_TYPE_NODE:
+		var pubid = node.publicId;
+		var sysid = node.systemId;
+		buf.push('<!DOCTYPE ',node.name);
+		if(pubid){
+			buf.push(' PUBLIC "',pubid);
+			if (sysid && sysid!='.') {
+				buf.push( '" "',sysid);
+			}
+			buf.push('">');
+		}else if(sysid && sysid!='.'){
+			buf.push(' SYSTEM "',sysid,'">');
+		}else{
+			var sub = node.internalSubset;
+			if(sub){
+				buf.push(" [",sub,"]");
+			}
+			buf.push(">");
+		}
+		return;
+	case PROCESSING_INSTRUCTION_NODE:
+		return buf.push( "<?",node.target," ",node.data,"?>");
+	case ENTITY_REFERENCE_NODE:
+		return buf.push( '&',node.nodeName,';');
+	//case ENTITY_NODE:
+	//case NOTATION_NODE:
+	default:
+		buf.push('??',node.nodeName);
+	}
+}
+function importNode(doc,node,deep){
+	var node2;
+	switch (node.nodeType) {
+	case ELEMENT_NODE:
+		node2 = node.cloneNode(false);
+		node2.ownerDocument = doc;
+		//var attrs = node2.attributes;
+		//var len = attrs.length;
+		//for(var i=0;i<len;i++){
+			//node2.setAttributeNodeNS(importNode(doc,attrs.item(i),deep));
+		//}
+	case DOCUMENT_FRAGMENT_NODE:
+		break;
+	case ATTRIBUTE_NODE:
+		deep = true;
+		break;
+	//case ENTITY_REFERENCE_NODE:
+	//case PROCESSING_INSTRUCTION_NODE:
+	////case TEXT_NODE:
+	//case CDATA_SECTION_NODE:
+	//case COMMENT_NODE:
+	//	deep = false;
+	//	break;
+	//case DOCUMENT_NODE:
+	//case DOCUMENT_TYPE_NODE:
+	//cannot be imported.
+	//case ENTITY_NODE:
+	//case NOTATION_NODE：
+	//can not hit in level3
+	//default:throw e;
+	}
+	if(!node2){
+		node2 = node.cloneNode(false);//false
+	}
+	node2.ownerDocument = doc;
+	node2.parentNode = null;
+	if(deep){
+		var child = node.firstChild;
+		while(child){
+			node2.appendChild(importNode(doc,child,deep));
+			child = child.nextSibling;
+		}
+	}
+	return node2;
+}
+//
+//var _relationMap = {firstChild:1,lastChild:1,previousSibling:1,nextSibling:1,
+//					attributes:1,childNodes:1,parentNode:1,documentElement:1,doctype,};
+function cloneNode(doc,node,deep){
+	var node2 = new node.constructor();
+	for(var n in node){
+		var v = node[n];
+		if(typeof v != 'object' ){
+			if(v != node2[n]){
+				node2[n] = v;
+			}
+		}
+	}
+	if(node.childNodes){
+		node2.childNodes = new NodeList();
+	}
+	node2.ownerDocument = doc;
+	switch (node2.nodeType) {
+	case ELEMENT_NODE:
+		var attrs	= node.attributes;
+		var attrs2	= node2.attributes = new NamedNodeMap();
+		var len = attrs.length;
+		attrs2._ownerElement = node2;
+		for(var i=0;i<len;i++){
+			node2.setAttributeNode(cloneNode(doc,attrs.item(i),true));
+		}
+		break;;
+	case ATTRIBUTE_NODE:
+		deep = true;
+	}
+	if(deep){
+		var child = node.firstChild;
+		while(child){
+			node2.appendChild(cloneNode(doc,child,deep));
+			child = child.nextSibling;
+		}
+	}
+	return node2;
 }
 
-var exif = {
-    tagsById: tagsById$1,
-    tagsByName: tagsByName$1
-};
-
-const tagsById$2 = {
-    0x0000: 'GPSVersionID',
-    0x0001: 'GPSLatitudeRef',
-    0x0002: 'GPSLatitude',
-    0x0003: 'GPSLongitudeRef',
-    0x0004: 'GPSLongitude',
-    0x0005: 'GPSAltitudeRef',
-    0x0006: 'GPSAltitude',
-    0x0007: 'GPSTimeStamp',
-    0x0008: 'GPSSatellites',
-    0x0009: 'GPSStatus',
-    0x000A: 'GPSMeasureMode',
-    0x000B: 'GPSDOP',
-    0x000C: 'GPSSpeedRef',
-    0x000D: 'GPSSpeed',
-    0x000E: 'GPSTrackRef',
-    0x000F: 'GPSTrack',
-    0x0010: 'GPSImgDirectionRef',
-    0x0011: 'GPSImgDirection',
-    0x0012: 'GPSMapDatum',
-    0x0013: 'GPSDestLatitudeRef',
-    0x0014: 'GPSDestLatitude',
-    0x0015: 'GPSDestLongitudeRef',
-    0x0016: 'GPSDestLongitude',
-    0x0017: 'GPSDestBearingRef',
-    0x0018: 'GPSDestBearing',
-    0x0019: 'GPSDestDistanceRef',
-    0x001A: 'GPSDestDistance',
-    0x001B: 'GPSProcessingMethod',
-    0x001C: 'GPSAreaInformation',
-    0x001D: 'GPSDateStamp',
-    0x001E: 'GPSDifferential',
-    0x001F: 'GPSHPositioningError'
-};
-
-const tagsByName$2 = {};
-for (var i$2 in tagsById$2) {
-    tagsByName$2[tagsById$2[i$2]] = i$2;
+function __set__(object,key,value){
+	object[key] = value;
+}
+//do dynamic
+try{
+	if(Object.defineProperty){
+		Object.defineProperty(LiveNodeList.prototype,'length',{
+			get:function(){
+				_updateLiveList(this);
+				return this.$$length;
+			}
+		});
+		Object.defineProperty(Node.prototype,'textContent',{
+			get:function(){
+				return getTextContent(this);
+			},
+			set:function(data){
+				switch(this.nodeType){
+				case ELEMENT_NODE:
+				case DOCUMENT_FRAGMENT_NODE:
+					while(this.firstChild){
+						this.removeChild(this.firstChild);
+					}
+					if(data || String(data)){
+						this.appendChild(this.ownerDocument.createTextNode(data));
+					}
+					break;
+				default:
+					//TODO:
+					this.data = data;
+					this.value = data;
+					this.nodeValue = data;
+				}
+			}
+		});
+		
+		function getTextContent(node){
+			switch(node.nodeType){
+			case ELEMENT_NODE:
+			case DOCUMENT_FRAGMENT_NODE:
+				var buf = [];
+				node = node.firstChild;
+				while(node){
+					if(node.nodeType!==7 && node.nodeType !==8){
+						buf.push(getTextContent(node));
+					}
+					node = node.nextSibling;
+				}
+				return buf.join('');
+			default:
+				return node.nodeValue;
+			}
+		}
+		__set__ = function(object,key,value){
+			//console.log(value)
+			object['$$'+key] = value;
+		};
+	}
+}catch(e){//ie8
 }
 
-var gps = {
-    tagsById: tagsById$2,
-    tagsByName: tagsByName$2
+//if(typeof require == 'function'){
+	var DOMImplementation_1 = DOMImplementation;
+	var XMLSerializer_1 = XMLSerializer;
+//}
+
+var dom = {
+	DOMImplementation: DOMImplementation_1,
+	XMLSerializer: XMLSerializer_1
 };
 
-const tags = {
-    standard: standard,
-    exif: exif,
-    gps: gps
+var domParser = createCommonjsModule(function (module, exports) {
+function DOMParser(options){
+	this.options = options ||{locator:{}};
+	
+}
+DOMParser.prototype.parseFromString = function(source,mimeType){
+	var options = this.options;
+	var sax$$1 =  new XMLReader();
+	var domBuilder = options.domBuilder || new DOMHandler();//contentHandler and LexicalHandler
+	var errorHandler = options.errorHandler;
+	var locator = options.locator;
+	var defaultNSMap = options.xmlns||{};
+	var entityMap = {'lt':'<','gt':'>','amp':'&','quot':'"','apos':"'"};
+	if(locator){
+		domBuilder.setDocumentLocator(locator);
+	}
+	
+	sax$$1.errorHandler = buildErrorHandler(errorHandler,domBuilder,locator);
+	sax$$1.domBuilder = options.domBuilder || domBuilder;
+	if(/\/x?html?$/.test(mimeType)){
+		entityMap.nbsp = '\xa0';
+		entityMap.copy = '\xa9';
+		defaultNSMap['']= 'http://www.w3.org/1999/xhtml';
+	}
+	defaultNSMap.xml = defaultNSMap.xml || 'http://www.w3.org/XML/1998/namespace';
+	if(source){
+		sax$$1.parse(source,defaultNSMap,entityMap);
+	}else{
+		sax$$1.errorHandler.error("invalid doc source");
+	}
+	return domBuilder.doc;
 };
+function buildErrorHandler(errorImpl,domBuilder,locator){
+	if(!errorImpl){
+		if(domBuilder instanceof DOMHandler){
+			return domBuilder;
+		}
+		errorImpl = domBuilder ;
+	}
+	var errorHandler = {};
+	var isCallback = errorImpl instanceof Function;
+	locator = locator||{};
+	function build(key){
+		var fn = errorImpl[key];
+		if(!fn && isCallback){
+			fn = errorImpl.length == 2?function(msg){errorImpl(key,msg);}:errorImpl;
+		}
+		errorHandler[key] = fn && function(msg){
+			fn('[xmldom '+key+']\t'+msg+_locator(locator));
+		}||function(){};
+	}
+	build('warning');
+	build('error');
+	build('fatalError');
+	return errorHandler;
+}
 
-class IFD {
-    constructor(kind) {
-        if (!kind) {
-            throw new Error('missing kind');
-        }
-        this.data = null;
-        this.fields = new Map();
-        this.kind = kind;
-        this._map = null;
+//console.log('#\n\n\n\n\n\n\n####')
+/**
+ * +ContentHandler+ErrorHandler
+ * +LexicalHandler+EntityResolver2
+ * -DeclHandler-DTDHandler 
+ * 
+ * DefaultHandler:EntityResolver, DTDHandler, ContentHandler, ErrorHandler
+ * DefaultHandler2:DefaultHandler,LexicalHandler, DeclHandler, EntityResolver2
+ * @link http://www.saxproject.org/apidoc/org/xml/sax/helpers/DefaultHandler.html
+ */
+function DOMHandler() {
+    this.cdata = false;
+}
+function position(locator,node){
+	node.lineNumber = locator.lineNumber;
+	node.columnNumber = locator.columnNumber;
+}
+/**
+ * @see org.xml.sax.ContentHandler#startDocument
+ * @link http://www.saxproject.org/apidoc/org/xml/sax/ContentHandler.html
+ */ 
+DOMHandler.prototype = {
+	startDocument : function() {
+    	this.doc = new DOMImplementation().createDocument(null, null, null);
+    	if (this.locator) {
+        	this.doc.documentURI = this.locator.systemId;
+    	}
+	},
+	startElement:function(namespaceURI, localName, qName, attrs) {
+		var doc = this.doc;
+	    var el = doc.createElementNS(namespaceURI, qName||localName);
+	    var len = attrs.length;
+	    appendElement(this, el);
+	    this.currentElement = el;
+	    
+		this.locator && position(this.locator,el);
+	    for (var i = 0 ; i < len; i++) {
+	        var namespaceURI = attrs.getURI(i);
+	        var value = attrs.getValue(i);
+	        var qName = attrs.getQName(i);
+			var attr = doc.createAttributeNS(namespaceURI, qName);
+			this.locator &&position(attrs.getLocator(i),attr);
+			attr.value = attr.nodeValue = value;
+			el.setAttributeNode(attr);
+	    }
+	},
+	endElement:function(namespaceURI, localName, qName) {
+		var current = this.currentElement;
+		var tagName = current.tagName;
+		this.currentElement = current.parentNode;
+	},
+	startPrefixMapping:function(prefix, uri) {
+	},
+	endPrefixMapping:function(prefix) {
+	},
+	processingInstruction:function(target, data) {
+	    var ins = this.doc.createProcessingInstruction(target, data);
+	    this.locator && position(this.locator,ins);
+	    appendElement(this, ins);
+	},
+	ignorableWhitespace:function(ch, start, length) {
+	},
+	characters:function(chars, start, length) {
+		chars = _toString.apply(this,arguments);
+		//console.log(chars)
+		if(chars){
+			if (this.cdata) {
+				var charNode = this.doc.createCDATASection(chars);
+			} else {
+				var charNode = this.doc.createTextNode(chars);
+			}
+			if(this.currentElement){
+				this.currentElement.appendChild(charNode);
+			}else if(/^\s*$/.test(chars)){
+				this.doc.appendChild(charNode);
+				//process xml
+			}
+			this.locator && position(this.locator,charNode);
+		}
+	},
+	skippedEntity:function(name) {
+	},
+	endDocument:function() {
+		this.doc.normalize();
+	},
+	setDocumentLocator:function (locator) {
+	    if(this.locator = locator){// && !('lineNumber' in locator)){
+	    	locator.lineNumber = 0;
+	    }
+	},
+	//LexicalHandler
+	comment:function(chars, start, length) {
+		chars = _toString.apply(this,arguments);
+	    var comm = this.doc.createComment(chars);
+	    this.locator && position(this.locator,comm);
+	    appendElement(this, comm);
+	},
+	
+	startCDATA:function() {
+	    //used in characters() methods
+	    this.cdata = true;
+	},
+	endCDATA:function() {
+	    this.cdata = false;
+	},
+	
+	startDTD:function(name, publicId, systemId) {
+		var impl = this.doc.implementation;
+	    if (impl && impl.createDocumentType) {
+	        var dt = impl.createDocumentType(name, publicId, systemId);
+	        this.locator && position(this.locator,dt);
+	        appendElement(this, dt);
+	    }
+	},
+	/**
+	 * @see org.xml.sax.ErrorHandler
+	 * @link http://www.saxproject.org/apidoc/org/xml/sax/ErrorHandler.html
+	 */
+	warning:function(error) {
+		console.warn('[xmldom warning]\t'+error,_locator(this.locator));
+	},
+	error:function(error) {
+		console.error('[xmldom error]\t'+error,_locator(this.locator));
+	},
+	fatalError:function(error) {
+		console.error('[xmldom fatalError]\t'+error,_locator(this.locator));
+	    throw error;
+	}
+};
+function _locator(l){
+	if(l){
+		return '\n@'+(l.systemId ||'')+'#[line:'+l.lineNumber+',col:'+l.columnNumber+']'
+	}
+}
+function _toString(chars,start,length){
+	if(typeof chars == 'string'){
+		return chars.substr(start,length)
+	}else{//java sax connect width xmldom on rhino(what about: "? && !(chars instanceof String)")
+		if(chars.length >= start+length || start){
+			return new java.lang.String(chars,start,length)+'';
+		}
+		return chars;
+	}
+}
+
+/*
+ * @link http://www.saxproject.org/apidoc/org/xml/sax/ext/LexicalHandler.html
+ * used method of org.xml.sax.ext.LexicalHandler:
+ *  #comment(chars, start, length)
+ *  #startCDATA()
+ *  #endCDATA()
+ *  #startDTD(name, publicId, systemId)
+ *
+ *
+ * IGNORED method of org.xml.sax.ext.LexicalHandler:
+ *  #endDTD()
+ *  #startEntity(name)
+ *  #endEntity(name)
+ *
+ *
+ * @link http://www.saxproject.org/apidoc/org/xml/sax/ext/DeclHandler.html
+ * IGNORED method of org.xml.sax.ext.DeclHandler
+ * 	#attributeDecl(eName, aName, type, mode, value)
+ *  #elementDecl(name, model)
+ *  #externalEntityDecl(name, publicId, systemId)
+ *  #internalEntityDecl(name, value)
+ * @link http://www.saxproject.org/apidoc/org/xml/sax/ext/EntityResolver2.html
+ * IGNORED method of org.xml.sax.EntityResolver2
+ *  #resolveEntity(String name,String publicId,String baseURI,String systemId)
+ *  #resolveEntity(publicId, systemId)
+ *  #getExternalSubset(name, baseURI)
+ * @link http://www.saxproject.org/apidoc/org/xml/sax/DTDHandler.html
+ * IGNORED method of org.xml.sax.DTDHandler
+ *  #notationDecl(name, publicId, systemId) {};
+ *  #unparsedEntityDecl(name, publicId, systemId, notationName) {};
+ */
+"endDTD,startEntity,endEntity,attributeDecl,elementDecl,externalEntityDecl,internalEntityDecl,resolveEntity,getExternalSubset,notationDecl,unparsedEntityDecl".replace(/\w+/g,function(key){
+	DOMHandler.prototype[key] = function(){return null};
+});
+
+/* Private static helpers treated below as private instance methods, so don't need to add these to the public API; we might use a Relator to also get rid of non-standard public properties */
+function appendElement (hander,node) {
+    if (!hander.currentElement) {
+        hander.doc.appendChild(node);
+    } else {
+        hander.currentElement.appendChild(node);
     }
+}//appendChild and setAttributeNS are preformance key
 
-    get(tag) {
-        if (typeof tag === 'number') {
-            return this.fields.get(tag);
-        } else if (typeof tag === 'string') {
-            return this.fields.get(tags[this.kind].tagsByName[tag]);
+//if(typeof require == 'function'){
+	var XMLReader = sax.XMLReader;
+	var DOMImplementation = exports.DOMImplementation = dom.DOMImplementation;
+	exports.XMLSerializer = dom.XMLSerializer ;
+	exports.DOMParser = DOMParser;
+//}
+});
+
+var fieldTagNames$1 = {
+  // TIFF Baseline
+  0x013B: 'Artist',
+  0x0102: 'BitsPerSample',
+  0x0109: 'CellLength',
+  0x0108: 'CellWidth',
+  0x0140: 'ColorMap',
+  0x0103: 'Compression',
+  0x8298: 'Copyright',
+  0x0132: 'DateTime',
+  0x0152: 'ExtraSamples',
+  0x010A: 'FillOrder',
+  0x0121: 'FreeByteCounts',
+  0x0120: 'FreeOffsets',
+  0x0123: 'GrayResponseCurve',
+  0x0122: 'GrayResponseUnit',
+  0x013C: 'HostComputer',
+  0x010E: 'ImageDescription',
+  0x0101: 'ImageLength',
+  0x0100: 'ImageWidth',
+  0x010F: 'Make',
+  0x0119: 'MaxSampleValue',
+  0x0118: 'MinSampleValue',
+  0x0110: 'Model',
+  0x00FE: 'NewSubfileType',
+  0x0112: 'Orientation',
+  0x0106: 'PhotometricInterpretation',
+  0x011C: 'PlanarConfiguration',
+  0x0128: 'ResolutionUnit',
+  0x0116: 'RowsPerStrip',
+  0x0115: 'SamplesPerPixel',
+  0x0131: 'Software',
+  0x0117: 'StripByteCounts',
+  0x0111: 'StripOffsets',
+  0x00FF: 'SubfileType',
+  0x0107: 'Threshholding',
+  0x011A: 'XResolution',
+  0x011B: 'YResolution',
+
+  // TIFF Extended
+  0x0146: 'BadFaxLines',
+  0x0147: 'CleanFaxData',
+  0x0157: 'ClipPath',
+  0x0148: 'ConsecutiveBadFaxLines',
+  0x01B1: 'Decode',
+  0x01B2: 'DefaultImageColor',
+  0x010D: 'DocumentName',
+  0x0150: 'DotRange',
+  0x0141: 'HalftoneHints',
+  0x015A: 'Indexed',
+  0x015B: 'JPEGTables',
+  0x011D: 'PageName',
+  0x0129: 'PageNumber',
+  0x013D: 'Predictor',
+  0x013F: 'PrimaryChromaticities',
+  0x0214: 'ReferenceBlackWhite',
+  0x0153: 'SampleFormat',
+  0x0154: 'SMinSampleValue',
+  0x0155: 'SMaxSampleValue',
+  0x022F: 'StripRowCounts',
+  0x014A: 'SubIFDs',
+  0x0124: 'T4Options',
+  0x0125: 'T6Options',
+  0x0145: 'TileByteCounts',
+  0x0143: 'TileLength',
+  0x0144: 'TileOffsets',
+  0x0142: 'TileWidth',
+  0x012D: 'TransferFunction',
+  0x013E: 'WhitePoint',
+  0x0158: 'XClipPathUnits',
+  0x011E: 'XPosition',
+  0x0211: 'YCbCrCoefficients',
+  0x0213: 'YCbCrPositioning',
+  0x0212: 'YCbCrSubSampling',
+  0x0159: 'YClipPathUnits',
+  0x011F: 'YPosition',
+
+  // EXIF
+  0x9202: 'ApertureValue',
+  0xA001: 'ColorSpace',
+  0x9004: 'DateTimeDigitized',
+  0x9003: 'DateTimeOriginal',
+  0x8769: 'Exif IFD',
+  0x9000: 'ExifVersion',
+  0x829A: 'ExposureTime',
+  0xA300: 'FileSource',
+  0x9209: 'Flash',
+  0xA000: 'FlashpixVersion',
+  0x829D: 'FNumber',
+  0xA420: 'ImageUniqueID',
+  0x9208: 'LightSource',
+  0x927C: 'MakerNote',
+  0x9201: 'ShutterSpeedValue',
+  0x9286: 'UserComment',
+
+  // IPTC
+  0x83BB: 'IPTC',
+
+  // ICC
+  0x8773: 'ICC Profile',
+
+  // XMP
+  0x02BC: 'XMP',
+
+  // GDAL
+  0xA480: 'GDAL_METADATA',
+  0xA481: 'GDAL_NODATA',
+
+  // Photoshop
+  0x8649: 'Photoshop',
+
+  // GeoTiff
+  0x830E: 'ModelPixelScale',
+  0x8482: 'ModelTiepoint',
+  0x85D8: 'ModelTransformation',
+  0x87AF: 'GeoKeyDirectory',
+  0x87B0: 'GeoDoubleParams',
+  0x87B1: 'GeoAsciiParams'
+};
+
+var key;
+var fieldTags = {};
+for (key in fieldTagNames$1) {
+  fieldTags[fieldTagNames$1[key]] = parseInt(key);
+}
+
+var arrayFields$1 = [fieldTags.BitsPerSample, fieldTags.ExtraSamples, fieldTags.SampleFormat, fieldTags.StripByteCounts, fieldTags.StripOffsets, fieldTags.StripRowCounts, fieldTags.TileByteCounts, fieldTags.TileOffsets];
+
+var fieldTypeNames = {
+  0x0001: 'BYTE',
+  0x0002: 'ASCII',
+  0x0003: 'SHORT',
+  0x0004: 'LONG',
+  0x0005: 'RATIONAL',
+  0x0006: 'SBYTE',
+  0x0007: 'UNDEFINED',
+  0x0008: 'SSHORT',
+  0x0009: 'SLONG',
+  0x000A: 'SRATIONAL',
+  0x000B: 'FLOAT',
+  0x000C: 'DOUBLE',
+  // introduced by BigTIFF
+  0x0010: 'LONG8',
+  0x0011: 'SLONG8',
+  0x0012: 'IFD8'
+};
+
+var fieldTypes$1 = {};
+for (key in fieldTypeNames) {
+  fieldTypes$1[fieldTypeNames[key]] = parseInt(key);
+}
+
+var photometricInterpretations = {
+  WhiteIsZero: 0,
+  BlackIsZero: 1,
+  RGB: 2,
+  Palette: 3,
+  TransparencyMask: 4,
+  CMYK: 5,
+  YCbCr: 6,
+
+  CIELab: 8,
+  ICCLab: 9
+};
+
+var geoKeyNames$1 = {
+  1024: 'GTModelTypeGeoKey',
+  1025: 'GTRasterTypeGeoKey',
+  1026: 'GTCitationGeoKey',
+  2048: 'GeographicTypeGeoKey',
+  2049: 'GeogCitationGeoKey',
+  2050: 'GeogGeodeticDatumGeoKey',
+  2051: 'GeogPrimeMeridianGeoKey',
+  2052: 'GeogLinearUnitsGeoKey',
+  2053: 'GeogLinearUnitSizeGeoKey',
+  2054: 'GeogAngularUnitsGeoKey',
+  2055: 'GeogAngularUnitSizeGeoKey',
+  2056: 'GeogEllipsoidGeoKey',
+  2057: 'GeogSemiMajorAxisGeoKey',
+  2058: 'GeogSemiMinorAxisGeoKey',
+  2059: 'GeogInvFlatteningGeoKey',
+  2060: 'GeogAzimuthUnitsGeoKey',
+  2061: 'GeogPrimeMeridianLongGeoKey',
+  2062: 'GeogTOWGS84GeoKey',
+  3072: 'ProjectedCSTypeGeoKey',
+  3073: 'PCSCitationGeoKey',
+  3074: 'ProjectionGeoKey',
+  3075: 'ProjCoordTransGeoKey',
+  3076: 'ProjLinearUnitsGeoKey',
+  3077: 'ProjLinearUnitSizeGeoKey',
+  3078: 'ProjStdParallel1GeoKey',
+  3079: 'ProjStdParallel2GeoKey',
+  3080: 'ProjNatOriginLongGeoKey',
+  3081: 'ProjNatOriginLatGeoKey',
+  3082: 'ProjFalseEastingGeoKey',
+  3083: 'ProjFalseNorthingGeoKey',
+  3084: 'ProjFalseOriginLongGeoKey',
+  3085: 'ProjFalseOriginLatGeoKey',
+  3086: 'ProjFalseOriginEastingGeoKey',
+  3087: 'ProjFalseOriginNorthingGeoKey',
+  3088: 'ProjCenterLongGeoKey',
+  3089: 'ProjCenterLatGeoKey',
+  3090: 'ProjCenterEastingGeoKey',
+  3091: 'ProjCenterNorthingGeoKey',
+  3092: 'ProjScaleAtNatOriginGeoKey',
+  3093: 'ProjScaleAtCenterGeoKey',
+  3094: 'ProjAzimuthAngleGeoKey',
+  3095: 'ProjStraightVertPoleLongGeoKey',
+  3096: 'ProjRectifiedGridAngleGeoKey',
+  4096: 'VerticalCSTypeGeoKey',
+  4097: 'VerticalCitationGeoKey',
+  4098: 'VerticalDatumGeoKey',
+  4099: 'VerticalUnitsGeoKey'
+};
+
+var geoKeys = {};
+for (key in geoKeyNames$1) {
+  geoKeys[geoKeyNames$1[key]] = parseInt(key);
+}
+
+var parseXml;
+// node.js version
+if (typeof window === "undefined") {
+  parseXml = function parseXml(xmlStr) {
+    // requires xmldom module
+    var DOMParser = domParser.DOMParser;
+    return new DOMParser().parseFromString(xmlStr, "text/xml");
+  };
+} else if (typeof window.DOMParser !== "undefined") {
+  parseXml = function parseXml(xmlStr) {
+    return new window.DOMParser().parseFromString(xmlStr, "text/xml");
+  };
+} else if (typeof window.ActiveXObject !== "undefined" && new window.ActiveXObject("Microsoft.XMLDOM")) {
+  parseXml = function parseXml(xmlStr) {
+    var xmlDoc = new window.ActiveXObject("Microsoft.XMLDOM");
+    xmlDoc.async = "false";
+    xmlDoc.loadXML(xmlStr);
+    return xmlDoc;
+  };
+}
+
+var globals = {
+  fieldTags: fieldTags,
+  fieldTagNames: fieldTagNames$1,
+  arrayFields: arrayFields$1,
+  fieldTypes: fieldTypes$1,
+  fieldTypeNames: fieldTypeNames,
+  photometricInterpretations: photometricInterpretations,
+  geoKeys: geoKeys,
+  geoKeyNames: geoKeyNames$1,
+  parseXml: parseXml
+};
+
+function fromWhiteIsZero(raster, max, width, height) {
+  var rgbRaster = new Uint8Array(width * height * 3);
+  var value;
+  for (var i = 0, j = 0; i < raster.length; ++i, j += 3) {
+    value = 256 - raster[i] / max * 256;
+    rgbRaster[j] = value;
+    rgbRaster[j + 1] = value;
+    rgbRaster[j + 2] = value;
+  }
+  return rgbRaster;
+}
+
+function fromBlackIsZero(raster, max, width, height) {
+  var rgbRaster = new Uint8Array(width * height * 3);
+  var value;
+  for (var i = 0, j = 0; i < raster.length; ++i, j += 3) {
+    value = raster[i] / max * 256;
+    rgbRaster[j] = value;
+    rgbRaster[j + 1] = value;
+    rgbRaster[j + 2] = value;
+  }
+  return rgbRaster;
+}
+
+function fromPalette(raster, colorMap, width, height) {
+  var rgbRaster = new Uint8Array(width * height * 3);
+  var greenOffset = colorMap.length / 3;
+  var blueOffset = colorMap.length / 3 * 2;
+  for (var i = 0, j = 0; i < raster.length; ++i, j += 3) {
+    var mapIndex = raster[i];
+    rgbRaster[j] = colorMap[mapIndex] / 65536 * 256;
+    rgbRaster[j + 1] = colorMap[mapIndex + greenOffset] / 65536 * 256;
+    rgbRaster[j + 2] = colorMap[mapIndex + blueOffset] / 65536 * 256;
+  }
+  return rgbRaster;
+}
+
+function fromCMYK(cmykRaster, width, height) {
+  var rgbRaster = new Uint8Array(width * height * 3);
+  var c, m, y, k;
+  for (var i = 0, j = 0; i < cmykRaster.length; i += 4, j += 3) {
+    c = cmykRaster[i];
+    m = cmykRaster[i + 1];
+    y = cmykRaster[i + 2];
+    k = cmykRaster[i + 3];
+
+    rgbRaster[j] = 255 * ((255 - c) / 256) * ((255 - k) / 256);
+    rgbRaster[j + 1] = 255 * ((255 - m) / 256) * ((255 - k) / 256);
+    rgbRaster[j + 2] = 255 * ((255 - y) / 256) * ((255 - k) / 256);
+  }
+  return rgbRaster;
+}
+
+function fromYCbCr(yCbCrRaster, width, height) {
+  var rgbRaster = new Uint8Array(width * height * 3);
+  var y, cb, cr;
+  for (var i = 0, j = 0; i < yCbCrRaster.length; i += 3, j += 3) {
+    y = yCbCrRaster[i];
+    cb = yCbCrRaster[i + 1];
+    cr = yCbCrRaster[i + 2];
+
+    rgbRaster[j] = y + 1.40200 * (cr - 0x80);
+    rgbRaster[j + 1] = y - 0.34414 * (cb - 0x80) - 0.71414 * (cr - 0x80);
+    rgbRaster[j + 2] = y + 1.77200 * (cb - 0x80);
+  }
+  return rgbRaster;
+}
+
+// converted from here:
+// http://de.mathworks.com/matlabcentral/fileexchange/24010-lab2rgb/content/Lab2RGB.m
+// still buggy
+function fromCIELab(cieLabRaster, width, height) {
+  var T1 = 0.008856;
+  var T2 = 0.206893;
+  var MAT = [3.240479, -1.537150, -0.498535, -0.969256, 1.875992, 0.041556, 0.055648, -0.204043, 1.057311];
+  var rgbRaster = new Uint8Array(width * height * 3);
+  var L, a, b;
+  var fX, fY, fZ, XT, YT, ZT, X, Y, Z;
+  for (var i = 0, j = 0; i < cieLabRaster.length; i += 3, j += 3) {
+    L = cieLabRaster[i];
+    a = cieLabRaster[i + 1];
+    b = cieLabRaster[i + 2];
+
+    // Compute Y
+    fY = Math.pow((L + 16) / 116, 3);
+    YT = fY > T1;
+    fY = (YT !== 0) * (L / 903.3) + YT * fY;
+    Y = fY;
+
+    fY = YT * Math.pow(fY, 1 / 3) + (YT !== 0) * (7.787 * fY + 16 / 116);
+
+    // Compute X
+    fX = a / 500 + fY;
+    XT = fX > T2;
+    X = XT * Math.pow(fX, 3) + (XT !== 0) * ((fX - 16 / 116) / 7.787);
+
+    // Compute Z
+    fZ = fY - b / 200;
+    ZT = fZ > T2;
+    Z = ZT * Math.pow(fZ, 3) + (ZT !== 0) * ((fZ - 16 / 116) / 7.787);
+
+    // Normalize for D65 white point
+    X = X * 0.950456;
+    Z = Z * 1.088754;
+
+    rgbRaster[j] = X * MAT[0] + Y * MAT[1] + Z * MAT[2];
+    rgbRaster[j + 1] = X * MAT[3] + Y * MAT[4] + Z * MAT[5];
+    rgbRaster[j + 2] = X * MAT[6] + Y * MAT[7] + Z * MAT[8];
+  }
+  return rgbRaster;
+}
+
+var rgb = {
+  fromWhiteIsZero: fromWhiteIsZero,
+  fromBlackIsZero: fromBlackIsZero,
+  fromPalette: fromPalette,
+  fromCMYK: fromCMYK,
+  fromYCbCr: fromYCbCr,
+  fromCIELab: fromCIELab
+};
+
+function AbstractDecoder() {}
+
+AbstractDecoder.prototype = {
+  isAsync: function isAsync() {
+    // TODO: check if async reading func is enabled or not.
+    return typeof this.decodeBlock === "undefined";
+  }
+};
+
+var abstractdecoder = AbstractDecoder;
+
+function RawDecoder() {}
+
+RawDecoder.prototype = Object.create(abstractdecoder.prototype);
+RawDecoder.prototype.constructor = RawDecoder;
+RawDecoder.prototype.decodeBlock = function (buffer) {
+  return buffer;
+};
+
+var raw = RawDecoder;
+
+//var lzwCompress = require("lzwcompress");
+
+
+
+var MIN_BITS = 9;
+var MAX_BITS$2 = 12;
+var CLEAR_CODE = 256; // clear code
+var EOI_CODE = 257; // end of information
+
+function LZW() {
+  this.littleEndian = false;
+  this.position = 0;
+
+  this._makeEntryLookup = false;
+  this.dictionary = [];
+}
+
+LZW.prototype = {
+  constructor: LZW,
+  initDictionary: function initDictionary() {
+    this.dictionary = new Array(258);
+    this.entryLookup = {};
+    this.byteLength = MIN_BITS;
+    for (var i = 0; i <= 257; i++) {
+      // i really feal like i <= 257, but I get strange unknown words that way.
+      this.dictionary[i] = [i];
+      if (this._makeEntryLookup) {
+        this.entryLookup[i] = i;
+      }
+    }
+  },
+
+  decompress: function decompress(input) {
+    this._makeEntryLookup = false; // for speed
+    this.initDictionary();
+    this.position = 0;
+    this.result = [];
+    if (!input.buffer) {
+      input = new Uint8Array(input);
+    }
+    var mydataview = new DataView(input.buffer);
+    var code = this.getNext(mydataview);
+    var oldCode;
+    while (code !== EOI_CODE) {
+      if (code === CLEAR_CODE) {
+        this.initDictionary();
+        code = this.getNext(mydataview);
+        while (code === CLEAR_CODE) {
+          code = this.getNext(mydataview);
+        }
+        if (code > CLEAR_CODE) {
+          throw 'corrupted code at scanline ' + code;
+        }
+        if (code === EOI_CODE) {
+          break;
         } else {
-            throw new Error('expected a number or string');
+          var val = this.dictionary[code];
+          this.appendArray(this.result, val);
+          oldCode = code;
         }
+      } else {
+        if (this.dictionary[code] !== undefined) {
+          var _val = this.dictionary[code];
+          this.appendArray(this.result, _val);
+          var newVal = this.dictionary[oldCode].concat(this.dictionary[code][0]);
+          this.addToDictionary(newVal);
+          oldCode = code;
+        } else {
+          var oldVal = this.dictionary[oldCode];
+          if (!oldVal) {
+            throw "Bogus entry. Not in dictionary, " + oldCode + " / " + this.dictionary.length + ", position: " + this.position;
+          }
+          var _newVal = oldVal.concat(this.dictionary[oldCode][0]);
+          this.appendArray(this.result, _newVal);
+          this.addToDictionary(_newVal);
+          oldCode = code;
+        }
+      }
+      // This is strange. It seems like the
+      if (this.dictionary.length >= Math.pow(2, this.byteLength) - 1) {
+        this.byteLength++;
+      }
+      code = this.getNext(mydataview);
+    }
+    return new Uint8Array(this.result);
+  },
+
+  appendArray: function appendArray(dest, source) {
+    for (var i = 0; i < source.length; i++) {
+      dest.push(source[i]);
+    }
+    return dest;
+  },
+
+  haveBytesChanged: function haveBytesChanged() {
+    if (this.dictionary.length >= Math.pow(2, this.byteLength)) {
+      this.byteLength++;
+      return true;
+    }
+    return false;
+  },
+
+  addToDictionary: function addToDictionary(arr) {
+    this.dictionary.push(arr);
+    if (this._makeEntryLookup) {
+      this.entryLookup[arr] = this.dictionary.length - 1;
+    }
+    this.haveBytesChanged();
+    return this.dictionary.length - 1;
+  },
+
+  getNext: function getNext(dataview) {
+    var byte = this.getByte(dataview, this.position, this.byteLength);
+    this.position += this.byteLength;
+    return byte;
+  },
+
+  // This binary representation might actually be as fast as the completely illegible bit shift approach
+  //
+  getByte: function getByte(dataview, position, length) {
+    var d = position % 8;
+    var a = Math.floor(position / 8);
+    var de = 8 - d;
+    var ef = position + length - (a + 1) * 8;
+    var fg = 8 * (a + 2) - (position + length);
+    var dg = (a + 2) * 8 - position;
+    fg = Math.max(0, fg);
+    if (a >= dataview.byteLength) {
+      console.warn('ran off the end of the buffer before finding EOI_CODE (end on input code)');
+      return EOI_CODE;
+    }
+    var chunk1 = dataview.getUint8(a, this.littleEndian) & Math.pow(2, 8 - d) - 1;
+    chunk1 = chunk1 << length - de;
+    var chunks = chunk1;
+    if (a + 1 < dataview.byteLength) {
+      var chunk2 = dataview.getUint8(a + 1, this.littleEndian) >>> fg;
+      chunk2 = chunk2 << Math.max(0, length - dg);
+      chunks += chunk2;
+    }
+    if (ef > 8 && a + 2 < dataview.byteLength) {
+      var hi = (a + 3) * 8 - (position + length);
+      var chunk3 = dataview.getUint8(a + 2, this.littleEndian) >>> hi;
+      chunks += chunk3;
+    }
+    return chunks;
+  },
+
+  // compress has not been optimized and uses a uint8 array to hold binary values.
+  compress: function compress(input) {
+    this._makeEntryLookup = true;
+    this.initDictionary();
+    this.position = 0;
+    var resultBits = [];
+    var omega = [];
+    resultBits = this.appendArray(resultBits, this.binaryFromByte(CLEAR_CODE, this.byteLength)); // resultBits.concat(Array.from(this.binaryFromByte(this.CLEAR_CODE, this.byteLength)))
+    for (var i = 0; i < input.length; i++) {
+      var k = [input[i]];
+      var omk = omega.concat(k);
+      if (this.entryLookup[omk] !== undefined) {
+        omega = omk;
+      } else {
+        var _code = this.entryLookup[omega];
+        var _bin = this.binaryFromByte(_code, this.byteLength);
+        resultBits = this.appendArray(resultBits, _bin);
+        this.addToDictionary(omk);
+        omega = k;
+        if (this.dictionary.length >= Math.pow(2, MAX_BITS$2)) {
+          resultBits = this.appendArray(resultBits, this.binaryFromByte(CLEAR_CODE, this.byteLength));
+          this.initDictionary();
+        }
+      }
+    }
+    var code = this.entryLookup[omega];
+    var bin = this.binaryFromByte(code, this.byteLength);
+    resultBits = this.appendArray(resultBits, bin);
+    resultBits = resultBits = this.appendArray(resultBits, this.binaryFromByte(EOI_CODE, this.byteLength));
+    this.binary = resultBits;
+    this.result = this.binaryToUint8(resultBits);
+    return this.result;
+  },
+
+  byteFromCode: function byteFromCode(code) {
+    var res = this.dictionary[code];
+    return res;
+  },
+
+  binaryFromByte: function binaryFromByte(byte) {
+    var byteLength = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 8;
+
+    var res = new Uint8Array(byteLength);
+    for (var i = 0; i < res.length; i++) {
+      var mask = Math.pow(2, i);
+      var isOne = (byte & mask) > 0;
+      res[res.length - 1 - i] = isOne;
+    }
+    return res;
+  },
+
+  binaryToNumber: function binaryToNumber(bin) {
+    var res = 0;
+    for (var i = 0; i < bin.length; i++) {
+      res += Math.pow(2, bin.length - i - 1) * bin[i];
+    }
+    return res;
+  },
+
+  inputToBinary: function inputToBinary(input) {
+    var inputByteLength = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 8;
+
+    var res = new Uint8Array(input.length * inputByteLength);
+    for (var i = 0; i < input.length; i++) {
+      var bin = this.binaryFromByte(input[i], inputByteLength);
+      res.set(bin, i * inputByteLength);
+    }
+    return res;
+  },
+
+  binaryToUint8: function binaryToUint8(bin) {
+    var result = new Uint8Array(Math.ceil(bin.length / 8));
+    var index = 0;
+    for (var i = 0; i < bin.length; i += 8) {
+      var val = 0;
+      for (var j = 0; j < 8 && i + j < bin.length; j++) {
+        val = val + bin[i + j] * Math.pow(2, 8 - j - 1);
+      }
+      result[index] = val;
+      index++;
+    }
+    return result;
+  }
+};
+
+// the actual decoder interface
+
+function LZWDecoder() {
+  this.decompressor = new LZW();
+}
+
+LZWDecoder.prototype = Object.create(abstractdecoder.prototype);
+LZWDecoder.prototype.constructor = LZWDecoder;
+LZWDecoder.prototype.decodeBlock = function (buffer) {
+  return this.decompressor.decompress(buffer).buffer;
+};
+
+var lzw = LZWDecoder;
+
+var pakoInflate = inflate_1.inflate;
+
+function DeflateDecoder() {}
+
+DeflateDecoder.prototype = Object.create(abstractdecoder.prototype);
+DeflateDecoder.prototype.constructor = DeflateDecoder;
+DeflateDecoder.prototype.decodeBlock = function (buffer) {
+  return pakoInflate(new Uint8Array(buffer)).buffer;
+};
+
+var deflate$3 = DeflateDecoder;
+
+function PackbitsDecoder() {}
+
+PackbitsDecoder.prototype = Object.create(abstractdecoder.prototype);
+PackbitsDecoder.prototype.constructor = PackbitsDecoder;
+PackbitsDecoder.prototype.decodeBlock = function (buffer) {
+  var dataView = new DataView(buffer);
+  var out = [];
+  var i, j;
+
+  for (i = 0; i < buffer.byteLength; ++i) {
+    var header = dataView.getInt8(i);
+    if (header < 0) {
+      var next = dataView.getUint8(i + 1);
+      header = -header;
+      for (j = 0; j <= header; ++j) {
+        out.push(next);
+      }
+      i += 1;
+    } else {
+      for (j = 0; j <= header; ++j) {
+        out.push(dataView.getUint8(i + j + 1));
+      }
+      i += header + 1;
+    }
+  }
+  return new Uint8Array(out).buffer;
+};
+
+var packbits = PackbitsDecoder;
+
+var sum = function sum(array, start, end) {
+  var s = 0;
+  for (var i = start; i < end; ++i) {
+    s += array[i];
+  }
+  return s;
+};
+
+var arrayForType = function arrayForType(format, bitsPerSample, size) {
+  switch (format) {
+    case 1:
+      // unsigned integer data
+      switch (bitsPerSample) {
+        case 8:
+          return new Uint8Array(size);
+        case 16:
+          return new Uint16Array(size);
+        case 32:
+          return new Uint32Array(size);
+      }
+      break;
+    case 2:
+      // twos complement signed integer data
+      switch (bitsPerSample) {
+        case 8:
+          return new Int8Array(size);
+        case 16:
+          return new Int16Array(size);
+        case 32:
+          return new Int32Array(size);
+      }
+      break;
+    case 3:
+      // floating point data
+      switch (bitsPerSample) {
+        case 32:
+          return new Float32Array(size);
+        case 64:
+          return new Float64Array(size);
+      }
+      break;
+  }
+  throw Error("Unsupported data format/bitsPerSample");
+};
+
+/**
+ * GeoTIFF sub-file image.
+ * @constructor
+ * @param {Object} fileDirectory The parsed file directory
+ * @param {Object} geoKeys The parsed geo-keys
+ * @param {DataView} dataView The DataView for the underlying file.
+ * @param {Boolean} littleEndian Whether the file is encoded in little or big endian
+ * @param {Boolean} cache Whether or not decoded tiles shall be cached
+ */
+function GeoTIFFImage(fileDirectory, geoKeys, dataView, littleEndian, cache) {
+  this.fileDirectory = fileDirectory;
+  this.geoKeys = geoKeys;
+  this.dataView = dataView;
+  this.littleEndian = littleEndian;
+  this.tiles = cache ? {} : null;
+  this.isTiled = fileDirectory.StripOffsets ? false : true;
+  var planarConfiguration = fileDirectory.PlanarConfiguration;
+  this.planarConfiguration = typeof planarConfiguration === "undefined" ? 1 : planarConfiguration;
+  if (this.planarConfiguration !== 1 && this.planarConfiguration !== 2) {
+    throw new Error("Invalid planar configuration.");
+  }
+
+  switch (this.fileDirectory.Compression) {
+    case undefined:
+    case 1:
+      // no compression
+      this.decoder = new raw();
+      break;
+    case 5:
+      // LZW
+      this.decoder = new lzw();
+      break;
+    case 6:
+      // JPEG
+      throw new Error("JPEG compression not supported.");
+    case 8:
+      // Deflate
+      this.decoder = new deflate$3();
+      break;
+    //case 32946: // deflate ??
+    //  throw new Error("Deflate compression not supported.");
+    case 32773:
+      // packbits
+      this.decoder = new packbits();
+      break;
+    default:
+      throw new Error("Unknown compresseion method identifier: " + this.fileDirectory.Compression);
+  }
+}
+
+GeoTIFFImage.prototype = {
+  /**
+   * Returns the associated parsed file directory.
+   * @returns {Object} the parsed file directory
+   */
+  getFileDirectory: function getFileDirectory() {
+    return this.fileDirectory;
+  },
+  /**
+  * Returns the associated parsed geo keys.
+  * @returns {Object} the parsed geo keys
+  */
+  getGeoKeys: function getGeoKeys() {
+    return this.geoKeys;
+  },
+  /**
+   * Returns the width of the image.
+   * @returns {Number} the width of the image
+   */
+  getWidth: function getWidth() {
+    return this.fileDirectory.ImageWidth;
+  },
+  /**
+   * Returns the height of the image.
+   * @returns {Number} the height of the image
+   */
+  getHeight: function getHeight() {
+    return this.fileDirectory.ImageLength;
+  },
+  /**
+   * Returns the number of samples per pixel.
+   * @returns {Number} the number of samples per pixel
+   */
+  getSamplesPerPixel: function getSamplesPerPixel() {
+    return this.fileDirectory.SamplesPerPixel;
+  },
+  /**
+   * Returns the width of each tile.
+   * @returns {Number} the width of each tile
+   */
+  getTileWidth: function getTileWidth() {
+    return this.isTiled ? this.fileDirectory.TileWidth : this.getWidth();
+  },
+  /**
+   * Returns the height of each tile.
+   * @returns {Number} the height of each tile
+   */
+  getTileHeight: function getTileHeight() {
+    return this.isTiled ? this.fileDirectory.TileLength : this.fileDirectory.RowsPerStrip;
+  },
+
+  /**
+   * Calculates the number of bytes for each pixel across all samples. Only full
+   * bytes are supported, an exception is thrown when this is not the case.
+   * @returns {Number} the bytes per pixel
+   */
+  getBytesPerPixel: function getBytesPerPixel() {
+    var bitsPerSample = 0;
+    for (var i = 0; i < this.fileDirectory.BitsPerSample.length; ++i) {
+      var bits = this.fileDirectory.BitsPerSample[i];
+      if (bits % 8 !== 0) {
+        throw new Error("Sample bit-width of " + bits + " is not supported.");
+      } else if (bits !== this.fileDirectory.BitsPerSample[0]) {
+        throw new Error("Differing size of samples in a pixel are not supported.");
+      }
+      bitsPerSample += bits;
+    }
+    return bitsPerSample / 8;
+  },
+
+  getSampleByteSize: function getSampleByteSize(i) {
+    if (i >= this.fileDirectory.BitsPerSample.length) {
+      throw new RangeError("Sample index " + i + " is out of range.");
+    }
+    var bits = this.fileDirectory.BitsPerSample[i];
+    if (bits % 8 !== 0) {
+      throw new Error("Sample bit-width of " + bits + " is not supported.");
+    }
+    return bits / 8;
+  },
+
+  getReaderForSample: function getReaderForSample(sampleIndex) {
+    var format = this.fileDirectory.SampleFormat ? this.fileDirectory.SampleFormat[sampleIndex] : 1;
+    var bitsPerSample = this.fileDirectory.BitsPerSample[sampleIndex];
+    switch (format) {
+      case 1:
+        // unsigned integer data
+        switch (bitsPerSample) {
+          case 8:
+            return DataView.prototype.getUint8;
+          case 16:
+            return DataView.prototype.getUint16;
+          case 32:
+            return DataView.prototype.getUint32;
+        }
+        break;
+      case 2:
+        // twos complement signed integer data
+        switch (bitsPerSample) {
+          case 8:
+            return DataView.prototype.getInt8;
+          case 16:
+            return DataView.prototype.getInt16;
+          case 32:
+            return DataView.prototype.getInt32;
+        }
+        break;
+      case 3:
+        switch (bitsPerSample) {
+          case 32:
+            return DataView.prototype.getFloat32;
+          case 64:
+            return DataView.prototype.getFloat64;
+        }
+        break;
+    }
+  },
+
+  getArrayForSample: function getArrayForSample(sampleIndex, size) {
+    var format = this.fileDirectory.SampleFormat ? this.fileDirectory.SampleFormat[sampleIndex] : 1;
+    var bitsPerSample = this.fileDirectory.BitsPerSample[sampleIndex];
+    return arrayForType(format, bitsPerSample, size);
+  },
+
+  getDecoder: function getDecoder() {
+    return this.decoder;
+  },
+
+  /**
+   * Returns the decoded strip or tile.
+   * @param {Number} x the strip or tile x-offset
+   * @param {Number} y the tile y-offset (0 for stripped images)
+   * @param {Number} plane the planar configuration (1: "chunky", 2: "separate samples")
+   * @returns {(Int8Array|Uint8Array|Int16Array|Uint16Array|Int32Array|Uint32Array|Float32Array|Float64Array)}
+   */
+  getTileOrStrip: function getTileOrStrip(x, y, sample, callback) {
+    var numTilesPerRow = Math.ceil(this.getWidth() / this.getTileWidth());
+    var numTilesPerCol = Math.ceil(this.getHeight() / this.getTileHeight());
+    var index;
+    var tiles = this.tiles;
+    if (this.planarConfiguration === 1) {
+      index = y * numTilesPerRow + x;
+    } else if (this.planarConfiguration === 2) {
+      index = sample * numTilesPerRow * numTilesPerCol + y * numTilesPerRow + x;
     }
 
-    get map() {
-        if (!this._map) {
-            this._map = {};
-            const taglist = tags[this.kind].tagsById;
-            for (var key of this.fields.keys()) {
-                if (taglist[key]) {
-                    this._map[taglist[key]] = this.fields.get(key);
+    if (tiles !== null && index in tiles) {
+      if (callback) {
+        return callback(null, { x: x, y: y, sample: sample, data: tiles[index] });
+      }
+      return tiles[index];
+    } else {
+      var offset, byteCount;
+      if (this.isTiled) {
+        offset = this.fileDirectory.TileOffsets[index];
+        byteCount = this.fileDirectory.TileByteCounts[index];
+      } else {
+        offset = this.fileDirectory.StripOffsets[index];
+        byteCount = this.fileDirectory.StripByteCounts[index];
+      }
+      var slice = this.dataView.buffer.slice(offset, offset + byteCount);
+      if (callback) {
+        return this.getDecoder().decodeBlockAsync(slice, function (error, data) {
+          if (!error && tiles !== null) {
+            tiles[index] = data;
+          }
+          callback(error, { x: x, y: y, sample: sample, data: data });
+        });
+      }
+      var block = this.getDecoder().decodeBlock(slice);
+      if (tiles !== null) {
+        tiles[index] = block;
+      }
+      return block;
+    }
+  },
+
+  _readRasterAsync: function _readRasterAsync(imageWindow, samples, valueArrays, interleave, callback, callbackError) {
+    var tileWidth = this.getTileWidth();
+    var tileHeight = this.getTileHeight();
+
+    var minXTile = Math.floor(imageWindow[0] / tileWidth);
+    var maxXTile = Math.ceil(imageWindow[2] / tileWidth);
+    var minYTile = Math.floor(imageWindow[1] / tileHeight);
+    var maxYTile = Math.ceil(imageWindow[3] / tileHeight);
+
+    var numTilesPerRow = Math.ceil(this.getWidth() / tileWidth);
+
+    var windowWidth = imageWindow[2] - imageWindow[0];
+    var windowHeight = imageWindow[3] - imageWindow[1];
+
+    var bytesPerPixel = this.getBytesPerPixel();
+    var imageWidth = this.getWidth();
+
+    var predictor = this.fileDirectory.Predictor || 1;
+
+    var srcSampleOffsets = [];
+    var sampleReaders = [];
+    for (var i = 0; i < samples.length; ++i) {
+      if (this.planarConfiguration === 1) {
+        srcSampleOffsets.push(sum(this.fileDirectory.BitsPerSample, 0, samples[i]) / 8);
+      } else {
+        srcSampleOffsets.push(0);
+      }
+      sampleReaders.push(this.getReaderForSample(samples[i]));
+    }
+
+    var allStacked = false;
+    var unfinishedTiles = 0;
+    var littleEndian = this.littleEndian;
+    var globalError = null;
+
+    function checkFinished() {
+      if (allStacked && unfinishedTiles === 0) {
+        if (globalError) {
+          callbackError(globalError);
+        } else {
+          callback(valueArrays);
+        }
+      }
+    }
+
+    function onTileGot(error, tile) {
+      if (!error) {
+        var dataView = new DataView(tile.data);
+
+        var firstLine = tile.y * tileHeight;
+        var firstCol = tile.x * tileWidth;
+        var lastLine = (tile.y + 1) * tileHeight;
+        var lastCol = (tile.x + 1) * tileWidth;
+        var sampleIndex = tile.sample;
+
+        for (var y = Math.max(0, imageWindow[1] - firstLine); y < Math.min(tileHeight, tileHeight - (lastLine - imageWindow[3])); ++y) {
+          for (var x = Math.max(0, imageWindow[0] - firstCol); x < Math.min(tileWidth, tileWidth - (lastCol - imageWindow[2])); ++x) {
+            var pixelOffset = (y * tileWidth + x) * bytesPerPixel;
+            var value = sampleReaders[sampleIndex].call(dataView, pixelOffset + srcSampleOffsets[sampleIndex], littleEndian);
+            var windowCoordinate;
+            if (interleave) {
+              if (predictor !== 1 && x > 0) {
+                windowCoordinate = (y + firstLine - imageWindow[1]) * windowWidth * samples.length + (x + firstCol - imageWindow[0] - 1) * samples.length + sampleIndex;
+                value += valueArrays[windowCoordinate];
+              }
+
+              windowCoordinate = (y + firstLine - imageWindow[1]) * windowWidth * samples.length + (x + firstCol - imageWindow[0]) * samples.length + sampleIndex;
+              valueArrays[windowCoordinate] = value;
+            } else {
+              if (predictor !== 1 && x > 0) {
+                windowCoordinate = (y + firstLine - imageWindow[1]) * windowWidth + x - 1 + firstCol - imageWindow[0];
+                value += valueArrays[sampleIndex][windowCoordinate];
+              }
+
+              windowCoordinate = (y + firstLine - imageWindow[1]) * windowWidth + x + firstCol - imageWindow[0];
+              valueArrays[sampleIndex][windowCoordinate] = value;
+            }
+          }
+        }
+      } else {
+        globalError = error;
+      }
+
+      // check end condition and call callbacks
+      unfinishedTiles -= 1;
+      checkFinished();
+    }
+
+    for (var yTile = minYTile; yTile <= maxYTile; ++yTile) {
+      for (var xTile = minXTile; xTile <= maxXTile; ++xTile) {
+        for (var sampleIndex = 0; sampleIndex < samples.length; ++sampleIndex) {
+          var sample = samples[sampleIndex];
+          if (this.planarConfiguration === 2) {
+            bytesPerPixel = this.getSampleByteSize(sample);
+          }
+          var _sampleIndex = sampleIndex;
+          unfinishedTiles += 1;
+          this.getTileOrStrip(xTile, yTile, sample, onTileGot);
+        }
+      }
+    }
+    allStacked = true;
+    checkFinished();
+  },
+
+  _readRaster: function _readRaster(imageWindow, samples, valueArrays, interleave, callback, callbackError) {
+    try {
+      var tileWidth = this.getTileWidth();
+      var tileHeight = this.getTileHeight();
+
+      var minXTile = Math.floor(imageWindow[0] / tileWidth);
+      var maxXTile = Math.ceil(imageWindow[2] / tileWidth);
+      var minYTile = Math.floor(imageWindow[1] / tileHeight);
+      var maxYTile = Math.ceil(imageWindow[3] / tileHeight);
+
+      var numTilesPerRow = Math.ceil(this.getWidth() / tileWidth);
+
+      var windowWidth = imageWindow[2] - imageWindow[0];
+      var windowHeight = imageWindow[3] - imageWindow[1];
+
+      var bytesPerPixel = this.getBytesPerPixel();
+      var imageWidth = this.getWidth();
+
+      var predictor = this.fileDirectory.Predictor || 1;
+
+      var srcSampleOffsets = [];
+      var sampleReaders = [];
+      for (var i = 0; i < samples.length; ++i) {
+        if (this.planarConfiguration === 1) {
+          srcSampleOffsets.push(sum(this.fileDirectory.BitsPerSample, 0, samples[i]) / 8);
+        } else {
+          srcSampleOffsets.push(0);
+        }
+        sampleReaders.push(this.getReaderForSample(samples[i]));
+      }
+
+      for (var yTile = minYTile; yTile < maxYTile; ++yTile) {
+        for (var xTile = minXTile; xTile < maxXTile; ++xTile) {
+          var firstLine = yTile * tileHeight;
+          var firstCol = xTile * tileWidth;
+          var lastLine = (yTile + 1) * tileHeight;
+          var lastCol = (xTile + 1) * tileWidth;
+
+          for (var sampleIndex = 0; sampleIndex < samples.length; ++sampleIndex) {
+            var sample = samples[sampleIndex];
+            if (this.planarConfiguration === 2) {
+              bytesPerPixel = this.getSampleByteSize(sample);
+            }
+            var tile = new DataView(this.getTileOrStrip(xTile, yTile, sample));
+
+            var reader = sampleReaders[sampleIndex];
+            var ymax = Math.min(tileHeight, tileHeight - (lastLine - imageWindow[3]));
+            var xmax = Math.min(tileWidth, tileWidth - (lastCol - imageWindow[2]));
+            var totalbytes = (ymax * tileWidth + xmax) * bytesPerPixel;
+            var tileLength = new Uint8Array(tile.buffer).length;
+            if (2 * tileLength !== totalbytes && this._debugMessages) {
+              console.warn('dimension mismatch', tileLength, totalbytes);
+            }
+            for (var y = Math.max(0, imageWindow[1] - firstLine); y < ymax; ++y) {
+              for (var x = Math.max(0, imageWindow[0] - firstCol); x < xmax; ++x) {
+                var pixelOffset = (y * tileWidth + x) * bytesPerPixel;
+                var value = 0;
+                if (pixelOffset < tileLength - 1) {
+                  value = reader.call(tile, pixelOffset + srcSampleOffsets[sampleIndex], this.littleEndian);
                 }
+
+                var windowCoordinate;
+                if (interleave) {
+                  if (predictor !== 1 && x > 0) {
+                    windowCoordinate = (y + firstLine - imageWindow[1]) * windowWidth * samples.length + (x + firstCol - imageWindow[0] - 1) * samples.length + sampleIndex;
+                    value += valueArrays[windowCoordinate];
+                  }
+
+                  windowCoordinate = (y + firstLine - imageWindow[1]) * windowWidth * samples.length + (x + firstCol - imageWindow[0]) * samples.length + sampleIndex;
+                  valueArrays[windowCoordinate] = value;
+                } else {
+                  if (predictor !== 1 && x > 0) {
+                    windowCoordinate = (y + firstLine - imageWindow[1]) * windowWidth + x - 1 + firstCol - imageWindow[0];
+                    value += valueArrays[sampleIndex][windowCoordinate];
+                  }
+
+                  windowCoordinate = (y + firstLine - imageWindow[1]) * windowWidth + x + firstCol - imageWindow[0];
+                  valueArrays[sampleIndex][windowCoordinate] = value;
+                }
+              }
             }
+          }
         }
-        return this._map;
+      }
+      callback(valueArrays);
+      return valueArrays;
+    } catch (error) {
+      return callbackError(error);
     }
-}
+  },
 
-var ifd = IFD;
+  /**
+   * This callback is called upon successful reading of a GeoTIFF image. The
+   * resulting arrays are passed as a single argument.
+   * @callback GeoTIFFImage~readCallback
+   * @param {(TypedArray|TypedArray[])} array the requested data as a either a
+   *                                          single typed array or a list of
+   *                                          typed arrays, depending on the
+   *                                          'interleave' option.
+   */
 
-const dateTimeRegex = /^(\d{4}):(\d{2}):(\d{2}) (\d{2}):(\d{2}):(\d{2})$/;
+  /**
+   * This callback is called upon encountering an error while reading of a
+   * GeoTIFF image
+   * @callback GeoTIFFImage~readErrorCallback
+   * @param {Error} error the encountered error
+   */
 
-class TiffIfd extends ifd {
-    constructor() {
-        super('standard');
-    }
-
-    // Custom fields
-    get size() {
-        return this.width * this.height;
-    }
-    get width() {
-        return this.imageWidth;
-    }
-    get height() {
-        return this.imageLength;
-    }
-    get components() {
-        return this.samplesPerPixel;
-    }
-    get date() {
-        var date = new Date();
-        var result = dateTimeRegex.exec(this.dateTime);
-        date.setFullYear(result[1], result[2] - 1, result[3]);
-        date.setHours(result[4], result[5], result[6]);
-        return date;
-    }
-
-    // IFD fields
-    get newSubfileType() {
-        return this.get(254);
-    }
-    get imageWidth() {
-        return this.get(256);
-    }
-    get imageLength() {
-        return this.get(257);
-    }
-    get bitsPerSample() {
-        return this.get(258);
-    }
-    get compression() {
-        return this.get(259) || 1;
-    }
-    get type() {
-        return this.get(262);
-    }
-    get fillOrder() {
-        return this.get(266) || 1;
-    }
-    get documentName() {
-        return this.get(269);
-    }
-    get imageDescription() {
-        return this.get(270);
-    }
-    get stripOffsets() {
-        return alwaysArray(this.get(273));
-    }
-    get orientation() {
-        return this.get(274);
-    }
-    get samplesPerPixel() {
-        return this.get(277);
-    }
-    get rowsPerStrip() {
-        return this.get(278);
-    }
-    get stripByteCounts() {
-        return alwaysArray(this.get(279));
-    }
-    get minSampleValue() {
-        return this.get(280) || 0;
-    }
-    get maxSampleValue() {
-        return this.get(281) || Math.pow(2, this.bitsPerSample) - 1;
-    }
-    get xResolution() {
-        return this.get(282);
-    }
-    get yResolution() {
-        return this.get(283);
-    }
-    get planarConfiguration() {
-        return this.get(284) || 1;
-    }
-    get resolutionUnit() {
-        return this.get(296) || 2;
-    }
-    get dateTime() {
-        return this.get(306);
-    }
-    get predictor() {
-        return this.get(317) || 1;
-    }
-    get sampleFormat() {
-        return this.get(339) || 1;
-    }
-    get sMinSampleValue() {
-        return this.get(340) || this.minSampleValue;
-    }
-    get sMaxSampleValue() {
-        return this.get(341) || this.maxSampleValue;
-    }
-}
-
-function alwaysArray(value) {
-    if (typeof value === 'number') return [value];
-    return value;
-}
-
-var tiffIfd = TiffIfd;
-
-var types = new Map([
-    [1, [1, readByte]],       // BYTE
-    [2, [1, readASCII]],      // ASCII
-    [3, [2, readShort]],      // SHORT
-    [4, [4, readLong]],       // LONG
-    [5, [8, readRational]],   // RATIONAL
-    [6, [1, readSByte]],      // SBYTE
-    [7, [1, readByte]],       // UNDEFINED
-    [8, [2, readSShort]],     // SSHORT
-    [9, [4, readSLong]],      // SLONG
-    [10, [8, readSRational]], // SRATIONAL
-    [11, [4, readFloat]],     // FLOAT
-    [12, [8, readDouble]]     // DOUBLE
-]);
-
-var getByteLength = function (type, count) {
-    return types.get(type)[0] * count;
-};
-
-var readData = function (decoder, type, count) {
-    return types.get(type)[1](decoder, count);
-};
-
-function readByte(decoder, count) {
-    if (count === 1) return decoder.readUint8();
-    var array = new Uint8Array(count);
-    for (var i = 0; i < count; i++) {
-        array[i] = decoder.readUint8();
-    }
-    return array;
-}
-
-function readASCII(decoder, count) {
-    var strings = [];
-    var currentString = '';
-    for (var i = 0; i < count; i++) {
-        var char = String.fromCharCode(decoder.readUint8());
-        if (char === '\0') {
-            strings.push(currentString);
-            currentString = '';
+  /**
+   * Reads raster data from the image. This function reads all selected samples
+   * into separate arrays of the correct type for that sample. When provided,
+   * only a subset of the raster is read for each sample.
+   *
+   * @param {Object} [options] optional parameters
+   * @param {Array} [options.window=whole image] the subset to read data from.
+   * @param {Array} [options.samples=all samples] the selection of samples to read from.
+   * @param {Boolean} [options.interleave=false] whether the data shall be read
+   *                                             in one single array or separate
+   *                                             arrays.
+   * @param {GeoTIFFImage~readCallback} [callback] the success callback. this
+   *                                               parameter is mandatory for
+   *                                               asynchronous decoders (some
+   *                                               compression mechanisms).
+   * @param {GeoTIFFImage~readErrorCallback} [callbackError] the error callback
+   * @returns {(TypedArray|TypedArray[]|null)} in synchonous cases, the decoded
+   *                                           array(s) is/are returned. In
+   *                                           asynchronous cases, nothing is
+   *                                           returned.
+   */
+  readRasters: function readRasters() /* arguments are read via the 'arguments' object */{
+    // parse the arguments
+    var options, callback, callbackError;
+    switch (arguments.length) {
+      case 0:
+        break;
+      case 1:
+        if (typeof arguments[0] === "function") {
+          callback = arguments[0];
         } else {
-            currentString += char;
+          options = arguments[0];
         }
+        break;
+      case 2:
+        if (typeof arguments[0] === "function") {
+          callback = arguments[0];
+          callbackError = arguments[1];
+        } else {
+          options = arguments[0];
+          callback = arguments[1];
+        }
+        break;
+      case 3:
+        options = arguments[0];
+        callback = arguments[1];
+        callbackError = arguments[2];
+        break;
+      default:
+        throw new Error("Invalid number of arguments passed.");
     }
-    if (strings.length === 1) {
-        return strings[0];
+
+    // set up default arguments
+    options = options || {};
+    callbackError = callbackError || function (error) {
+      console.error(error);
+    };
+
+    var imageWindow = options.window || [0, 0, this.getWidth(), this.getHeight()],
+        samples = options.samples,
+        interleave = options.interleave;
+
+    // check parameters
+    if (imageWindow[0] < 0 || imageWindow[1] < 0 || imageWindow[2] > this.getWidth() || imageWindow[3] > this.getHeight()) {
+      throw new Error("Select window is out of image bounds.");
+    } else if (imageWindow[0] > imageWindow[2] || imageWindow[1] > imageWindow[3]) {
+      throw new Error("Invalid subsets");
+    }
+
+    var imageWindowWidth = imageWindow[2] - imageWindow[0];
+    var imageWindowHeight = imageWindow[3] - imageWindow[1];
+    var numPixels = imageWindowWidth * imageWindowHeight;
+    var i;
+
+    if (!samples) {
+      samples = [];
+      for (i = 0; i < this.fileDirectory.SamplesPerPixel; ++i) {
+        samples.push(i);
+      }
     } else {
-        return strings;
-    }
-}
-
-function readShort(decoder, count) {
-    if (count === 1) return decoder.readUint16();
-    var array = new Uint16Array(count);
-    for (var i = 0; i < count; i++) {
-        array[i] = decoder.readUint16();
-    }
-    return array;
-}
-
-function readLong(decoder, count) {
-    if (count === 1) return decoder.readUint32();
-    var array = new Uint32Array(count);
-    for (var i = 0; i < count; i++) {
-        array[i] = decoder.readUint32();
-    }
-    return array;
-}
-
-function readRational(decoder, count) {
-    if (count === 1) {
-        return decoder.readUint32() / decoder.readUint32();
-    }
-    var rationals = new Array(count);
-    for (var i = 0; i < count; i++) {
-        rationals[i] = decoder.readUint32() / decoder.readUint32();
-    }
-    return rationals;
-}
-
-function readSByte(decoder, count) {
-    if (count === 1) return decoder.readInt8();
-    var array = new Int8Array(count);
-    for (var i = 0; i < count; i++) {
-        array[i] = decoder.readInt8();
-    }
-    return array;
-}
-
-function readSShort(decoder, count) {
-    if (count === 1) return decoder.readInt16();
-    var array = new Int16Array(count);
-    for (var i = 0; i < count; i++) {
-        array[i] = decoder.readInt16();
-    }
-    return array;
-}
-
-function readSLong(decoder, count) {
-    if (count === 1) return decoder.readInt32();
-    var array = new Int32Array(count);
-    for (var i = 0; i < count; i++) {
-        array[i] = decoder.readInt32();
-    }
-    return array;
-}
-
-function readSRational(decoder, count) {
-    if (count === 1) {
-        return decoder.readInt32() / decoder.readInt32();
-    }
-    var rationals = new Array(count);
-    for (var i = 0; i < count; i++) {
-        rationals[i] = decoder.readInt32() / decoder.readInt32();
-    }
-    return rationals;
-}
-
-function readFloat(decoder, count) {
-    if (count === 1) return decoder.readFloat32();
-    var array = new Float32Array(count);
-    for (var i = 0; i < count; i++) {
-        array[i] = decoder.readFloat32();
-    }
-    return array;
-}
-
-function readDouble(decoder, count) {
-    if (count === 1) return decoder.readFloat64();
-    var array = new Float64Array(count);
-    for (var i = 0; i < count; i++) {
-        array[i] = decoder.readFloat64();
-    }
-    return array;
-}
-
-var ifdValue = {
-	getByteLength: getByteLength,
-	readData: readData
-};
-
-const defaultOptions = {
-    ignoreImageData: false,
-    onlyFirst: false
-};
-
-class TIFFDecoder extends IOBuffer_1 {
-    constructor(data, options) {
-        super(data, options);
-        this._nextIFD = 0;
-    }
-
-    decode(options) {
-        options = Object.assign({}, defaultOptions, options);
-        const result = [];
-        this.decodeHeader();
-        while (this._nextIFD) {
-            result.push(this.decodeIFD(options));
-            if (options.onlyFirst) {
-                return result[0];
-            }
+      for (i = 0; i < samples.length; ++i) {
+        if (samples[i] >= this.fileDirectory.SamplesPerPixel) {
+          throw new RangeError("Invalid sample index '" + samples[i] + "'.");
         }
-        return result;
+      }
     }
-
-    decodeHeader() {
-        // Byte offset
-        let value = this.readUint16();
-        if (value === 0x4949) {
-            this.setLittleEndian();
-        } else if (value === 0x4D4D) {
-            this.setBigEndian();
-        } else {
-            throw new Error('invalid byte order: 0x' + value.toString(16));
-        }
-
-        // Magic number
-        value = this.readUint16();
-        if (value !== 42) {
-            throw new Error('not a TIFF file');
-        }
-
-        // Offset of the first IFD
-        this._nextIFD = this.readUint32();
-    }
-
-    decodeIFD(options) {
-        this.seek(this._nextIFD);
-
-        var ifd$$1;
-        if (!options.kind) {
-            ifd$$1 = new tiffIfd();
-        } else {
-            ifd$$1 = new ifd(options.kind);
-        }
-
-        const numEntries = this.readUint16();
-        for (var i = 0; i < numEntries; i++) {
-            this.decodeIFDEntry(ifd$$1);
-        }
-        if (!options.ignoreImageData) {
-            this.decodeImageData(ifd$$1);
-        }
-        this._nextIFD = this.readUint32();
-        return ifd$$1;
-    }
-
-    decodeIFDEntry(ifd$$1) {
-        const offset = this.offset;
-        const tag = this.readUint16();
-        const type = this.readUint16();
-        const numValues = this.readUint32();
-
-        if (type < 1 || type > 12) {
-            this.skip(4); // unknown type, skip this value
-            return;
-        }
-
-        const valueByteLength = ifdValue.getByteLength(type, numValues);
-        if (valueByteLength > 4) {
-            this.seek(this.readUint32());
-        }
-
-        const value = ifdValue.readData(this, type, numValues);
-        ifd$$1.fields.set(tag, value);
-
-        // Read sub-IFDs
-        if (tag === 0x8769 || tag === 0x8825) {
-            let currentOffset = this.offset;
-            let kind;
-            if (tag === 0x8769) {
-                kind = 'exif';
-            } else if (tag === 0x8825) {
-                kind = 'gps';
-            }
-            this._nextIFD = value;
-            ifd$$1[kind] = this.decodeIFD({
-                kind,
-                ignoreImageData: true
-            });
-            this.offset = currentOffset;
-        }
-
-        // go to the next entry
-        this.seek(offset);
-        this.skip(12);
-    }
-
-    decodeImageData(ifd$$1) {
-        const orientation = ifd$$1.orientation;
-        if (orientation && orientation !== 1) {
-            unsupported('orientation', orientation);
-        }
-        switch (ifd$$1.type) {
-            case 1: // BlackIsZero
-            case 2: // RGB
-                this.readStripData(ifd$$1);
-                break;
-            default:
-                unsupported('image type', ifd$$1.type);
-                break;
-        }
-    }
-
-    readStripData(ifd$$1) {
-        const width = ifd$$1.width;
-        const height = ifd$$1.height;
-
-        const bitDepth = validateBitDepth(ifd$$1.bitsPerSample);
-        const sampleFormat = ifd$$1.sampleFormat;
-        let size = width * height;
-        const data = getDataArray(size, 1, bitDepth, sampleFormat);
-
-        const compression = ifd$$1.compression;
-        const rowsPerStrip = ifd$$1.rowsPerStrip;
-        const maxPixels = rowsPerStrip * width;
-        const stripOffsets = ifd$$1.stripOffsets;
-        const stripByteCounts = ifd$$1.stripByteCounts;
-
-        var pixel = 0;
-        for (var i = 0; i < stripOffsets.length; i++) {
-            var stripData = this.getStripData(compression, stripOffsets[i], stripByteCounts[i]);
-            // Last strip can be smaller
-            var length = size > maxPixels ? maxPixels : size;
-            size -= length;
-            if (bitDepth === 8) {
-                pixel = fill8bit(data, stripData, pixel, length);
-            } else if (bitDepth === 16) {
-                pixel = fill16bit(data, stripData, pixel, length, this.isLittleEndian());
-            } else if (bitDepth === 32 && sampleFormat === 3) {
-                pixel = fillFloat32(data, stripData, pixel, length, this.isLittleEndian());
-            } else {
-                unsupported('bitDepth', bitDepth);
-            }
-        }
-
-        ifd$$1.data = data;
-    }
-
-    getStripData(compression, offset, byteCounts) {
-        switch (compression) {
-            case 1: // No compression
-                return new DataView(this.buffer, offset, byteCounts);
-            case 2: // CCITT Group 3 1-Dimensional Modified Huffman run length encoding
-            case 32773: // PackBits compression
-                return unsupported('Compression', compression);
-            default:
-                throw new Error('invalid compression: ' + compression);
-        }
-    }
-}
-
-var tiffDecoder = TIFFDecoder;
-
-function getDataArray(size, channels, bitDepth, sampleFormat) {
-    if (bitDepth === 8) {
-        return new Uint8Array(size * channels);
-    } else if (bitDepth === 16) {
-        return new Uint16Array(size * channels);
-    } else if (bitDepth === 32 && sampleFormat === 3) {
-        return new Float32Array(size * channels);
+    var valueArrays;
+    if (interleave) {
+      var format = this.fileDirectory.SampleFormat ? Math.max.apply(null, this.fileDirectory.SampleFormat) : 1,
+          bitsPerSample = Math.max.apply(null, this.fileDirectory.BitsPerSample);
+      valueArrays = arrayForType(format, bitsPerSample, numPixels * samples.length);
     } else {
-        return unsupported('bit depth / sample format', bitDepth + ' / ' + sampleFormat);
+      valueArrays = [];
+      for (i = 0; i < samples.length; ++i) {
+        valueArrays.push(this.getArrayForSample(samples[i], numPixels));
+      }
     }
-}
 
-function fill8bit(dataTo, dataFrom, index, length) {
-    for (var i = 0; i < length; i++) {
-        dataTo[index++] = dataFrom.getUint8(i);
+    // start reading data, sync or async
+    var decoder = this.getDecoder();
+    if (decoder.isAsync()) {
+      if (!callback) {
+        throw new Error("No callback specified for asynchronous raster reading.");
+      }
+      return this._readRasterAsync(imageWindow, samples, valueArrays, interleave, callback, callbackError);
+    } else {
+      callback = callback || function () {};
+      return this._readRaster(imageWindow, samples, valueArrays, interleave, callback, callbackError);
     }
-    return index;
-}
+  },
 
-function fill16bit(dataTo, dataFrom, index, length, littleEndian) {
-    for (var i = 0; i < length * 2; i += 2) {
-        dataTo[index++] = dataFrom.getUint16(i, littleEndian);
-    }
-    return index;
-}
-
-function fillFloat32(dataTo, dataFrom, index, length, littleEndian) {
-    for (var i = 0; i < length * 4; i += 4) {
-        dataTo[index++] = dataFrom.getFloat32(i, littleEndian);
-    }
-    return index;
-}
-
-function unsupported(type, value) {
-    throw new Error('Unsupported ' + type + ': ' + value);
-}
-
-function validateBitDepth(bitDepth) {
-    if (bitDepth.length) {
-        const bitDepthArray = bitDepth;
-        bitDepth = bitDepthArray[0];
-        for (var i = 0; i < bitDepthArray.length; i++) {
-            if (bitDepthArray[i] !== bitDepth) {
-                unsupported('bit depth', bitDepthArray);
-            }
+  /**
+   * Reads raster data from the image as RGB. The result is always an
+   * interleaved typed array.
+   * Colorspaces other than RGB will be transformed to RGB, color maps expanded.
+   * When no other method is applicable, the first sample is used to produce a
+   * greayscale image.
+   * When provided, only a subset of the raster is read for each sample.
+   *
+   * @param {Object} [options] optional parameters
+   * @param {Array} [options.window=whole image] the subset to read data from.
+   * @param {GeoTIFFImage~readCallback} callback the success callback. this
+   *                                             parameter is mandatory.
+   * @param {GeoTIFFImage~readErrorCallback} [callbackError] the error callback
+   */
+  readRGB: function readRGB() {
+    // parse the arguments
+    var options = null,
+        callback = null,
+        callbackError = null;
+    switch (arguments.length) {
+      case 0:
+        break;
+      case 1:
+        if (typeof arguments[0] === "function") {
+          callback = arguments[0];
+        } else {
+          options = arguments[0];
         }
+        break;
+      case 2:
+        if (typeof arguments[0] === "function") {
+          callback = arguments[0];
+          callbackError = arguments[1];
+        } else {
+          options = arguments[0];
+          callback = arguments[1];
+        }
+        break;
+      case 3:
+        options = arguments[0];
+        callback = arguments[1];
+        callbackError = arguments[2];
+        break;
+      default:
+        throw new Error("Invalid number of arguments passed.");
     }
-    return bitDepth;
+
+    // set up default arguments
+    options = options || {};
+    callbackError = callbackError || function (error) {
+      console.error(error);
+    };
+
+    var imageWindow = options.window || [0, 0, this.getWidth(), this.getHeight()];
+
+    // check parameters
+    if (imageWindow[0] < 0 || imageWindow[1] < 0 || imageWindow[2] > this.getWidth() || imageWindow[3] > this.getHeight()) {
+      throw new Error("Select window is out of image bounds.");
+    } else if (imageWindow[0] > imageWindow[2] || imageWindow[1] > imageWindow[3]) {
+      throw new Error("Invalid subsets");
+    }
+
+    var width = imageWindow[2] - imageWindow[0];
+    var height = imageWindow[3] - imageWindow[1];
+
+    var pi = this.fileDirectory.PhotometricInterpretation;
+
+    var bits = this.fileDirectory.BitsPerSample[0];
+    var max = Math.pow(2, bits);
+
+    if (pi === globals.photometricInterpretations.RGB) {
+      return this.readRasters({
+        window: options.window,
+        interleave: true
+      }, callback, callbackError);
+    }
+
+    var samples;
+    switch (pi) {
+      case globals.photometricInterpretations.WhiteIsZero:
+      case globals.photometricInterpretations.BlackIsZero:
+      case globals.photometricInterpretations.Palette:
+        samples = [0];
+        break;
+      case globals.photometricInterpretations.CMYK:
+        samples = [0, 1, 2, 3];
+        break;
+      case globals.photometricInterpretations.YCbCr:
+      case globals.photometricInterpretations.CIELab:
+        samples = [0, 1, 2];
+        break;
+      default:
+        throw new Error("Invalid or unsupported photometric interpretation.");
+    }
+
+    var subOptions = {
+      window: options.window,
+      interleave: true,
+      samples: samples
+    };
+    var fileDirectory = this.fileDirectory;
+    return this.readRasters(subOptions, function (raster) {
+      switch (pi) {
+        case globals.photometricInterpretations.WhiteIsZero:
+          return callback(rgb.fromWhiteIsZero(raster, max, width, height));
+        case globals.photometricInterpretations.BlackIsZero:
+          return callback(rgb.fromBlackIsZero(raster, max, width, height));
+        case globals.photometricInterpretations.Palette:
+          return callback(rgb.fromPalette(raster, fileDirectory.ColorMap, width, height));
+        case globals.photometricInterpretations.CMYK:
+          return callback(rgb.fromCMYK(raster, width, height));
+        case globals.photometricInterpretations.YCbCr:
+          return callback(rgb.fromYCbCr(raster, width, height));
+        case globals.photometricInterpretations.CIELab:
+          return callback(rgb.fromCIELab(raster, width, height));
+      }
+    }, callbackError);
+  },
+
+  /**
+   * Returns an array of tiepoints.
+   * @returns {Object[]}
+   */
+  getTiePoints: function getTiePoints() {
+    if (!this.fileDirectory.ModelTiepoint) {
+      return [];
+    }
+
+    var tiePoints = [];
+    for (var i = 0; i < this.fileDirectory.ModelTiepoint.length; i += 6) {
+      tiePoints.push({
+        i: this.fileDirectory.ModelTiepoint[i],
+        j: this.fileDirectory.ModelTiepoint[i + 1],
+        k: this.fileDirectory.ModelTiepoint[i + 2],
+        x: this.fileDirectory.ModelTiepoint[i + 3],
+        y: this.fileDirectory.ModelTiepoint[i + 4],
+        z: this.fileDirectory.ModelTiepoint[i + 5]
+      });
+    }
+    return tiePoints;
+  },
+
+  /**
+   * Returns the parsed GDAL metadata items.
+   * @returns {Object}
+   */
+  getGDALMetadata: function getGDALMetadata() {
+    var metadata = {};
+    if (!this.fileDirectory.GDAL_METADATA) {
+      return null;
+    }
+    var string = this.fileDirectory.GDAL_METADATA;
+    var xmlDom = globals.parseXml(string.substring(0, string.length - 1));
+    var result = xmlDom.evaluate("GDALMetadata/Item", xmlDom, null, XPathResult.UNORDERED_NODE_SNAPSHOT_TYPE, null);
+    for (var i = 0; i < result.snapshotLength; ++i) {
+      var node = result.snapshotItem(i);
+      metadata[node.getAttribute("name")] = node.textContent;
+    }
+    return metadata;
+  },
+
+  /**
+   * Returns the image origin as a XYZ-vector. When the image has no affine
+   * transformation, then an exception is thrown.
+   * @returns {Array} The origin as a vector
+   */
+  getOrigin: function getOrigin() {
+    var tiePoints = this.fileDirectory.ModelTiepoint;
+    if (!tiePoints || tiePoints.length !== 6) {
+      throw new Error("The image does not have an affine transformation.");
+    }
+
+    return [tiePoints[3], tiePoints[4], tiePoints[5]];
+  },
+
+  /**
+   * Returns the image resolution as a XYZ-vector. When the image has no affine
+   * transformation, then an exception is thrown.
+   * @returns {Array} The resolution as a vector
+   */
+  getResolution: function getResolution() {
+    if (!this.fileDirectory.ModelPixelScale) {
+      throw new Error("The image does not have an affine transformation.");
+    }
+
+    return [this.fileDirectory.ModelPixelScale[0], this.fileDirectory.ModelPixelScale[1], this.fileDirectory.ModelPixelScale[2]];
+  },
+
+  /**
+   * Returns whether or not the pixels of the image depict an area (or point).
+   * @returns {Boolean} Whether the pixels are a point
+   */
+  pixelIsArea: function pixelIsArea() {
+    return this.geoKeys.GTRasterTypeGeoKey === 1;
+  },
+
+  /**
+   * Returns the image bounding box as an array of 4 values: min-x, min-y,
+   * max-x and max-y. When the image has no affine transformation, then an
+   * exception is thrown.
+   * @returns {Array} The bounding box
+   */
+  getBoundingBox: function getBoundingBox() {
+    var origin = this.getOrigin();
+    var resolution = this.getResolution();
+
+    var x1 = origin[0];
+    var y1 = origin[1];
+
+    var x2 = x1 + resolution[0] * this.getWidth();
+    var y2 = y1 + resolution[1] * this.getHeight();
+
+    return [Math.min(x1, x2), Math.min(y1, y2), Math.max(x1, x2), Math.max(y1, y2)];
+  }
+};
+
+var geotiffimage = GeoTIFFImage;
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var DataView64 = function () {
+  function DataView64(arrayBuffer) {
+    _classCallCheck(this, DataView64);
+
+    this._dataView = new DataView(arrayBuffer);
+  }
+
+  _createClass(DataView64, [{
+    key: "getUint64",
+    value: function getUint64(offset, littleEndian) {
+      var left = this.getUint32(offset, littleEndian);
+      var right = this.getUint32(offset + 4, littleEndian);
+      if (littleEndian) {
+        return left << 32 | right;
+      }
+      return right << 32 | left;
+    }
+  }, {
+    key: "getInt64",
+    value: function getInt64(offset, littleEndian) {
+      var left, right;
+      if (littleEndian) {
+        left = this.getInt32(offset, littleEndian);
+        right = this.getUint32(offset + 4, littleEndian);
+
+        return left << 32 | right;
+      }
+      left = this.getUint32(offset, littleEndian);
+      right = this.getInt32(offset + 4, littleEndian);
+      return right << 32 | left;
+    }
+  }, {
+    key: "getUint8",
+    value: function getUint8(offset, littleEndian) {
+      return this._dataView.getUint8(offset, littleEndian);
+    }
+  }, {
+    key: "getInt8",
+    value: function getInt8(offset, littleEndian) {
+      return this._dataView.getInt8(offset, littleEndian);
+    }
+  }, {
+    key: "getUint16",
+    value: function getUint16(offset, littleEndian) {
+      return this._dataView.getUint16(offset, littleEndian);
+    }
+  }, {
+    key: "getInt16",
+    value: function getInt16(offset, littleEndian) {
+      return this._dataView.getInt16(offset, littleEndian);
+    }
+  }, {
+    key: "getUint32",
+    value: function getUint32(offset, littleEndian) {
+      return this._dataView.getUint32(offset, littleEndian);
+    }
+  }, {
+    key: "getInt32",
+    value: function getInt32(offset, littleEndian) {
+      return this._dataView.getInt32(offset, littleEndian);
+    }
+  }, {
+    key: "getFloat32",
+    value: function getFloat32(offset, littleEndian) {
+      return this._dataView.getFloat32(offset, littleEndian);
+    }
+  }, {
+    key: "getFloat64",
+    value: function getFloat64(offset, littleEndian) {
+      return this._dataView.getFloat64(offset, littleEndian);
+    }
+  }, {
+    key: "buffer",
+    get: function get() {
+      return this._dataView.buffer;
+    }
+  }]);
+
+  return DataView64;
+}();
+
+var dataview64 = DataView64;
+
+var fieldTypes = globals.fieldTypes;
+var fieldTagNames = globals.fieldTagNames;
+var arrayFields = globals.arrayFields;
+var geoKeyNames = globals.geoKeyNames;
+
+/**
+ * The abstraction for a whole GeoTIFF file.
+ * @constructor
+ * @param {ArrayBuffer} rawData the raw data stream of the file as an ArrayBuffer.
+ * @param {Object} [options] further options.
+ * @param {Boolean} [options.cache=false] whether or not decoded tiles shall be cached.
+ */
+function GeoTIFF(rawData, options) {
+  this.dataView = new dataview64(rawData);
+  options = options || {};
+  this.cache = options.cache || false;
+
+  var BOM = this.dataView.getUint16(0, 0);
+  if (BOM === 0x4949) {
+    this.littleEndian = true;
+  } else if (BOM === 0x4D4D) {
+    this.littleEndian = false;
+  } else {
+    throw new TypeError("Invalid byte order value.");
+  }
+
+  var magicNumber = this.dataView.getUint16(2, this.littleEndian);
+  if (this.dataView.getUint16(2, this.littleEndian) === 42) {
+    this.bigTiff = false;
+  } else if (magicNumber === 43) {
+    this.bigTiff = true;
+    var offsetBytesize = this.dataView.getUint16(4, this.littleEndian);
+    if (offsetBytesize !== 8) {
+      throw new Error("Unsupported offset byte-size.");
+    }
+  } else {
+    throw new TypeError("Invalid magic number.");
+  }
+
+  this.fileDirectories = this.parseFileDirectories(this.getOffset(this.bigTiff ? 8 : 4));
 }
 
-var decode$1 = function decodeTIFF(data, options) {
-    const decoder = new tiffDecoder(data, options);
-    return decoder.decode(options);
+GeoTIFF.prototype = {
+  getOffset: function getOffset(offset) {
+    if (this.bigTiff) {
+      return this.dataView.getUint64(offset, this.littleEndian);
+    }
+    return this.dataView.getUint32(offset, this.littleEndian);
+  },
+
+  getFieldTypeLength: function getFieldTypeLength(fieldType) {
+    switch (fieldType) {
+      case fieldTypes.BYTE:case fieldTypes.ASCII:case fieldTypes.SBYTE:case fieldTypes.UNDEFINED:
+        return 1;
+      case fieldTypes.SHORT:case fieldTypes.SSHORT:
+        return 2;
+      case fieldTypes.LONG:case fieldTypes.SLONG:case fieldTypes.FLOAT:
+        return 4;
+      case fieldTypes.RATIONAL:case fieldTypes.SRATIONAL:case fieldTypes.DOUBLE:
+      case fieldTypes.LONG8:case fieldTypes.SLONG8:case fieldTypes.IFD8:
+        return 8;
+      default:
+        throw new RangeError("Invalid field type: " + fieldType);
+    }
+  },
+
+  getValues: function getValues(fieldType, count, offset) {
+    var values = null;
+    var readMethod = null;
+    var fieldTypeLength = this.getFieldTypeLength(fieldType);
+    var i;
+
+    switch (fieldType) {
+      case fieldTypes.BYTE:case fieldTypes.ASCII:case fieldTypes.UNDEFINED:
+        values = new Uint8Array(count);readMethod = this.dataView.getUint8;
+        break;
+      case fieldTypes.SBYTE:
+        values = new Int8Array(count);readMethod = this.dataView.getInt8;
+        break;
+      case fieldTypes.SHORT:
+        values = new Uint16Array(count);readMethod = this.dataView.getUint16;
+        break;
+      case fieldTypes.SSHORT:
+        values = new Int16Array(count);readMethod = this.dataView.getInt16;
+        break;
+      case fieldTypes.LONG:
+        values = new Uint32Array(count);readMethod = this.dataView.getUint32;
+        break;
+      case fieldTypes.SLONG:
+        values = new Int32Array(count);readMethod = this.dataView.getInt32;
+        break;
+      case fieldTypes.LONG8:case fieldTypes.IFD8:
+        values = new Array(count);readMethod = this.dataView.getUint64;
+        break;
+      case fieldTypes.SLONG8:
+        values = new Array(count);readMethod = this.dataView.getInt64;
+        break;
+      case fieldTypes.RATIONAL:
+        values = new Uint32Array(count * 2);readMethod = this.dataView.getUint32;
+        break;
+      case fieldTypes.SRATIONAL:
+        values = new Int32Array(count * 2);readMethod = this.dataView.getInt32;
+        break;
+      case fieldTypes.FLOAT:
+        values = new Float32Array(count);readMethod = this.dataView.getFloat32;
+        break;
+      case fieldTypes.DOUBLE:
+        values = new Float64Array(count);readMethod = this.dataView.getFloat64;
+        break;
+      default:
+        throw new RangeError("Invalid field type: " + fieldType);
+    }
+
+    // normal fields
+    if (!(fieldType === fieldTypes.RATIONAL || fieldType === fieldTypes.SRATIONAL)) {
+      for (i = 0; i < count; ++i) {
+        values[i] = readMethod.call(this.dataView, offset + i * fieldTypeLength, this.littleEndian);
+      }
+    }
+    // RATIONAL or SRATIONAL
+    else {
+        for (i = 0; i < count; i += 2) {
+          values[i] = readMethod.call(this.dataView, offset + i * fieldTypeLength, this.littleEndian);
+          values[i + 1] = readMethod.call(this.dataView, offset + (i * fieldTypeLength + 4), this.littleEndian);
+        }
+      }
+
+    if (fieldType === fieldTypes.ASCII) {
+      return String.fromCharCode.apply(null, values);
+    }
+    return values;
+  },
+
+  getFieldValues: function getFieldValues(fieldTag, fieldType, typeCount, valueOffset) {
+    var fieldValues;
+    var fieldTypeLength = this.getFieldTypeLength(fieldType);
+
+    if (fieldTypeLength * typeCount <= (this.bigTiff ? 8 : 4)) {
+      fieldValues = this.getValues(fieldType, typeCount, valueOffset);
+    } else {
+      var actualOffset = this.getOffset(valueOffset);
+      fieldValues = this.getValues(fieldType, typeCount, actualOffset);
+    }
+
+    if (typeCount === 1 && arrayFields.indexOf(fieldTag) === -1 && !(fieldType === fieldTypes.RATIONAL || fieldType === fieldTypes.SRATIONAL)) {
+      return fieldValues[0];
+    }
+
+    return fieldValues;
+  },
+
+  parseGeoKeyDirectory: function parseGeoKeyDirectory(fileDirectory) {
+    var rawGeoKeyDirectory = fileDirectory.GeoKeyDirectory;
+    if (!rawGeoKeyDirectory) {
+      return null;
+    }
+
+    var geoKeyDirectory = {};
+    for (var i = 4; i < rawGeoKeyDirectory[3] * 4; i += 4) {
+      var key = geoKeyNames[rawGeoKeyDirectory[i]],
+          location = rawGeoKeyDirectory[i + 1] ? fieldTagNames[rawGeoKeyDirectory[i + 1]] : null,
+          count = rawGeoKeyDirectory[i + 2],
+          offset = rawGeoKeyDirectory[i + 3];
+
+      var value = null;
+      if (!location) {
+        value = offset;
+      } else {
+        value = fileDirectory[location];
+        if (typeof value === "undefined" || value === null) {
+          throw new Error("Could not get value of geoKey '" + key + "'.");
+        } else if (typeof value === "string") {
+          value = value.substring(offset, offset + count - 1);
+        } else if (value.subarray) {
+          value = value.subarray(offset, offset + count - 1);
+        }
+      }
+      geoKeyDirectory[key] = value;
+    }
+    return geoKeyDirectory;
+  },
+
+  parseFileDirectories: function parseFileDirectories(byteOffset) {
+    var nextIFDByteOffset = byteOffset;
+    var fileDirectories = [];
+
+    while (nextIFDByteOffset !== 0x00000000) {
+      var numDirEntries = this.bigTiff ? this.dataView.getUint64(nextIFDByteOffset, this.littleEndian) : this.dataView.getUint16(nextIFDByteOffset, this.littleEndian);
+
+      var fileDirectory = {};
+      var i = nextIFDByteOffset + (this.bigTiff ? 8 : 2);
+      for (var entryCount = 0; entryCount < numDirEntries; i += this.bigTiff ? 20 : 12, ++entryCount) {
+        var fieldTag = this.dataView.getUint16(i, this.littleEndian);
+        var fieldType = this.dataView.getUint16(i + 2, this.littleEndian);
+        var typeCount = this.bigTiff ? this.dataView.getUint64(i + 4, this.littleEndian) : this.dataView.getUint32(i + 4, this.littleEndian);
+
+        fileDirectory[fieldTagNames[fieldTag]] = this.getFieldValues(fieldTag, fieldType, typeCount, i + (this.bigTiff ? 12 : 8));
+      }
+      fileDirectories.push([fileDirectory, this.parseGeoKeyDirectory(fileDirectory)]);
+
+      nextIFDByteOffset = this.getOffset(i);
+    }
+    return fileDirectories;
+  },
+
+  /**
+   * Get the n-th internal subfile a an image. By default, the first is returned.
+   *
+   * @param {Number} [index=0] the index of the image to return.
+   * @returns {GeoTIFFImage} the image at the given index
+   */
+  getImage: function getImage(index) {
+    index = index || 0;
+    var fileDirectoryAndGeoKey = this.fileDirectories[index];
+    if (!fileDirectoryAndGeoKey) {
+      throw new RangeError("Invalid image index");
+    }
+    return new geotiffimage(fileDirectoryAndGeoKey[0], fileDirectoryAndGeoKey[1], this.dataView, this.littleEndian, this.cache);
+  },
+
+  /**
+   * Returns the count of the internal subfiles.
+   *
+   * @returns {Number} the number of internal subfile images
+   */
+  getImageCount: function getImageCount() {
+    return this.fileDirectories.length;
+  }
 };
 
-var decode = decode$1;
+var geotiff$1 = GeoTIFF;
 
-var index$2 = {
-	decode: decode
+var main = createCommonjsModule(function (module) {
+"use strict";
+
+
+
+/**
+ * Main parsing function for GeoTIFF files.
+ * @param {(string|ArrayBuffer)} data Raw data to parse the GeoTIFF from.
+ * @param {Object} [options] further options.
+ * @param {Boolean} [options.cache=false] whether or not decoded tiles shall be cached.
+ * @returns {GeoTIFF} the parsed geotiff file.
+ */
+var parse = function parse(data, options) {
+  var rawData, i, strLen, view;
+  if (typeof data === "string" || data instanceof String) {
+    rawData = new ArrayBuffer(data.length * 2); // 2 bytes for each char
+    view = new Uint16Array(rawData);
+    for (i = 0, strLen = data.length; i < strLen; ++i) {
+      view[i] = data.charCodeAt(i);
+    }
+  } else if (data instanceof ArrayBuffer) {
+    rawData = data;
+  } else {
+    throw new Error("Invalid input data given.");
+  }
+  return new geotiff$1(rawData, options);
 };
 
+{
+  module.exports.parse = parse;
+}
+if (typeof window !== "undefined") {
+  window["GeoTIFF"] = { parse: parse };
+}
+});
+
+/*
+* Author   Jonathan Lurie - http://me.jonahanlurie.fr
+* License  MIT
+* Link      https://github.com/jonathanlurie/pixpipejs
+* Lab       MCIN - Montreal Neurological Institute
+*/
+
+/**
+* Read and decode Tiff format. This decoder is experimental.
+* Takes an ArrayBuffer as input and output a Image2D in case of successful rdecoding.
+* TiffDecoder uses two JS tiff reader: UTIF and tiff. The first is good for RGB and RGBA
+*
+* Info: Tiff 6.0 specification http://www.npes.org/pdf/TIFF-v6.pdf
+*/
 class TiffDecoder extends Filter {
   constructor() {
     super();
@@ -16374,32 +19287,30 @@ class TiffDecoder extends Filter {
     var inputBuffer = this._getInput(0);
 
     if(!inputBuffer){
-      console.warn("NiftiDecoder requires an ArrayBuffer as input \"0\". Unable to continue.");
+      console.warn("TiffDecoder requires an ArrayBuffer as input \"0\". Unable to continue.");
       return;
     }
     
-    var decoded = index$2.decode( inputBuffer );
+    var success = false;
     
-    if(decoded.length > 0){
-      var tiffIfd = decoded[0];
-      /*
-      console.log( tiffIfd.width );
-      console.log( tiffIfd.height );
-      console.log( tiffIfd.bitsPerSample );
-      console.log( tiffIfd.components );
-      console.log( tiffIfd.imageDescription );
-      console.log( tiffIfd );
-      */
-      
-      var outputImg = this._addOutput( Image2D );
-      outputImg.setData( tiffIfd.data, tiffIfd.width, tiffIfd.height, tiffIfd.components);
-
-    }else{
-      console.warn("Could no decode this tiff file.");
+    var tiffData = main.parse(inputBuffer);
+    var tiffImage = tiffData.getImage();
+    
+    var data = tiffImage.readRasters( {interleave: true} );
+    var width = tiffImage.getWidth();
+    var height = tiffImage.getHeight();
+    var ncpp = tiffImage.getSamplesPerPixel();
+    
+    if(ncpp == (data.length / (width*height))){
+      success = true;
     }
     
-    
-    
+    if( success ){
+      var outputImg = this._addOutput( Image2D );
+      outputImg.setData( data, width, height, ncpp);
+    }else{
+      console.warn("Tiff support is experimental and this file is not compatible.");
+    }
     
   }
   

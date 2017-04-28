@@ -9,8 +9,9 @@ import { Image2D } from '../core/Image2D.js';
 import { Filter } from '../core/Filter.js';
 
 /**
-* An instance of FileImageReader takes a HTML5 File object as input and
-* returns an Image2D as output. The point is mainly to use it with a file dialog.
+* An instance of FileImageReader takes a HTML5 File object of a png or jpeg image 
+* as input and returns an Image2D as output.  For Tiff format, use TiffDecoder instead.
+* The point is mainly to use it with a file dialog.
 * Use the regular `addInput()` and `getOuput()` with no argument for that.
 * Reading a local file is an asynchronous process. For this
 * reason, what happens next, once the Image2D is created must take place in the
