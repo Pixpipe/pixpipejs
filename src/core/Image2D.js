@@ -52,7 +52,7 @@ class Image2D extends PixpipeContainer{
           for(var i=0; i<this._data.length; i++){
             this._data[i] = color[i%ncpp];
           }
-          this.computeSimpleStat();
+          //this.computeSimpleStat();
         }else{
           this._data.fill(0);
         }
@@ -213,6 +213,14 @@ class Image2D extends PixpipeContainer{
     return this._metadata.ncpp;
   }
 
+  
+  /**
+  * Alias to getComponentsPerPixel. Return the number of components per pixel.
+  * @return {Number} ncpp
+  */
+  getNcpp(){
+    return this.getComponentsPerPixel();
+  }
 
 
   /**
