@@ -25,14 +25,14 @@ export { PixpDecoder } from './decoder/PixpDecoder.js';
 export { Image3DGenericDecoder } from './decoder/Image3DGenericDecoder.js';
 export { TiffDecoder } from './decoder/TiffDecoder.js';
 
-
 // filters - processing of Images2D
 export { ForEachPixelImageFilter } from './filter/ForEachPixelImageFilter.js';
 export { SpectralScaleImageFilter } from './filter/SpectralScaleImageFilter.js';
 export { ImageBlendExpressionFilter } from './filter/ImageBlendExpressionFilter.js';
-//export { SpatialConvolutionFilter } from './filter/SpatialConvolutionFilter.js';
+export { SpatialConvolutionFilter } from './filter/SpatialConvolutionFilter.js';
 export { MultiplyImageFilter } from './filter/MultiplyImageFilter.js';
 export { SimpleThresholdFilter } from './filter/SimpleThresholdFilter.js';
+export { ImageDerivativeFilter } from './filter/ImageDerivativeFilter.js';
 
 // filters - processing of Image3D
 export { Image3DToMosaicFilter } from './filter/Image3DToMosaicFilter.js';

@@ -635,7 +635,7 @@ class Image2D extends PixpipeContainer{
           for(var i=0; i<this._data.length; i++){
             this._data[i] = color[i%ncpp];
           }
-          this.computeSimpleStat();
+          //this.computeSimpleStat();
         }else{
           this._data.fill(0);
         }
@@ -796,6 +796,14 @@ class Image2D extends PixpipeContainer{
     return this._metadata.ncpp;
   }
 
+  
+  /**
+  * Alias to getComponentsPerPixel. Return the number of components per pixel.
+  * @return {Number} ncpp
+  */
+  getNcpp(){
+    return this.getComponentsPerPixel();
+  }
 
 
   /**
@@ -20924,6 +20932,130 @@ class ImageBlendExpressionFilter extends ImageToImageFilter {
 * Lab       MCIN - Montreal Neurological Institute
 */
 
+/**
+* An instance of SpatialConvolutionFilter perform a convolution in a spatial reference,
+* this can be applying a Sobel filter, a median or gaussian blur or perform a derivative.
+* The filter is a NxM (aka. an array of arrays) of the following form:
+* ```
+*   var medianBlurFilter = [
+*     [1/9, 1/9, 1/9],
+*     [1/9, 1/9, 1/9],
+*     [1/9, 1/9, 1/9],
+*   ];
+* ```
+* For example, in the case of a simple derivative, it will be like that:
+* ```
+*  var dx = [
+*    [1, -1]
+*  ];
+*
+*  // or
+*
+*  var dy = [
+*    [1],
+*    [-1]
+*  ];
+* ```
+* 
+* The filter must be specified using the method `.setMetadata('filter', ...)`.
+*
+* **Usage**
+*  - [examples/spatialConvolImage2D.html](../examples/spatialConvolImage2D.html)
+*
+*/
+class SpatialConvolutionFilter extends ImageToImageFilter {
+
+  constructor(){
+    super();
+    this.addInputValidator(0, Image2D);
+    this.setMetadata("filter", null);
+  }
+
+  
+  _run(){
+    // the input checking
+    if( ! this.hasValidInput()){
+      console.warn("A filter of type SpatialConvolutionFilter requires 1 input of category '0' and one input of category '1'.");
+      return;
+    }
+    
+    var filter = this.getMetadata("filter");
+    
+    if( !filter ){
+      console.warn("A filter must be specified using .setMetadata('filter', [[]])");
+      return;
+    }
+    
+    // input
+    var inputImg = this._getInput( 0 );
+    var inputData = inputImg.getData();
+    var ncpp = inputImg.getNcpp();
+    var width = inputImg.getWidth();
+    var height = inputImg.getHeight();
+    
+    // output 
+    var outputImg = new Image2D( {width: width, height: height, color: new Array(ncpp).fill(0) } );
+    var outputData = outputImg.getData();
+    
+    // filter
+    var filterSize = filter.length;
+    var filterHeight = filter.length;
+    var filterWidth = filter[0].length;
+    var filterHalfWidth = Math.floor( filterWidth / 2 );
+    var filterHalfHeight = Math.floor( filterHeight / 2 );
+    
+    // looping info
+    var startX = filterHalfWidth;
+    var startY = filterHalfHeight;
+    var endX = width - filterHalfWidth;
+    var endY = height - filterHalfHeight;
+    
+    // along image width
+    for(var iImg=startX ; iImg<endX; iImg++){
+
+      // along image height
+      for(var jImg=startY ; jImg<endY; jImg++){
+
+        // get the 1D position of the first component
+        var linearPosition = (jImg * width + iImg) * ncpp;
+
+        // along filter width
+        for(var iFilter=0; iFilter<filterWidth; iFilter++){
+          
+          // along filter height
+          for(var jFilter=0; jFilter<filterHeight; jFilter++){
+            
+            var iUnderFilter = iImg + iFilter - filterHalfWidth;
+            var jUnderFilter = jImg + jFilter - filterHalfHeight;
+            var colorUnderFilter = inputImg.getPixel({x: iUnderFilter, y: jUnderFilter});
+            var curentFilterValue = filter[jFilter][iFilter];
+            
+            // looping around components
+            for(var c=0; c<ncpp; c++){
+              outputData[ linearPosition + c] += colorUnderFilter[c] * curentFilterValue;
+            } /* END for-loop over components */
+            
+          } /* END for-loop over filter height */
+          
+        } /* END for-loop over filter width */
+        
+      } /* END for-loop over image height */
+      
+    } /* END for-loop over image width */
+    
+    this._output[0] = outputImg;
+    
+  }
+  
+} /* END of class SpatialConvolutionFilter */
+
+/*
+* Author   Jonathan Lurie - http://me.jonahanlurie.fr
+* License  MIT
+* Link      https://github.com/jonathanlurie/pixpipejs
+* Lab       MCIN - Montreal Neurological Institute
+*/
+
 
 /**
 * Multiply two Image2D pixel by pixel. They must have the same number of components per pixel
@@ -21103,6 +21235,74 @@ class SimpleThresholdFilter extends ImageToImageFilter {
 * Lab       MCIN - Montreal Neurological Institute
 */
 
+/**
+* A ImageDerivativeFilter filter will compute the dx and dy derivative using the filters
+* h = [1, -1]
+* 
+* You can change the built-in filters that perform the derivative by setting the metadata
+*  "dxFilter" and "dyFilter" with the method `.setMetadata()`. See the documentation of
+* `SpatialConvolutionFilter` to make your custom filter compatible.
+*
+* **Usage**
+* - [examples/derivativeImage2D.html](../examples/derivativeImage2D.html)
+*
+*/
+class ImageDerivativeFilter extends ImageToImageFilter {
+  
+  constructor(){
+    super();
+    this.addInputValidator(0, Image2D);
+    
+    // filters for derivative
+    var dx = [
+        [1, -1]
+      ];
+      
+    var dy = [
+        [1],
+        [-1]
+      ];
+      
+    this.setMetadata("dxFilter", dx);
+    this.setMetadata("dyFilter", dy);
+  }
+  
+  _run(){
+    // the input checking
+    if( ! this.hasValidInput()){
+      console.warn("A filter of type SpatialConvolutionFilter requires 1 input of category '0' and one input of category '1'.");
+      return;
+    }
+    
+    var inputImg = this._getInput( 0 );
+    
+    var dx = this.getMetadata('dxFilter');
+    var dy = this.getMetadata('dyFilter');
+  
+    var spatialConv = new pixpipe.SpatialConvolutionFilter();
+    spatialConv.addInput( inputImg );
+    
+    spatialConv.setMetadata("filter", dx);
+    spatialConv.update();
+    
+    this._output["dx"] = spatialConv.getOutput();
+    
+    spatialConv.setMetadata("filter", dy);
+    spatialConv.update();
+    
+    this._output["dy"] = spatialConv.getOutput();
+    
+  }
+  
+} /* END class ImageDerivativeFilter */
+
+/*
+* Author   Jonathan Lurie - http://me.jonahanlurie.fr
+* License  MIT
+* Link      https://github.com/jonathanlurie/pixpipejs
+* Lab       MCIN - Montreal Neurological Institute
+*/
+
 
 /**
 * An instance of Image3DToMosaicFilter takes an Image3D as Input and output a
@@ -21241,8 +21441,10 @@ exports.TiffDecoder = TiffDecoder;
 exports.ForEachPixelImageFilter = ForEachPixelImageFilter;
 exports.SpectralScaleImageFilter = SpectralScaleImageFilter;
 exports.ImageBlendExpressionFilter = ImageBlendExpressionFilter;
+exports.SpatialConvolutionFilter = SpatialConvolutionFilter;
 exports.MultiplyImageFilter = MultiplyImageFilter;
 exports.SimpleThresholdFilter = SimpleThresholdFilter;
+exports.ImageDerivativeFilter = ImageDerivativeFilter;
 exports.Image3DToMosaicFilter = Image3DToMosaicFilter;
 
 Object.defineProperty(exports, '__esModule', { value: true });

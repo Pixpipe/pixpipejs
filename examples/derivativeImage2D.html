@@ -1,0 +1,76 @@
+<html>
+<head>
+  <title>Derivative of Image2D</title>
+
+  <script src="../dist/pixpipe.js"></script>
+  <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700,900" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <h1><a href="https://github.com/jonathanlurie/pixpipejs"><span style="color: #ff91d7">Pixpipe</span><span style="color: #FFFFFF">js</span></a></h1>
+  <p>
+  This does the following :
+  <ul>
+    <li>opening a local image file, using <code>pixpipe.FileImageReader</code></li>
+    <li>converting it into a <code>pixpipe.Image2D</code> object</li>
+    <li>compute the dx and dy derivative with <code>pixpipe.ImageDerivativeFilter</code></li>
+    <li>displaying it in a canvas using <code>pixpipe.CanvasImageWriter</code></li>
+  </ul>
+
+  </p>
+
+  <div>
+		Select an image file:
+		<input type="file" id="fileInput">
+	</div>
+
+  <div id="myDiv"></div>
+
+  <script>
+  window.onload = function() {
+
+    var fileInput = document.getElementById('fileInput');
+
+    // create a filter to write the image into a canvas
+    var imageToCanvasFilter = new pixpipe.CanvasImageWriter();
+    imageToCanvasFilter.setMetadata( "parentDivID", "myDiv" );
+    imageToCanvasFilter.setMetadata("reset", false);
+
+    // The filter to read image from URL
+    var file2ImgFilter = new pixpipe.FileImageReader();
+
+    // the image is loaded...
+    // here, this = url2ImgFilter
+    file2ImgFilter.on("ready", function(){
+      
+      var loadedImage = this.getOutput();
+      var derivFilter = new pixpipe.ImageDerivativeFilter();
+      
+      
+      derivFilter.addInput( loadedImage );
+      derivFilter.update();
+      
+      // use the output of the UrlImageReader as the input for CanvasImageWriter
+      imageToCanvasFilter.addInput( derivFilter.getOutput("dx") );
+      // actually copy the data from the Image2D into the inner HTML5 canvas
+      imageToCanvasFilter.update();
+      
+      // use the output of the UrlImageReader as the input for CanvasImageWriter
+      imageToCanvasFilter.addInput( derivFilter.getOutput("dy") );
+      // actually copy the data from the Image2D into the inner HTML5 canvas
+      imageToCanvasFilter.update();
+    });
+
+    fileInput.addEventListener('change', function(e) {
+			var file = fileInput.files[0];
+      // set the input, an HTML5 File object
+      file2ImgFilter.addInput(file)
+      // Ask to fetch the image from URL
+      file2ImgFilter.update();
+		});
+
+  }
+  </script>
+
+</body>
+</html>
