@@ -26,6 +26,8 @@ class SimpleThresholdFilter extends ImageToImageFilter {
   constructor(){
     super();
     
+    this.addInputValidator(0, Image2D);
+    
     // default values
     this.setMetadata("threshold", 128);
     this.setMetadata("lowValue", 0);
