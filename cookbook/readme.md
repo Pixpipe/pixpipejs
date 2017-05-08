@@ -190,7 +190,8 @@ A `Filter` should **NEVER** modify the input data.
 - [Load a `*.pixp` file that contains an Image2D and display it](http://me.jonathanlurie.fr/pixpipejs/examples/pixpFileToImage2D.html) ([source](https://github.com/jonathanlurie/pixpipejs/tree/master/examples/pixpFileToImage2D.html))
 - [Multiply an image by another](http://me.jonathanlurie.fr/pixpipejs/examples/multiplyImage2D.html) ([source](https://github.com/jonathanlurie/pixpipejs/tree/master/examples/multiplyImage2D.html))
 - [Open a Tiff and display its pixel values in csv format](http://me.jonathanlurie.fr/pixpipejs/examples/tiffPixelData.html) ([source](https://github.com/jonathanlurie/pixpipejs/tree/master/examples/tiffPixelData.html))
-
+- [Compute the dx and dy derivatives of an image](http://me.jonathanlurie.fr/pixpipejs/examples/derivativeImage2D.html) ([source](https://github.com/jonathanlurie/pixpipejs/tree/master/examples/derivativeImage2D.html))
+- [Compute the gradient direction and magnitude of an image](http://me.jonathanlurie.fr/pixpipejs/examples/gradientImage2D.html) ([source](https://github.com/jonathanlurie/pixpipejs/tree/master/examples/gradientImage2D.html))
 
 ## Playing with 3D medical dataset
 - [Open a local Minc2 file, extract 3 orthogonal slices and display in canvas](http://me.jonathanlurie.fr/pixpipejs/examples/fileToMinc2.html) ([source](https://github.com/jonathanlurie/pixpipejs/tree/master/examples/fileToMinc2.html))

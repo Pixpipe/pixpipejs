@@ -33,6 +33,10 @@ export { SpatialConvolutionFilter } from './filter/SpatialConvolutionFilter.js';
 export { MultiplyImageFilter } from './filter/MultiplyImageFilter.js';
 export { SimpleThresholdFilter } from './filter/SimpleThresholdFilter.js';
 export { ImageDerivativeFilter } from './filter/ImageDerivativeFilter.js';
+export { GradientImageFilter } from './filter/GradientImageFilter.js';
+
+// helpers
+export { AngleToHueWheelHelper } from './helper/AngleToHueWheelHelper.js';
 
 // filters - processing of Image3D
 export { Image3DToMosaicFilter } from './filter/Image3DToMosaicFilter.js';

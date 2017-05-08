@@ -40,6 +40,7 @@ class ForEachPixelImageFilter extends ImageToImageFilter {
 
   constructor(){
     super();
+    this.addInputValidator(0, Image2D);
   }
 
 

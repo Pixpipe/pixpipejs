@@ -83,6 +83,22 @@ class Image2D extends PixpipeContainer{
 
 
   /**
+  * Get an empty copy of an image. Like a clone but the array of data is filled
+  * with zeros and no metadata.
+  * @return {Image2D} 
+  */
+  hollowClone(){
+    var cpImg = new Image2D();
+    var ncpp = this.getMetadata("ncpp");
+    var width = this.getMetadata("width");
+    var height = this.getMetadata("height");
+    
+    cpImg.setData( new Float32Array(width*height*ncpp).fill(0), width, height, ncpp);
+    return cpImg;
+  }
+
+
+  /**
   *  Set the data to this Image2D.
   * @param {Float32Array} array - 1D array of raw data stored as RGBARGBA...
   * @param {Number} width - width of the Image2D
