@@ -82,10 +82,22 @@
       //angleToHueWheel.setMetadata("maxAngle", Math.PI/2);
       angleToHueWheel.update();
       
+      var hueWheelImage = angleToHueWheel.getOutput();
+      
+      // normalizing the magnitude in order to scale the hueWheelImage
+      var nrmlzImgFltr = new pixpipe.NormalizeImageFilter();
+      nrmlzImgFltr.addInput(gradMagnitude);
+      nrmlzImgFltr.update();
+      
+      // scaling the hue image with the normalized magnitude
+      var multiplier = new pixpipe.MultiplyImageFilter();
+      multiplier.addInput( hueWheelImage, 0 );
+      multiplier.addInput( nrmlzImgFltr.getOutput(), 1 );
+      multiplier.update();
+      
+      
       // display the direction
-      imageToCanvasFilter.addInput( angleToHueWheel.getOutput() );
-      //imageToCanvasFilter.setMetadata("min", gradDirection.getMetadata("min"));
-      //imageToCanvasFilter.setMetadata("max", gradDirection.getMetadata("max"));
+      imageToCanvasFilter.addInput( hueWheelImage );
       imageToCanvasFilter.update();
       
       // display the magnitude
@@ -93,6 +105,13 @@
       imageToCanvasFilter.setMetadata("min", gradMagnitude.getMetadata("min"));
       imageToCanvasFilter.setMetadata("max", gradMagnitude.getMetadata("max"));
       imageToCanvasFilter.update();
+      
+      // display combination
+      imageToCanvasFilter.addInput( multiplier.getOutput() );
+      imageToCanvasFilter.setMetadata("min", 0);
+      imageToCanvasFilter.setMetadata("max", 255);
+      imageToCanvasFilter.update();
+      
     });
 
     fileInput.addEventListener('change', function(e) {

@@ -41,25 +41,17 @@ class MultiplyImageFilter extends ImageToImageFilter {
       return;
     }
 
-    this.addTimeRecord("step1");
 
     var img0 = this._getInput( 0 );
     var img1 = this._getInput( 1 );
 
-
+    
     var img1Buffer = img1.getData();
-    this.addTimeRecord("step1.5");
     var outputBuffer = img0.getDataCopy();
-
-    this.addTimeRecord("step2");
 
     for(var i=0; i<outputBuffer.length; i++){
       outputBuffer[ i ] *= img1Buffer[ i ];
     }
-
-    this.addTimeRecord("step3");
-
-
 
     var img2D = this._addOutput( Image2D );
 
@@ -69,11 +61,6 @@ class MultiplyImageFilter extends ImageToImageFilter {
       img0.getHeight()
     );
 
-    this.addTimeRecord("step4");
-    this.getTime("step1", "step1.5", true);
-    this.getTime("step1.5", "step2", true);
-    this.getTime("step2", "step3", true);
-    this.getTime("step3", "step4", true);
   }
 
 } /* END class MultiplyImageFilter */

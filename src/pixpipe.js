@@ -34,6 +34,7 @@ export { MultiplyImageFilter } from './filter/MultiplyImageFilter.js';
 export { SimpleThresholdFilter } from './filter/SimpleThresholdFilter.js';
 export { ImageDerivativeFilter } from './filter/ImageDerivativeFilter.js';
 export { GradientImageFilter } from './filter/GradientImageFilter.js';
+export { NormalizeImageFilter } from './filter/NormalizeImageFilter.js';
 
 // helpers
 export { AngleToHueWheelHelper } from './helper/AngleToHueWheelHelper.js';

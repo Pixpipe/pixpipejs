@@ -248,6 +248,16 @@
                   _run
                 </a>
               <a
+                href='#AngleToHueWheelHelper'
+                class='block bold h3 bg-pink-alpha'>
+                AngleToHueWheelHelper
+              </a>
+                <a
+                  href='#AngleToHueWheelHelper._hsl2Rgba'
+                  class='regular block'>
+                  _hsl2Rgba
+                </a>
+              <a
                 href='#CanvasImageWriter'
                 class='block bold h3 bg-pink-alpha'>
                 CanvasImageWriter
@@ -633,6 +643,11 @@
                   constructor
                 </a>
                 <a
+                  href='#Image2D.float32Clone'
+                  class='regular block'>
+                  float32Clone
+                </a>
+                <a
                   href='#Image2D.get1dIndexFrom2dPosition'
                   class='regular block'>
                   get1dIndexFrom2dPosition
@@ -683,6 +698,11 @@
                   getMin
                 </a>
                 <a
+                  href='#Image2D.getNcpp'
+                  class='regular block'>
+                  getNcpp
+                </a>
+                <a
                   href='#Image2D.getPixel'
                   class='regular block'>
                   getPixel
@@ -691,6 +711,11 @@
                   href='#Image2D.getWidth'
                   class='regular block'>
                   getWidth
+                </a>
+                <a
+                  href='#Image2D.hollowClone'
+                  class='regular block'>
+                  hollowClone
                 </a>
                 <a
                   href='#Image2D.setData'
@@ -793,6 +818,11 @@
                   hasValidInput
                 </a>
               <a
+                href='#GradientImageFilter'
+                class='block bold h3 bg-pink-alpha'>
+                GradientImageFilter
+              </a>
+              <a
                 href='#ImageToImageFilter'
                 class='block bold h3 bg-pink-alpha'>
                 ImageToImageFilter
@@ -823,9 +853,19 @@
                 ImageBlendExpressionFilter
               </a>
               <a
+                href='#ImageDerivativeFilter'
+                class='block bold h3 bg-pink-alpha'>
+                ImageDerivativeFilter
+              </a>
+              <a
                 href='#MultiplyImageFilter'
                 class='block bold h3 bg-pink-alpha'>
                 MultiplyImageFilter
+              </a>
+              <a
+                href='#NormalizeImageFilter'
+                class='block bold h3 bg-pink-alpha'>
+                NormalizeImageFilter
               </a>
               <a
                 href='#PixpDecoder'
@@ -851,6 +891,11 @@
                 href='#SimpleThresholdFilter'
                 class='block bold h3 bg-pink-alpha'>
                 SimpleThresholdFilter
+              </a>
+              <a
+                href='#SpatialConvolutionFilter'
+                class='block bold h3 bg-pink-alpha'>
+                SpatialConvolutionFilter
               </a>
               <a
                 href='#TiffDecoder'
@@ -2341,6 +2386,72 @@ generic function for painting row, colum or whole</p>
   </h2>
   <p>Run the filter</p>
 
+</section>
+          </div>
+        </div>
+</section>
+</div><div class='py1'><section class='py2 clearfix'>
+  <h2 id='AngleToHueWheelHelper' class='mt0'>
+    AngleToHueWheelHelper<span class='gray'></span>
+  </h2>
+  <p>AngleToHueWheelHelper has for goal to help visualize angular data such as gradient
+orientation. The idea behind the &quot;hue wheel&quot; is to associate every direction (angle)
+to a color without having the 0/360 interuption.
+The helper takes one Image2D input and gives one RGBA Image2D output. From the output,
+the index of the compnent that contains angular information has to be given using:
+<code>.setMetadata(&quot;component&quot;, n)</code> where <code>n</code> by default is <code>0</code>.</p>
+<p>Depending on the usage of this filter, the range of angle can varry,
+ie. in [0, 2PI] (the default), or in [-PI/2, PI/2] (in the case of a gradient)
+or even in degrees [0, 360]. In any case, use <code>.setMetadata(&quot;minAngle&quot;, ...)</code>
+and <code>.setMetadata(&quot;maxAngle&quot;, ...)</code>.
+If the metadata &quot;minAngle&quot; or &quot;maxAngle&quot; is given the value &quot;auto&quot;, then the min and max
+values of the image will be looked-up (or computed if not defined).</p>
+<p><strong>Usage</strong></p>
+<ul>
+<li><a href="../examples/gradientHueWheelImage2D.html">examples/gradientHueWheelImage2D.html</a></li>
+</ul>
+
+      <h4>Instance members</h4>
+        <div class='collapsible' id='AngleToHueWheelHelper._hsl2Rgba'>
+          <a href='#AngleToHueWheelHelper._hsl2Rgba'>
+            <code>
+              _hsl2Rgba<span class='gray'>(h, s, l)</span>
+            </code>
+            <div class='force-inline'>
+              <p>A part of this code was borrowed from github.com/netbeast/colorsys and modified.</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2'>
+<section class='py2 clearfix'>
+  <h2 id='AngleToHueWheelHelper._hsl2Rgba' class='mt0'>
+    _hsl2Rgba<span class='gray'>(h, s, l)</span>
+  </h2>
+  <p>A part of this code was borrowed from github.com/netbeast/colorsys and modified.</p>
+
+    <h4>Parameters</h4>
+    <ul class='suppress-p-margin'>
+        <li> <strong>h</strong>
+          :
+          <div class='force-inline'>
+            
+          </div>
+        </li>
+        <li> <strong>s</strong>
+            (default <code>100</code>)
+          :
+          <div class='force-inline'>
+            
+          </div>
+        </li>
+        <li> <strong>l</strong>
+            (default <code>100</code>)
+          :
+          <div class='force-inline'>
+            
+          </div>
+        </li>
+    </ul>
 </section>
           </div>
         </div>
@@ -4749,6 +4860,33 @@ typed array.</p>
 </section>
           </div>
         </div>
+        <div class='collapsible' id='Image2D.float32Clone'>
+          <a href='#Image2D.float32Clone'>
+            <code>
+              float32Clone<span class='gray'></span>
+            </code>
+            <div class='force-inline'>
+              <p>Create a clone of this image that ensure data are encoded in a Float32Array.</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2'>
+<section class='py2 clearfix'>
+  <h2 id='Image2D.float32Clone' class='mt0'>
+    float32Clone<span class='gray'></span>
+  </h2>
+  <p>Create a clone of this image that ensure data are encoded in a Float32Array.</p>
+
+      <h4>Returns</h4>
+      <code><code><a href="#Image2D">Image2D</a></code></code>
+      :
+      <div class='force-inline'>
+        <p>the F32 clone</p>
+
+      </div>
+</section>
+          </div>
+        </div>
         <div class='collapsible' id='Image2D.get1dIndexFrom2dPosition'>
           <a href='#Image2D.get1dIndexFrom2dPosition'>
             <code>
@@ -5044,6 +5182,33 @@ in case of doubt, use  getDataCopy()</p>
 </section>
           </div>
         </div>
+        <div class='collapsible' id='Image2D.getNcpp'>
+          <a href='#Image2D.getNcpp'>
+            <code>
+              getNcpp<span class='gray'></span>
+            </code>
+            <div class='force-inline'>
+              <p>Alias to getComponentsPerPixel. Return the number of components per pixel.</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2'>
+<section class='py2 clearfix'>
+  <h2 id='Image2D.getNcpp' class='mt0'>
+    getNcpp<span class='gray'></span>
+  </h2>
+  <p>Alias to getComponentsPerPixel. Return the number of components per pixel.</p>
+
+      <h4>Returns</h4>
+      <code><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">Number</a></code></code>
+      :
+      <div class='force-inline'>
+        <p>ncpp</p>
+
+      </div>
+</section>
+          </div>
+        </div>
         <div class='collapsible' id='Image2D.getPixel'>
           <a href='#Image2D.getPixel'>
             <code>
@@ -5102,6 +5267,34 @@ in case of doubt, use  getDataCopy()</p>
       <div class='force-inline'>
         <p>the width of the Image2D</p>
 
+      </div>
+</section>
+          </div>
+        </div>
+        <div class='collapsible' id='Image2D.hollowClone'>
+          <a href='#Image2D.hollowClone'>
+            <code>
+              hollowClone<span class='gray'></span>
+            </code>
+            <div class='force-inline'>
+              <p>Get an empty copy of an image. Like a clone but the array of data is filled
+with zeros and no metadata.</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2'>
+<section class='py2 clearfix'>
+  <h2 id='Image2D.hollowClone' class='mt0'>
+    hollowClone<span class='gray'></span>
+  </h2>
+  <p>Get an empty copy of an image. Like a clone but the array of data is filled
+with zeros and no metadata.</p>
+
+      <h4>Returns</h4>
+      <code><code><a href="#Image2D">Image2D</a></code></code>
+      
+      <div class='force-inline'>
+        
       </div>
 </section>
           </div>
@@ -5741,6 +5934,19 @@ Only accept Image2D and Image3D</p>
         </div>
 </section>
 </div><div class='py1'><section class='py2 clearfix'>
+  <h2 id='GradientImageFilter' class='mt0'>
+    GradientImageFilter<span class='gray'></span>
+  </h2>
+  <p>An instance of GradientImageFilter takes 2 input Image2D: a derivative in x,
+with the category &quot;dx&quot; and a derivative in y with the category &quot;dy&quot;. They must
+be the same size and have the same number of  components per pixel.</p>
+<p><strong>Usage</strong></p>
+<ul>
+<li><a href="../examples/gradientImage2D.html">examples/gradientImage2D.html</a></li>
+</ul>
+
+</section>
+</div><div class='py1'><section class='py2 clearfix'>
   <h2 id='ImageToImageFilter' class='mt0'>
     ImageToImageFilter<span class='gray'></span>
   </h2>
@@ -5865,6 +6071,21 @@ exactly (and only) the blending method you want.</p>
 
 </section>
 </div><div class='py1'><section class='py2 clearfix'>
+  <h2 id='ImageDerivativeFilter' class='mt0'>
+    ImageDerivativeFilter<span class='gray'></span>
+  </h2>
+  <p>A ImageDerivativeFilter filter will compute the dx and dy derivative using the filters
+h = [1, -1]</p>
+<p>You can change the built-in filters that perform the derivative by setting the metadata
+&quot;dxFilter&quot; and &quot;dyFilter&quot; with the method <code>.setMetadata()</code>. See the documentation of
+<code>SpatialConvolutionFilter</code> to make your custom filter compatible.</p>
+<p><strong>Usage</strong></p>
+<ul>
+<li><a href="../examples/derivativeImage2D.html">examples/derivativeImage2D.html</a></li>
+</ul>
+
+</section>
+</div><div class='py1'><section class='py2 clearfix'>
   <h2 id='MultiplyImageFilter' class='mt0'>
     MultiplyImageFilter<span class='gray'></span>
   </h2>
@@ -5875,6 +6096,21 @@ Equivalent to <code>SpectralScaleImageFilter</code>.</p>
 <p><strong>Usage</strong></p>
 <ul>
 <li><a href="../examples/multiplyImage2D.html">examples/multiplyImage2D.html</a></li>
+</ul>
+
+</section>
+</div><div class='py1'><section class='py2 clearfix'>
+  <h2 id='NormalizeImageFilter' class='mt0'>
+    NormalizeImageFilter<span class='gray'></span>
+  </h2>
+  <p>A NormalizeImageFilter instance takes an Image2D as input and outputs an Image2D.
+The output images will have values in [0.0, 1.0]. One of the usage is that is can then
+be used as a scaling function.</p>
+<p>The max value to normalize with will be the max value of the input image (among all components)
+but an manual max value can be given to this filter using <code>.setMetadata(&quot;max&quot;, m)</code>.</p>
+<p><strong>Usage</strong></p>
+<ul>
+<li><a href="../examples/gradientHueWheelImage2D.html">examples/gradientHueWheelImage2D.html</a></li>
 </ul>
 
 </section>
@@ -5975,6 +6211,38 @@ RGBA image, you can decide of preserving the alpha channel or not, using
 <p><strong>Usage</strong></p>
 <ul>
 <li><a href="../examples/imageThresholding.html">examples/imageThresholding.html</a></li>
+</ul>
+
+</section>
+</div><div class='py1'><section class='py2 clearfix'>
+  <h2 id='SpatialConvolutionFilter' class='mt0'>
+    SpatialConvolutionFilter<span class='gray'></span>
+  </h2>
+  <p>An instance of SpatialConvolutionFilter perform a convolution in a spatial reference,
+this can be applying a Sobel filter, a median or gaussian blur or perform a derivative.
+The filter is a NxM (aka. an array of arrays) of the following form:</p>
+<pre><code>  var medianBlurFilter = [
+    [1/9, 1/9, 1/9],
+    [1/9, 1/9, 1/9],
+    [1/9, 1/9, 1/9],
+  ];
+</code></pre>
+<p>For example, in the case of a simple derivative, it will be like that:</p>
+<pre><code> var dx = [
+   [1, -1]
+ ];
+
+ // or
+
+ var dy = [
+   [1],
+   [-1]
+ ];
+</code></pre>
+<p>The filter must be specified using the method <code>.setMetadata(&apos;filter&apos;, ...)</code>.</p>
+<p><strong>Usage</strong></p>
+<ul>
+<li><a href="../examples/spatialConvolImage2D.html">examples/spatialConvolImage2D.html</a></li>
 </ul>
 
 </section>
