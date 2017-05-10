@@ -679,6 +679,22 @@ class Image2D extends PixpipeContainer{
     cpImg.setData( new Float32Array(width*height*ncpp).fill(0), width, height, ncpp);
     return cpImg;
   }
+  
+  
+  /**
+  * Create a clone of this image that ensure data are encoded in a Float32Array.
+  * @return {Image2D} the F32 clone
+  */
+  float32Clone(){
+    var cpImg = new Image2D();
+    var ncpp = this.getMetadata("ncpp");
+    var width = this.getMetadata("width");
+    var height = this.getMetadata("height");
+    
+    cpImg.setData( new Float32Array(this._data), width, height, ncpp);
+    cpImg.copyMetadataFrom( this );
+    return cpImg;
+  }
 
 
   /**
@@ -21104,25 +21120,17 @@ class MultiplyImageFilter extends ImageToImageFilter {
       return;
     }
 
-    this.addTimeRecord("step1");
 
     var img0 = this._getInput( 0 );
     var img1 = this._getInput( 1 );
 
-
+    
     var img1Buffer = img1.getData();
-    this.addTimeRecord("step1.5");
     var outputBuffer = img0.getDataCopy();
-
-    this.addTimeRecord("step2");
 
     for(var i=0; i<outputBuffer.length; i++){
       outputBuffer[ i ] *= img1Buffer[ i ];
     }
-
-    this.addTimeRecord("step3");
-
-
 
     var img2D = this._addOutput( Image2D );
 
@@ -21132,11 +21140,6 @@ class MultiplyImageFilter extends ImageToImageFilter {
       img0.getHeight()
     );
 
-    this.addTimeRecord("step4");
-    this.getTime("step1", "step1.5", true);
-    this.getTime("step1.5", "step2", true);
-    this.getTime("step2", "step3", true);
-    this.getTime("step3", "step4", true);
   }
 
 } /* END class MultiplyImageFilter */
@@ -21393,6 +21396,62 @@ class GradientImageFilter extends ImageToImageFilter {
   
   
 } /* END of class GradientImageFilter  */
+
+/*
+* Author   Jonathan Lurie - http://me.jonahanlurie.fr
+* License  MIT
+* Link      https://github.com/jonathanlurie/pixpipejs
+* Lab       MCIN - Montreal Neurological Institute
+*/
+
+/**
+* A NormalizeImageFilter instance takes an Image2D as input and outputs an Image2D.
+* The output images will have values in [0.0, 1.0]. One of the usage is that is can then
+* be used as a scaling function.
+* 
+* The max value to normalize with will be the max value of the input image (among all components)
+* but an manual max value can be given to this filter using `.setMetadata("max", m)`.
+*
+* **Usage**
+* - [examples/gradientHueWheelImage2D.html](../examples/gradientHueWheelImage2D.html)
+*
+*/
+class NormalizeImageFilter extends ImageToImageFilter {
+  
+  constructor(){
+    super();
+    this.addInputValidator(0, Image2D);
+    
+    this.setMetadata("max", NaN);
+  }
+  
+  
+  _run(){
+    // the input checking
+    if( ! this.hasValidInput()){
+      console.warn("A filter of type */ requires 1 input of category '0'.");
+      return;
+    }
+    
+    var inputImage = this._input[0];
+    var inputData = inputImage.getData();
+    var outputImg = inputImage.hollowClone();
+    var outputData = outputImg.getData();
+    
+    var max = this.getMetadata("max");
+    if(isNaN(max)){
+      max = inputImage.getMax();
+    }
+    
+    for(var i=0; i<inputData.length; i++){
+      outputData[i] = inputData[i] / max;
+    }
+    
+    this._output[0] = outputImg;
+  }
+  
+  
+} /* END class NormalizeImageFilter */
 
 /*
 * Author   Jonathan Lurie - http://me.jonahanlurie.fr
@@ -21685,6 +21744,7 @@ exports.MultiplyImageFilter = MultiplyImageFilter;
 exports.SimpleThresholdFilter = SimpleThresholdFilter;
 exports.ImageDerivativeFilter = ImageDerivativeFilter;
 exports.GradientImageFilter = GradientImageFilter;
+exports.NormalizeImageFilter = NormalizeImageFilter;
 exports.AngleToHueWheelHelper = AngleToHueWheelHelper;
 exports.Image3DToMosaicFilter = Image3DToMosaicFilter;
 

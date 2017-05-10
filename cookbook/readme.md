@@ -46,6 +46,7 @@ The point of Pixpipe is to be easy to use and easy to contribute to. This goal l
   - `core` for the most low level *interfaces* and *classes*
   - `decoder` for specific file decoding and encoding
   - `filter` for all the filters (this could be arranged in a better way)
+  - `helper` are like filters but the processing they provide is to help visualize data, rather that applying a scientifically relevant treatment. (ie. apply a colormap)
   - `io` for downloading/reading/writing files from the filesystem or AJAX
   - `pixpipe.js` the main entry point where are listed all the modules
 - A modular approach and a clear separation of objects.

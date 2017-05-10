@@ -96,6 +96,22 @@ class Image2D extends PixpipeContainer{
     cpImg.setData( new Float32Array(width*height*ncpp).fill(0), width, height, ncpp);
     return cpImg;
   }
+  
+  
+  /**
+  * Create a clone of this image that ensure data are encoded in a Float32Array.
+  * @return {Image2D} the F32 clone
+  */
+  float32Clone(){
+    var cpImg = new Image2D();
+    var ncpp = this.getMetadata("ncpp");
+    var width = this.getMetadata("width");
+    var height = this.getMetadata("height");
+    
+    cpImg.setData( new Float32Array(this._data), width, height, ncpp);
+    cpImg.copyMetadataFrom( this );
+    return cpImg;
+  }
 
 
   /**
