@@ -1,5 +1,6 @@
 <html>
 <head>
+  <meta charset="utf-8">
   <title>Gradient of Image2D</title>
 
   <script src="../dist/pixpipe.js"></script>
@@ -26,9 +27,14 @@
 	</div>
   
   <p>
-    The first image is the gradient direction. Note that it does not really make sens to match a [-PI/2, PI/2] interval to [0, 255].
-    <br>
-    The second image is the gradient magnitude, matched to [0, 255]
+    Image desription:
+    <ul>
+      <li>Original image</li>
+      <li>Gradient direction interval [-π/2, π/2] → [0, 255]</li>
+      <li>Gradient direction with a hue wheel [-π/2, π/2] → hue[0, 360]</li>
+      <li>Gradient intensity mapped to [0, 255]</li>
+      <li>Gradient direction scaled with intensity</li>
+    </ul>
   </p>
 
   <div id="myDiv"></div>
@@ -95,9 +101,22 @@
       multiplier.addInput( nrmlzImgFltr.getOutput(), 1 );
       multiplier.update();
       
+      // original image
+      imageToCanvasFilter.addInput( loadedImage );
+      imageToCanvasFilter.setMetadata("min", 0);
+      imageToCanvasFilter.setMetadata("max", 255);
+      imageToCanvasFilter.update();
       
       // display the direction
+      imageToCanvasFilter.addInput( gradDirection );
+      imageToCanvasFilter.setMetadata("min", gradDirection.getMetadata("min"));
+      imageToCanvasFilter.setMetadata("max", gradDirection.getMetadata("max"));
+      imageToCanvasFilter.update();
+      
+      // display the direction as color wheel
       imageToCanvasFilter.addInput( hueWheelImage );
+      imageToCanvasFilter.setMetadata("min", 0);
+      imageToCanvasFilter.setMetadata("max", 255);
       imageToCanvasFilter.update();
       
       // display the magnitude
