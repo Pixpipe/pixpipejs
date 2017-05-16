@@ -233,11 +233,12 @@ class Image3D extends PixpipeContainer{
 
 
   /**
+  * Same as getIntensity_xyz, get a pixel/voxel value using (x, y, z) position
   * @param {Object} position - 3D position like {x, y, z}
   * @return {Array} the color of the given pixel.
   */
   getPixel( position ){
-    // TODO: to implement using order offset
+    return this.getIntensity_xyz( position.x, position.y, position.z );
   }
 
 
