@@ -40,7 +40,7 @@
     var contourDetector = new pixpipe.ContourImage2DFilter();
     contourDetector.addInput( loadedImage );
     contourDetector.setMetadata("connexity", 8);
-    contourDetector.setMetadata("seed", [85, 144]);
+    contourDetector.setMetadata("seed", [155, 66]);
     contourDetector.update();
     
     var contours = contourDetector.getOutput();
