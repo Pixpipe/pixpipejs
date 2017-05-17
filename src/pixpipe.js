@@ -36,9 +36,12 @@ export { SimpleThresholdFilter } from './filter/SimpleThresholdFilter.js';
 export { ImageDerivativeFilter } from './filter/ImageDerivativeFilter.js';
 export { GradientImageFilter } from './filter/GradientImageFilter.js';
 export { NormalizeImageFilter } from './filter/NormalizeImageFilter.js';
+export { ContourImage2DFilter } from './filter/ContourImage2DFilter.js';
+
 
 // helpers
 export { AngleToHueWheelHelper } from './helper/AngleToHueWheelHelper.js';
+export { LineStringPrinterOnImage2DHelper } from './helper/LineStringPrinterOnImage2DHelper.js';
 
 // filters - processing of Image3D
 export { Image3DToMosaicFilter } from './filter/Image3DToMosaicFilter.js';

@@ -35,8 +35,24 @@
   // the image is loaded...
   // here, this = url2ImgFilter
   url2ImgFilter.on("ready", function(){
+    var loadedImage = this.getOutput();
+    
+    var contourDetector = new pixpipe.ContourImage2DFilter();
+    contourDetector.addInput( loadedImage );
+    contourDetector.setMetadata("connexity", 8);
+    contourDetector.setMetadata("seed", [85, 144]);
+    contourDetector.update();
+    
+    var contours = contourDetector.getOutput();
+    console.log(contours);
+    
+    var printer = new pixpipe.LineStringPrinterOnImage2DHelper();
+    printer.addInput(loadedImage);
+    printer.addLineString(contours, [255, 0, 0]);
+    printer.update();
+    
     // use the output of the UrlImageReader as the input for CanvasImageWriter
-    imageToCanvasFilter.addInput( this.getOutput() );
+    imageToCanvasFilter.addInput( printer.getOutput() );
     // actually copy the data from the Image2D into the inner HTML5 canvas
     imageToCanvasFilter.update();
   })

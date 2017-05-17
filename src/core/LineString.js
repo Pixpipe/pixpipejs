@@ -42,7 +42,7 @@ class LineString extends PixpipeContainer {
   
   /**
   * Set/replace the point data.
-  * @param {Array} points - 1D array containing coord [x, y, x, y, x, y, ...]
+  * @param {points} points - 1D array containing coord [x, y, x, y, x, y, ...]
   * @param {Number} nod - Number of Dimensions, default = 2
   * @param {Boolean} deepCopy - pointer copy if false, deep copy if true.
   */
@@ -51,15 +51,15 @@ class LineString extends PixpipeContainer {
       this.setMetadata("nod", nod);
     }
     
-    if(point.length % this.getMetadata("nod") != 0 ){
+    if(points.length % this.getMetadata("nod") != 0 ){
       console.warn("The number of points is not compatible with the number of dimensions (nod).");
       return;
     }
     
     if(deepCopy){
-      this._data = new array.constructor( array );
+      this._data = new points.constructor( points );
     }else{
-      this._data = array;
+      this._data = points;
     }
     
     this._setLastPoint();

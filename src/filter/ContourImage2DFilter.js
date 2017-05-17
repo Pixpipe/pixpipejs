@@ -5,12 +5,20 @@
 * Lab       MCIN - Montreal Neurological Institute
 */
 
-import { Filter } from './Filter.js';
-import { Image2D } from './Image2D.js';
-import { LineString } from './LineString.js';
+import { Filter } from '../core/Filter.js';
+import { Image2D } from '../core/Image2D.js';
+import { LineString } from '../core/LineString.js';
 
 
 /**
+* An instance of ContourImage2DFilter takes a seed (`.setMetadata("seed", [x, y])`)
+* and finds the contour of the shape of a segmented image by going north.
+* The input must be an `Image2D` and the output is a `LineString`.  
+* Two options are availble for neighbour connexity: 4 or 8. Set this option using
+* `.setMetadata("connexity", n)`.
+*
+* **Usage**
+* - [examples/contourImage2D.html](../examples/contourImage2D.html)
 *
 */
 class ContourImage2DFilter extends Filter {
@@ -18,8 +26,27 @@ class ContourImage2DFilter extends Filter {
   constructor(){
     super();
     this.addInputValidator(0, Image2D);
-    this.setMetadata("component", 0);
+    this.setMetadata("connexity", 8);
     this.setMetadata("seed", [0, 0]);
+    
+    this._directionListConnexity4 = [
+      [ 0 ,-1], // [0] => N
+      [-1 , 0], // [1] => W
+      [ 0 , 1], // [2] => S
+      [ 1 , 0]  // [3] => E
+    ];
+    
+    this._directionListConnexity8 = [
+      [ 0  , -1], // [0] => N
+      [-1  , -1], // [1] => NW
+      [-1  ,  0], // [2] => W
+      [-1  ,  1], // [3] => SW
+      [ 0  ,  1], // [4] => S
+      [ 1  ,  1], // [5] => SE
+      [ 1  ,  0], // [6] => E
+      [ 1  , -1]  // [7] => NE
+    ];
+    
   }
   
   
@@ -30,27 +57,24 @@ class ContourImage2DFilter extends Filter {
       return;
     }
     
-    
-    
     var imageIn = this._getInput(0);
     var ncpp = imageIn.getNcpp();
-    var component = this.getMetadata("component");
     var width = imageIn.getWidth();
     var height = imageIn.getHeight();
+    var directionList = null
     
-    var directionList = [
-      [ 0 ,-1], // [0] => N
-      [-1 , 0], // [0] => W
-      [ 0 , 1], // [0] => S
-      [ 1 , 0]  // [0] => E
-    ];
+    if( this.getMetadata("connexity") == 8){
+      directionList = this._directionListConnexity8;
+    }else{
+      directionList = this._directionListConnexity4;
+    }
     
     // handy color comparison
     function isSameColor(c1, c2){
       if(c1.length != c2.length)
         return false;
       
-      for(var i=0; i<c1.length. i++){
+      for(var i=0; i<c1.length; i++){
         if(c1[i] != c2[i])
           return false;
       }
@@ -81,9 +105,10 @@ class ContourImage2DFilter extends Filter {
         break;
       }
       
+      // can be null if out of the image
       newColor = imageIn.getPixel( {x: atNorth[0], y: atNorth[1]} );
       
-      if( isSameColor(newColor, clusterColor) ){
+      if( newColor && isSameColor(newColor, clusterColor) ){
         newSeed[0] = atNorth[0];
         newSeed[1] = atNorth[1];
       }else{
@@ -94,37 +119,36 @@ class ContourImage2DFilter extends Filter {
     var movingPoint = newSeed.slice();
     var potentialPosition = [0, 0];
     var listOfValidPoints = [];
-    listOfValidPoints.push(newSeed.slice());
+    listOfValidPoints.push(newSeed[0]);
+    listOfValidPoints.push(newSeed[1]);
     
     // return 0: the tested point is the starting point
     // return 1: the tested point is of the right color
     // return 2: the tested point id from the wrong color (test other direction)
     function tryPotientialPosition(){
       
-      potentialPosition[0] = movingPoint[0] + direction[0];
-      potentialPosition[1] = movingPoint[1] + direction[1];
+      potentialPosition[0] = movingPoint[0] + directionList[direction][0];
+      potentialPosition[1] = movingPoint[1] + directionList[direction][1];
         
       // test if the new direction goes with the same color
       if( isSameColor(imageIn.getPixel( {x: potentialPosition[0], y: potentialPosition[1]} ), clusterColor) ){
         
-        if( movingPoint[0]==listOfValidPoints[0][0] && // the point just found is the
-            movingPoint[0]==listOfValidPoints[0][0] )  // same as the very first
+        if( potentialPosition[0]==listOfValidPoints[0] && // the point just found is the
+            potentialPosition[1]==listOfValidPoints[1] )  // same as the very first
         {
           return 0; // break the loop
-          
         }else{
           // we validate the point and keep moving
           movingPoint[0] = potentialPosition[0];
           movingPoint[1] = potentialPosition[1];
-          listOfValidPoints.push( movingPoint.slice() );
-          
+          listOfValidPoints.push( movingPoint[0] );
+          listOfValidPoints.push( movingPoint[1] );
         }
         return 1; // continue the loop
-        
       }
-      
       return 2; // try directions
     }
+    
     
     // start the real navigation, starting from movingPoint
     main_loop:
@@ -141,15 +165,17 @@ class ContourImage2DFilter extends Filter {
         break main_loop;
       }else if(score == 1){
         continue;
-      }else{
+      }else{  // score == 2
         
+        var nbTrials = 0;
+      
         // we try the other directions
         direction_loop:
-        for(var i=0; i<directionList.length-1; i++){  // -1 beacuse we dont need to retry the last, since it's also the one done before
+        for(var i=0; i<directionList.length-1; i++){  // -1 because we don't need to retry the last, since it's also the one done before
         
-          direction += i;
+          //direction += i;
+          direction ++;
           direction = direction%directionList.length;
-          
           score = tryPotientialPosition();
           
           if( score == 0){  
@@ -157,20 +183,23 @@ class ContourImage2DFilter extends Filter {
           }else if(score == 1){
             break direction_loop; // point is good, 
           }else{
+            nbTrials++;
             continue; // try the next direction
           }
-          
+
         }
       
-        // if we arrive here, it means the seed was in a single pixel island :(
-        break;
-      
+        // it means the seed was in a single pixel island :(
+        if(nbTrials == directionList.length-1){
+          break;
+        }
       }
-      
     }
     
-    // TODO: deal with the list of points listOfValidPoints
-    
+    var outputLineString = new LineString();
+    outputLineString.setData(listOfValidPoints);
+    outputLineString.setMetadata("closed", true);
+    this._output[0] = outputLineString;
     
   } /* END of _run() */
   
