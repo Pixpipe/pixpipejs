@@ -158,21 +158,29 @@ class Image2D extends PixpipeContainer{
     var ncpp = this._metadata.ncpp;
 
     if("x" in position && position.x >=0 && position.x < this._metadata.width &&
-       "y" in position && position.y >=0 && position.y < this._metadata.height &&
-       color.length == ncpp)
+       "y" in position && position.y >=0 && position.y < this._metadata.height )
     {
 
-      var pos1D = this.get1dIndexFrom2dPosition( position );
+      if(color.length == ncpp){
+        var pos1D = this.get1dIndexFrom2dPosition( position );
 
-      if(ncpp == 1){
-        this._data[ pos1D ] = color[0];
-      }else{
+        if(ncpp == 1){
+          this._data[ pos1D ] = color[0];
+        }else{
+          pos1D *= ncpp;
+          for(var i=0; i<ncpp; i++){
+            this._data[ pos1D + i] = color[i];
+          }
+        }
+      }else 
+      // we gave a RGB color instead of a RGBA, it's ok...
+      if(color.length == 3 && ncpp == 4){
+        var pos1D = this.get1dIndexFrom2dPosition( position );
         pos1D *= ncpp;
-        for(var i=0; i<ncpp; i++){
+        for(var i=0; i<color.length; i++){
           this._data[ pos1D + i] = color[i];
         }
       }
-      
 
       if( computeStat ){
         this.computeSimpleStat();

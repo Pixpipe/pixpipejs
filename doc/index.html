@@ -368,6 +368,86 @@
                   setData
                 </a>
               <a
+                href='#LineString'
+                class='block bold h3 bg-pink-alpha'>
+                LineString
+              </a>
+                <a
+                  href='#LineString.TYPE'
+                  class='regular block'>
+                  TYPE
+                </a>
+                <a
+                  href='#LineString._setLastPoint'
+                  class='regular block'>
+                  _setLastPoint
+                </a>
+                <a
+                  href='#LineString.addPoint'
+                  class='regular block'>
+                  addPoint
+                </a>
+                <a
+                  href='#LineString.close'
+                  class='regular block'>
+                  close
+                </a>
+                <a
+                  href='#LineString.getData'
+                  class='regular block'>
+                  getData
+                </a>
+                <a
+                  href='#LineString.getDataCopy'
+                  class='regular block'>
+                  getDataCopy
+                </a>
+                <a
+                  href='#LineString.getNumberOfPoints'
+                  class='regular block'>
+                  getNumberOfPoints
+                </a>
+                <a
+                  href='#LineString.getPoint'
+                  class='regular block'>
+                  getPoint
+                </a>
+                <a
+                  href='#LineString.open'
+                  class='regular block'>
+                  open
+                </a>
+                <a
+                  href='#LineString.peekPoint'
+                  class='regular block'>
+                  peekPoint
+                </a>
+                <a
+                  href='#LineString.popPoint'
+                  class='regular block'>
+                  popPoint
+                </a>
+                <a
+                  href='#LineString.setData'
+                  class='regular block'>
+                  setData
+                </a>
+                <a
+                  href='#LineString.setNod'
+                  class='regular block'>
+                  setNod
+                </a>
+              <a
+                href='#LineStringPrinterOnImage2DHelper'
+                class='block bold h3 bg-pink-alpha'>
+                LineStringPrinterOnImage2DHelper
+              </a>
+                <a
+                  href='#LineStringPrinterOnImage2DHelper.addLineString'
+                  class='regular block'>
+                  addLineString
+                </a>
+              <a
                 href='#Minc2Decoder'
                 class='block bold h3 bg-pink-alpha'>
                 Minc2Decoder
@@ -727,6 +807,11 @@
                   class='regular block'>
                   setPixel
                 </a>
+              <a
+                href='#ContourImage2DFilter'
+                class='block bold h3 bg-pink-alpha'>
+                ContourImage2DFilter
+              </a>
               <a
                 href='#PixpipeObject'
                 class='block bold h3 bg-pink-alpha'>
@@ -2056,7 +2141,8 @@ In case of doubt, use getIntensity_xyz instead.</p>
               getPixel<span class='gray'>(position)</span>
             </code>
             <div class='force-inline'>
-              
+              <p>Same as getIntensity_xyz, get a pixel/voxel value using (x, y, z) position</p>
+
             </div>
           </a>
           <div class='collapser border px2'>
@@ -2064,7 +2150,8 @@ In case of doubt, use getIntensity_xyz instead.</p>
   <h2 id='Image3D.getPixel' class='mt0'>
     getPixel<span class='gray'>(position)</span>
   </h2>
-  
+  <p>Same as getIntensity_xyz, get a pixel/voxel value using (x, y, z) position</p>
+
     <h4>Parameters</h4>
     <ul class='suppress-p-margin'>
         <li><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a></code> <strong>position</strong>
@@ -3048,6 +3135,432 @@ Also options.ncpp to set the number of components per pixel. (possibly for using
           :
           <div class='force-inline'>
             
+          </div>
+        </li>
+    </ul>
+</section>
+          </div>
+        </div>
+</section>
+</div><div class='py1'><section class='py2 clearfix'>
+  <h2 id='LineString' class='mt0'>
+    LineString<span class='gray'></span>
+  </h2>
+  <p>A LineString is a vectorial reprensation of a line or polyline, open or closed.
+When closed, it can be considered as a polygon.<br>
+By default, a LineString is 2 dimensional but the dimension can be changed when
+using the <code>.setData(...)</code> method or before any point addition with <code>.setNod()</code>.
+To close a LineString, use <code>.setMetadata(&quot;closed&quot;, true);</code>, this will not add
+any point but will flag this LineString as &quot;closed&quot;.</p>
+
+      <h4>Static members</h4>
+        <div class='collapsible' id='LineString.TYPE'>
+          <a href='#LineString.TYPE'>
+            <code>
+              TYPE<span class='gray'></span>
+            </code>
+            <div class='force-inline'>
+              <p>Hardcode the datatype</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2 m2'>
+<section class='py2 clearfix'>
+  <h2 id='LineString.TYPE' class='mt0'>
+    TYPE<span class='gray'></span>
+  </h2>
+  <p>Hardcode the datatype</p>
+
+</section>
+          </div>
+        </div>
+      <h4>Instance members</h4>
+        <div class='collapsible' id='LineString._setLastPoint'>
+          <a href='#LineString._setLastPoint'>
+            <code>
+              _setLastPoint<span class='gray'></span>
+            </code>
+            <div class='force-inline'>
+              <p>[PRIVATE]
+define the last point</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2'>
+<section class='py2 clearfix'>
+  <h2 id='LineString._setLastPoint' class='mt0'>
+    _setLastPoint<span class='gray'></span>
+  </h2>
+  <p>[PRIVATE]
+define the last point</p>
+
+</section>
+          </div>
+        </div>
+        <div class='collapsible' id='LineString.addPoint'>
+          <a href='#LineString.addPoint'>
+            <code>
+              addPoint<span class='gray'>(position)</span>
+            </code>
+            <div class='force-inline'>
+              <p>Add a point at the end of the LineString. Keeps the polygon open.</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2'>
+<section class='py2 clearfix'>
+  <h2 id='LineString.addPoint' class='mt0'>
+    addPoint<span class='gray'>(position)</span>
+  </h2>
+  <p>Add a point at the end of the LineString. Keeps the polygon open.</p>
+
+    <h4>Parameters</h4>
+    <ul class='suppress-p-margin'>
+        <li><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a></code> <strong>position</strong>
+          :
+          <div class='force-inline'>
+            <p>[x, y] if 2D or [x, y, z] if 3D</p>
+
+          </div>
+        </li>
+    </ul>
+</section>
+          </div>
+        </div>
+        <div class='collapsible' id='LineString.close'>
+          <a href='#LineString.close'>
+            <code>
+              close<span class='gray'></span>
+            </code>
+            <div class='force-inline'>
+              <p>Considere this LineString as closed, making it a polygon</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2'>
+<section class='py2 clearfix'>
+  <h2 id='LineString.close' class='mt0'>
+    close<span class='gray'></span>
+  </h2>
+  <p>Considere this LineString as closed, making it a polygon</p>
+
+</section>
+          </div>
+        </div>
+        <div class='collapsible' id='LineString.getData'>
+          <a href='#LineString.getData'>
+            <code>
+              getData<span class='gray'></span>
+            </code>
+            <div class='force-inline'>
+              <p>Get the internal image data (pointer)</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2'>
+<section class='py2 clearfix'>
+  <h2 id='LineString.getData' class='mt0'>
+    getData<span class='gray'></span>
+  </h2>
+  <p>Get the internal image data (pointer)</p>
+
+      <h4>Returns</h4>
+      <code><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a></code></code>
+      :
+      <div class='force-inline'>
+        <p>the original data, dont mess up with this one.
+in case of doubt, use  getDataCopy()</p>
+
+      </div>
+</section>
+          </div>
+        </div>
+        <div class='collapsible' id='LineString.getDataCopy'>
+          <a href='#LineString.getDataCopy'>
+            <code>
+              getDataCopy<span class='gray'></span>
+            </code>
+            <div class='force-inline'>
+              <p>Get a copy of the data</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2'>
+<section class='py2 clearfix'>
+  <h2 id='LineString.getDataCopy' class='mt0'>
+    getDataCopy<span class='gray'></span>
+  </h2>
+  <p>Get a copy of the data</p>
+
+      <h4>Returns</h4>
+      <code><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a></code></code>
+      :
+      <div class='force-inline'>
+        <p>a deep copy of the data</p>
+
+      </div>
+</section>
+          </div>
+        </div>
+        <div class='collapsible' id='LineString.getNumberOfPoints'>
+          <a href='#LineString.getNumberOfPoints'>
+            <code>
+              getNumberOfPoints<span class='gray'></span>
+            </code>
+            <div class='force-inline'>
+              <p>Get the number of points in this linestring</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2'>
+<section class='py2 clearfix'>
+  <h2 id='LineString.getNumberOfPoints' class='mt0'>
+    getNumberOfPoints<span class='gray'></span>
+  </h2>
+  <p>Get the number of points in this linestring</p>
+
+      <h4>Returns</h4>
+      <code><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">Number</a></code></code>
+      :
+      <div class='force-inline'>
+        <p>nb of points</p>
+
+      </div>
+</section>
+          </div>
+        </div>
+        <div class='collapsible' id='LineString.getPoint'>
+          <a href='#LineString.getPoint'>
+            <code>
+              getPoint<span class='gray'>(index)</span>
+            </code>
+            <div class='force-inline'>
+              <p>Get a point of this LineString</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2'>
+<section class='py2 clearfix'>
+  <h2 id='LineString.getPoint' class='mt0'>
+    getPoint<span class='gray'>(index)</span>
+  </h2>
+  <p>Get a point of this LineString</p>
+
+    <h4>Parameters</h4>
+    <ul class='suppress-p-margin'>
+        <li> <strong>index</strong>
+          :
+          <div class='force-inline'>
+            
+          </div>
+        </li>
+    </ul>
+      <h4>Returns</h4>
+      <code><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a></code></code>
+      :
+      <div class='force-inline'>
+        <p>a point, being [x, y] if 2D or [x, y, z] if 3D</p>
+
+      </div>
+</section>
+          </div>
+        </div>
+        <div class='collapsible' id='LineString.open'>
+          <a href='#LineString.open'>
+            <code>
+              open<span class='gray'></span>
+            </code>
+            <div class='force-inline'>
+              <p>Considere this LineString as open</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2'>
+<section class='py2 clearfix'>
+  <h2 id='LineString.open' class='mt0'>
+    open<span class='gray'></span>
+  </h2>
+  <p>Considere this LineString as open</p>
+
+</section>
+          </div>
+        </div>
+        <div class='collapsible' id='LineString.peekPoint'>
+          <a href='#LineString.peekPoint'>
+            <code>
+              peekPoint<span class='gray'></span>
+            </code>
+            <div class='force-inline'>
+              <p>Get the last point but does not pop it out</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2'>
+<section class='py2 clearfix'>
+  <h2 id='LineString.peekPoint' class='mt0'>
+    peekPoint<span class='gray'></span>
+  </h2>
+  <p>Get the last point but does not pop it out</p>
+
+      <h4>Returns</h4>
+      <code><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a></code></code>
+      :
+      <div class='force-inline'>
+        <p>the point as [x, y] or [x, y, z]</p>
+
+      </div>
+</section>
+          </div>
+        </div>
+        <div class='collapsible' id='LineString.popPoint'>
+          <a href='#LineString.popPoint'>
+            <code>
+              popPoint<span class='gray'></span>
+            </code>
+            <div class='force-inline'>
+              <p>Get the last point and remove it from this LineString</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2'>
+<section class='py2 clearfix'>
+  <h2 id='LineString.popPoint' class='mt0'>
+    popPoint<span class='gray'></span>
+  </h2>
+  <p>Get the last point and remove it from this LineString</p>
+
+      <h4>Returns</h4>
+      <code><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a></code></code>
+      :
+      <div class='force-inline'>
+        <p>like [x, y] or [x, y, z] or null if no more point</p>
+
+      </div>
+</section>
+          </div>
+        </div>
+        <div class='collapsible' id='LineString.setData'>
+          <a href='#LineString.setData'>
+            <code>
+              setData<span class='gray'>(points, nod, deepCopy)</span>
+            </code>
+            <div class='force-inline'>
+              <p>Set/replace the point data.</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2'>
+<section class='py2 clearfix'>
+  <h2 id='LineString.setData' class='mt0'>
+    setData<span class='gray'>(points, nod, deepCopy)</span>
+  </h2>
+  <p>Set/replace the point data.</p>
+
+    <h4>Parameters</h4>
+    <ul class='suppress-p-margin'>
+        <li><code>points</code> <strong>points</strong>
+          :
+          <div class='force-inline'>
+            <p>1D array containing coord [x, y, x, y, x, y, ...]</p>
+
+          </div>
+        </li>
+        <li><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">Number</a></code> <strong>nod</strong>
+          :
+          <div class='force-inline'>
+            <p>Number of Dimensions, default = 2</p>
+
+          </div>
+        </li>
+        <li><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean">Boolean</a></code> <strong>deepCopy</strong>
+          :
+          <div class='force-inline'>
+            <p>pointer copy if false, deep copy if true.</p>
+
+          </div>
+        </li>
+    </ul>
+</section>
+          </div>
+        </div>
+        <div class='collapsible' id='LineString.setNod'>
+          <a href='#LineString.setNod'>
+            <code>
+              setNod<span class='gray'>(nod)</span>
+            </code>
+            <div class='force-inline'>
+              <p>Define the number of dimensions. This can be done only when this LineString
+is still empty.</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2'>
+<section class='py2 clearfix'>
+  <h2 id='LineString.setNod' class='mt0'>
+    setNod<span class='gray'>(nod)</span>
+  </h2>
+  <p>Define the number of dimensions. This can be done only when this LineString
+is still empty.</p>
+
+    <h4>Parameters</h4>
+    <ul class='suppress-p-margin'>
+        <li><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">Number</a></code> <strong>nod</strong>
+          :
+          <div class='force-inline'>
+            <p>Number of dimensions</p>
+
+          </div>
+        </li>
+    </ul>
+</section>
+          </div>
+        </div>
+</section>
+</div><div class='py1'><section class='py2 clearfix'>
+  <h2 id='LineStringPrinterOnImage2DHelper' class='mt0'>
+    LineStringPrinterOnImage2DHelper<span class='gray'></span>
+  </h2>
+  <p>A instance of LineStringPrinterOnImage2DHelper prints a list of LineStrings on
+an Image2D. To add the Image2D input, use <code>.addInput(myImage2D)</code>.
+To add a LineString, use <code>.addLineString(ls, c );</code> where <code>ls</code> is a LineString
+instance and <code>c</code> is an Array representing a color (i.e. [255, 0, 0] for red).</p>
+<p><strong>Usage</strong></p>
+<ul>
+<li><a href="../examples/contourImage2D.html">examples/contourImage2D.html</a></li>
+</ul>
+
+      <h4>Instance members</h4>
+        <div class='collapsible' id='LineStringPrinterOnImage2DHelper.addLineString'>
+          <a href='#LineStringPrinterOnImage2DHelper.addLineString'>
+            <code>
+              addLineString<span class='gray'>(ls, color)</span>
+            </code>
+            <div class='force-inline'>
+              <p>Add a LineString instance to be printed on the image</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2'>
+<section class='py2 clearfix'>
+  <h2 id='LineStringPrinterOnImage2DHelper.addLineString' class='mt0'>
+    addLineString<span class='gray'>(ls, color)</span>
+  </h2>
+  <p>Add a LineString instance to be printed on the image</p>
+
+    <h4>Parameters</h4>
+    <ul class='suppress-p-margin'>
+        <li><code><a href="#LineString">LineString</a></code> <strong>ls</strong>
+          :
+          <div class='force-inline'>
+            <p>a linestring to add</p>
+
+          </div>
+        </li>
+        <li><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a></code> <strong>color</strong>
+          :
+          <div class='force-inline'>
+            <p>of for [R, G, B] or [R, G, B, A]</p>
+
           </div>
         </li>
     </ul>
@@ -5401,6 +5914,21 @@ with zeros and no metadata.</p>
 </section>
           </div>
         </div>
+</section>
+</div><div class='py1'><section class='py2 clearfix'>
+  <h2 id='ContourImage2DFilter' class='mt0'>
+    ContourImage2DFilter<span class='gray'></span>
+  </h2>
+  <p>An instance of ContourImage2DFilter takes a seed (<code>.setMetadata(&quot;seed&quot;, [x, y])</code>)
+and finds the contour of the shape of a segmented image by going north.
+The input must be an <code>Image2D</code> and the output is a <code>LineString</code>.<br>
+Two options are availble for neighbour connexity: 4 or 8. Set this option using
+<code>.setMetadata(&quot;connexity&quot;, n)</code>.</p>
+<p><strong>Usage</strong></p>
+<ul>
+<li><a href="../examples/contourImage2D.html">examples/contourImage2D.html</a></li>
+</ul>
+
 </section>
 </div><div class='py1'><section class='py2 clearfix'>
   <h2 id='PixpipeObject' class='mt0'>
