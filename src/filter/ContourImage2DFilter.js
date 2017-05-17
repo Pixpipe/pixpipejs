@@ -93,8 +93,30 @@ class ContourImage2DFilter extends Filter {
     var newColor = clusterColor;
     var atNorth = newSeed.slice();
     
+    
+    var canStartFromOriginalSeed = false;
+    
+    
+    // test the local surrounding and avoid going North
+    for(var i=0; i<this._directionListConnexity4.length; i++){
+      var localColor = imageIn.getPixel( {x: newSeed[0] + this._directionListConnexity4[i][0], y: newSeed[1] + this._directionListConnexity4[i][1]} );
+      
+      if(! isSameColor(localColor, clusterColor)){
+        canStartFromOriginalSeed = true;
+        direction = i;
+        
+        if( this.getMetadata("connexity") == 8){
+          direction *= 2;
+        }
+        
+        direction ++;
+        break;
+      }
+    }
+    
+    
     // first, we go to the north border of our cluster
-    while( true ){
+    while( true && !canStartFromOriginalSeed){
       atNorth[0] += directionList[0][0];
       atNorth[1] += directionList[0][1];
       
