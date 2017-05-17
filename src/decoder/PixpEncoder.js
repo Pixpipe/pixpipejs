@@ -58,7 +58,7 @@ class PixpEncoder extends Filter {
       dataType: input.getData().constructor.name, // typed array type
       data: Array.prototype.slice.call( input.getData() ),  // data of pixel/voxel
       metadata: input.getMetadataCopy(),  // Image2D/Image3D._metadata
-      pixpipeType: input.constructor.name // "Image2D" or "Image3D", will be used for reconstruction
+      pixpipeType: input.constructor.name // most likely "Image2D", "Image3D", "MniVolume", "LineString", etc.
     }
 
     var pixpString = JSON.stringify( arrayAndMeta );

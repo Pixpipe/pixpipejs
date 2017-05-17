@@ -52,7 +52,7 @@ class Image2D extends PixpipeContainer{
           for(var i=0; i<this._data.length; i++){
             this._data[i] = color[i%ncpp];
           }
-          this.computeSimpleStat();
+          //this.computeSimpleStat();
         }else{
           this._data.fill(0);
         }
@@ -77,6 +77,38 @@ class Image2D extends PixpipeContainer{
   clone(){
     var cpImg = new Image2D();
     cpImg.setData( this._data, this.getMetadata("width"), this.getMetadata("height"), this.getMetadata("ncpp"), true );
+    cpImg.copyMetadataFrom( this );
+    return cpImg;
+  }
+
+
+  /**
+  * Get an empty copy of an image. Like a clone but the array of data is filled
+  * with zeros and no metadata.
+  * @return {Image2D} 
+  */
+  hollowClone(){
+    var cpImg = new Image2D();
+    var ncpp = this.getMetadata("ncpp");
+    var width = this.getMetadata("width");
+    var height = this.getMetadata("height");
+    
+    cpImg.setData( new Float32Array(width*height*ncpp).fill(0), width, height, ncpp);
+    return cpImg;
+  }
+  
+  
+  /**
+  * Create a clone of this image that ensure data are encoded in a Float32Array.
+  * @return {Image2D} the F32 clone
+  */
+  float32Clone(){
+    var cpImg = new Image2D();
+    var ncpp = this.getMetadata("ncpp");
+    var width = this.getMetadata("width");
+    var height = this.getMetadata("height");
+    
+    cpImg.setData( new Float32Array(this._data), width, height, ncpp);
     cpImg.copyMetadataFrom( this );
     return cpImg;
   }
@@ -126,21 +158,29 @@ class Image2D extends PixpipeContainer{
     var ncpp = this._metadata.ncpp;
 
     if("x" in position && position.x >=0 && position.x < this._metadata.width &&
-       "y" in position && position.y >=0 && position.y < this._metadata.height &&
-       color.length == ncpp)
+       "y" in position && position.y >=0 && position.y < this._metadata.height )
     {
 
-      var pos1D = this.get1dIndexFrom2dPosition( position );
+      if(color.length == ncpp){
+        var pos1D = this.get1dIndexFrom2dPosition( position );
 
-      if(ncpp == 1){
-        this._data[ pos1D ] = color[0];
-      }else{
+        if(ncpp == 1){
+          this._data[ pos1D ] = color[0];
+        }else{
+          pos1D *= ncpp;
+          for(var i=0; i<ncpp; i++){
+            this._data[ pos1D + i] = color[i];
+          }
+        }
+      }else 
+      // we gave a RGB color instead of a RGBA, it's ok...
+      if(color.length == 3 && ncpp == 4){
+        var pos1D = this.get1dIndexFrom2dPosition( position );
         pos1D *= ncpp;
-        for(var i=0; i<ncpp; i++){
+        for(var i=0; i<color.length; i++){
           this._data[ pos1D + i] = color[i];
         }
       }
-      
 
       if( computeStat ){
         this.computeSimpleStat();
@@ -213,6 +253,14 @@ class Image2D extends PixpipeContainer{
     return this._metadata.ncpp;
   }
 
+  
+  /**
+  * Alias to getComponentsPerPixel. Return the number of components per pixel.
+  * @return {Number} ncpp
+  */
+  getNcpp(){
+    return this.getComponentsPerPixel();
+  }
 
 
   /**
