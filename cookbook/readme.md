@@ -66,7 +66,7 @@ Sometimes, it's just not worth reinventing the wheel. Here are the libraries Pix
 Pixpipe is strongly *object oriented* and relies a lot on inheritance. As said in the `readme`, it was inspired by *ITK* for its genericity because it makes the pipeline scalable and modular.  
 Everything you can find in `src/core` is the **core**. Easy. Let's see how it looks like:  
 
-![Pixpipe core](images/pixpipeCore.png)
+[![Pixpipe core](images/pixpipeCore.png)](images/pixpipeCore.png)
 
 As you can see, the core elements can be described like that: **containers** on one side and **processors** on the other.
 
