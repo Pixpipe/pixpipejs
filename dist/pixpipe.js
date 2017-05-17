@@ -635,7 +635,7 @@ class Image2D extends PixpipeContainer{
           for(var i=0; i<this._data.length; i++){
             this._data[i] = color[i%ncpp];
           }
-          this.computeSimpleStat();
+          //this.computeSimpleStat();
         }else{
           this._data.fill(0);
         }
@@ -660,6 +660,38 @@ class Image2D extends PixpipeContainer{
   clone(){
     var cpImg = new Image2D();
     cpImg.setData( this._data, this.getMetadata("width"), this.getMetadata("height"), this.getMetadata("ncpp"), true );
+    cpImg.copyMetadataFrom( this );
+    return cpImg;
+  }
+
+
+  /**
+  * Get an empty copy of an image. Like a clone but the array of data is filled
+  * with zeros and no metadata.
+  * @return {Image2D} 
+  */
+  hollowClone(){
+    var cpImg = new Image2D();
+    var ncpp = this.getMetadata("ncpp");
+    var width = this.getMetadata("width");
+    var height = this.getMetadata("height");
+    
+    cpImg.setData( new Float32Array(width*height*ncpp).fill(0), width, height, ncpp);
+    return cpImg;
+  }
+  
+  
+  /**
+  * Create a clone of this image that ensure data are encoded in a Float32Array.
+  * @return {Image2D} the F32 clone
+  */
+  float32Clone(){
+    var cpImg = new Image2D();
+    var ncpp = this.getMetadata("ncpp");
+    var width = this.getMetadata("width");
+    var height = this.getMetadata("height");
+    
+    cpImg.setData( new Float32Array(this._data), width, height, ncpp);
     cpImg.copyMetadataFrom( this );
     return cpImg;
   }
@@ -709,21 +741,29 @@ class Image2D extends PixpipeContainer{
     var ncpp = this._metadata.ncpp;
 
     if("x" in position && position.x >=0 && position.x < this._metadata.width &&
-       "y" in position && position.y >=0 && position.y < this._metadata.height &&
-       color.length == ncpp)
+       "y" in position && position.y >=0 && position.y < this._metadata.height )
     {
 
-      var pos1D = this.get1dIndexFrom2dPosition( position );
+      if(color.length == ncpp){
+        var pos1D = this.get1dIndexFrom2dPosition( position );
 
-      if(ncpp == 1){
-        this._data[ pos1D ] = color[0];
-      }else{
+        if(ncpp == 1){
+          this._data[ pos1D ] = color[0];
+        }else{
+          pos1D *= ncpp;
+          for(var i=0; i<ncpp; i++){
+            this._data[ pos1D + i] = color[i];
+          }
+        }
+      }else 
+      // we gave a RGB color instead of a RGBA, it's ok...
+      if(color.length == 3 && ncpp == 4){
+        var pos1D = this.get1dIndexFrom2dPosition( position );
         pos1D *= ncpp;
-        for(var i=0; i<ncpp; i++){
+        for(var i=0; i<color.length; i++){
           this._data[ pos1D + i] = color[i];
         }
       }
-      
 
       if( computeStat ){
         this.computeSimpleStat();
@@ -796,6 +836,14 @@ class Image2D extends PixpipeContainer{
     return this._metadata.ncpp;
   }
 
+  
+  /**
+  * Alias to getComponentsPerPixel. Return the number of components per pixel.
+  * @return {Number} ncpp
+  */
+  getNcpp(){
+    return this.getComponentsPerPixel();
+  }
 
 
   /**
@@ -1159,11 +1207,12 @@ class Image3D extends PixpipeContainer{
 
 
   /**
+  * Same as getIntensity_xyz, get a pixel/voxel value using (x, y, z) position
   * @param {Object} position - 3D position like {x, y, z}
   * @return {Array} the color of the given pixel.
   */
   getPixel( position ){
-    // TODO: to implement using order offset
+    return this.getIntensity_xyz( position.x, position.y, position.z );
   }
 
 
@@ -1383,7 +1432,6 @@ class ImageToImageFilter extends Filter {
 
   constructor(){
     super();
-    this.addInputValidator(0, Image2D);
   }
 
 
@@ -1654,6 +1702,225 @@ class MniVolume extends Image3D{
 
 
 } /* END of class Image3D */
+
+/*
+* Author   Jonathan Lurie - http://me.jonahanlurie.fr
+* License  MIT
+* Link      https://github.com/jonathanlurie/pixpipejs
+* Lab       MCIN - Montreal Neurological Institute
+*/
+
+/**
+* A LineString is a vectorial reprensation of a line or polyline, open or closed.
+* When closed, it can be considered as a polygon.  
+* By default, a LineString is 2 dimensional but the dimension can be changed when
+* using the `.setData(...)` method or before any point addition with `.setNod()`.
+* To close a LineString, use `.setMetadata("closed", true);`, this will not add
+* any point but will flag this LineString as "closed".
+*
+*/
+class LineString extends PixpipeContainer {
+  
+  constructor() {
+    super();
+    this.setMetadata("closed", false);
+    this.setMetadata("defaultNod", 2);
+    this.setMetadata("nod", 2);
+    
+    this._type = LineString.TYPE();
+    
+    // local record for saving the last point
+    this._lastPoint = null;
+  }
+  
+  
+  /**
+  * Hardcode the datatype
+  */
+  static TYPE(){
+    return "LINESTRING";
+  }
+  
+  
+  /**
+  * Set/replace the point data.
+  * @param {points} points - 1D array containing coord [x, y, x, y, x, y, ...]
+  * @param {Number} nod - Number of Dimensions, default = 2
+  * @param {Boolean} deepCopy - pointer copy if false, deep copy if true.
+  */
+  setData(points, nod=-1, deepCopy=false){
+    if( nod != -1){
+      this.setMetadata("nod", nod);
+    }
+    
+    if(points.length % this.getMetadata("nod") != 0 ){
+      console.warn("The number of points is not compatible with the number of dimensions (nod).");
+      return;
+    }
+    
+    if(deepCopy){
+      this._data = new points.constructor( points );
+    }else{
+      this._data = points;
+    }
+    
+    this._setLastPoint();
+  }
+  
+  
+  /**
+  * Define the number of dimensions. This can be done only when this LineString
+  * is still empty.
+  * @param {Number} nod - Number of dimensions
+  */
+  setNod( nod ){
+    if(!this._data || !this._data.length){
+      console.warn("The number of dimension can be set only when this LineString is empty.");
+      return;
+    }
+    
+    this.setMetadata("nod", nod);
+  }
+  
+  
+  /**
+  * Get the internal image data (pointer)
+  * @return {Array} the original data, dont mess up with this one.
+  * in case of doubt, use  getDataCopy()
+  */
+  getData(){
+    return this._data;  // return the actual array, editable!
+  }
+
+
+  /**
+  * Get a copy of the data
+  * @return {Array} a deep copy of the data
+  */
+  getDataCopy(){
+    return new this._data.constructor( this._data );
+  }
+  
+  
+  /**
+  * Get the number of points in this linestring
+  * @return {Number} nb of points
+  */
+  getNumberOfPoints(){
+    if(!this._data){
+      return 0;
+    }
+    
+    return this._data.length / this.getMetadata("nod");
+  }
+  
+  
+  /**
+  * Get a point of this LineString
+  * @return {Array} a point, being [x, y] if 2D or [x, y, z] if 3D
+  */
+  getPoint( index ){
+    if(index >=0 && index < getNumberOfPoints){
+      var nod = this._metadata.nod;
+      return this._data.slice(index*nod, index*nod + nod);
+    }else{
+      console.warn("Index of point is out of range.");
+      return null;
+    }
+  }
+  
+  
+  /**
+  * Considere this LineString as closed, making it a polygon
+  */
+  close(){
+    this.setMetadata("closed", true);
+  }
+  
+  
+  /**
+  * Considere this LineString as open
+  */
+  open(){
+    this.setMetadata("closed", false);
+  }
+  
+  
+  /**
+  * Add a point at the end of the LineString. Keeps the polygon open.
+  * @param {Array} position - [x, y] if 2D or [x, y, z] if 3D
+  */
+  addPoint( position ){
+    if( position.length != this._metadata.nod ){
+      console.warn("Cannot add the point becase it has a diferent number of dimensions.");
+      return;
+    }
+    
+    if( !this._data ){
+      this._data = new Array();
+    }
+    
+    for(var i=0; i<position.length; i++){
+      this._data.push( position[i] );
+    }
+    
+    // we keep it for easy access
+    this._lastPoint = position;
+  }
+  
+  
+  /**
+  * Get the last point but does not pop it out
+  * @return {Array} the point as [x, y] or [x, y, z]
+  */
+  peekPoint(){
+    if(!this._data){
+      return null;
+    }
+    
+    if(this._lastPoint){
+      return this._lastPoint;
+    }
+    
+    this._setLastPoint();
+    return this._lastPoint;
+  }
+  
+  
+  /**
+  * [PRIVATE]
+  * define the last point
+  */
+  _setLastPoint(){
+    this._lastPoint = this._data.slice(- this._metadata.nod);
+    if(this._lastPoint.length == 0){
+      this._lastPoint = null;
+    }
+  }
+  
+  
+  /**
+  * Get the last point and remove it from this LineString
+  * @return {Array} like [x, y] or [x, y, z] or null if no more point
+  */
+  popPoint(){
+    if(!this._data){
+      console.warn("This LineString was not added any point.");
+      return null;
+    }
+    
+    if(!this._data.length){
+      console.warn("No more point in this LineString.");
+      return null;
+    }
+
+    var pointToReturn = new Array(this._lastPoint);
+    this._lastPoint.length = this._lastPoint.length - this._metadata.nod;
+    this._setLastPoint();
+  }
+  
+  
+} /* END of class LineString */
 
 /*
 * Author   Jonathan Lurie - http://me.jonahanlurie.fr
@@ -15087,7 +15354,7 @@ class PixpEncoder extends Filter {
       dataType: input.getData().constructor.name, // typed array type
       data: Array.prototype.slice.call( input.getData() ),  // data of pixel/voxel
       metadata: input.getMetadataCopy(),  // Image2D/Image3D._metadata
-      pixpipeType: input.constructor.name // "Image2D" or "Image3D", will be used for reconstruction
+      pixpipeType: input.constructor.name // most likely "Image2D", "Image3D", "MniVolume", "LineString", etc.
     };
 
     var pixpString = JSON.stringify( arrayAndMeta );
@@ -19363,6 +19630,7 @@ class ForEachPixelImageFilter extends ImageToImageFilter {
 
   constructor(){
     super();
+    this.addInputValidator(0, Image2D);
   }
 
 
@@ -20924,6 +21192,130 @@ class ImageBlendExpressionFilter extends ImageToImageFilter {
 * Lab       MCIN - Montreal Neurological Institute
 */
 
+/**
+* An instance of SpatialConvolutionFilter perform a convolution in a spatial reference,
+* this can be applying a Sobel filter, a median or gaussian blur or perform a derivative.
+* The filter is a NxM (aka. an array of arrays) of the following form:
+* ```
+*   var medianBlurFilter = [
+*     [1/9, 1/9, 1/9],
+*     [1/9, 1/9, 1/9],
+*     [1/9, 1/9, 1/9],
+*   ];
+* ```
+* For example, in the case of a simple derivative, it will be like that:
+* ```
+*  var dx = [
+*    [1, -1]
+*  ];
+*
+*  // or
+*
+*  var dy = [
+*    [1],
+*    [-1]
+*  ];
+* ```
+* 
+* The filter must be specified using the method `.setMetadata('filter', ...)`.
+*
+* **Usage**
+*  - [examples/spatialConvolImage2D.html](../examples/spatialConvolImage2D.html)
+*
+*/
+class SpatialConvolutionFilter extends ImageToImageFilter {
+
+  constructor(){
+    super();
+    this.addInputValidator(0, Image2D);
+    this.setMetadata("filter", null);
+  }
+
+  
+  _run(){
+    // the input checking
+    if( ! this.hasValidInput()){
+      console.warn("A filter of type SpatialConvolutionFilter requires 1 input of category '0' and one input of category '1'.");
+      return;
+    }
+    
+    var filter = this.getMetadata("filter");
+    
+    if( !filter ){
+      console.warn("A filter must be specified using .setMetadata('filter', [[]])");
+      return;
+    }
+    
+    // input
+    var inputImg = this._getInput( 0 );
+    var inputData = inputImg.getData();
+    var ncpp = inputImg.getNcpp();
+    var width = inputImg.getWidth();
+    var height = inputImg.getHeight();
+    
+    // output 
+    var outputImg = new Image2D( {width: width, height: height, color: new Array(ncpp).fill(0) } );
+    var outputData = outputImg.getData();
+    
+    // filter
+    var filterSize = filter.length;
+    var filterHeight = filter.length;
+    var filterWidth = filter[0].length;
+    var filterHalfWidth = Math.floor( filterWidth / 2 );
+    var filterHalfHeight = Math.floor( filterHeight / 2 );
+    
+    // looping info
+    var startX = filterHalfWidth;
+    var startY = filterHalfHeight;
+    var endX = width - filterHalfWidth;
+    var endY = height - filterHalfHeight;
+    
+    // along image width
+    for(var iImg=startX ; iImg<endX; iImg++){
+
+      // along image height
+      for(var jImg=startY ; jImg<endY; jImg++){
+
+        // get the 1D position of the first component
+        var linearPosition = (jImg * width + iImg) * ncpp;
+
+        // along filter width
+        for(var iFilter=0; iFilter<filterWidth; iFilter++){
+          
+          // along filter height
+          for(var jFilter=0; jFilter<filterHeight; jFilter++){
+            
+            var iUnderFilter = iImg + iFilter - filterHalfWidth;
+            var jUnderFilter = jImg + jFilter - filterHalfHeight;
+            var colorUnderFilter = inputImg.getPixel({x: iUnderFilter, y: jUnderFilter});
+            var curentFilterValue = filter[jFilter][iFilter];
+            
+            // looping around components
+            for(var c=0; c<ncpp; c++){
+              outputData[ linearPosition + c] += colorUnderFilter[c] * curentFilterValue;
+            } /* END for-loop over components */
+            
+          } /* END for-loop over filter height */
+          
+        } /* END for-loop over filter width */
+        
+      } /* END for-loop over image height */
+      
+    } /* END for-loop over image width */
+    
+    this._output[0] = outputImg;
+    
+  }
+  
+} /* END of class SpatialConvolutionFilter */
+
+/*
+* Author   Jonathan Lurie - http://me.jonahanlurie.fr
+* License  MIT
+* Link      https://github.com/jonathanlurie/pixpipejs
+* Lab       MCIN - Montreal Neurological Institute
+*/
+
 
 /**
 * Multiply two Image2D pixel by pixel. They must have the same number of components per pixel
@@ -20956,25 +21348,17 @@ class MultiplyImageFilter extends ImageToImageFilter {
       return;
     }
 
-    this.addTimeRecord("step1");
 
     var img0 = this._getInput( 0 );
     var img1 = this._getInput( 1 );
 
-
+    
     var img1Buffer = img1.getData();
-    this.addTimeRecord("step1.5");
     var outputBuffer = img0.getDataCopy();
-
-    this.addTimeRecord("step2");
 
     for(var i=0; i<outputBuffer.length; i++){
       outputBuffer[ i ] *= img1Buffer[ i ];
     }
-
-    this.addTimeRecord("step3");
-
-
 
     var img2D = this._addOutput( Image2D );
 
@@ -20984,11 +21368,6 @@ class MultiplyImageFilter extends ImageToImageFilter {
       img0.getHeight()
     );
 
-    this.addTimeRecord("step4");
-    this.getTime("step1", "step1.5", true);
-    this.getTime("step1.5", "step2", true);
-    this.getTime("step2", "step3", true);
-    this.getTime("step3", "step4", true);
   }
 
 } /* END class MultiplyImageFilter */
@@ -21016,6 +21395,8 @@ class SimpleThresholdFilter extends ImageToImageFilter {
   
   constructor(){
     super();
+    
+    this.addInputValidator(0, Image2D);
     
     // default values
     this.setMetadata("threshold", 128);
@@ -21095,6 +21476,644 @@ class SimpleThresholdFilter extends ImageToImageFilter {
   }
   
 } /* END of class SimpleThresholdFilter */
+
+/*
+* Author   Jonathan Lurie - http://me.jonahanlurie.fr
+* License  MIT
+* Link      https://github.com/jonathanlurie/pixpipejs
+* Lab       MCIN - Montreal Neurological Institute
+*/
+
+/**
+* A ImageDerivativeFilter filter will compute the dx and dy derivative using the filters
+* h = [1, -1]
+* 
+* You can change the built-in filters that perform the derivative by setting the metadata
+*  "dxFilter" and "dyFilter" with the method `.setMetadata()`. See the documentation of
+* `SpatialConvolutionFilter` to make your custom filter compatible.
+*
+* **Usage**
+* - [examples/derivativeImage2D.html](../examples/derivativeImage2D.html)
+*
+*/
+class ImageDerivativeFilter extends ImageToImageFilter {
+  
+  constructor(){
+    super();
+    this.addInputValidator(0, Image2D);
+    
+    // filters for derivative
+    var dx = [
+        [1, -1]
+      ];
+      
+    var dy = [
+        [1],
+        [-1]
+      ];
+      
+    this.setMetadata("dxFilter", dx);
+    this.setMetadata("dyFilter", dy);
+  }
+  
+  _run(){
+    // the input checking
+    if( ! this.hasValidInput()){
+      console.warn("A filter of type SpatialConvolutionFilter requires 1 input of category '0' and one input of category '1'.");
+      return;
+    }
+    
+    var inputImg = this._getInput( 0 );
+    
+    var dx = this.getMetadata('dxFilter');
+    var dy = this.getMetadata('dyFilter');
+  
+    var spatialConv = new pixpipe.SpatialConvolutionFilter();
+    spatialConv.addInput( inputImg );
+    
+    spatialConv.setMetadata("filter", dx);
+    spatialConv.update();
+    
+    this._output["dx"] = spatialConv.getOutput();
+    
+    spatialConv.setMetadata("filter", dy);
+    spatialConv.update();
+    
+    this._output["dy"] = spatialConv.getOutput();
+    
+  }
+  
+} /* END class ImageDerivativeFilter */
+
+/*
+* Author   Jonathan Lurie - http://me.jonahanlurie.fr
+* License  MIT
+* Link      https://github.com/jonathanlurie/pixpipejs
+* Lab       MCIN - Montreal Neurological Institute
+*/
+
+/**
+* An instance of GradientImageFilter takes 2 input Image2D: a derivative in x,
+* with the category "dx" and a derivative in y with the category "dy". They must
+* be the same size and have the same number of  components per pixel.
+*
+* **Usage**
+* - [examples/gradientImage2D.html](../examples/gradientImage2D.html)
+*/
+class GradientImageFilter extends ImageToImageFilter {
+  
+  constructor(){
+    super();
+    
+    this.addInputValidator('dx', Image2D);
+    this.addInputValidator('dy', Image2D);
+  }
+  
+  _run(){
+    // the input checking
+    if( ! this.hasValidInput()){
+      console.warn("A filter of type GradientImageFilter requires 1 input of category 'dx' and 1 input of category 'dy'.");
+      return;
+    }
+    
+    // they must be the same size and same ncpp
+    if(!this.hasSameSizeInput() || !this.hasSameNcppInput()){
+      return;
+    }
+    
+    var dxImage = this._getInput("dx");
+    var dxImageData = dxImage.getData();
+    
+    var dyImage = this._getInput("dy");
+    var dyImageData = dyImage.getData();
+    
+    var gradMagnitude = dxImage.hollowClone();
+    var gradMagnitudeData = gradMagnitude.getData();
+    
+    var gradDirection = dxImage.hollowClone();
+    var gradDirectionData = gradDirection.getData();
+    
+    var magnitudeExtrema = {min: Infinity, max: -Infinity};
+    var directionExtrema = {min: Infinity, max: -Infinity};
+    
+    for(var i=0; i<dxImageData.length; i++){
+      // gradient magnitude
+      gradMagnitudeData[i] = Math.sqrt(dxImageData[i]*dxImageData[i] + dyImageData[i]*dyImageData[i]);
+      if(! isNaN(gradMagnitudeData[i])){
+        magnitudeExtrema.min = Math.min(magnitudeExtrema.min, gradMagnitudeData[i]);
+        magnitudeExtrema.max = Math.max(magnitudeExtrema.max, gradMagnitudeData[i]);
+      }
+      
+      // gradient direction
+      gradDirectionData[i] = Math.atan(dyImageData[i] / dxImageData[i]);
+      if(! isNaN(gradDirectionData[i])){
+        directionExtrema.min = Math.min(directionExtrema.min, gradDirectionData[i]);
+        directionExtrema.max = Math.max(directionExtrema.max, gradDirectionData[i]);
+      }
+    }
+    
+    gradMagnitude.setMetadata("min", magnitudeExtrema.min);
+    gradMagnitude.setMetadata("max", magnitudeExtrema.max);
+    
+    gradDirection.setMetadata("min", directionExtrema.min);
+    gradDirection.setMetadata("max", directionExtrema.max);
+    
+    this._output["direction"] = gradDirection;
+    this._output["magnitude"] = gradMagnitude;
+  }
+  
+  
+} /* END of class GradientImageFilter  */
+
+/*
+* Author   Jonathan Lurie - http://me.jonahanlurie.fr
+* License  MIT
+* Link      https://github.com/jonathanlurie/pixpipejs
+* Lab       MCIN - Montreal Neurological Institute
+*/
+
+/**
+* A NormalizeImageFilter instance takes an Image2D as input and outputs an Image2D.
+* The output images will have values in [0.0, 1.0]. One of the usage is that is can then
+* be used as a scaling function.
+* 
+* The max value to normalize with will be the max value of the input image (among all components)
+* but an manual max value can be given to this filter using `.setMetadata("max", m)`.
+*
+* **Usage**
+* - [examples/gradientHueWheelImage2D.html](../examples/gradientHueWheelImage2D.html)
+*
+*/
+class NormalizeImageFilter extends ImageToImageFilter {
+  
+  constructor(){
+    super();
+    this.addInputValidator(0, Image2D);
+    
+    this.setMetadata("max", NaN);
+  }
+  
+  
+  _run(){
+    // the input checking
+    if( ! this.hasValidInput()){
+      console.warn("A filter of type */ requires 1 input of category '0'.");
+      return;
+    }
+    
+    var inputImage = this._input[0];
+    var inputData = inputImage.getData();
+    var outputImg = inputImage.hollowClone();
+    var outputData = outputImg.getData();
+    
+    var max = this.getMetadata("max");
+    if(isNaN(max)){
+      max = inputImage.getMax();
+    }
+    
+    for(var i=0; i<inputData.length; i++){
+      outputData[i] = inputData[i] / max;
+    }
+    
+    this._output[0] = outputImg;
+  }
+  
+  
+} /* END class NormalizeImageFilter */
+
+/*
+* Author   Jonathan Lurie - http://me.jonahanlurie.fr
+* License  MIT
+* Link      https://github.com/jonathanlurie/pixpipejs
+* Lab       MCIN - Montreal Neurological Institute
+*/
+
+/**
+* An instance of ContourImage2DFilter takes a seed (`.setMetadata("seed", [x, y])`)
+* and finds the contour of the shape of a segmented image by going north.
+* The input must be an `Image2D` and the output is a `LineString`.  
+* Two options are availble for neighbour connexity: 4 or 8. Set this option using
+* `.setMetadata("connexity", n)`.
+*
+* **Usage**
+* - [examples/contourImage2D.html](../examples/contourImage2D.html)
+*
+*/
+class ContourImage2DFilter extends Filter {
+  
+  constructor(){
+    super();
+    this.addInputValidator(0, Image2D);
+    this.setMetadata("connexity", 8);
+    this.setMetadata("seed", [0, 0]);
+    
+    this._directionListConnexity4 = [
+      [ 0 ,-1], // [0] => N
+      [-1 , 0], // [1] => W
+      [ 0 , 1], // [2] => S
+      [ 1 , 0]  // [3] => E
+    ];
+    
+    this._directionListConnexity8 = [
+      [ 0  , -1], // [0] => N
+      [-1  , -1], // [1] => NW
+      [-1  ,  0], // [2] => W
+      [-1  ,  1], // [3] => SW
+      [ 0  ,  1], // [4] => S
+      [ 1  ,  1], // [5] => SE
+      [ 1  ,  0], // [6] => E
+      [ 1  , -1]  // [7] => NE
+    ];
+    
+  }
+  
+  
+  _run(){
+    // the input checking
+    if( ! this.hasValidInput()){
+      console.warn("A filter of type AngleToHueWheelHelper requires 1 input of category '0'.");
+      return;
+    }
+    
+    var imageIn = this._getInput(0);
+    var ncpp = imageIn.getNcpp();
+    var width = imageIn.getWidth();
+    var height = imageIn.getHeight();
+    var directionList = null;
+    
+    if( this.getMetadata("connexity") == 8){
+      directionList = this._directionListConnexity8;
+    }else{
+      directionList = this._directionListConnexity4;
+    }
+    
+    // handy color comparison
+    function isSameColor(c1, c2){
+      if(c1.length != c2.length)
+        return false;
+      
+      for(var i=0; i<c1.length; i++){
+        if(c1[i] != c2[i])
+          return false;
+      }
+      return true;
+    }
+    
+    var direction = 1; // once top north, we go west
+    var newSeed = this._metadata.seed.slice();
+    
+    if(newSeed[0]<0 || newSeed[1]<0 || newSeed[0]>=width || newSeed[1]>= height){
+      console.warn("The seed is out of image range.");
+      return;
+    }
+    
+    var clusterColor = imageIn.getPixel( {x: newSeed[0], y: newSeed[1]} );
+    var newColor = clusterColor;
+    var atNorth = newSeed.slice();
+    
+    // first, we go to the north border of our cluster
+    while( true ){
+      atNorth[0] += directionList[0][0];
+      atNorth[1] += directionList[0][1];
+      
+      // we reached the border of the image
+      if(atNorth[0]<0){
+        newSeed[0] = 0;
+        newSeed[1] = atNorth[1];
+        break;
+      }
+      
+      // can be null if out of the image
+      newColor = imageIn.getPixel( {x: atNorth[0], y: atNorth[1]} );
+      
+      if( newColor && isSameColor(newColor, clusterColor) ){
+        newSeed[0] = atNorth[0];
+        newSeed[1] = atNorth[1];
+      }else{
+        break;
+      }
+    }
+    
+    var movingPoint = newSeed.slice();
+    var potentialPosition = [0, 0];
+    var listOfValidPoints = [];
+    listOfValidPoints.push(newSeed[0]);
+    listOfValidPoints.push(newSeed[1]);
+    
+    // return 0: the tested point is the starting point
+    // return 1: the tested point is of the right color
+    // return 2: the tested point id from the wrong color (test other direction)
+    function tryPotientialPosition(){
+      
+      potentialPosition[0] = movingPoint[0] + directionList[direction][0];
+      potentialPosition[1] = movingPoint[1] + directionList[direction][1];
+        
+      // test if the new direction goes with the same color
+      if( isSameColor(imageIn.getPixel( {x: potentialPosition[0], y: potentialPosition[1]} ), clusterColor) ){
+        
+        if( potentialPosition[0]==listOfValidPoints[0] && // the point just found is the
+            potentialPosition[1]==listOfValidPoints[1] )  // same as the very first
+        {
+          return 0; // break the loop
+        }else{
+          // we validate the point and keep moving
+          movingPoint[0] = potentialPosition[0];
+          movingPoint[1] = potentialPosition[1];
+          listOfValidPoints.push( movingPoint[0] );
+          listOfValidPoints.push( movingPoint[1] );
+        }
+        return 1; // continue the loop
+      }
+      return 2; // try directions
+    }
+    
+    
+    // start the real navigation, starting from movingPoint
+    main_loop:
+    while( true ){
+      
+      // go the previous direction on the list
+      direction = (direction-1);
+      if(direction<0)
+        direction = directionList.length - 1;
+    
+      var score = tryPotientialPosition();
+      
+      if( score == 0){  
+        break main_loop;
+      }else if(score == 1){
+        continue;
+      }else{  // score == 2
+        
+        var nbTrials = 0;
+      
+        // we try the other directions
+        direction_loop:
+        for(var i=0; i<directionList.length-1; i++){  // -1 because we don't need to retry the last, since it's also the one done before
+        
+          //direction += i;
+          direction ++;
+          direction = direction%directionList.length;
+          score = tryPotientialPosition();
+          
+          if( score == 0){  
+            break main_loop;  // back to the start point/seed
+          }else if(score == 1){
+            break direction_loop; // point is good, 
+          }else{
+            nbTrials++;
+            continue; // try the next direction
+          }
+
+        }
+      
+        // it means the seed was in a single pixel island :(
+        if(nbTrials == directionList.length-1){
+          break;
+        }
+      }
+    }
+    
+    var outputLineString = new LineString();
+    outputLineString.setData(listOfValidPoints);
+    outputLineString.setMetadata("closed", true);
+    this._output[0] = outputLineString;
+    
+  } /* END of _run() */
+  
+  
+} /* END of class ContourImage2DFilter */
+
+/*
+* Author   Jonathan Lurie - http://me.jonahanlurie.fr
+* License  MIT
+* Link      https://github.com/jonathanlurie/pixpipejs
+* Lab       MCIN - Montreal Neurological Institute
+*/
+
+/**
+* AngleToHueWheelHelper has for goal to help visualize angular data such as gradient
+* orientation. The idea behind the "hue wheel" is to associate every direction (angle)
+* to a color without having the 0/360 interuption.
+* The helper takes one Image2D input and gives one RGBA Image2D output. From the output,
+* the index of the compnent that contains angular information has to be given using:
+* `.setMetadata("component", n)` where `n` by default is `0`.  
+*
+* Depending on the usage of this filter, the range of angle can varry,
+* ie. in [0, 2PI] (the default), or in [-PI/2, PI/2] (in the case of a gradient)
+* or even in degrees [0, 360]. In any case, use `.setMetadata("minAngle", ...)`
+* and `.setMetadata("maxAngle", ...)`. 
+* If the metadata "minAngle" or "maxAngle" is given the value "auto", then the min and max
+* values of the image will be looked-up (or computed if not defined).
+*
+* **Usage**
+* - [examples/gradientHueWheelImage2D.html](../examples/gradientHueWheelImage2D.html)
+*
+*/
+class AngleToHueWheelHelper extends ImageToImageFilter {
+  
+  constructor(){
+    super();
+    this.addInputValidator(0, Image2D);
+    this.setMetadata("component", 0);
+    
+    this.setMetadata("minAngle", 0);
+    this.setMetadata("maxAngle", Math.PI/2);
+  }
+  
+  
+  _run(){
+    // the input checking
+    if( ! this.hasValidInput()){
+      console.warn("A filter of type AngleToHueWheelHelper requires 1 input of category '0'.");
+      return;
+    }
+    
+    var that = this;
+    
+    var inputImage = this._getInput(0);
+    var ncpp = inputImage.getNcpp();
+    var component = this.getMetadata("component");
+    
+    if( component < 0 && component >= ncpp ){
+      console.warn("The component to filter must be valid.");
+      return;
+    }
+    
+    var imageIn = this._getInput();
+    var width = imageIn.getWidth();
+    var height = imageIn.getHeight();
+    var ncpp = imageIn.getNcpp();
+    
+    var minAngle = this.getMetadata("minAngle");
+    var maxAngle = this.getMetadata("maxAngle");
+    
+    if(minAngle === "auto" || maxAngle === "auto"){
+      minAngle = imageIn.getMin();
+      maxAngle = imageIn.getMax();
+    }
+    
+    var imageOut = new Image2D( {width: width, height: height, color: [0, 0, 0, 255] } );
+    var forEachPixelFilter = new pixpipe.ForEachPixelImageFilter();
+    
+    // add the input input
+    forEachPixelFilter.addInput( imageOut );
+
+    forEachPixelFilter.on( "pixel", function(position, color){
+      var angle = imageIn.getPixel( position )[component];
+      var angle360 = ( (angle - minAngle) / (maxAngle - minAngle) ) * 360;
+      var colorRGB = that._hsl2Rgba( angle360, 100, 50 );
+      return colorRGB;
+    });
+    
+    // run the filter to create a gradient image
+    forEachPixelFilter.update();
+    
+    if( forEachPixelFilter.getNumberOfOutputs() == 0 ){
+      console.warn("No output of ForEachPixelImageFilter.");
+      return;
+    }
+    
+    // mapping the output
+    this._output[ 0 ] = forEachPixelFilter.getOutput();
+    
+  }
+  
+  
+  /**
+  * 
+  * A part of this code was borrowed from github.com/netbeast/colorsys and modified.
+  */
+  _hsl2Rgba( h, s=100, l=100 ){
+    // pseudo constants
+    var HUE_MAX = 360;
+    var SV_MAX = 100;
+    var RGB_MAX = 255;
+    
+    // ouputs
+    var r, g, b;
+
+    h = (h === HUE_MAX) ? 1 : (h % HUE_MAX / HUE_MAX);
+    s = (s === SV_MAX) ? 1 : (s % SV_MAX / SV_MAX);
+    l = (l === SV_MAX) ? 1 : (l % SV_MAX / SV_MAX);
+
+    if (s === 0) {
+      r = g = b = l; // achromatic
+    } else {
+      var hue2rgb = function hue2rgb (p, q, t) {
+        if (t < 0) t += 1;
+        if (t > 1) t -= 1;
+        if (t < 1 / 6) return p + (q - p) * 6 * t
+        if (t < 1 / 2) return q
+        if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6
+        return p
+      };
+
+      var q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+      var p = 2 * l - q;
+      r = hue2rgb(p, q, h + 1 / 3);
+      g = hue2rgb(p, q, h);
+      b = hue2rgb(p, q, h - 1 / 3);
+    }
+    
+    return [ Math.round(r * RGB_MAX), 
+             Math.round(g * RGB_MAX), 
+             Math.round(b * RGB_MAX),
+             255 ];
+  }
+  
+  
+} /* END of class AngleToHueWheelFilter */
+
+/*
+* Author   Jonathan Lurie - http://me.jonahanlurie.fr
+* License  MIT
+* Link      https://github.com/jonathanlurie/pixpipejs
+* Lab       MCIN - Montreal Neurological Institute
+*/
+
+
+/**
+* A instance of LineStringPrinterOnImage2DHelper prints a list of LineStrings on
+* an Image2D. To add the Image2D input, use `.addInput(myImage2D)`.
+* To add a LineString, use `.addLineString(ls, c );` where `ls` is a LineString 
+* instance and `c` is an Array representing a color (i.e. [255, 0, 0] for red).
+*
+* **Usage**
+* - [examples/contourImage2D.html](../examples/contourImage2D.html)
+*
+*/
+class LineStringPrinterOnImage2DHelper extends ImageToImageFilter {
+  
+  constructor() {
+    super();
+    this.addInputValidator(0, Image2D);
+    this.setMetadata("lineStrings", []);
+    this.setMetadata("lineStringsColors", []);
+  }
+  
+  
+  /**
+  * Add a LineString instance to be printed on the image
+  * @param {LineString} ls - a linestring to add
+  * @param {Array} color - of for [R, G, B] or [R, G, B, A] 
+  */
+  addLineString(ls, color){
+    this._metadata.lineStrings.push( ls ) ;
+    this._metadata.lineStringsColors.push( color ) ;
+  }
+  
+  
+  _run(){
+    
+    // the input checking
+    if( ! this.hasValidInput()){
+      console.warn("A filter of type LineStringPrinterOnImage2DHelper requires 1 input of category '0'.");
+      return;
+    }
+    
+    var imageIn = this._getInput();
+    var imageOut = imageIn.clone();
+    var width = imageIn.getWidth();
+    var height = imageIn.getHeight();
+    var ncpp = imageIn.getNcpp();
+    
+    var printed = false;
+    
+    var lineStrings = this._metadata.lineStrings;
+    var colors = this._metadata.lineStringsColors;
+    
+    for(var i=0; i<lineStrings.length; i++){
+      
+      if(lineStrings[i].getMetadata("nod") != 2){
+        console.warn("Linstring must be 2D to be printed on images.");
+        continue;
+      }
+      
+      // color verification: ok if same number of channel OR if giving RGB color to RGBA image
+      if(ncpp == colors[i].length || (ncpp == 4 && colors[i].length == 3) ){
+        
+        var lineStringData = lineStrings[i].getData();
+        
+        for(var j=0; j<lineStringData.length-1; j+=2){
+          imageOut.setPixel({x: lineStringData[j], y: lineStringData[j+1]}, colors[i] );
+        }
+        
+        printed = true;
+        
+      }else{
+        continue;
+      }
+    }
+    
+    if(printed){
+      this._output[0] = imageOut;
+    }
+    
+  } /* END of _run() */
+  
+  
+} /* END of class LineStringPrinterOnImage2DHelper */
 
 /*
 * Author   Jonathan Lurie - http://me.jonahanlurie.fr
@@ -21227,6 +22246,7 @@ exports.Image2D = Image2D;
 exports.Image3D = Image3D;
 exports.ImageToImageFilter = ImageToImageFilter;
 exports.MniVolume = MniVolume;
+exports.LineString = LineString;
 exports.CanvasImageWriter = CanvasImageWriter;
 exports.UrlImageReader = UrlImageReader;
 exports.FileImageReader = FileImageReader;
@@ -21241,8 +22261,15 @@ exports.TiffDecoder = TiffDecoder;
 exports.ForEachPixelImageFilter = ForEachPixelImageFilter;
 exports.SpectralScaleImageFilter = SpectralScaleImageFilter;
 exports.ImageBlendExpressionFilter = ImageBlendExpressionFilter;
+exports.SpatialConvolutionFilter = SpatialConvolutionFilter;
 exports.MultiplyImageFilter = MultiplyImageFilter;
 exports.SimpleThresholdFilter = SimpleThresholdFilter;
+exports.ImageDerivativeFilter = ImageDerivativeFilter;
+exports.GradientImageFilter = GradientImageFilter;
+exports.NormalizeImageFilter = NormalizeImageFilter;
+exports.ContourImage2DFilter = ContourImage2DFilter;
+exports.AngleToHueWheelHelper = AngleToHueWheelHelper;
+exports.LineStringPrinterOnImage2DHelper = LineStringPrinterOnImage2DHelper;
 exports.Image3DToMosaicFilter = Image3DToMosaicFilter;
 
 Object.defineProperty(exports, '__esModule', { value: true });

@@ -1,0 +1,120 @@
+<html>
+<head>
+  <title>Spatial filter on Image2D</title>
+
+  <script src="../dist/pixpipe.js"></script>
+  <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700,900" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <h1><a href="https://github.com/jonathanlurie/pixpipejs"><span style="color: #ff91d7">Pixpipe</span><span style="color: #FFFFFF">js</span></a></h1>
+  <p>
+  This does the following :
+  <ul>
+    <li>opening a local image file, using <code>pixpipe.FileImageReader</code></li>
+    <li>converting it into a <code>pixpipe.Image2D</code> object</li>
+    <li>apply a simple edge detection filter with a <code>pixpipe.SpatialConvolutionFilter</code></li>
+    <li>displaying it in a canvas using <code>pixpipe.CanvasImageWriter</code></li>
+  </ul>
+
+  </p>
+
+  <div>
+		Select an image file:
+		<input type="file" id="fileInput">
+	</div>
+
+  <div id="myDiv"></div>
+
+  <script>
+  window.onload = function() {
+
+    var fileInput = document.getElementById('fileInput');
+
+    // create a filter to write the image into a canvas
+    var imageToCanvasFilter = new pixpipe.CanvasImageWriter();
+    imageToCanvasFilter.setMetadata( "parentDivID", "myDiv" );
+
+    // The filter to read image from URL
+    var file2ImgFilter = new pixpipe.FileImageReader();
+
+    // the image is loaded...
+    // here, this = url2ImgFilter
+    file2ImgFilter.on("ready", function(){
+      
+      var loadedImage = this.getOutput();
+      var spatialConv = new pixpipe.SpatialConvolutionFilter();
+      
+      // some filters you can uses:
+      var medianBlurFilter = [
+          [1/9, 1/9, 1/9],
+          [1/9, 1/9, 1/9],
+          [1/9, 1/9, 1/9],
+        ];
+        
+      var sobelGx = [
+          [1, 0, -1],
+          [1, 0, -1],
+          [1, 0, -1],
+        ];
+        
+      var sobelGy = [
+          [1,   1,  1],
+          [0,   0,  0],
+          [-1, -1, -1],
+        ];
+        
+      var weightedSobelGx = [
+          [1, 0, -1],
+          [2, 0, -2],
+          [1, 0, -1],
+        ];
+        
+      var weightedSobelGy = [
+          [1,   2,  1],
+          [0,   0,  0],
+          [-1, -2, -1],
+        ];
+        
+      var noPhaseShiftDx = [
+          [1, 0, -1]
+        ];
+        
+      var noPhaseShiftDy = [
+          [1],
+          [0],
+          [-1]
+        ];
+        
+      var dx = [
+          [1, -1]
+        ];
+        
+      var dy = [
+          [1],
+          [-1]
+        ];
+      
+      spatialConv.addInput( loadedImage );
+      spatialConv.setMetadata("filter", dy);
+      spatialConv.update();
+      
+      // use the output of the UrlImageReader as the input for CanvasImageWriter
+      imageToCanvasFilter.addInput( spatialConv.getOutput() );
+      // actually copy the data from the Image2D into the inner HTML5 canvas
+      imageToCanvasFilter.update();
+    });
+
+    fileInput.addEventListener('change', function(e) {
+			var file = fileInput.files[0];
+      // set the input, an HTML5 File object
+      file2ImgFilter.addInput(file)
+      // Ask to fetch the image from URL
+      file2ImgFilter.update();
+		});
+
+  }
+  </script>
+
+</body>
+</html>

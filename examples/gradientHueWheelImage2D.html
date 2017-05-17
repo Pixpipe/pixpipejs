@@ -1,0 +1,148 @@
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Gradient of Image2D</title>
+
+  <script src="../dist/pixpipe.js"></script>
+  <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700,900" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <h1><a href="https://github.com/jonathanlurie/pixpipejs"><span style="color: #ff91d7">Pixpipe</span><span style="color: #FFFFFF">js</span></a></h1>
+  <p>
+  This does the following :
+  <ul>
+    <li>opening a local image file, using <code>pixpipe.FileImageReader</code></li>
+    <li>converting it into a <code>pixpipe.Image2D</code> object</li>
+    <li>compute the dx and dy derivative with <code>pixpipe.ImageDerivativeFilter</code></li>
+    <li>feed a <code>pixpipe.GradientImageFilter</code> with the derivative</li>
+    <li>displaying gradient direction and magnitude with a <code>pixpipe.CanvasImageWriter</code></li>
+  </ul>
+
+  </p>
+
+  <div>
+		Select an image file:
+		<input type="file" id="fileInput">
+	</div>
+  
+  <p>
+    Image desription:
+    <ul>
+      <li>Original image</li>
+      <li>Gradient direction interval [-π/2, π/2] → [0, 255]</li>
+      <li>Gradient direction with a hue wheel [-π/2, π/2] → hue[0, 360]</li>
+      <li>Gradient intensity mapped to [0, 255]</li>
+      <li>Gradient direction scaled with intensity</li>
+    </ul>
+  </p>
+
+  <div id="myDiv"></div>
+
+  <script>
+  window.onload = function() {
+
+    var fileInput = document.getElementById('fileInput');
+
+    // create a filter to write the image into a canvas
+    var imageToCanvasFilter = new pixpipe.CanvasImageWriter();
+    imageToCanvasFilter.setMetadata( "parentDivID", "myDiv" );
+    imageToCanvasFilter.setMetadata("reset", false);
+
+    // The filter to read image from URL
+    var file2ImgFilter = new pixpipe.FileImageReader();
+
+    // the image is loaded...
+    // here, this = url2ImgFilter
+    file2ImgFilter.on("ready", function(){
+      
+      var loadedImage = this.getOutput();
+      var derivFilter = new pixpipe.ImageDerivativeFilter();
+      
+      derivFilter.addInput( loadedImage );
+      derivFilter.update();
+      
+      var dx = derivFilter.getOutput("dx");
+      var dy = derivFilter.getOutput("dy");
+      
+      // create a gradient filter
+      var gradFilter = new pixpipe.GradientImageFilter();
+      gradFilter.addInput(dx, "dx");
+      gradFilter.addInput(dy, "dy");
+      gradFilter.update();
+      
+      if(gradFilter.getNumberOfOutputs() < 2){
+        alert("GradientImageFilter failed");
+        return;
+      }
+      
+      var gradDirection = gradFilter.getOutput("direction");
+      var gradMagnitude = gradFilter.getOutput("magnitude");
+      
+      // adapting the gradient direction into a hue wheel
+      var angleToHueWheel = new pixpipe.AngleToHueWheelHelper();
+      angleToHueWheel.addInput( gradDirection );
+      
+      angleToHueWheel.setMetadata("minAngle", "auto");
+      //angleToHueWheel.setMetadata("minAngle", -Math.PI/2);
+      //angleToHueWheel.setMetadata("maxAngle", Math.PI/2);
+      angleToHueWheel.update();
+      
+      var hueWheelImage = angleToHueWheel.getOutput();
+      
+      // normalizing the magnitude in order to scale the hueWheelImage
+      var nrmlzImgFltr = new pixpipe.NormalizeImageFilter();
+      nrmlzImgFltr.addInput(gradMagnitude);
+      nrmlzImgFltr.update();
+      
+      // scaling the hue image with the normalized magnitude
+      var multiplier = new pixpipe.MultiplyImageFilter();
+      multiplier.addInput( hueWheelImage, 0 );
+      multiplier.addInput( nrmlzImgFltr.getOutput(), 1 );
+      multiplier.update();
+      
+      // original image
+      imageToCanvasFilter.addInput( loadedImage );
+      imageToCanvasFilter.setMetadata("min", 0);
+      imageToCanvasFilter.setMetadata("max", 255);
+      imageToCanvasFilter.update();
+      
+      // display the direction
+      imageToCanvasFilter.addInput( gradDirection );
+      imageToCanvasFilter.setMetadata("min", gradDirection.getMetadata("min"));
+      imageToCanvasFilter.setMetadata("max", gradDirection.getMetadata("max"));
+      imageToCanvasFilter.update();
+      
+      // display the direction as color wheel
+      imageToCanvasFilter.addInput( hueWheelImage );
+      imageToCanvasFilter.setMetadata("min", 0);
+      imageToCanvasFilter.setMetadata("max", 255);
+      imageToCanvasFilter.update();
+      
+      // display the magnitude
+      imageToCanvasFilter.addInput( gradMagnitude );
+      imageToCanvasFilter.setMetadata("min", gradMagnitude.getMetadata("min"));
+      imageToCanvasFilter.setMetadata("max", gradMagnitude.getMetadata("max"));
+      imageToCanvasFilter.update();
+      
+      // display combination
+      imageToCanvasFilter.addInput( multiplier.getOutput() );
+      imageToCanvasFilter.setMetadata("min", 0);
+      imageToCanvasFilter.setMetadata("max", 255);
+      imageToCanvasFilter.update();
+      
+    });
+
+    fileInput.addEventListener('change', function(e) {
+			var file = fileInput.files[0];
+      // set the input, an HTML5 File object
+      file2ImgFilter.addInput(file)
+      // Ask to fetch the image from URL
+      file2ImgFilter.update();
+		});
+
+  }
+  </script>
+
+</body>
+</html>
