@@ -1,6 +1,6 @@
 <html>
 <head>
-  <title>Contour of Image2D</title>
+  <title>Flood fill an Image2D</title>
 
   <script src="../dist/pixpipe.js"></script>
 
@@ -37,22 +37,18 @@
   url2ImgFilter.on("ready", function(){
     var loadedImage = this.getOutput();
     
-    var contourDetector = new pixpipe.ContourImage2DFilter();
-    contourDetector.addInput( loadedImage );
-    contourDetector.setMetadata("connexity", 8);
-    contourDetector.setMetadata("seed", [3, 3]);
-    contourDetector.update();
+    var filler = new pixpipe.FloodFillImageFilter();
+    filler.addInput( loadedImage );
+    filler.setMetadata("connexity", 8); // could be 8
+    filler.setMetadata("tolerance", 0);
+    filler.setMetadata("color", [255, 0, 0]);
+    filler.setMetadata("seed", [232, 99]);
+    filler.update();
     
-    var contours = contourDetector.getOutput();
-    console.log(contours);
-    
-    var printer = new pixpipe.LineStringPrinterOnImage2DHelper();
-    printer.addInput(loadedImage);
-    printer.addLineString(contours, [255, 0, 0]);
-    printer.update();
+    console.log( filler.getOutput("edgePoints") );
     
     // use the output of the UrlImageReader as the input for CanvasImageWriter
-    imageToCanvasFilter.addInput( printer.getOutput() );
+    imageToCanvasFilter.addInput( filler.getOutput() );
     // actually copy the data from the Image2D into the inner HTML5 canvas
     imageToCanvasFilter.update();
   })
