@@ -152,6 +152,13 @@ class ContourImage2DFilter extends Filter {
       potentialPosition[0] = movingPoint[0] + directionList[direction][0];
       potentialPosition[1] = movingPoint[1] + directionList[direction][1];
         
+      // prevent from going ouside the image
+      if(potentialPosition[0] < 0 || potentialPosition[1] < 0 || 
+         potentialPosition[0] >= width || potentialPosition[1] >= height)
+      {
+        return 2;
+      }
+        
       // test if the new direction goes with the same color
       if( isSameColor(imageIn.getPixel( {x: potentialPosition[0], y: potentialPosition[1]} ), clusterColor) ){
         

@@ -194,14 +194,18 @@ A `Filter` should **NEVER** modify the input data.
 - [Compute the dx and dy derivatives of an image](http://me.jonathanlurie.fr/pixpipejs/examples/derivativeImage2D.html) | [source](https://github.com/jonathanlurie/pixpipejs/tree/master/examples/derivativeImage2D.html)
 - [Compute the gradient direction and magnitude of an image](http://me.jonathanlurie.fr/pixpipejs/examples/gradientImage2D.html) | [source](https://github.com/jonathanlurie/pixpipejs/tree/master/examples/gradientImage2D.html)
 
+
 ## Playing with 3D medical dataset
 - [Open a local Minc2 file, extract 3 orthogonal slices and display in canvas](http://me.jonathanlurie.fr/pixpipejs/examples/fileToMinc2.html) | [source](https://github.com/jonathanlurie/pixpipejs/tree/master/examples/fileToMinc2.html)
 - [Open a local  NIfTI file, extract 3 orthogonal slices and display in canvas](http://me.jonathanlurie.fr/pixpipejs/examples/fileToNifti.html) | [source](https://github.com/jonathanlurie/pixpipejs/tree/master/examples/fileToNifti.html)
 - [Convert a Minc2 file into a generic `*.pixp` file](http://me.jonathanlurie.fr/pixpipejs/examples/Minc2ToPixpFile.html) | [source](https://github.com/jonathanlurie/pixpipejs/tree/master/examples/Minc2ToPixpFile.html)
 - [Open a `*.pixp` containing an Image3D file and display 3 otho slices](http://me.jonathanlurie.fr/pixpipejs/examples/Minc2ToPixpFile.html) | [source](https://github.com/jonathanlurie/pixpipejs/tree/master/examples/Minc2ToPixpFile.html)
 
+
 ## Playing with vectors
-- [Detect contours as a LineString](http://me.jonathanlurie.fr/pixpipejs/examples/contourImage2D.html) | [source](https://github.com/jonathanlurie/pixpipejs/tree/master/examples/contourImage2D.html)
+- [Detect contours (of a segmented Image2D) as a LineString](http://me.jonathanlurie.fr/pixpipejs/examples/contourImage2D.html) | [source](https://github.com/jonathanlurie/pixpipejs/tree/master/examples/contourImage2D.html)
+- [Flood fill an Image2D](http://me.jonathanlurie.fr/pixpipejs/examples/floodFillImage2D.html) | [source](https://github.com/jonathanlurie/pixpipejs/tree/master/examples/floodFillImage2D.html)
+
 
 ## Advanced
 - [Open a local file as an ArrayBuffer](http://me.jonathanlurie.fr/pixpipejs/examples/fileToArrayBuffer.html) | [source](https://github.com/jonathanlurie/pixpipejs/tree/master/examples/fileToArrayBuffer.html). Actually very simple but a good starting point to create a new binary file parser
