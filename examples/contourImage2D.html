@@ -14,7 +14,9 @@
   This does the following :
   <ul>
     <li>opening a distant image file with AJAX request, using <code>pixpipe.UrlImageReader</code></li>
-    <li>displaying it in a canvas using <code>pixpipe.CanvasImageWriter</code></li>
+    <li>Computing the closest internal polygon from a seed with <code>pixpipe.ContourHolesImage2DFilter</code></li>
+    <li>Printing the polygons on top of a copy of the input image with <code>pixpipe.LineStringPrinterOnImage2DHelper</code></li>
+    <li>Displaying it in a canvas using <code>pixpipe.CanvasImageWriter</code></li>
   </ul>
   </p>
 
@@ -40,7 +42,7 @@
     var contourDetector = new pixpipe.ContourImage2DFilter();
     contourDetector.addInput( loadedImage );
     contourDetector.setMetadata("connexity", 8);
-    contourDetector.setMetadata("seed", [3, 3]);
+    contourDetector.setMetadata("seed", [179, 243]);
     contourDetector.update();
     
     var contours = contourDetector.getOutput();

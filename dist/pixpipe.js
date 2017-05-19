@@ -189,6 +189,8 @@ class Filter extends PixpipeObject {
     this._timer = {};
 
     this._isOutputReady = false;
+    
+    this.setMetadata("time", true);
 
   }
 
@@ -430,11 +432,15 @@ class Filter extends PixpipeObject {
   * Launch the process.
   */
   update(){
-    this.addTimeRecord("begin");
-    this._run();
-    this.addTimeRecord("end");
-    console.log("Running time for filter " + this.constructor.name + ": " + this.getTime("begin", "end") + "ms.");
-    
+    if( this._metadata.time ){
+      this.addTimeRecord("begin");
+      this._run();
+      this.addTimeRecord("end");
+      console.log("Running time for filter " + this.constructor.name + ": " + this.getTime("begin", "end") + "ms.");
+    }else{
+      this._run();
+    }
+
     if(this.getNumberOfOutputs()){
       this.setOutputAsReady();
     }
@@ -1917,6 +1923,29 @@ class LineString extends PixpipeContainer {
     var pointToReturn = new Array(this._lastPoint);
     this._lastPoint.length = this._lastPoint.length - this._metadata.nod;
     this._setLastPoint();
+  }
+  
+  
+  /**
+  * Checks if a given point is part of this LineString
+  * @param {Array} p - point coords like [x, y] for 2D or [x, y, z] for 3D
+  * @return {Boolean} truee if the given point is in this LineString, false if not.
+  */
+  hasPoint( p ){
+    var nod = this.getMetadata("nod");
+    
+    if(p.length != nod){
+      console.warn("The given point does not have the same number of dimensions as the LineString.");
+      return false;
+    }
+    
+    for(var i=0; i<this._data.length-1; i+=2){
+      if(this._data[i] == p[0] && this._data[i+1] == p[1]){
+        return true;
+      }
+    }
+    
+    return false;
   }
   
   
@@ -21759,8 +21788,10 @@ class ContourImage2DFilter extends Filter {
       return true;
     }
     
-    var direction = 1; // once top north, we go west
+    
     var newSeed = this._metadata.seed.slice();
+    var directionIncrement = directionList.length / 4;
+    var direction = directionIncrement; // once top north, we go west
     
     if(newSeed[0]<0 || newSeed[1]<0 || newSeed[0]>=width || newSeed[1]>= height){
       console.warn("The seed is out of image range.");
@@ -21787,7 +21818,7 @@ class ContourImage2DFilter extends Filter {
           direction *= 2;
         }
         
-        direction ++;
+        direction += directionIncrement;
         break;
       }
     }
@@ -21837,8 +21868,10 @@ class ContourImage2DFilter extends Filter {
         return 2;
       }
         
+      var potentialPositionColor = imageIn.getPixel( {x: potentialPosition[0], y: potentialPosition[1]} );
+        
       // test if the new direction goes with the same color
-      if( isSameColor(imageIn.getPixel( {x: potentialPosition[0], y: potentialPosition[1]} ), clusterColor) ){
+      if( isSameColor(potentialPositionColor, clusterColor) ){
         
         if( potentialPosition[0]==listOfValidPoints[0] && // the point just found is the
             potentialPosition[1]==listOfValidPoints[1] )  // same as the very first
@@ -21862,9 +21895,9 @@ class ContourImage2DFilter extends Filter {
     while( true ){
       
       // go the previous direction on the list
-      direction = (direction-1);
+      direction -= directionIncrement;
       if(direction<0)
-        direction = directionList.length - 1;
+        direction = directionList.length - directionIncrement;
     
       var score = tryPotientialPosition();
       
@@ -21937,6 +21970,11 @@ class ContourImage2DFilter extends Filter {
 * In addition to the output image, the list of internal hit points is created and
 * availble with `.getOutput("hits")`.
 *
+*
+* **Usage**
+* - [examples/floodFillImage2D.html](../examples/floodFillImage2D.html)
+*
+*
 */
 class FloodFillImageFilter extends ImageToImageFilter {
   
@@ -21945,7 +21983,8 @@ class FloodFillImageFilter extends ImageToImageFilter {
     this.addInputValidator(0, Image2D);
     this.setMetadata("tolerance", 1);
     this.setMetadata("connexity", 4);
-    this.setMetadata("color", [255, 0, 0]);
+    this.setMetadata("color", null);
+    this.setMetadata("onlyHits", false);
     
     this._directionListConnexity4 = [
       [ 0 ,-1], // [0] => N
@@ -21972,12 +22011,11 @@ class FloodFillImageFilter extends ImageToImageFilter {
     
     // the input checking
     if( ! this.hasValidInput()){
-      console.warn("A filter of type AngleToHueWheelHelper requires 1 input of category '0'.");
+      console.warn("A filter of type FloodFillImageFilter requires 1 input of category '0'.");
       return;
     }
     
     var imageIn = this._getInput(0);
-    var imageOut = imageIn.clone();
     var ncpp = imageIn.getNcpp();
     var width = imageIn.getWidth();
     var height = imageIn.getHeight();
@@ -21989,7 +22027,10 @@ class FloodFillImageFilter extends ImageToImageFilter {
       directionList = this._directionListConnexity4;
     }
     
-    var paintColor = this.getMetadata("color");
+    var replacementColor = new Array(ncpp); // red
+    replacementColor[0] = 255;
+    
+    var paintColor = this.getMetadata("color") || replacementColor;
     
     // checking color validity
     if(paintColor.length != ncpp){
@@ -21999,11 +22040,20 @@ class FloodFillImageFilter extends ImageToImageFilter {
       }
     }
     
+    
+    
     // to mark the place we've been in the filling
     var markerImage = new Image2D({width: width, height: height, color: [0]});
     var seed = this.getMetadata("seed");
     var seedColor = imageIn.getPixel({x: seed[0], y: seed[1]});
     var tolerance = this.getMetadata("tolerance");
+    var onlyHits = this.getMetadata("onlyHits");
+    
+    var imageOut = null;
+    if(!onlyHits){
+      imageOut = imageIn.clone();
+    }
+    
     
     // the points in this list are points at the edge, except the edge of the image
     var edgePointList = [];
@@ -22028,7 +22078,9 @@ class FloodFillImageFilter extends ImageToImageFilter {
         markerImage.setPixel({x: x, y: y}, [1]);
         
         // paint the image
-        imageOut.setPixel({x: x, y: y}, paintColor);
+        if(!onlyHits){
+          imageOut.setPixel({x: x, y: y}, paintColor);
+        }
         
         // check neighbours upon connexity degree
         var potentialPosition = [0, 0];
@@ -22046,25 +22098,6 @@ class FloodFillImageFilter extends ImageToImageFilter {
           
           var targetColor = imageIn.getPixel({x:potentialPosition[0], y: potentialPosition[1] });
           
-          
-          /*
-          // evaluating the color diff by channel and averaging
-          var diffSum = 0;
-          for(var c=0; c<seedColor.length; c++){
-            diffSum += Math.abs( targetColor[c] - seedColor[c] );
-          } // END for loop color channels
-          
-          
-          if( (diffSum / seedColor.length) <= tolerance ){
-            var newCandidate = [potentialPosition[0], potentialPosition[1]];
-            pixelStack.push( newCandidate );
-            
-          }else{
-            isOnEdge = true;
-          }
-          
-          */
-          
           var isWithinTolerance = true;
           for(var c=0; c<seedColor.length; c++){
             if(Math.abs( targetColor[c] - seedColor[c] ) > tolerance ){
@@ -22072,13 +22105,12 @@ class FloodFillImageFilter extends ImageToImageFilter {
               isOnEdge = true;
               break;
             }
-          } // END for loop color channels
+          } /* END for loop color channels */
           
           if(isWithinTolerance ){
             var newCandidate = [potentialPosition[0], potentialPosition[1]];
             pixelStack.push( newCandidate );
           }
-          
           
         } /* END for loop direction*/
         
@@ -22092,9 +22124,11 @@ class FloodFillImageFilter extends ImageToImageFilter {
       
     } /* END while loop unstacking the points */
     
-    this._output[0] = imageOut;
+    if(!onlyHits){
+      this._output[0] = imageOut;
+    }
+  
     this._output["edgePoints"] = edgePointList;
-    
     
   } /* END of _run() */
   
@@ -22102,6 +22136,105 @@ class FloodFillImageFilter extends ImageToImageFilter {
   
   
 } /* END of class FloodFillImageFilter */
+
+/*
+* Author   Jonathan Lurie - http://me.jonahanlurie.fr
+* License  MIT
+* Link      https://github.com/jonathanlurie/pixpipejs
+* Lab       MCIN - Montreal Neurological Institute
+*/
+
+
+/**
+*
+*/
+class ContourHolesImage2DFilter extends Filter {
+  
+  constructor() {
+    super();
+    this.addInputValidator(0, Image2D);
+    this.setMetadata("connexity", 4);
+    this.setMetadata("seed", [0, 0]);
+  }
+  
+  
+  _run(){
+    
+    // the input checking
+    if( ! this.hasValidInput()){
+      console.warn("A filter of type ContourHolesImage2DFilter requires 1 input of category '0'.");
+      return;
+    }
+    
+    var imageIn = this._getInput(0);
+    var ncpp = imageIn.getNcpp();
+    var width = imageIn.getWidth();
+    var height = imageIn.getHeight();
+    var directionList = null;
+    var contours = [];
+    
+    var connexity = this.getMetadata("connexity");
+    var seed = this.getMetadata("seed");
+    
+    // finding the 1st contour
+    var contourDetector = new ContourImage2DFilter();
+    contourDetector.addInput( imageIn );
+    contourDetector.setMetadata("connexity", connexity);
+    contourDetector.setMetadata("seed", seed);
+    contourDetector.update();
+    
+    contours.push( contourDetector.getOutput() );
+    
+    // From the same seed, flood fill - we dont care about the filled image, but
+    // we want the hit points from it
+    var filler = new FloodFillImageFilter();
+    filler.addInput( imageIn );
+    filler.setMetadata('onlyHits', false); // if we are not interested in the image but just want the hit points, this must be true.
+    filler.setMetadata("connexity", 4); // could be 4
+    filler.setMetadata("tolerance", 0); // in pixel value, applied to each component
+    filler.setMetadata("seed", seed);
+    filler.update();
+    
+    var fillingEdgePoints = filler.getOutput("edgePoints");
+    
+    var flyContourDetector = new ContourImage2DFilter(); // will be reused several times
+    flyContourDetector.setMetadata("time", false);  // prevent every little contour finding to print their time
+    
+    // for each point found while filling, we check if already in one of the contours.
+    // if not already, we launch a new contour extraction from this point (as a seed)
+    // and add a new contour.
+    for(var i=0; i<fillingEdgePoints.length; i++){
+      var edgePoint = fillingEdgePoints[i];
+      
+      var isAlreadyPartOfContour = false;
+      
+      for(var c=0; c<contours.length; c++){
+        if( contours[c].hasPoint(edgePoint) ){
+          isAlreadyPartOfContour = true;
+          break;
+        }
+      }
+      
+      if(!isAlreadyPartOfContour){
+        // finding the 1st contour
+        
+        flyContourDetector.addInput( imageIn );
+        flyContourDetector.setMetadata("connexity", connexity);
+        flyContourDetector.setMetadata("seed", edgePoint);
+        flyContourDetector.update();
+        
+        contours.push( flyContourDetector.getOutput() );
+      }
+      
+    } /* END of for loop over edge points */
+    
+    for(var i=0; i<contours.length; i++){
+      this._output[i] = contours[i];
+    }
+    
+  }
+  
+} /* END of class ContourHolesImage2DFilter */
 
 /*
 * Author   Jonathan Lurie - http://me.jonahanlurie.fr
@@ -22488,6 +22621,7 @@ exports.GradientImageFilter = GradientImageFilter;
 exports.NormalizeImageFilter = NormalizeImageFilter;
 exports.ContourImage2DFilter = ContourImage2DFilter;
 exports.FloodFillImageFilter = FloodFillImageFilter;
+exports.ContourHolesImage2DFilter = ContourHolesImage2DFilter;
 exports.AngleToHueWheelHelper = AngleToHueWheelHelper;
 exports.LineStringPrinterOnImage2DHelper = LineStringPrinterOnImage2DHelper;
 exports.Image3DToMosaicFilter = Image3DToMosaicFilter;

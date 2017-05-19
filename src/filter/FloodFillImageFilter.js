@@ -39,7 +39,8 @@ class FloodFillImageFilter extends ImageToImageFilter {
     this.addInputValidator(0, Image2D);
     this.setMetadata("tolerance", 1);
     this.setMetadata("connexity", 4);
-    this.setMetadata("color", [255, 0, 0])
+    this.setMetadata("color", null);
+    this.setMetadata("onlyHits", false);
     
     this._directionListConnexity4 = [
       [ 0 ,-1], // [0] => N
@@ -66,12 +67,11 @@ class FloodFillImageFilter extends ImageToImageFilter {
     
     // the input checking
     if( ! this.hasValidInput()){
-      console.warn("A filter of type AngleToHueWheelHelper requires 1 input of category '0'.");
+      console.warn("A filter of type FloodFillImageFilter requires 1 input of category '0'.");
       return;
     }
     
     var imageIn = this._getInput(0);
-    var imageOut = imageIn.clone();
     var ncpp = imageIn.getNcpp();
     var width = imageIn.getWidth();
     var height = imageIn.getHeight();
@@ -83,7 +83,10 @@ class FloodFillImageFilter extends ImageToImageFilter {
       directionList = this._directionListConnexity4;
     }
     
-    var paintColor = this.getMetadata("color");
+    var replacementColor = new Array(ncpp); // red
+    replacementColor[0] = 255;
+    
+    var paintColor = this.getMetadata("color") || replacementColor;
     
     // checking color validity
     if(paintColor.length != ncpp){
@@ -93,11 +96,20 @@ class FloodFillImageFilter extends ImageToImageFilter {
       }
     }
     
+    
+    
     // to mark the place we've been in the filling
     var markerImage = new Image2D({width: width, height: height, color: [0]});
     var seed = this.getMetadata("seed");
     var seedColor = imageIn.getPixel({x: seed[0], y: seed[1]});
     var tolerance = this.getMetadata("tolerance");
+    var onlyHits = this.getMetadata("onlyHits");
+    
+    var imageOut = null;
+    if(!onlyHits){
+      imageOut = imageIn.clone();
+    }
+    
     
     // the points in this list are points at the edge, except the edge of the image
     var edgePointList = [];
@@ -122,7 +134,9 @@ class FloodFillImageFilter extends ImageToImageFilter {
         markerImage.setPixel({x: x, y: y}, [1]);
         
         // paint the image
-        imageOut.setPixel({x: x, y: y}, paintColor);
+        if(!onlyHits){
+          imageOut.setPixel({x: x, y: y}, paintColor);
+        }
         
         // check neighbours upon connexity degree
         var potentialPosition = [0, 0];
@@ -166,9 +180,11 @@ class FloodFillImageFilter extends ImageToImageFilter {
       
     } /* END while loop unstacking the points */
     
-    this._output[0] = imageOut;
+    if(!onlyHits){
+      this._output[0] = imageOut;
+    }
+  
     this._output["edgePoints"] = edgePointList;
-    
     
   } /* END of _run() */
   
