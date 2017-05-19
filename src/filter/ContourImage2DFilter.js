@@ -81,8 +81,10 @@ class ContourImage2DFilter extends Filter {
       return true;
     }
     
-    var direction = 1; // once top north, we go west
+    
     var newSeed = this._metadata.seed.slice();
+    var directionIncrement = directionList.length / 4;
+    var direction = directionIncrement; // once top north, we go west
     
     if(newSeed[0]<0 || newSeed[1]<0 || newSeed[0]>=width || newSeed[1]>= height){
       console.warn("The seed is out of image range.");
@@ -109,7 +111,7 @@ class ContourImage2DFilter extends Filter {
           direction *= 2;
         }
         
-        direction ++;
+        direction += directionIncrement;
         break;
       }
     }
@@ -159,8 +161,10 @@ class ContourImage2DFilter extends Filter {
         return 2;
       }
         
+      var potentialPositionColor = imageIn.getPixel( {x: potentialPosition[0], y: potentialPosition[1]} );
+        
       // test if the new direction goes with the same color
-      if( isSameColor(imageIn.getPixel( {x: potentialPosition[0], y: potentialPosition[1]} ), clusterColor) ){
+      if( isSameColor(potentialPositionColor, clusterColor) ){
         
         if( potentialPosition[0]==listOfValidPoints[0] && // the point just found is the
             potentialPosition[1]==listOfValidPoints[1] )  // same as the very first
@@ -184,9 +188,9 @@ class ContourImage2DFilter extends Filter {
     while( true ){
       
       // go the previous direction on the list
-      direction = (direction-1);
+      direction -= directionIncrement;
       if(direction<0)
-        direction = directionList.length - 1;
+        direction = directionList.length - directionIncrement;
     
       var score = tryPotientialPosition();
       

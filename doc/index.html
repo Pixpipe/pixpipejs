@@ -413,6 +413,11 @@
                   getPoint
                 </a>
                 <a
+                  href='#LineString.hasPoint'
+                  class='regular block'>
+                  hasPoint
+                </a>
+                <a
                   href='#LineString.open'
                   class='regular block'>
                   open
@@ -808,6 +813,11 @@
                   setPixel
                 </a>
               <a
+                href='#ContourHolesImage2DFilter'
+                class='block bold h3 bg-pink-alpha'>
+                ContourHolesImage2DFilter
+              </a>
+              <a
                 href='#ContourImage2DFilter'
                 class='block bold h3 bg-pink-alpha'>
                 ContourImage2DFilter
@@ -902,6 +912,11 @@
                   class='regular block'>
                   hasValidInput
                 </a>
+              <a
+                href='#FloodFillImageFilter'
+                class='block bold h3 bg-pink-alpha'>
+                FloodFillImageFilter
+              </a>
               <a
                 href='#GradientImageFilter'
                 class='block bold h3 bg-pink-alpha'>
@@ -3360,6 +3375,43 @@ in case of doubt, use  getDataCopy()</p>
       :
       <div class='force-inline'>
         <p>a point, being [x, y] if 2D or [x, y, z] if 3D</p>
+
+      </div>
+</section>
+          </div>
+        </div>
+        <div class='collapsible' id='LineString.hasPoint'>
+          <a href='#LineString.hasPoint'>
+            <code>
+              hasPoint<span class='gray'>(p)</span>
+            </code>
+            <div class='force-inline'>
+              <p>Checks if a given point is part of this LineString</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2'>
+<section class='py2 clearfix'>
+  <h2 id='LineString.hasPoint' class='mt0'>
+    hasPoint<span class='gray'>(p)</span>
+  </h2>
+  <p>Checks if a given point is part of this LineString</p>
+
+    <h4>Parameters</h4>
+    <ul class='suppress-p-margin'>
+        <li><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a></code> <strong>p</strong>
+          :
+          <div class='force-inline'>
+            <p>point coords like [x, y] for 2D or [x, y, z] for 3D</p>
+
+          </div>
+        </li>
+    </ul>
+      <h4>Returns</h4>
+      <code><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean">Boolean</a></code></code>
+      :
+      <div class='force-inline'>
+        <p>truee if the given point is in this LineString, false if not.</p>
 
       </div>
 </section>
@@ -5916,6 +5968,12 @@ with zeros and no metadata.</p>
         </div>
 </section>
 </div><div class='py1'><section class='py2 clearfix'>
+  <h2 id='ContourHolesImage2DFilter' class='mt0'>
+    ContourHolesImage2DFilter<span class='gray'></span>
+  </h2>
+  
+</section>
+</div><div class='py1'><section class='py2 clearfix'>
   <h2 id='ContourImage2DFilter' class='mt0'>
     ContourImage2DFilter<span class='gray'></span>
   </h2>
@@ -6460,6 +6518,28 @@ Only accept Image2D and Image3D</p>
 </section>
           </div>
         </div>
+</section>
+</div><div class='py1'><section class='py2 clearfix'>
+  <h2 id='FloodFillImageFilter' class='mt0'>
+    FloodFillImageFilter<span class='gray'></span>
+  </h2>
+  <p>A FloodFillImageFilter instance takes an Image2D as input and gives a Image2D
+as output.<br>
+The starting point of the flood (seed) has to be set using <code>.setMetadata(&quot;seed&quot;, [x, y])</code>
+where <code>x</code> and <code>y</code> are winthin the boundaries of the image.<br>
+The tolerance can also be set using <code>.setMetadata(&quot;tolerance&quot;, n)</code>.
+The tolerance is an absolute average over each component per pixel.</p>
+<p>Neighbour connexity can be 4 or 8 using <code>.setMetadata(&quot;connexity&quot;, n)</code>.
+Destination color can be set with <code>.setMetadata(&quot;color&quot;, [r, g, b])</code>.
+The color array depends on your input image and can be of size 1 (intensity),
+3 (RGB), 4 (RBGA) or other if multispectral.</p>
+<p>In addition to the output image, the list of internal hit points is created and
+availble with <code>.getOutput(&quot;hits&quot;)</code>.</p>
+<p><strong>Usage</strong></p>
+<ul>
+<li><a href="../examples/floodFillImage2D.html">examples/floodFillImage2D.html</a></li>
+</ul>
+
 </section>
 </div><div class='py1'><section class='py2 clearfix'>
   <h2 id='GradientImageFilter' class='mt0'>

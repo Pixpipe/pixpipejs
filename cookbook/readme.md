@@ -204,6 +204,7 @@ A `Filter` should **NEVER** modify the input data.
 
 ## Playing with vectors
 - [Detect contours (of a segmented Image2D) as a LineString](http://me.jonathanlurie.fr/pixpipejs/examples/contourImage2D.html) | [source](https://github.com/jonathanlurie/pixpipejs/tree/master/examples/contourImage2D.html)
+- [Detect contours and internal polygons](http://me.jonathanlurie.fr/pixpipejs/examples/contourHolesImage2D.html) | [source](https://github.com/jonathanlurie/pixpipejs/tree/master/examples/contourHolesImage2D.html)
 - [Flood fill an Image2D](http://me.jonathanlurie.fr/pixpipejs/examples/floodFillImage2D.html) | [source](https://github.com/jonathanlurie/pixpipejs/tree/master/examples/floodFillImage2D.html)
 
 

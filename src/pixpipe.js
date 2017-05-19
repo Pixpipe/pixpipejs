@@ -38,6 +38,7 @@ export { GradientImageFilter } from './filter/GradientImageFilter.js';
 export { NormalizeImageFilter } from './filter/NormalizeImageFilter.js';
 export { ContourImage2DFilter } from './filter/ContourImage2DFilter.js';
 export { FloodFillImageFilter } from './filter/FloodFillImageFilter.js';
+export { ContourHolesImage2DFilter } from './filter/ContourHolesImage2DFilter.js';
 
 // helpers
 export { AngleToHueWheelHelper } from './helper/AngleToHueWheelHelper.js';
