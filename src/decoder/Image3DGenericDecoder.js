@@ -13,6 +13,7 @@ import { Image3D } from '../core/Image3D.js';
 // decoders
 import { Minc2Decoder } from './Minc2Decoder.js';
 import { NiftiDecoder } from './NiftiDecoder.js';
+import { MghDecoder } from './MghDecoder.js';
 import { PixpDecoder } from './PixpDecoder.js';
 
 
@@ -36,6 +37,7 @@ class Image3DGenericDecoder extends Filter {
     this._decoders = [
       Minc2Decoder,
       NiftiDecoder,
+      MghDecoder,
       PixpDecoder
     ];
   }
