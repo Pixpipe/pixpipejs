@@ -213,7 +213,7 @@ A `Filter` should **NEVER** modify the input data.
 ## Advanced
 - [Open a local file as an ArrayBuffer](http://me.jonathanlurie.fr/pixpipejs/examples/fileToArrayBuffer.html) | [source](https://github.com/jonathanlurie/pixpipejs/tree/master/examples/fileToArrayBuffer.html). Actually very simple but a good starting point to create a new binary file parser
 - [Open a local  NIfTI/MINC/MGH file and display a mosaic of all the slices, with time series if any](http://me.jonathanlurie.fr/pixpipejs/examples/Image3DToMosaic.html) | [source](https://github.com/jonathanlurie/pixpipejs/tree/master/examples/Image3DToMosaic.html)
-- [Open a Structural volume file (NIfTI, Minc2, Pixp), build a 3D texture and display volume with obliques](http://me.jonathanlurie.fr/pixpipejs/examples/volume3DNavigator.html) | [source](https://github.com/jonathanlurie/pixpipejs/tree/master/examples/volume3DNavigator.html)
+- [Open  a local  NIfTI/MINC/MGH file, build a 3D texture and display volume with obliques, show a slider for time series if any](http://me.jonathanlurie.fr/pixpipejs/examples/volume3DNavigatorTime.html) | [source](https://github.com/jonathanlurie/pixpipejs/tree/master/examples/volume3DNavigatorTime.html)
 
 
 # Create your own custom filter
