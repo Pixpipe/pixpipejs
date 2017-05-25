@@ -45,6 +45,8 @@ class Filter extends PixpipeObject {
     this._timer = {};
 
     this._isOutputReady = false;
+    
+    this.setMetadata("time", true);
 
   }
 
@@ -286,11 +288,15 @@ class Filter extends PixpipeObject {
   * Launch the process.
   */
   update(){
-    this.addTimeRecord("begin");
-    this._run();
-    this.addTimeRecord("end");
-    console.log("Running time for filter " + this.constructor.name + ": " + this.getTime("begin", "end") + "ms.");
-    
+    if( this._metadata.time ){
+      this.addTimeRecord("begin");
+      this._run();
+      this.addTimeRecord("end");
+      console.log("Running time for filter " + this.constructor.name + ": " + this.getTime("begin", "end") + "ms.");
+    }else{
+      this._run();
+    }
+
     if(this.getNumberOfOutputs()){
       this.setOutputAsReady();
     }

@@ -25,6 +25,7 @@ export { PixpEncoder } from './decoder/PixpEncoder.js';
 export { PixpDecoder } from './decoder/PixpDecoder.js';
 export { Image3DGenericDecoder } from './decoder/Image3DGenericDecoder.js';
 export { TiffDecoder } from './decoder/TiffDecoder.js';
+export { MghDecoder } from './decoder/MghDecoder.js';
 
 // filters - processing of Images2D
 export { ForEachPixelImageFilter } from './filter/ForEachPixelImageFilter.js';
@@ -37,7 +38,8 @@ export { ImageDerivativeFilter } from './filter/ImageDerivativeFilter.js';
 export { GradientImageFilter } from './filter/GradientImageFilter.js';
 export { NormalizeImageFilter } from './filter/NormalizeImageFilter.js';
 export { ContourImage2DFilter } from './filter/ContourImage2DFilter.js';
-
+export { FloodFillImageFilter } from './filter/FloodFillImageFilter.js';
+export { ContourHolesImage2DFilter } from './filter/ContourHolesImage2DFilter.js';
 
 // helpers
 export { AngleToHueWheelHelper } from './helper/AngleToHueWheelHelper.js';

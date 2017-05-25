@@ -187,7 +187,7 @@ class Image2D extends PixpipeContainer{
       }
 
     }else{
-      console.error("x and y position have to be within the image dimensions and color size must be the same as the original image.");
+      //console.error("x and y position have to be within the image dimensions and color size must be the same as the original image.");
     }
   }
 

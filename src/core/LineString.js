@@ -218,6 +218,29 @@ class LineString extends PixpipeContainer {
   }
   
   
+  /**
+  * Checks if a given point is part of this LineString
+  * @param {Array} p - point coords like [x, y] for 2D or [x, y, z] for 3D
+  * @return {Boolean} truee if the given point is in this LineString, false if not.
+  */
+  hasPoint( p ){
+    var nod = this.getMetadata("nod");
+    
+    if(p.length != nod){
+      console.warn("The given point does not have the same number of dimensions as the LineString.");
+      return false;
+    }
+    
+    for(var i=0; i<this._data.length-1; i+=2){
+      if(this._data[i] == p[0] && this._data[i+1] == p[1]){
+        return true;
+      }
+    }
+    
+    return false;
+  }
+  
+  
 } /* END of class LineString */
 
 export { LineString };

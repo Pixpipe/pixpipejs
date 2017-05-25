@@ -1,0 +1,115 @@
+<html>
+<head>
+  <title>Image3D to pixp file</title>
+
+  <script src="../dist/pixpipe.js"></script>
+  <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700,900" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <h1><a href="https://github.com/jonathanlurie/pixpipejs"><span style="color: #ff91d7">Pixpipe</span><span style="color: #FFFFFF">js</span></a></h1>
+  <p>
+  This does the following :
+  <ul>
+    <li>open a local NIfTI/MINC/MGH/pixp file, using <code>pixpipe.FileToArrayBufferReader</code></li>
+    <li>redirect the file buffer into a <code>pixpipe.Image3DGenericDecoder</code> to extract 3D dataset and metadata</li>
+    <li>get the output as a generique <code>pixpipe.Image3D</code> object</li>
+    <li>convert it to pixp format file buffer with a <code>pixpipe.PixpEncoder</code></li>
+    <li>download the file by clicking on the button</li>
+  </ul>
+
+  </p>
+
+  <div>
+		Select an file:
+		<input type="file" id="fileInput">
+    <br>
+    <br>
+    <span id="fileInfo"></span>
+    <input id="downloadBt" type="submit" value="download" onclick="downloadFile()" style="display:none; margin-left:10px;">
+    
+	</div>
+
+  <div id="output">
+
+  </div>
+
+  <script>
+
+
+  var fileInput = document.getElementById('fileInput');
+
+  // The filter to read image from URL
+  var file2Buff = new pixpipe.FileToArrayBufferReader();
+  var encoder = new pixpipe.PixpEncoder();
+
+  // the image is loaded...
+  // here, this = url2ImgFilter
+  file2Buff.on("ready", function(){
+
+    var filenames = this.getMetadata("filenames");
+
+    var buff = this.getOutput();
+
+    var image3DDecoder = new pixpipe.Image3DGenericDecoder();
+    image3DDecoder.addInput( buff );
+    image3DDecoder.update();
+
+    var mniVolume = image3DDecoder.getOutput();
+
+    if(mniVolume){
+      // making a proper filename
+      var splitFilename = file2Buff.getMetadata("filenames")[0].split('.');
+      var ext = splitFilename.pop();
+      if(ext == "gz")
+        splitFilename.pop();
+        
+      var filename = splitFilename.join(".") + ".pixp";
+      
+      document.getElementById('fileInfo').innerHTML = "Converting " + filename + " ...";
+      
+      // set the output filename
+      encoder.setMetadata("filename", filename); // optional, default: untitled.pixp
+      encoder.addInput( mniVolume);
+
+      // Creates the gzip blob
+      encoder.update();
+
+      document.getElementById('fileInfo').innerHTML = "Convertion done.";
+      document.getElementById('downloadBt').style.display = "inherit";
+
+
+    }else{
+      document.getElementById('fileInfo').innerHTML = "The selected file must be NIfTI, MINC2, MGH or pixp.";
+      console.warn("Non-existant output for Image3DGenericDecoder.");
+    }
+  });
+
+
+  // event listener of the file input
+  fileInput.addEventListener('change', function(e) {
+    var files = e.target.files;
+    var filenames = {};
+
+    for(var i=0; i<files.length; i++){
+      // set the input, an HTML5 File object and a category (ID)
+      file2Buff.addInput(files[i], i);
+      filenames[i] = files[i].name ;
+    }
+
+    file2Buff.setMetadata("filenames", filenames);
+
+    // Perform the reading + conversion ibto ArrayBuffer
+    file2Buff.update();
+	});
+
+  
+  // bound to the download button
+  function downloadFile(){
+    encoder.download();
+  }
+  
+  </script>
+
+</body>
+</html>
