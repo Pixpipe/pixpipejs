@@ -1,0 +1,65 @@
+<html>
+<head>
+  <title>Flood fill an Image2D</title>
+
+  <script src="../dist/pixpipe.js"></script>
+
+  <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700,900" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+
+</head>
+<body>
+  <h1><a href="https://github.com/jonathanlurie/pixpipejs"><span style="color: #ff91d7">Pixpipe</span><span style="color: #FFFFFF">js</span></a></h1>
+  <p>
+  This does the following :
+  <ul>
+    <li>opening a distant image file with AJAX request, using <code>pixpipe.UrlImageReader</code></li>
+    <li>Paint with flood fill from a seed using <code>pixpipe.FloodFillImageFilter</code></li>
+    <li>displaying it in a canvas using <code>pixpipe.CanvasImageWriter</code></li>
+  </ul>
+  </p>
+
+  <div id="myDiv"></div>
+
+  <script>
+
+  // create a filter to write the image into a canvas
+  var imageToCanvasFilter = new pixpipe.CanvasImageWriter();
+  imageToCanvasFilter.setMetadata( "parentDivID", "myDiv" );
+
+  // The filter to read image from URL
+  var url2ImgFilter = new pixpipe.UrlImageReader();
+
+  // the input of this reader is a simple string url. Can be local of distant, but if distant, the server must allow CORS.
+  url2ImgFilter.addInput( "images/segmentedBrain.png" );
+
+  // the image is loaded...
+  // here, this = url2ImgFilter
+  url2ImgFilter.on("ready", function(){
+    var loadedImage = this.getOutput();
+    
+    var filler = new pixpipe.FloodFillImageFilter();
+    filler.addInput( loadedImage );
+    filler.setMetadata('onlyHits', false); // if we are not interested in the image but just want the hit points, this must be true.
+    filler.setMetadata("connexity", 8); // could be 4
+    filler.setMetadata("tolerance", 0); // in pixel value, applied to each component
+    filler.setMetadata("color", [255, 0, 255]); // optional, will be red of not set
+    filler.setMetadata("seed", [232, 99]);
+    filler.update();
+    
+    console.log( filler.getOutput("edgePoints") );
+    
+    // use the output of the UrlImageReader as the input for CanvasImageWriter
+    imageToCanvasFilter.addInput( filler.getOutput() );
+    // actually copy the data from the Image2D into the inner HTML5 canvas
+    imageToCanvasFilter.update();
+  })
+
+  // Ask to fetch the image from URL
+  url2ImgFilter.update();
+
+
+  </script>
+
+</body>
+</html>

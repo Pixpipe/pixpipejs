@@ -30,8 +30,6 @@ class PixpDecoder extends Filter {
 
   _run(){
 
-    console.log(this._input);
-
     if(! this.hasValidInput() ){
       console.warn("PixpDecoder can only decode ArrayBuffer.");
       return;

@@ -189,6 +189,8 @@ class Filter extends PixpipeObject {
     this._timer = {};
 
     this._isOutputReady = false;
+    
+    this.setMetadata("time", true);
 
   }
 
@@ -430,11 +432,15 @@ class Filter extends PixpipeObject {
   * Launch the process.
   */
   update(){
-    this.addTimeRecord("begin");
-    this._run();
-    this.addTimeRecord("end");
-    console.log("Running time for filter " + this.constructor.name + ": " + this.getTime("begin", "end") + "ms.");
-    
+    if( this._metadata.time ){
+      this.addTimeRecord("begin");
+      this._run();
+      this.addTimeRecord("end");
+      console.log("Running time for filter " + this.constructor.name + ": " + this.getTime("begin", "end") + "ms.");
+    }else{
+      this._run();
+    }
+
     if(this.getNumberOfOutputs()){
       this.setOutputAsReady();
     }
@@ -770,7 +776,7 @@ class Image2D extends PixpipeContainer{
       }
 
     }else{
-      console.error("x and y position have to be within the image dimensions and color size must be the same as the original image.");
+      //console.error("x and y position have to be within the image dimensions and color size must be the same as the original image.");
     }
   }
 
@@ -1413,6 +1419,13 @@ class Image3D extends PixpipeContainer{
     return this._data[xyzt_offset];
   }
 
+  
+  /**
+  * Get the number of samples over time
+  */
+  getTimeLength(){
+    return ( this.hasMetadata("time") ? this.getMetadata("time").space_length : 1 );
+  }
 
 } /* END of class Image3D */
 
@@ -1917,6 +1930,29 @@ class LineString extends PixpipeContainer {
     var pointToReturn = new Array(this._lastPoint);
     this._lastPoint.length = this._lastPoint.length - this._metadata.nod;
     this._setLastPoint();
+  }
+  
+  
+  /**
+  * Checks if a given point is part of this LineString
+  * @param {Array} p - point coords like [x, y] for 2D or [x, y, z] for 3D
+  * @return {Boolean} truee if the given point is in this LineString, false if not.
+  */
+  hasPoint( p ){
+    var nod = this.getMetadata("nod");
+    
+    if(p.length != nod){
+      console.warn("The given point does not have the same number of dimensions as the LineString.");
+      return false;
+    }
+    
+    for(var i=0; i<this._data.length-1; i+=2){
+      if(this._data[i] == p[0] && this._data[i+1] == p[1]){
+        return true;
+      }
+    }
+    
+    return false;
   }
   
   
@@ -15417,8 +15453,6 @@ class PixpDecoder extends Filter {
 
   _run(){
 
-    console.log(this._input);
-
     if(! this.hasValidInput() ){
       console.warn("PixpDecoder can only decode ArrayBuffer.");
       return;
@@ -15478,6 +15512,330 @@ class PixpDecoder extends Filter {
 
 /*
 * Author    Jonathan Lurie - http://me.jonahanlurie.fr
+*           Robert D. Vincent
+*
+* License   MIT
+* Link      https://github.com/jonathanlurie/pixpipejs
+* Lab       MCIN - Montreal Neurological Institute
+*/
+
+/**
+* Decodes a MGH file.
+* Takes an ArrayBuffer as input (0) and output a `MniVolume` (which inherit `Image3D`).
+*
+* **Usage**
+* - [examples/fileToMgh.html](../examples/fileToMgh.html)
+*/
+class MghDecoder extends Filter {
+  
+  constructor() {
+    super();
+    this.addInputValidator(0, ArrayBuffer);
+    this.setMetadata("debug", false);
+  }
+  
+  
+  /* Function to parse the basic MGH header. This is a 284-byte binary
+   * object that begins at offset zero in the file.
+   * The resulting header object will contain the following fields:
+   *
+   * header.order[] - An array of strings that gives the order of the
+   * spatial dimensions.
+   * header.xspace - Description of the X axis (patient left to right)
+   * header.yspace - Description of the Y axis (patient posterior to anterior)
+   * header.zspace - Description of the Z axis (patient inferior to superior)
+   * header.time - Description of time axis, if any.
+
+   * Non-standard fields used internally only:
+   *
+   * header.nvoxels - Total number of voxels in the image.
+   * header.datatype - MGH data type of image.
+   * header.little_endian - True if data is little endian (should be false!)
+   */
+  _parseMGHHeader(raw_data, callback) {
+    var header = {
+      order: ["xspace", "yspace", "zspace"],
+      xspace: {},
+      yspace: {},
+      zspace: {}
+    };
+    var error_message;
+    var dview = new DataView(raw_data, 0, 284);
+    var little_endian = true;
+
+    /* Read the header version, which should always have the value
+     * 0x00000001. We use this to test the endian-ness of the data,
+     * but it should always be big-endian.
+     */
+    var hdr_version = dview.getUint32(0, true);
+    if (hdr_version === 0x00000001) {
+      little_endian = true;
+    } else if (hdr_version === 0x01000000) {
+      little_endian = false;    // Generally files are big-endian.
+    }
+    else {
+      console.warn( "This does not look like an MGH file." );
+      return null;
+    }
+
+    /* Now read the dimension lengths. There are at most 4 dimensions
+     * in the file. The lengths fields are always present, but they
+     * unused dimensions may have the value 0 or 1.
+     */
+    var ndims = 0;
+    var sizes = [0, 0, 0, 0];
+    var header_offset = 4;
+    var nvoxels = 1;
+    for (ndims = 0; ndims < 4; ndims++) {
+      sizes[ndims] = dview.getUint32(header_offset, little_endian);
+      if (sizes[ndims] <= 1) {
+        break;
+      }
+      nvoxels *= sizes[ndims];
+      header_offset += 4;
+    }
+
+    if (ndims < 3 || ndims > 4) {
+      console.warn( "Cannot handle " + ndims + "-dimensional images yet." );
+      return null;
+    }
+
+    var datatype = dview.getUint32(20, little_endian);
+    // IGNORED var dof = dview.getUint32(24, little_endian);
+    var good_transform_flag = dview.getUint16(28, little_endian);
+    var spacing = [1.0, 1.0, 1.0];
+    var i, j;
+    var dircos = [
+      [-1.0,  0.0,  0.0],
+      [ 0.0,  0.0, -1.0],
+      [ 0.0,  1.0,  0.0],
+      [ 0.0,  0.0,  0.0]
+    ];
+    if (good_transform_flag) {
+      header_offset = 30;
+      for (i = 0; i < 3; i++) {
+        spacing[i] = dview.getFloat32(header_offset, little_endian);
+        header_offset += 4;
+      }
+      for (i = 0; i < 4; i++) {
+        for (j = 0; j < 3; j++) {
+          dircos[i][j] = dview.getFloat32(header_offset, little_endian);
+          header_offset += 4;
+        }
+      }
+    }
+
+    if ( this._metadata.debug ) {
+      // Prints out the transform in a format similar to the output
+      // of FreeSurfer's mri_info tool.
+      //
+      for (i = 0; i < 3; i++) {
+        var s1 = "";
+        for (j = 0; j < 4; j++) {
+          s1 += "xyzc"[j] + "_" + "ras"[i] + " " + dircos[j][i] + " ";
+        }
+        console.log(s1);
+      }
+    }
+
+    var axis_index_from_file = [0, 1, 2];
+
+    for ( var axis = 0; axis < 3; axis++) {
+      var spatial_axis = 0;
+      var c_x = Math.abs(dircos[axis][0]);
+      var c_y = Math.abs(dircos[axis][1]);
+      var c_z = Math.abs(dircos[axis][2]);
+
+      header.order[axis] = "xspace";
+      if (c_y > c_x && c_y > c_z) {
+        spatial_axis = 1;
+        header.order[axis] = "yspace";
+      }
+      if (c_z > c_x && c_z > c_y) {
+        spatial_axis = 2;
+        header.order[axis] = "zspace";
+      }
+      axis_index_from_file[axis] = spatial_axis;
+    }
+
+    /* If there are four dimensions, assume the last is the time
+     * dimension. I use default values for step and start because as
+     * far as I know MGH files do not carry any descriptive
+     * information about the 4th dimension.
+     */
+    if (ndims === 4) {
+      if (this._metadata.debug) {
+        console.log("Creating time dimension: " + sizes[3]);
+      }
+      header.time = {
+        space_length: sizes[3],
+        step: 1,
+        start: 0,
+        name: "time"
+      };
+      header.order.push("time");
+    }
+
+    /** This is here because there are two different ways of interpreting
+      * the origin of an MGH file. One can ignore the offsets in the
+      * transform, using the centre of the voxel grid. Or you can correct
+      * these naive grid centres using the values stored in the transform.
+      * The first approach is what is used by surface files, so to get them
+      * to register nicely, we want ignore_offsets to be true. However,
+      * getting volumetric files to register correctly implies setting
+      * ignore_offsets to false.
+      */
+    var ignore_offsets = false;
+    var mgh_xform = [
+      [0, 0, 0, 0],
+      [0, 0, 0, 0],
+      [0, 0, 0, 0]
+    ];
+    for (i = 0; i < 3; i++) {
+      for (j = 0; j < 3; j++) {
+        mgh_xform[i][j] = dircos[j][i] * spacing[i];
+      }
+    }
+
+    for (i = 0; i < 3; i++) {
+      var temp = 0.0;
+      for (j = 0; j < 3; j++) {
+        temp += mgh_xform[i][j] * (sizes[j] / 2.0);
+      }
+
+      if (ignore_offsets) {
+        mgh_xform[i][4 - 1] = -temp;
+      }
+      else {
+        mgh_xform[i][4 - 1] = dircos[4 - 1][i] - temp;
+      }
+    }
+
+    var transform = [
+      [0, 0, 0, 0],
+      [0, 0, 0, 0],
+      [0, 0, 0, 0],
+      [0, 0, 0, 0]
+    ];
+
+    for (i = 0; i < 3; i++) {
+      for (j = 0; j < 4; j++) {
+        var volume_axis = j;
+        if (j < 3) {
+          volume_axis = axis_index_from_file[j];
+        }
+        transform[i][volume_axis] = mgh_xform[i][j];
+      }
+    }
+
+    // Now that we have the transform, need to convert it to MINC-like
+    // steps and direction_cosines.
+
+    MniVolume.transformToMinc(transform, header);
+
+    // Save the datatype so that we can refer to it later.
+    header.datatype = datatype;
+    header.little_endian = little_endian;
+    header.nvoxels = nvoxels;
+
+    // Save the voxel dimension lengths.
+    for (i = 0; i < 3; i++) {
+      header[header.order[i]].space_length = sizes[i];
+    }
+
+    return header;
+  }
+  
+  
+  _createMGHData(header, raw_data) {
+    
+    var native_data = null;
+    var bytes_per_voxel = 1;
+
+    switch (header.datatype) {
+    case 0:                     // Unsigned characters.
+      bytes_per_voxel = 1;
+      break;
+    case 1:                     // 4-byte signed integers.
+    case 3:                     // 4-byte float.
+      bytes_per_voxel = 4;
+      break;
+    case 4:                     // 2-byte signed integers.
+      bytes_per_voxel = 2;
+      break;
+    default:
+      console.warn( "Unsupported data type: " + header.datatype );
+      return null;
+    }
+
+    var nbytes = header.nvoxels * bytes_per_voxel;
+
+    if (bytes_per_voxel > 1 && !header.little_endian) {
+      MniVolume.swapn( new Uint8Array(raw_data, 284, nbytes), bytes_per_voxel );
+    }
+
+    switch (header.datatype) {
+    case 0:                     // unsigned char
+      native_data = new Uint8Array(raw_data, 284, header.nvoxels);
+      break;
+    case 1:                     // signed int
+      native_data = new Int32Array(raw_data, 284, header.nvoxels);
+      break;
+    case 3:
+      native_data = new Float32Array(raw_data, 284, header.nvoxels);
+      break;
+    case 4:                     // signed short
+      native_data = new Int16Array(raw_data, 284, header.nvoxels);
+      break;
+    }
+
+    // Incrementation offsets for each dimension of the volume. MGH
+    // files store the fastest-varying dimension _first_, so the
+    // "first" dimension actually has the smallest offset. That is
+    // why this calculation is different from that for NIfTI-1.
+    //
+    var offset = 1;
+    for (var d = 0; d < header.order.length; d++) {
+      header[header.order[d]].offset = offset;
+      offset *= header[header.order[d]].space_length;
+    }
+    return native_data;
+
+  }
+
+  
+  _run(){
+    var inputBuffer = this._getInput(0);
+
+    if(!inputBuffer){
+      console.warn("MghDecoder requires an ArrayBuffer as input \"0\". Unable to continue.");
+      return;
+    }
+
+    var header = this._parseMGHHeader( inputBuffer );
+
+    // abort if header not valid
+    if(!header)
+      return;
+
+
+    var dataArray = this._createMGHData(header, inputBuffer);
+    
+    if(!dataArray)
+      return null;
+
+    // add the output to this filter
+    this._addOutput(MniVolume);
+    var mniVol = this.getOutput();
+    mniVol.setData(dataArray, header);
+    mniVol.setMetadata("format", "mgh");
+    
+  }
+  
+} /* END of class MghDecoder */
+
+/*
+* Author    Jonathan Lurie - http://me.jonahanlurie.fr
 *
 * License   MIT
 * Link      https://github.com/jonathanlurie/pixpipejs
@@ -15506,6 +15864,7 @@ class Image3DGenericDecoder extends Filter {
     this._decoders = [
       Minc2Decoder,
       NiftiDecoder,
+      MghDecoder,
       PixpDecoder
     ];
   }
@@ -21759,8 +22118,10 @@ class ContourImage2DFilter extends Filter {
       return true;
     }
     
-    var direction = 1; // once top north, we go west
+    
     var newSeed = this._metadata.seed.slice();
+    var directionIncrement = directionList.length / 4;
+    var direction = directionIncrement; // once top north, we go west
     
     if(newSeed[0]<0 || newSeed[1]<0 || newSeed[0]>=width || newSeed[1]>= height){
       console.warn("The seed is out of image range.");
@@ -21771,8 +22132,30 @@ class ContourImage2DFilter extends Filter {
     var newColor = clusterColor;
     var atNorth = newSeed.slice();
     
+    
+    var canStartFromOriginalSeed = false;
+    
+    
+    // test the local surrounding and avoid going North
+    for(var i=0; i<this._directionListConnexity4.length; i++){
+      var localColor = imageIn.getPixel( {x: newSeed[0] + this._directionListConnexity4[i][0], y: newSeed[1] + this._directionListConnexity4[i][1]} );
+      
+      if(! isSameColor(localColor, clusterColor)){
+        canStartFromOriginalSeed = true;
+        direction = i;
+        
+        if( this.getMetadata("connexity") == 8){
+          direction *= 2;
+        }
+        
+        direction += directionIncrement;
+        break;
+      }
+    }
+    
+    
     // first, we go to the north border of our cluster
-    while( true ){
+    while( true && !canStartFromOriginalSeed){
       atNorth[0] += directionList[0][0];
       atNorth[1] += directionList[0][1];
       
@@ -21808,8 +22191,17 @@ class ContourImage2DFilter extends Filter {
       potentialPosition[0] = movingPoint[0] + directionList[direction][0];
       potentialPosition[1] = movingPoint[1] + directionList[direction][1];
         
+      // prevent from going ouside the image
+      if(potentialPosition[0] < 0 || potentialPosition[1] < 0 || 
+         potentialPosition[0] >= width || potentialPosition[1] >= height)
+      {
+        return 2;
+      }
+        
+      var potentialPositionColor = imageIn.getPixel( {x: potentialPosition[0], y: potentialPosition[1]} );
+        
       // test if the new direction goes with the same color
-      if( isSameColor(imageIn.getPixel( {x: potentialPosition[0], y: potentialPosition[1]} ), clusterColor) ){
+      if( isSameColor(potentialPositionColor, clusterColor) ){
         
         if( potentialPosition[0]==listOfValidPoints[0] && // the point just found is the
             potentialPosition[1]==listOfValidPoints[1] )  // same as the very first
@@ -21833,9 +22225,9 @@ class ContourImage2DFilter extends Filter {
     while( true ){
       
       // go the previous direction on the list
-      direction = (direction-1);
+      direction -= directionIncrement;
       if(direction<0)
-        direction = directionList.length - 1;
+        direction = directionList.length - directionIncrement;
     
       var score = tryPotientialPosition();
       
@@ -21883,6 +22275,296 @@ class ContourImage2DFilter extends Filter {
   
   
 } /* END of class ContourImage2DFilter */
+
+/*
+* Author   Jonathan Lurie - http://me.jonahanlurie.fr
+* License  MIT
+* Link      https://github.com/jonathanlurie/pixpipejs
+* Lab       MCIN - Montreal Neurological Institute
+*/
+
+
+/**
+* A FloodFillImageFilter instance takes an Image2D as input and gives a Image2D
+* as output.  
+* The starting point of the flood (seed) has to be set using `.setMetadata("seed", [x, y])`
+* where `x` and `y` are winthin the boundaries of the image.  
+* The tolerance can also be set using `.setMetadata("tolerance", n)`.
+* The tolerance is an absolute average over each component per pixel.
+* 
+* Neighbour connexity can be 4 or 8 using `.setMetadata("connexity", n)`.
+* Destination color can be set with `.setMetadata("color", [r, g, b])`.
+* The color array depends on your input image and can be of size 1 (intensity),
+* 3 (RGB), 4 (RBGA) or other if multispectral.
+*
+* In addition to the output image, the list of internal hit points is created and
+* availble with `.getOutput("hits")`.
+*
+*
+* **Usage**
+* - [examples/floodFillImage2D.html](../examples/floodFillImage2D.html)
+*
+*
+*/
+class FloodFillImageFilter extends ImageToImageFilter {
+  
+  constructor(){
+    super();
+    this.addInputValidator(0, Image2D);
+    this.setMetadata("tolerance", 1);
+    this.setMetadata("connexity", 4);
+    this.setMetadata("color", null);
+    this.setMetadata("onlyHits", false);
+    
+    this._directionListConnexity4 = [
+      [ 0 ,-1], // [0] => N
+      [-1 , 0], // [1] => W
+      [ 0 , 1], // [2] => S
+      [ 1 , 0]  // [3] => E
+    ];
+    
+    this._directionListConnexity8 = [
+      [ 0  , -1], // [0] => N
+      [-1  , -1], // [1] => NW
+      [-1  ,  0], // [2] => W
+      [-1  ,  1], // [3] => SW
+      [ 0  ,  1], // [4] => S
+      [ 1  ,  1], // [5] => SE
+      [ 1  ,  0], // [6] => E
+      [ 1  , -1]  // [7] => NE
+    ];
+    
+  }
+  
+  
+  _run(){
+    
+    // the input checking
+    if( ! this.hasValidInput()){
+      console.warn("A filter of type FloodFillImageFilter requires 1 input of category '0'.");
+      return;
+    }
+    
+    var imageIn = this._getInput(0);
+    var ncpp = imageIn.getNcpp();
+    var width = imageIn.getWidth();
+    var height = imageIn.getHeight();
+    var directionList = null;
+    
+    if( this.getMetadata("connexity") == 8){
+      directionList = this._directionListConnexity8;
+    }else{
+      directionList = this._directionListConnexity4;
+    }
+    
+    var replacementColor = new Array(ncpp); // red
+    replacementColor[0] = 255;
+    
+    var paintColor = this.getMetadata("color") || replacementColor;
+    
+    // checking color validity
+    if(paintColor.length != ncpp){
+      if(!(paintColor.length == 3 && ncpp ==4)){
+        console.warn("The color to fill must have the same number of components as the input image. (RGB color for RGBA image is accepted)");
+        return;
+      }
+    }
+    
+    
+    
+    // to mark the place we've been in the filling
+    var markerImage = new Image2D({width: width, height: height, color: [0]});
+    var seed = this.getMetadata("seed");
+    var seedColor = imageIn.getPixel({x: seed[0], y: seed[1]});
+    var tolerance = this.getMetadata("tolerance");
+    var onlyHits = this.getMetadata("onlyHits");
+    
+    var imageOut = null;
+    if(!onlyHits){
+      imageOut = imageIn.clone();
+    }
+    
+    
+    // the points in this list are points at the edge, except the edge of the image
+    var edgePointList = [];
+    
+    var pixelStack = [];
+    pixelStack.push( seed );
+    
+    while(pixelStack.length > 0){
+      
+      var currentPixel = pixelStack.pop();
+      var x = currentPixel[0];
+      var y = currentPixel[1];
+      
+      if(x<0 || x>=width || y<0 || y>=height){
+        continue;
+      }
+      
+      // if the image was not filled here...
+      if(markerImage.getPixel({x: x, y: y})[0] == 0){
+        
+        // mark as visited
+        markerImage.setPixel({x: x, y: y}, [1]);
+        
+        // paint the image
+        if(!onlyHits){
+          imageOut.setPixel({x: x, y: y}, paintColor);
+        }
+        
+        // check neighbours upon connexity degree
+        var potentialPosition = [0, 0];
+        var isOnEdge = false;
+        
+        for(var i=0; i<directionList.length; i++){
+          potentialPosition[0] = x + directionList[i][0];
+          potentialPosition[1] = y + directionList[i][1];
+          
+          if(potentialPosition[0]<0 || potentialPosition[0]>=width || 
+             potentialPosition[1]<0 || potentialPosition[1]>=height )   
+          { 
+            continue;
+          }
+          
+          var targetColor = imageIn.getPixel({x:potentialPosition[0], y: potentialPosition[1] });
+          
+          var isWithinTolerance = true;
+          for(var c=0; c<seedColor.length; c++){
+            if(Math.abs( targetColor[c] - seedColor[c] ) > tolerance ){
+              isWithinTolerance = false;
+              isOnEdge = true;
+              break;
+            }
+          } /* END for loop color channels */
+          
+          if(isWithinTolerance ){
+            var newCandidate = [potentialPosition[0], potentialPosition[1]];
+            pixelStack.push( newCandidate );
+          }
+          
+        } /* END for loop direction*/
+        
+        if(isOnEdge){
+          if(x!=0 && x!=(width-1) && y!=0 && y!=(height-1)){ // we dont want the edge of the image
+            edgePointList.push( currentPixel );
+          }
+        }
+        
+      } /* END if image was not filled at this position */
+      
+    } /* END while loop unstacking the points */
+    
+    if(!onlyHits){
+      this._output[0] = imageOut;
+    }
+  
+    this._output["edgePoints"] = edgePointList;
+    
+  } /* END of _run() */
+  
+  
+  
+  
+} /* END of class FloodFillImageFilter */
+
+/*
+* Author   Jonathan Lurie - http://me.jonahanlurie.fr
+* License  MIT
+* Link      https://github.com/jonathanlurie/pixpipejs
+* Lab       MCIN - Montreal Neurological Institute
+*/
+
+
+/**
+*
+*/
+class ContourHolesImage2DFilter extends Filter {
+  
+  constructor() {
+    super();
+    this.addInputValidator(0, Image2D);
+    this.setMetadata("connexity", 4);
+    this.setMetadata("seed", [0, 0]);
+  }
+  
+  
+  _run(){
+    
+    // the input checking
+    if( ! this.hasValidInput()){
+      console.warn("A filter of type ContourHolesImage2DFilter requires 1 input of category '0'.");
+      return;
+    }
+    
+    var imageIn = this._getInput(0);
+    var ncpp = imageIn.getNcpp();
+    var width = imageIn.getWidth();
+    var height = imageIn.getHeight();
+    var directionList = null;
+    var contours = [];
+    
+    var connexity = this.getMetadata("connexity");
+    var seed = this.getMetadata("seed");
+    
+    // finding the 1st contour
+    var contourDetector = new ContourImage2DFilter();
+    contourDetector.addInput( imageIn );
+    contourDetector.setMetadata("connexity", connexity);
+    contourDetector.setMetadata("seed", seed);
+    contourDetector.update();
+    
+    contours.push( contourDetector.getOutput() );
+    
+    // From the same seed, flood fill - we dont care about the filled image, but
+    // we want the hit points from it
+    var filler = new FloodFillImageFilter();
+    filler.addInput( imageIn );
+    filler.setMetadata('onlyHits', false); // if we are not interested in the image but just want the hit points, this must be true.
+    filler.setMetadata("connexity", 4); // could be 4
+    filler.setMetadata("tolerance", 0); // in pixel value, applied to each component
+    filler.setMetadata("seed", seed);
+    filler.update();
+    
+    var fillingEdgePoints = filler.getOutput("edgePoints");
+    
+    var flyContourDetector = new ContourImage2DFilter(); // will be reused several times
+    flyContourDetector.setMetadata("time", false);  // prevent every little contour finding to print their time
+    
+    // for each point found while filling, we check if already in one of the contours.
+    // if not already, we launch a new contour extraction from this point (as a seed)
+    // and add a new contour.
+    for(var i=0; i<fillingEdgePoints.length; i++){
+      var edgePoint = fillingEdgePoints[i];
+      
+      var isAlreadyPartOfContour = false;
+      
+      for(var c=0; c<contours.length; c++){
+        if( contours[c].hasPoint(edgePoint) ){
+          isAlreadyPartOfContour = true;
+          break;
+        }
+      }
+      
+      if(!isAlreadyPartOfContour){
+        // finding the 1st contour
+        
+        flyContourDetector.addInput( imageIn );
+        flyContourDetector.setMetadata("connexity", connexity);
+        flyContourDetector.setMetadata("seed", edgePoint);
+        flyContourDetector.update();
+        
+        contours.push( flyContourDetector.getOutput() );
+      }
+      
+    } /* END of for loop over edge points */
+    
+    for(var i=0; i<contours.length; i++){
+      this._output[i] = contours[i];
+    }
+    
+  }
+  
+} /* END of class ContourHolesImage2DFilter */
 
 /*
 * Author   Jonathan Lurie - http://me.jonahanlurie.fr
@@ -22151,6 +22833,7 @@ class Image3DToMosaicFilter extends Filter{
     this.setMetadata("maxWidth", 4096);
     this.setMetadata("maxHeight", 4096);
     this.setMetadata("axis", "xspace");
+    this.setMetadata("time", 0);
   }
 
 
@@ -22170,8 +22853,27 @@ class Image3DToMosaicFilter extends Filter{
     var numOfSlices = spaceInfo.space_length;
     var width = spaceInfo.width;
     var height = spaceInfo.height;
+    
+    // dealing with time series
+    var startTime = 0;
+    var endTime = 1;
+    
+    if( inputImage3D.hasMetadata("time") ){
+      var timeInfo = inputImage3D.getMetadata("time");
+      var timeLength = timeInfo.space_length;
+      
+      if(this._metadata.time == -1 ){
+        startTime = 0;
+        endTime = timeLength;
+      }else if( this._metadata.time < timeLength){
+        startTime = this._metadata.time;
+        endTime = startTime + 1;
+      }
+    }
+    
+    var numberOfSlicesWithTime = numOfSlices * (endTime-startTime);
 
-    // number of image we can fit in the with of an output image
+    // number of image we can fit in the with and heigth of an output image
     var widthFit = Math.floor( this.getMetadata("maxWidth") / width );
     var heightFit = Math.floor( this.getMetadata("maxHeight") / height );
 
@@ -22181,60 +22883,65 @@ class Image3DToMosaicFilter extends Filter{
     var slicePerOutputIm = widthFit * heightFit;
 
     // Number of output image(s) necessary to cover the whole Image3D dataset
-    var outputNecessary = Math.ceil( numOfSlices / slicePerOutputIm );
+    //var outputNecessary = Math.ceil( numOfSlices / slicePerOutputIm ); // does not work for time series
+    var outputNecessary = Math.ceil( numberOfSlicesWithTime / slicePerOutputIm );
 
     // if only one output, maybe it's not filled entirely, so we can make it a bit smaller
     if( outputNecessary == 1){
-      outputHeight = Math.ceil( numOfSlices / widthFit ) * height;
+      outputHeight = Math.ceil( numberOfSlicesWithTime / widthFit ) * height;
     }
 
     this.setMetadata("gridWidth", outputWidth / width);
     this.setMetadata("gridHeight", outputHeight / height);
 
     var outputCounter = 0;
-    var sliceIndex = 0;
+    var sliceCounter = 0;
     var sliceIndexCurrentOutput = 0;
 
     var outImage = null;
 
     
+    for(var t=startTime; t<endTime; t++){
 
-    // for each slice
-    for(var sliceIndex; sliceIndex<numOfSlices; sliceIndex++){
-
-      // fetching the slice
-      var slice = inputImage3D.getSlice( this.getMetadata("axis") , sliceIndex);
-
-
-      // create a new output image when the current is full (or not init)
-      if( sliceIndex%slicePerOutputIm == 0 ){
-        outImage = new Image2D({width: outputWidth, height: outputHeight, color: [0]});
-        this._output[ outputCounter ] = outImage;
-        sliceIndexCurrentOutput = 0;
-        outputCounter++;
-      }
-
-      var col = sliceIndexCurrentOutput % widthFit;
-      var row = Math.floor( sliceIndexCurrentOutput / widthFit );
-      sliceIndexCurrentOutput ++;
-
-      var offsetPixelCol = col * width;
-      var offsetPixelRow = row * height;
+      // for each slice
+      for(var sliceIndex=0; sliceIndex<numOfSlices; sliceIndex++){
+        
+        // fetching the slice
+        var slice = inputImage3D.getSlice( this.getMetadata("axis") , sliceIndex, t);
 
 
-      // for each row of the input slice
-      for(var y=0; y<height; y++){
-        // for each col of the output image
-        for(var x=0; x<width; x++){
-          outImage.setPixel(
-            {x: offsetPixelCol+x, y: offsetPixelRow+y},
-            slice.getPixel({x: x, y: y})
-          );
+        // create a new output image when the current is full (or not init)
+        if( sliceCounter%slicePerOutputIm == 0 ){
+          outImage = new Image2D({width: outputWidth, height: outputHeight, color: [0]});
+          this._output[ outputCounter ] = outImage;
+          sliceIndexCurrentOutput = 0;
+          outputCounter++;
         }
-      }
 
-    }
+        var col = sliceIndexCurrentOutput % widthFit;
+        var row = Math.floor( sliceIndexCurrentOutput / widthFit );
+        sliceIndexCurrentOutput ++;
 
+        var offsetPixelCol = col * width;
+        var offsetPixelRow = row * height;
+
+
+        // for each row of the input slice
+        for(var y=0; y<height; y++){
+          // for each col of the output image
+          for(var x=0; x<width; x++){
+            outImage.setPixel(
+              {x: offsetPixelCol+x, y: offsetPixelRow+y},
+              slice.getPixel({x: x, y: y})
+            );
+          }
+        }
+        
+        sliceCounter ++;
+
+      } /* END for each slice*/
+    
+    } /* END for each time sample */
 
   }
 
@@ -22258,6 +22965,7 @@ exports.PixpEncoder = PixpEncoder;
 exports.PixpDecoder = PixpDecoder;
 exports.Image3DGenericDecoder = Image3DGenericDecoder;
 exports.TiffDecoder = TiffDecoder;
+exports.MghDecoder = MghDecoder;
 exports.ForEachPixelImageFilter = ForEachPixelImageFilter;
 exports.SpectralScaleImageFilter = SpectralScaleImageFilter;
 exports.ImageBlendExpressionFilter = ImageBlendExpressionFilter;
@@ -22268,6 +22976,8 @@ exports.ImageDerivativeFilter = ImageDerivativeFilter;
 exports.GradientImageFilter = GradientImageFilter;
 exports.NormalizeImageFilter = NormalizeImageFilter;
 exports.ContourImage2DFilter = ContourImage2DFilter;
+exports.FloodFillImageFilter = FloodFillImageFilter;
+exports.ContourHolesImage2DFilter = ContourHolesImage2DFilter;
 exports.AngleToHueWheelHelper = AngleToHueWheelHelper;
 exports.LineStringPrinterOnImage2DHelper = LineStringPrinterOnImage2DHelper;
 exports.Image3DToMosaicFilter = Image3DToMosaicFilter;

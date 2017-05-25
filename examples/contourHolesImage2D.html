@@ -1,0 +1,75 @@
+<html>
+<head>
+  <title>Contour and holes of Image2D</title>
+
+  <script src="../dist/pixpipe.js"></script>
+
+  <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700,900" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+
+</head>
+<body>
+  <h1><a href="https://github.com/jonathanlurie/pixpipejs"><span style="color: #ff91d7">Pixpipe</span><span style="color: #FFFFFF">js</span></a></h1>
+  <p>
+  This does the following :
+  <ul>
+    <li>opening a distant image file with AJAX request, using <code>pixpipe.UrlImageReader</code></li>
+    <li>Computing the outer-polygons and hole-polygons from a seed with <code>pixpipe.ContourHolesImage2DFilter</code></li>
+    <li>Printing all the polygons on top of a copy of the input image with <code>pixpipe.LineStringPrinterOnImage2DHelper</code></li>
+    <li>Displaying it in a canvas using <code>pixpipe.CanvasImageWriter</code></li>
+  </ul>
+  </p>
+
+  <div id="myDiv"></div>
+
+  <script>
+
+  // create a filter to write the image into a canvas
+  var imageToCanvasFilter = new pixpipe.CanvasImageWriter();
+  imageToCanvasFilter.setMetadata( "parentDivID", "myDiv" );
+
+  // The filter to read image from URL
+  var url2ImgFilter = new pixpipe.UrlImageReader();
+
+  // the input of this reader is a simple string url. Can be local of distant, but if distant, the server must allow CORS.
+  url2ImgFilter.addInput( "images/segmentedBrain.png" );
+
+  // the image is loaded...
+  // here, this = url2ImgFilter
+  url2ImgFilter.on("ready", function(){
+    var loadedImage = this.getOutput();
+    
+    var contourHoleDetector = new pixpipe.ContourHolesImage2DFilter();
+    contourHoleDetector.addInput( loadedImage );
+    contourHoleDetector.setMetadata("connexity", 8);
+    //contourHoleDetector.setMetadata("seed", [191, 201]);
+    //contourHoleDetector.setMetadata("seed", [258, 158]);
+    contourHoleDetector.setMetadata("seed", [223, 183]);
+    //contourHoleDetector.setMetadata("seed", [278, 191]);
+    contourHoleDetector.update();
+    
+    var printer = new pixpipe.LineStringPrinterOnImage2DHelper();
+    printer.addInput(loadedImage);
+    
+    contourHoleDetector.forEachOutput( function( i, output ){
+      printer.addLineString(output, [Math.floor( Math.random() * 255 ), Math.floor( Math.random() * 255 ), Math.floor( Math.random() * 255 )]);
+    });
+    
+    printer.update();
+    
+
+    // use the output of the UrlImageReader as the input for CanvasImageWriter
+    imageToCanvasFilter.addInput( printer.getOutput() );
+    // actually copy the data from the Image2D into the inner HTML5 canvas
+    imageToCanvasFilter.update();
+    
+  })
+
+  // Ask to fetch the image from URL
+  url2ImgFilter.update();
+
+
+  </script>
+
+</body>
+</html>
