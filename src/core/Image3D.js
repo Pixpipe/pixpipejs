@@ -439,6 +439,13 @@ class Image3D extends PixpipeContainer{
     return this._data[xyzt_offset];
   }
 
+  
+  /**
+  * Get the number of samples over time
+  */
+  getTimeLength(){
+    return ( this.hasMetadata("time") ? this.getMetadata("time").space_length : 1 );
+  }
 
 } /* END of class Image3D */
 

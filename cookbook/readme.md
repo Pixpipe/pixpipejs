@@ -200,7 +200,8 @@ A `Filter` should **NEVER** modify the input data.
 - [Open a local  NIfTI file, extract 3 orthogonal slices and display in canvas](http://me.jonathanlurie.fr/pixpipejs/examples/fileToNifti.html) | [source](https://github.com/jonathanlurie/pixpipejs/tree/master/examples/fileToNifti.html)
 - [Open a local  MGH file, extract 3 orthogonal slices and display in canvas](http://me.jonathanlurie.fr/pixpipejs/examples/fileToMgh.html) | [source](https://github.com/jonathanlurie/pixpipejs/tree/master/examples/fileToMgh.html)
 - [Convert a Minc2 file into a generic `*.pixp` file](http://me.jonathanlurie.fr/pixpipejs/examples/Minc2ToPixpFile.html) | [source](https://github.com/jonathanlurie/pixpipejs/tree/master/examples/Minc2ToPixpFile.html)
-- [Open a `*.pixp` containing an Image3D file and display 3 otho slices](http://me.jonathanlurie.fr/pixpipejs/examples/Minc2ToPixpFile.html) | [source](https://github.com/jonathanlurie/pixpipejs/tree/master/examples/Minc2ToPixpFile.html)
+- [Open a `*.pixp` containing an Image3D file and display 3 otho slices](http://me.jonathanlurie.fr/pixpipejs/examples/fileToPixp.html) | [source](https://github.com/jonathanlurie/pixpipejs/tree/master/examples/fileToPixp.html)
+- [Convert a NIfTI/MINC/MGH file to a pixp file](http://me.jonathanlurie.fr/pixpipejs/examples/Image3DToPixpConverter.html) | [source](https://github.com/jonathanlurie/pixpipejs/tree/master/examples/Image3DToPixpConverter.html)
 
 
 ## Playing with vectors
@@ -211,7 +212,7 @@ A `Filter` should **NEVER** modify the input data.
 
 ## Advanced
 - [Open a local file as an ArrayBuffer](http://me.jonathanlurie.fr/pixpipejs/examples/fileToArrayBuffer.html) | [source](https://github.com/jonathanlurie/pixpipejs/tree/master/examples/fileToArrayBuffer.html). Actually very simple but a good starting point to create a new binary file parser
-- [Open a local  NIfTI file and display a mosaic of all the slices](http://me.jonathanlurie.fr/pixpipejs/examples/niftiToMosaic.html) | [source](https://github.com/jonathanlurie/pixpipejs/tree/master/examples/niftiToMosaic.html)
+- [Open a local  NIfTI/MINC/MGH file and display a mosaic of all the slices, with time series if any](http://me.jonathanlurie.fr/pixpipejs/examples/Image3DToMosaic.html) | [source](https://github.com/jonathanlurie/pixpipejs/tree/master/examples/Image3DToMosaic.html)
 - [Open a Structural volume file (NIfTI, Minc2, Pixp), build a 3D texture and display volume with obliques](http://me.jonathanlurie.fr/pixpipejs/examples/volume3DNavigator.html) | [source](https://github.com/jonathanlurie/pixpipejs/tree/master/examples/volume3DNavigator.html)
 
 
