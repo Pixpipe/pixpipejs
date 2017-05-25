@@ -776,7 +776,7 @@ class Image2D extends PixpipeContainer{
       }
 
     }else{
-      console.error("x and y position have to be within the image dimensions and color size must be the same as the original image.");
+      //console.error("x and y position have to be within the image dimensions and color size must be the same as the original image.");
     }
   }
 
@@ -1419,6 +1419,13 @@ class Image3D extends PixpipeContainer{
     return this._data[xyzt_offset];
   }
 
+  
+  /**
+  * Get the number of samples over time
+  */
+  getTimeLength(){
+    return ( this.hasMetadata("time") ? this.getMetadata("time").space_length : 1 );
+  }
 
 } /* END of class Image3D */
 
@@ -15446,8 +15453,6 @@ class PixpDecoder extends Filter {
 
   _run(){
 
-    console.log(this._input);
-
     if(! this.hasValidInput() ){
       console.warn("PixpDecoder can only decode ArrayBuffer.");
       return;
@@ -15515,7 +15520,11 @@ class PixpDecoder extends Filter {
 */
 
 /**
+* Decodes a MGH file.
+* Takes an ArrayBuffer as input (0) and output a `MniVolume` (which inherit `Image3D`).
 *
+* **Usage**
+* - [examples/fileToMgh.html](../examples/fileToMgh.html)
 */
 class MghDecoder extends Filter {
   
@@ -22824,6 +22833,7 @@ class Image3DToMosaicFilter extends Filter{
     this.setMetadata("maxWidth", 4096);
     this.setMetadata("maxHeight", 4096);
     this.setMetadata("axis", "xspace");
+    this.setMetadata("time", 0);
   }
 
 
@@ -22843,8 +22853,27 @@ class Image3DToMosaicFilter extends Filter{
     var numOfSlices = spaceInfo.space_length;
     var width = spaceInfo.width;
     var height = spaceInfo.height;
+    
+    // dealing with time series
+    var startTime = 0;
+    var endTime = 1;
+    
+    if( inputImage3D.hasMetadata("time") ){
+      var timeInfo = inputImage3D.getMetadata("time");
+      var timeLength = timeInfo.space_length;
+      
+      if(this._metadata.time == -1 ){
+        startTime = 0;
+        endTime = timeLength;
+      }else if( this._metadata.time < timeLength){
+        startTime = this._metadata.time;
+        endTime = startTime + 1;
+      }
+    }
+    
+    var numberOfSlicesWithTime = numOfSlices * (endTime-startTime);
 
-    // number of image we can fit in the with of an output image
+    // number of image we can fit in the with and heigth of an output image
     var widthFit = Math.floor( this.getMetadata("maxWidth") / width );
     var heightFit = Math.floor( this.getMetadata("maxHeight") / height );
 
@@ -22854,60 +22883,65 @@ class Image3DToMosaicFilter extends Filter{
     var slicePerOutputIm = widthFit * heightFit;
 
     // Number of output image(s) necessary to cover the whole Image3D dataset
-    var outputNecessary = Math.ceil( numOfSlices / slicePerOutputIm );
+    //var outputNecessary = Math.ceil( numOfSlices / slicePerOutputIm ); // does not work for time series
+    var outputNecessary = Math.ceil( numberOfSlicesWithTime / slicePerOutputIm );
 
     // if only one output, maybe it's not filled entirely, so we can make it a bit smaller
     if( outputNecessary == 1){
-      outputHeight = Math.ceil( numOfSlices / widthFit ) * height;
+      outputHeight = Math.ceil( numberOfSlicesWithTime / widthFit ) * height;
     }
 
     this.setMetadata("gridWidth", outputWidth / width);
     this.setMetadata("gridHeight", outputHeight / height);
 
     var outputCounter = 0;
-    var sliceIndex = 0;
+    var sliceCounter = 0;
     var sliceIndexCurrentOutput = 0;
 
     var outImage = null;
 
     
+    for(var t=startTime; t<endTime; t++){
 
-    // for each slice
-    for(var sliceIndex; sliceIndex<numOfSlices; sliceIndex++){
-
-      // fetching the slice
-      var slice = inputImage3D.getSlice( this.getMetadata("axis") , sliceIndex);
-
-
-      // create a new output image when the current is full (or not init)
-      if( sliceIndex%slicePerOutputIm == 0 ){
-        outImage = new Image2D({width: outputWidth, height: outputHeight, color: [0]});
-        this._output[ outputCounter ] = outImage;
-        sliceIndexCurrentOutput = 0;
-        outputCounter++;
-      }
-
-      var col = sliceIndexCurrentOutput % widthFit;
-      var row = Math.floor( sliceIndexCurrentOutput / widthFit );
-      sliceIndexCurrentOutput ++;
-
-      var offsetPixelCol = col * width;
-      var offsetPixelRow = row * height;
+      // for each slice
+      for(var sliceIndex=0; sliceIndex<numOfSlices; sliceIndex++){
+        
+        // fetching the slice
+        var slice = inputImage3D.getSlice( this.getMetadata("axis") , sliceIndex, t);
 
 
-      // for each row of the input slice
-      for(var y=0; y<height; y++){
-        // for each col of the output image
-        for(var x=0; x<width; x++){
-          outImage.setPixel(
-            {x: offsetPixelCol+x, y: offsetPixelRow+y},
-            slice.getPixel({x: x, y: y})
-          );
+        // create a new output image when the current is full (or not init)
+        if( sliceCounter%slicePerOutputIm == 0 ){
+          outImage = new Image2D({width: outputWidth, height: outputHeight, color: [0]});
+          this._output[ outputCounter ] = outImage;
+          sliceIndexCurrentOutput = 0;
+          outputCounter++;
         }
-      }
 
-    }
+        var col = sliceIndexCurrentOutput % widthFit;
+        var row = Math.floor( sliceIndexCurrentOutput / widthFit );
+        sliceIndexCurrentOutput ++;
 
+        var offsetPixelCol = col * width;
+        var offsetPixelRow = row * height;
+
+
+        // for each row of the input slice
+        for(var y=0; y<height; y++){
+          // for each col of the output image
+          for(var x=0; x<width; x++){
+            outImage.setPixel(
+              {x: offsetPixelCol+x, y: offsetPixelRow+y},
+              slice.getPixel({x: x, y: y})
+            );
+          }
+        }
+        
+        sliceCounter ++;
+
+      } /* END for each slice*/
+    
+    } /* END for each time sample */
 
   }
 

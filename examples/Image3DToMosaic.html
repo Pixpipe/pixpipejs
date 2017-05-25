@@ -1,6 +1,6 @@
 <html>
 <head>
-  <title>Nifti to mosaic</title>
+  <title>Image3D to mosaic</title>
 
   <script src="../dist/pixpipe.js"></script>
   <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700,900" rel="stylesheet">
@@ -11,8 +11,8 @@
   <p>
   This does the following :
   <ul>
-    <li>open a local NIfTI file, using <code>pixpipe.FileToArrayBufferReader</code></li>
-    <li>redirect the file buffer into a <code>pixpipe.NiftiDecoder</code> to extract NIfTI dataset and metadata</li>
+    <li>open a local NIfTI/MINC/MGH/pixp file, using <code>pixpipe.FileToArrayBufferReader</code></li>
+    <li>redirect the file buffer into a <code>pixpipe.Image3DGenericDecoder</code> to extract 3D dataset and metadata</li>
     <li>get the output as a generique <code>pixpipe.MniVolume</code> object</li>
     <li>produce multiple 10x10 mosaics (Image2Ds) of slices using <code>pixpipe.Image3DToMosaicFilter</code></li>
     <li>display the mosaics in a canvas using a single instance of <code>pixpipe.CanvasImageWriter</code></li>
@@ -45,19 +45,19 @@
 
       var filenames = this.getMetadata("filenames");
 
-      var niftiBuff = this.getOutput();
+      var buff = this.getOutput();
 
-      var niftiDecoder = new pixpipe.NiftiDecoder();
-      niftiDecoder.addInput( niftiBuff );
-      niftiDecoder.update();
+      var image3DDecoder = new pixpipe.Image3DGenericDecoder();
+      image3DDecoder.addInput( buff );
+      image3DDecoder.update();
 
-      var mniVolume = niftiDecoder.getOutput();
+      var mniVolume = image3DDecoder.getOutput();
 
       if(mniVolume){
 
         var mosaicFilter = new pixpipe.Image3DToMosaicFilter();
 
-        // niftiDecoder ouputs a pixpipe.MniVolume, which iherit pixpipe.Image3D
+        // image3DDecoder ouputs a pixpipe.MniVolume, which iherit pixpipe.Image3D
         // making it compatible with pixpipe.Image3DToMosaicFilter
         mosaicFilter.addInput( mniVolume );
 
@@ -68,7 +68,8 @@
         var spaceInfo = mniVolume.getMetadata(space);
         document.getElementById('fileInfo').innerHTML += "<br>" + filenames[0] + " is composed of "
           + spaceInfo.space_length + " slices of size "
-          + spaceInfo.width + "x" + spaceInfo.height + "px <br>";
+          + spaceInfo.width + "x" + spaceInfo.height + "px <br>"
+          + "Number of time samples: " + mniVolume.getTimeLength() ;
 
         // default is 4096 * 4096 but we can print a canvas in a more "parametric"
         // way so that we have 10 images for each row. Be aware HTML5 Canvas have
@@ -80,6 +81,8 @@
 
         // or print in one big canvas;
         // mosaicFilter.setMetadata("maxHeight", Math.ceil(mniVolume.getMetadata(space).space_length / 10) * mniVolume.getMetadata(space).height);
+
+        mosaicFilter.setMetadata("time", -1);
 
         // run the filter
         mosaicFilter.update();
@@ -104,9 +107,11 @@
 
         document.getElementById('fileInfo').innerHTML += "<p>Each mosaic is " + mosaicFilter.getMetadata("gridWidth") + " slices large and " + mosaicFilter.getMetadata("gridHeight") + " slices high.</p>";
 
+        
+        
 
       }else{
-        console.warn("Non-existant output for niftiDecoder.");
+        console.warn("Non-existant output for Image3DGenericDecoder.");
       }
     });
 

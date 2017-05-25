@@ -6,8 +6,8 @@
   <script src='https://threejs.org/examples/js/libs/dat.gui.min.js'></script>
   <script src="https://threejs.org/examples/js/controls/OrbitControls.js"></script>
 
-  <script src="../dist/pixpipe.min.js"></script>
-  <script src="js/shaders.js"></script>
+  <script src="../dist/pixpipe.js"></script>
+  <script src="js/shadersTime.js"></script>
   <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700,900" rel="stylesheet">
   <!--<link rel="stylesheet" href="css/style.css">-->
 
@@ -128,6 +128,17 @@
 
     // the GUI widget on the top right
     function initGui(){
+      
+      // time series
+      if(spaceLength.t > 1){
+        guiParam.tPos = 0;
+        gui.add(guiParam, 'tPos', 0, spaceLength.t)
+        .step(1)
+        .onChange(function(val){
+          shaderMat.uniforms.timeIndex.value = val;
+        })
+      }
+      
       guiParam.xPos = Math.floor(spaceLength.x / 2);
       gui.add(guiParam, 'xPos', 0, spaceLength.x)
       .step(0.05)
@@ -293,6 +304,14 @@
             type: "f",
             value: spaceLength.z
           },
+          timespaceLength: {  // the number of time samples if it's a timeseries
+            type: "i",
+            value: spaceLength.t
+          },
+          timeIndex: { // 
+            type: "i",
+            value: 0
+          },
           forcedAlpha: {
             type: "f",
             value: guiParam.alpha
@@ -351,10 +370,7 @@
 
     // the image is loaded...
     // here, filter = url2ImgFilter
-    file2Buff.on("ready", function( ){
-      
-      console.log(this);
-
+    file2Buff.on("ready", function(){
       var filenames = this.getMetadata("filenames");
 
       var volBuff = this.getOutput();
@@ -373,6 +389,7 @@
       var mniVolume = genericDecoder.getOutput();
 
       if(mniVolume){
+        console.log(mniVolume);
 
         var mosaicFilter = new pixpipe.Image3DToMosaicFilter();
 
@@ -383,6 +400,9 @@
         // which axis do we want the picture of?
         var space = "zspace";
         mosaicFilter.setMetadata( "axis", space);
+        
+        // if time series, take it all
+        mosaicFilter.setMetadata("time", -1);
 
         // run the filter
         mosaicFilter.update();
@@ -426,6 +446,7 @@
         spaceLength.x = mniVolume.getMetadata("xspace").space_length;
         spaceLength.y = mniVolume.getMetadata("yspace").space_length;
         spaceLength.z = mniVolume.getMetadata("zspace").space_length;
+        spaceLength.t = mniVolume.getTimeLength();
 
         // since the volume is loaded, we can create the 3D env
         initEnv3D();
