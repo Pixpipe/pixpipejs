@@ -223,6 +223,11 @@
                   getSlice
                 </a>
                 <a
+                  href='#Image3D.getTimeLength'
+                  class='regular block'>
+                  getTimeLength
+                </a>
+                <a
                   href='#Image3D.setData'
                   class='regular block'>
                   setData
@@ -313,16 +318,6 @@
                   _loadUrl
                 </a>
               <a
-                href='#SpectralScaleImageFilter'
-                class='block bold h3 bg-pink-alpha'>
-                SpectralScaleImageFilter
-              </a>
-                <a
-                  href='#SpectralScaleImageFilter._run'
-                  class='regular block'>
-                  _run
-                </a>
-              <a
                 href='#FileImageReader'
                 class='block bold h3 bg-pink-alpha'>
                 FileImageReader
@@ -336,6 +331,16 @@
                   href='#FileImageReader.hasValidInput'
                   class='regular block'>
                   hasValidInput
+                </a>
+              <a
+                href='#SpectralScaleImageFilter'
+                class='block bold h3 bg-pink-alpha'>
+                SpectralScaleImageFilter
+              </a>
+                <a
+                  href='#SpectralScaleImageFilter._run'
+                  class='regular block'>
+                  _run
                 </a>
               <a
                 href='#MniVolume'
@@ -938,6 +943,11 @@
                   hasSameSizeInput
                 </a>
               <a
+                href='#ignore_offsets'
+                class='block bold h3 bg-pink-alpha'>
+                ignore_offsets
+              </a>
+              <a
                 href='#Image3DGenericDecoder'
                 class='block bold h3 bg-pink-alpha'>
                 Image3DGenericDecoder
@@ -956,6 +966,11 @@
                 href='#ImageDerivativeFilter'
                 class='block bold h3 bg-pink-alpha'>
                 ImageDerivativeFilter
+              </a>
+              <a
+                href='#MghDecoder'
+                class='block bold h3 bg-pink-alpha'>
+                MghDecoder
               </a>
               <a
                 href='#MultiplyImageFilter'
@@ -2273,6 +2288,26 @@ TODO: add some method to a slice (get value) because it&apos;s a 1D array... and
 </section>
           </div>
         </div>
+        <div class='collapsible' id='Image3D.getTimeLength'>
+          <a href='#Image3D.getTimeLength'>
+            <code>
+              getTimeLength<span class='gray'></span>
+            </code>
+            <div class='force-inline'>
+              <p>Get the number of samples over time</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2'>
+<section class='py2 clearfix'>
+  <h2 id='Image3D.getTimeLength' class='mt0'>
+    getTimeLength<span class='gray'></span>
+  </h2>
+  <p>Get the number of samples over time</p>
+
+</section>
+          </div>
+        </div>
         <div class='collapsible' id='Image3D.setData'>
           <a href='#Image3D.setData'>
             <code>
@@ -2866,42 +2901,6 @@ Perform a XMLHttpRequest with the given url and adds it to the output</p>
         </div>
 </section>
 </div><div class='py1'><section class='py2 clearfix'>
-  <h2 id='SpectralScaleImageFilter' class='mt0'>
-    SpectralScaleImageFilter<span class='gray'></span>
-  </h2>
-  <p>Multiply an image by the other, like a scaling function.
-The image requires two inputs named &quot;0&quot; and &quot;1&quot;.
-Simply use <code>addInput( myImg1, &quot;0&quot; )</code>
-and <code>addInput( myImg2, &quot;1&quot; )</code>. The input &quot;0&quot; can have 1 or more bands while
-the input &quot;1&quot; can have only one band since the same scale is apply to each band.</p>
-<p><strong>Usage</strong></p>
-<ul>
-<li><a href="../examples/forEachPixelGadient.html">examples/forEachPixelGadient.html</a></li>
-</ul>
-
-      <h4>Instance members</h4>
-        <div class='collapsible' id='SpectralScaleImageFilter._run'>
-          <a href='#SpectralScaleImageFilter._run'>
-            <code>
-              _run<span class='gray'></span>
-            </code>
-            <div class='force-inline'>
-              <p>Run the filter</p>
-
-            </div>
-          </a>
-          <div class='collapser border px2'>
-<section class='py2 clearfix'>
-  <h2 id='SpectralScaleImageFilter._run' class='mt0'>
-    _run<span class='gray'></span>
-  </h2>
-  <p>Run the filter</p>
-
-</section>
-          </div>
-        </div>
-</section>
-</div><div class='py1'><section class='py2 clearfix'>
   <h2 id='FileImageReader' class='mt0'>
     FileImageReader<span class='gray'></span>
   </h2>
@@ -2958,6 +2957,42 @@ file2ImgFilter.update();</pre>
     hasValidInput<span class='gray'></span>
   </h2>
   <p>Overload the default method because HTML5 File is not a Pixpipe type</p>
+
+</section>
+          </div>
+        </div>
+</section>
+</div><div class='py1'><section class='py2 clearfix'>
+  <h2 id='SpectralScaleImageFilter' class='mt0'>
+    SpectralScaleImageFilter<span class='gray'></span>
+  </h2>
+  <p>Multiply an image by the other, like a scaling function.
+The image requires two inputs named &quot;0&quot; and &quot;1&quot;.
+Simply use <code>addInput( myImg1, &quot;0&quot; )</code>
+and <code>addInput( myImg2, &quot;1&quot; )</code>. The input &quot;0&quot; can have 1 or more bands while
+the input &quot;1&quot; can have only one band since the same scale is apply to each band.</p>
+<p><strong>Usage</strong></p>
+<ul>
+<li><a href="../examples/forEachPixelGadient.html">examples/forEachPixelGadient.html</a></li>
+</ul>
+
+      <h4>Instance members</h4>
+        <div class='collapsible' id='SpectralScaleImageFilter._run'>
+          <a href='#SpectralScaleImageFilter._run'>
+            <code>
+              _run<span class='gray'></span>
+            </code>
+            <div class='force-inline'>
+              <p>Run the filter</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2'>
+<section class='py2 clearfix'>
+  <h2 id='SpectralScaleImageFilter._run' class='mt0'>
+    _run<span class='gray'></span>
+  </h2>
+  <p>Run the filter</p>
 
 </section>
           </div>
@@ -6619,6 +6654,20 @@ This class does not overload the update() method.</p>
         </div>
 </section>
 </div><div class='py1'><section class='py2 clearfix'>
+  <h2 id='ignore_offsets' class='mt0'>
+    ignore_offsets<span class='gray'></span>
+  </h2>
+  <p>This is here because there are two different ways of interpreting
+the origin of an MGH file. One can ignore the offsets in the
+transform, using the centre of the voxel grid. Or you can correct
+these naive grid centres using the values stored in the transform.
+The first approach is what is used by surface files, so to get them
+to register nicely, we want ignore_offsets to be true. However,
+getting volumetric files to register correctly implies setting
+ignore_offsets to false.</p>
+
+</section>
+</div><div class='py1'><section class='py2 clearfix'>
   <h2 id='Image3DGenericDecoder' class='mt0'>
     Image3DGenericDecoder<span class='gray'></span>
   </h2>
@@ -6690,6 +6739,18 @@ h = [1, -1]</p>
 <p><strong>Usage</strong></p>
 <ul>
 <li><a href="../examples/derivativeImage2D.html">examples/derivativeImage2D.html</a></li>
+</ul>
+
+</section>
+</div><div class='py1'><section class='py2 clearfix'>
+  <h2 id='MghDecoder' class='mt0'>
+    MghDecoder<span class='gray'></span>
+  </h2>
+  <p>Decodes a MGH file.
+Takes an ArrayBuffer as input (0) and output a <code>MniVolume</code> (which inherit <code>Image3D</code>).</p>
+<p><strong>Usage</strong></p>
+<ul>
+<li><a href="../examples/fileToMgh.html">examples/fileToMgh.html</a></li>
 </ul>
 
 </section>
