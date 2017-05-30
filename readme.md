@@ -32,6 +32,7 @@ Here is the list of compatible formats:
 - tiff (to Image2D)
 - NIfTI (to Image3D / MniVolume)
 - Minc2 (to Image3D / MniVolume)
+- MGH/MHZ (to Image3D / MniVolume)
 - Pixp (generic *Pixpipe* format for both Image2D and Image3D )
 
 
