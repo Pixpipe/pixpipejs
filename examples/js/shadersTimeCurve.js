@@ -49,14 +49,17 @@ shaders.fragmentMultipleInterpolation = `
 
   uniform float forcedAlpha;
   
-  
   // a texture will contain a certain number of slices
   uniform sampler2D textures[maxNbOfTextures];
 
+  // enabling the trilinear interpolation
   uniform bool trilinearInterpol;
 
   // texture that represent the curve data to look up
   uniform sampler2D curveTexture;
+
+  // enable contrast curve
+  uniform bool enableCurve;
 
   // Shared with the vertex shader
   varying  vec4 worldCoord;
@@ -261,14 +264,13 @@ shaders.fragmentMultipleInterpolation = `
       color = getIntensityWorldNearest(worldCoordShifted, timeIndex);
     }
     
-    vec4 curveColor = texture2D(curveTexture, vec2(color.r, 0.5));
-    
-    color.r = curveColor.r;
-    color.g = curveColor.g;
-    color.b = curveColor.b;
-    
-    
-    //color = texture2D(curveTexture, vec2(0.5, 0.5));
+    // use curve for contrast
+    if(enableCurve){
+      vec4 curveColor = texture2D(curveTexture, vec2(color.r, 0.5));
+      color.r = curveColor.r;
+      color.g = curveColor.g;
+      color.b = curveColor.b;
+    }
     
     // forcing a lower alpha (when given)
     color.a = min(color.a, forcedAlpha);

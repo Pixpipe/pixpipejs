@@ -57,8 +57,6 @@
     right: 0;
     width: 320px;
     height: 320px;
-    background-color: rgba(238, 238, 238, 0.75);
-    
   }
   
   #curveContainer canvas {
@@ -79,7 +77,7 @@
     <span id="fileInfo"></span>
   </div>
   
-  <div id="curveContainer"></div>
+  <div id="curveContainer" style="display: none"></div>
     
   
   <a href="https://github.com/jonathanlurie/pixpipejs/blob/master/examples/volume3DNavigator.html" target="_blank">
@@ -105,9 +103,9 @@
     var screenReady = false;
     var sliceMatrixSize = {};
     var textures = [];
-    var curve = new pixpipeUI.CanvasSpliner("curveContainer", 300, 300, "monotonic");
-    initCurve();
-
+    var curve = null;
+    var curveMoveCounter = 0;
+    var curveMoveCounterFrequency = 3; // refresh the shader curve every 3 mousemove on the CanvasSpliner
 
     // initialize the 3D environment
     function initEnv3D(){
@@ -260,6 +258,13 @@
       .onChange(function(val){
         shaderMat.uniforms.trilinearInterpol.value = val;
       })
+      
+      guiParam.enableCurve = true;
+      gui.add(guiParam, 'enableCurve').name('Curve contrast')
+      .onChange(function(val){
+        shaderMat.uniforms.enableCurve.value = val;
+        updateCurveTexture();
+      })
 
     }
 
@@ -348,6 +353,10 @@
           curveTexture: {
             type: "t",
             value: null
+          },
+          enableCurve: {
+            type: 'b',
+            value: guiParam.enableCurve
           }
         }
         ,
@@ -384,6 +393,7 @@
       container.add( screenContainer );
       
       screenReady = true;
+      initCurve();
     }
 
 
@@ -503,27 +513,48 @@
 		});
     
     
-    function initCurve(){
-      
-      curve.add({x:0, y:0, xLocked: true, safe: true});
-      curve.add({x:1, y:1, xLocked: true, safe: true});
-      
-      curve.on("move", function(xInterval, yInterpolated){
-        if(! screenReady )
-          return;
+    // update the shader based on the curve
+    function updateCurveTexture( curveObj ){
+      if(! screenReady )
+        return;
         
-        var curveTexture = new THREE.DataTexture(
-          Float32Array.from(yInterpolated),
-          yInterpolated.length,
-          1,
-          THREE.LuminanceFormat,
-          THREE.FloatType
-        );
-
-        curveTexture.needsUpdate = true;
-        shaderMat.uniforms.curveTexture.value = curveTexture;
-      })
+      var interpolatedY = curve.getYSeriesInterpolated();
       
+      var curveTexture = new THREE.DataTexture(
+        interpolatedY,
+        interpolatedY.length,
+        1,
+        THREE.LuminanceFormat,
+        THREE.FloatType
+      );
+
+      curveTexture.needsUpdate = true;
+      shaderMat.uniforms.curveTexture.value = curveTexture;
+    }
+    
+    
+    // init the curve widget
+    function initCurve(){
+      curve = new pixpipeUI.CanvasSpliner("curveContainer", 300, 300, "monotonic");
+      curve.setBackgroundColor("rgba(255, 255, 255, 0.75)");
+      curve.setTextColor("rgba(0, 0, 0, 0.5)");
+      
+      curve.add({x:0, y:0, /*xLocked: true,*/ safe: true});
+      curve.add({x:1, y:1, /*xLocked: true,*/ safe: true});
+      
+      curve.on("movePoint", function(){
+        curveMoveCounter ++;
+        if(curveMoveCounter % curveMoveCounterFrequency == 0 )
+          updateCurveTexture();
+      });
+      
+      curve.on("releasePoint", updateCurveTexture);
+      curve.on("pointAdded", updateCurveTexture);
+      curve.on("pointRemoved", updateCurveTexture);
+      
+      updateCurveTexture();
+      
+      document.getElementById("curveContainer").style.display = "inherit";
     }
 
   </script>
