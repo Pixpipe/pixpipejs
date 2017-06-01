@@ -105,7 +105,7 @@ The equivalent of `Image2D` for 3d datasets. Unlike 2D datasets, 3D ones have a 
 
 ### MniVolume
 *container*  
-This object is motivated by the medical dataset used internally in the (Montreal Neurological Institute)[http://www.mcgill.ca/neuro/about], in particular [NIfTI](https://nifti.nimh.nih.gov/) and [Minc2](http://journal.frontiersin.org/article/10.3389/fninf.2016.00035/full). They are respectively created by `NiftiDecoder` and `Minc2Decoder`. Keep in mind `MniVolumes` are `Image3D` and uses the same methods.
+This object is motivated by the medical dataset used internally in the [Montreal Neurological Institute](http://www.mcgill.ca/neuro/about): [NIfTI](https://nifti.nimh.nih.gov/), [Minc2](http://journal.frontiersin.org/article/10.3389/fninf.2016.00035/full) and [MGH/MGZ](https://surfer.nmr.mgh.harvard.edu/fswiki/FsTutorial/MghFormat). They are respectively created by `NiftiDecoder` and `Minc2Decoder`. Keep in mind `MniVolumes` are `Image3D` and uses the same methods.
 
 
 ### Filter
