@@ -193,7 +193,8 @@ A `Filter` should **NEVER** modify the input data.
 - [Open a Tiff and display its pixel values in csv format](http://me.jonathanlurie.fr/pixpipejs/examples/tiffPixelData.html) | [source](https://github.com/jonathanlurie/pixpipejs/tree/master/examples/tiffPixelData.html)
 - [Compute the dx and dy derivatives of an image](http://me.jonathanlurie.fr/pixpipejs/examples/derivativeImage2D.html) | [source](https://github.com/jonathanlurie/pixpipejs/tree/master/examples/derivativeImage2D.html)
 - [Compute the gradient direction and magnitude of an image](http://me.jonathanlurie.fr/pixpipejs/examples/gradientImage2D.html) | [source](https://github.com/jonathanlurie/pixpipejs/tree/master/examples/gradientImage2D.html)
-- [Compute all gradient info ](http://me.jonathanlurie.fr/pixpipejs/examples/gradientHueWheelImage2D.html) | [source](https://github.com/jonathanlurie/pixpipejs/tree/master/examples/gradientHueWheelImage2D.html)
+- [Compute all gradient info](http://me.jonathanlurie.fr/pixpipejs/examples/gradientHueWheelImage2D.html) | [source](https://github.com/jonathanlurie/pixpipejs/tree/master/examples/gradientHueWheelImage2D.html)
+- [Compute elevation map from Mapbox TerrainRGB format](http://me.jonathanlurie.fr/pixpipejs/examples/terrainRgbToElevation.html) | [source](https://github.com/jonathanlurie/pixpipejs/tree/master/examples/terrainRgbToElevation.html)
 
 ## Playing with 3D medical dataset
 - [Open a local Minc2 file, extract 3 orthogonal slices and display in canvas](http://me.jonathanlurie.fr/pixpipejs/examples/fileToMinc2.html) | [source](https://github.com/jonathanlurie/pixpipejs/tree/master/examples/fileToMinc2.html)
