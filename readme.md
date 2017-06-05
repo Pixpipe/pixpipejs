@@ -16,6 +16,8 @@ To make image processing:
 - easy to contribute
 - well documented for both users and contributors.
 
+# Presentation
+[Here](http://me.jonathanlurie.fr/slides/pixpipejs_01) are some slides to present Pixpipejs. Maybe an easier introduction.
 
 # Cookbook
 The best way to learn how to uses Pixpipe is by going through the [cookbook](cookbook/readme.md) (there is also [the web version](http://me.jonathanlurie.fr/pixpipejs/cookbook/)). You'll find in-depth descriptions of the core components, examples and how-to's.
