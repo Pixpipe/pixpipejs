@@ -22,6 +22,12 @@ code {
 
 a{
   text-decoration: none;
+  color: #ff91d7;
+  transition: all 0.2s;
+}
+
+a:hover {
+  color: #00cbf1;
 }
 
 textarea {
