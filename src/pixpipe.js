@@ -40,6 +40,8 @@ export { NormalizeImageFilter } from './filter/NormalizeImageFilter.js';
 export { ContourImage2DFilter } from './filter/ContourImage2DFilter.js';
 export { FloodFillImageFilter } from './filter/FloodFillImageFilter.js';
 export { ContourHolesImage2DFilter } from './filter/ContourHolesImage2DFilter.js';
+export { ForEachPixelReadOnlyFilter } from './filter/ForEachPixelReadOnlyFilter.js';
+export { TerrainRgbToElevationImageFilter } from './filter/TerrainRgbToElevationImageFilter.js';
 
 // helpers
 export { AngleToHueWheelHelper } from './helper/AngleToHueWheelHelper.js';
