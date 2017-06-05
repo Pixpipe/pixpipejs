@@ -44,7 +44,7 @@ class ImageDerivativeFilter extends ImageToImageFilter {
   _run(){
     // the input checking
     if( ! this.hasValidInput()){
-      console.warn("A filter of type SpatialConvolutionFilter requires 1 input of category '0' and one input of category '1'.");
+      console.warn("A filter of type ImageDerivativeFilter requires 1 input of category '0' and one input of category '1'.");
       return;
     }
     
