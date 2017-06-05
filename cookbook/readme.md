@@ -193,7 +193,8 @@ A `Filter` should **NEVER** modify the input data.
 - [Open a Tiff and display its pixel values in csv format](http://me.jonathanlurie.fr/pixpipejs/examples/tiffPixelData.html) | [source](https://github.com/jonathanlurie/pixpipejs/tree/master/examples/tiffPixelData.html)
 - [Compute the dx and dy derivatives of an image](http://me.jonathanlurie.fr/pixpipejs/examples/derivativeImage2D.html) | [source](https://github.com/jonathanlurie/pixpipejs/tree/master/examples/derivativeImage2D.html)
 - [Compute the gradient direction and magnitude of an image](http://me.jonathanlurie.fr/pixpipejs/examples/gradientImage2D.html) | [source](https://github.com/jonathanlurie/pixpipejs/tree/master/examples/gradientImage2D.html)
-
+- [Compute all gradient info](http://me.jonathanlurie.fr/pixpipejs/examples/gradientHueWheelImage2D.html) | [source](https://github.com/jonathanlurie/pixpipejs/tree/master/examples/gradientHueWheelImage2D.html)
+- [Compute elevation map from Mapbox TerrainRGB format](http://me.jonathanlurie.fr/pixpipejs/examples/terrainRgbToElevation.html) | [source](https://github.com/jonathanlurie/pixpipejs/tree/master/examples/terrainRgbToElevation.html)
 
 ## Playing with 3D medical dataset
 - [Open a local Minc2 file, extract 3 orthogonal slices and display in canvas](http://me.jonathanlurie.fr/pixpipejs/examples/fileToMinc2.html) | [source](https://github.com/jonathanlurie/pixpipejs/tree/master/examples/fileToMinc2.html)
@@ -214,7 +215,7 @@ A `Filter` should **NEVER** modify the input data.
 - [Open a local file as an ArrayBuffer](http://me.jonathanlurie.fr/pixpipejs/examples/fileToArrayBuffer.html) | [source](https://github.com/jonathanlurie/pixpipejs/tree/master/examples/fileToArrayBuffer.html). Actually very simple but a good starting point to create a new binary file parser
 - [Open a local  NIfTI/MINC/MGH file and display a mosaic of all the slices, with time series if any](http://me.jonathanlurie.fr/pixpipejs/examples/Image3DToMosaic.html) | [source](https://github.com/jonathanlurie/pixpipejs/tree/master/examples/Image3DToMosaic.html)
 - [Open  a local  NIfTI/MINC/MGH file, build a 3D texture and display volume with obliques, show a slider for time series if any](http://me.jonathanlurie.fr/pixpipejs/examples/volume3DNavigatorTime.html) | [source](https://github.com/jonathanlurie/pixpipejs/tree/master/examples/volume3DNavigatorTime.html)
-
+- [Open  a local  NIfTI/MINC/MGH file, build a 3D texture and display volume with obliques, show a slider for time series if any, and adjust contrast with a curve widget](http://me.jonathanlurie.fr/pixpipejs/examples/volume3DNavigatorTimeCurve.html) | [source](https://github.com/jonathanlurie/pixpipejs/tree/master/examples/volume3DNavigatorTimeCurve.html)
 
 # Create your own custom filter
 As mentioned earlier, a filter must take at least one input et retrieve at least one output, in between the method `.update()` must be called. The only exception to that are `io` filters which are opening or writing from/to a file or an HTML5 canvas.  
