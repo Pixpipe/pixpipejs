@@ -5291,6 +5291,27 @@ exports.setTyped = function (on) {
 exports.setTyped(TYPED_OK);
 });
 
+// (C) 1995-2013 Jean-loup Gailly and Mark Adler
+// (C) 2014-2017 Vitaly Puzrin and Andrey Tupitsin
+//
+// This software is provided 'as-is', without any express or implied
+// warranty. In no event will the authors be held liable for any damages
+// arising from the use of this software.
+//
+// Permission is granted to anyone to use this software for any purpose,
+// including commercial applications, and to alter it and redistribute it
+// freely, subject to the following restrictions:
+//
+// 1. The origin of this software must not be misrepresented; you must not
+//   claim that you wrote the original software. If you use this software
+//   in a product, an acknowledgment in the product documentation would be
+//   appreciated but is not required.
+// 2. Altered source versions must be plainly marked as such, and must not be
+//   misrepresented as being the original software.
+// 3. This notice may not be removed or altered from any source distribution.
+
+
+
 /* Public constants ==========================================================*/
 /* ===========================================================================*/
 
@@ -6501,6 +6522,25 @@ var trees = {
 // It doesn't worth to make additional optimizationa as in original.
 // Small size is preferable.
 
+// (C) 1995-2013 Jean-loup Gailly and Mark Adler
+// (C) 2014-2017 Vitaly Puzrin and Andrey Tupitsin
+//
+// This software is provided 'as-is', without any express or implied
+// warranty. In no event will the authors be held liable for any damages
+// arising from the use of this software.
+//
+// Permission is granted to anyone to use this software for any purpose,
+// including commercial applications, and to alter it and redistribute it
+// freely, subject to the following restrictions:
+//
+// 1. The origin of this software must not be misrepresented; you must not
+//   claim that you wrote the original software. If you use this software
+//   in a product, an acknowledgment in the product documentation would be
+//   appreciated but is not required.
+// 2. Altered source versions must be plainly marked as such, and must not be
+//   misrepresented as being the original software.
+// 3. This notice may not be removed or altered from any source distribution.
+
 function adler32(adler, buf, len, pos) {
   var s1 = (adler & 0xffff) |0,
       s2 = ((adler >>> 16) & 0xffff) |0,
@@ -6532,6 +6572,24 @@ var adler32_1 = adler32;
 // So write code to minimize size - no pregenerated tables
 // and array tools dependencies.
 
+// (C) 1995-2013 Jean-loup Gailly and Mark Adler
+// (C) 2014-2017 Vitaly Puzrin and Andrey Tupitsin
+//
+// This software is provided 'as-is', without any express or implied
+// warranty. In no event will the authors be held liable for any damages
+// arising from the use of this software.
+//
+// Permission is granted to anyone to use this software for any purpose,
+// including commercial applications, and to alter it and redistribute it
+// freely, subject to the following restrictions:
+//
+// 1. The origin of this software must not be misrepresented; you must not
+//   claim that you wrote the original software. If you use this software
+//   in a product, an acknowledgment in the product documentation would be
+//   appreciated but is not required.
+// 2. Altered source versions must be plainly marked as such, and must not be
+//   misrepresented as being the original software.
+// 3. This notice may not be removed or altered from any source distribution.
 
 // Use ordinary array, since untyped makes no boost here
 function makeTable() {
@@ -6568,6 +6626,25 @@ function crc32(crc, buf, len, pos) {
 
 var crc32_1 = crc32;
 
+// (C) 1995-2013 Jean-loup Gailly and Mark Adler
+// (C) 2014-2017 Vitaly Puzrin and Andrey Tupitsin
+//
+// This software is provided 'as-is', without any express or implied
+// warranty. In no event will the authors be held liable for any damages
+// arising from the use of this software.
+//
+// Permission is granted to anyone to use this software for any purpose,
+// including commercial applications, and to alter it and redistribute it
+// freely, subject to the following restrictions:
+//
+// 1. The origin of this software must not be misrepresented; you must not
+//   claim that you wrote the original software. If you use this software
+//   in a product, an acknowledgment in the product documentation would be
+//   appreciated but is not required.
+// 2. Altered source versions must be plainly marked as such, and must not be
+//   misrepresented as being the original software.
+// 3. This notice may not be removed or altered from any source distribution.
+
 var messages = {
   2:      'need dictionary',     /* Z_NEED_DICT       2  */
   1:      'stream end',          /* Z_STREAM_END      1  */
@@ -6579,6 +6656,31 @@ var messages = {
   '-5':   'buffer error',        /* Z_BUF_ERROR     (-5) */
   '-6':   'incompatible version' /* Z_VERSION_ERROR (-6) */
 };
+
+// (C) 1995-2013 Jean-loup Gailly and Mark Adler
+// (C) 2014-2017 Vitaly Puzrin and Andrey Tupitsin
+//
+// This software is provided 'as-is', without any express or implied
+// warranty. In no event will the authors be held liable for any damages
+// arising from the use of this software.
+//
+// Permission is granted to anyone to use this software for any purpose,
+// including commercial applications, and to alter it and redistribute it
+// freely, subject to the following restrictions:
+//
+// 1. The origin of this software must not be misrepresented; you must not
+//   claim that you wrote the original software. If you use this software
+//   in a product, an acknowledgment in the product documentation would be
+//   appreciated but is not required.
+// 2. Altered source versions must be plainly marked as such, and must not be
+//   misrepresented as being the original software.
+// 3. This notice may not be removed or altered from any source distribution.
+
+
+
+
+
+
 
 /* Public constants ==========================================================*/
 /* ===========================================================================*/
@@ -8627,6 +8729,25 @@ var strings = {
 	utf8border: utf8border
 };
 
+// (C) 1995-2013 Jean-loup Gailly and Mark Adler
+// (C) 2014-2017 Vitaly Puzrin and Andrey Tupitsin
+//
+// This software is provided 'as-is', without any express or implied
+// warranty. In no event will the authors be held liable for any damages
+// arising from the use of this software.
+//
+// Permission is granted to anyone to use this software for any purpose,
+// including commercial applications, and to alter it and redistribute it
+// freely, subject to the following restrictions:
+//
+// 1. The origin of this software must not be misrepresented; you must not
+//   claim that you wrote the original software. If you use this software
+//   in a product, an acknowledgment in the product documentation would be
+//   appreciated but is not required.
+// 2. Altered source versions must be plainly marked as such, and must not be
+//   misrepresented as being the original software.
+// 3. This notice may not be removed or altered from any source distribution.
+
 function ZStream() {
   /* next input byte */
   this.input = null; // JS specific, because we have no pointers
@@ -9053,6 +9174,25 @@ var deflate_1 = {
 	gzip: gzip_1
 };
 
+// (C) 1995-2013 Jean-loup Gailly and Mark Adler
+// (C) 2014-2017 Vitaly Puzrin and Andrey Tupitsin
+//
+// This software is provided 'as-is', without any express or implied
+// warranty. In no event will the authors be held liable for any damages
+// arising from the use of this software.
+//
+// Permission is granted to anyone to use this software for any purpose,
+// including commercial applications, and to alter it and redistribute it
+// freely, subject to the following restrictions:
+//
+// 1. The origin of this software must not be misrepresented; you must not
+//   claim that you wrote the original software. If you use this software
+//   in a product, an acknowledgment in the product documentation would be
+//   appreciated but is not required.
+// 2. Altered source versions must be plainly marked as such, and must not be
+//   misrepresented as being the original software.
+// 3. This notice may not be removed or altered from any source distribution.
+
 // See state defs from inflate.js
 var BAD$1 = 30;       /* got a data error -- remain here until reset */
 var TYPE$1 = 12;      /* i: waiting for type bits, including last-flag bit */
@@ -9378,6 +9518,27 @@ var inffast = function inflate_fast(strm, start) {
   return;
 };
 
+// (C) 1995-2013 Jean-loup Gailly and Mark Adler
+// (C) 2014-2017 Vitaly Puzrin and Andrey Tupitsin
+//
+// This software is provided 'as-is', without any express or implied
+// warranty. In no event will the authors be held liable for any damages
+// arising from the use of this software.
+//
+// Permission is granted to anyone to use this software for any purpose,
+// including commercial applications, and to alter it and redistribute it
+// freely, subject to the following restrictions:
+//
+// 1. The origin of this software must not be misrepresented; you must not
+//   claim that you wrote the original software. If you use this software
+//   in a product, an acknowledgment in the product documentation would be
+//   appreciated but is not required.
+// 2. Altered source versions must be plainly marked as such, and must not be
+//   misrepresented as being the original software.
+// 3. This notice may not be removed or altered from any source distribution.
+
+
+
 var MAXBITS = 15;
 var ENOUGH_LENS$1 = 852;
 var ENOUGH_DISTS$1 = 592;
@@ -9698,6 +9859,31 @@ var inftrees = function inflate_table(type, lens, lens_index, codes, table, tabl
   opts.bits = root;
   return 0;
 };
+
+// (C) 1995-2013 Jean-loup Gailly and Mark Adler
+// (C) 2014-2017 Vitaly Puzrin and Andrey Tupitsin
+//
+// This software is provided 'as-is', without any express or implied
+// warranty. In no event will the authors be held liable for any damages
+// arising from the use of this software.
+//
+// Permission is granted to anyone to use this software for any purpose,
+// including commercial applications, and to alter it and redistribute it
+// freely, subject to the following restrictions:
+//
+// 1. The origin of this software must not be misrepresented; you must not
+//   claim that you wrote the original software. If you use this software
+//   in a product, an acknowledgment in the product documentation would be
+//   appreciated but is not required.
+// 2. Altered source versions must be plainly marked as such, and must not be
+//   misrepresented as being the original software.
+// 3. This notice may not be removed or altered from any source distribution.
+
+
+
+
+
+
 
 var CODES = 0;
 var LENS = 1;
@@ -11243,6 +11429,25 @@ var inflate_1$2 = {
 	inflateInfo: inflateInfo
 };
 
+// (C) 1995-2013 Jean-loup Gailly and Mark Adler
+// (C) 2014-2017 Vitaly Puzrin and Andrey Tupitsin
+//
+// This software is provided 'as-is', without any express or implied
+// warranty. In no event will the authors be held liable for any damages
+// arising from the use of this software.
+//
+// Permission is granted to anyone to use this software for any purpose,
+// including commercial applications, and to alter it and redistribute it
+// freely, subject to the following restrictions:
+//
+// 1. The origin of this software must not be misrepresented; you must not
+//   claim that you wrote the original software. If you use this software
+//   in a product, an acknowledgment in the product documentation would be
+//   appreciated but is not required.
+// 2. Altered source versions must be plainly marked as such, and must not be
+//   misrepresented as being the original software.
+// 3. This notice may not be removed or altered from any source distribution.
+
 var constants = {
 
   /* Allowed flush values; see deflate() and inflate() below for details */
@@ -11290,6 +11495,25 @@ var constants = {
   Z_DEFLATED:               8
   //Z_NULL:                 null // Use -1 or null inline, depending on var type
 };
+
+// (C) 1995-2013 Jean-loup Gailly and Mark Adler
+// (C) 2014-2017 Vitaly Puzrin and Andrey Tupitsin
+//
+// This software is provided 'as-is', without any express or implied
+// warranty. In no event will the authors be held liable for any damages
+// arising from the use of this software.
+//
+// Permission is granted to anyone to use this software for any purpose,
+// including commercial applications, and to alter it and redistribute it
+// freely, subject to the following restrictions:
+//
+// 1. The origin of this software must not be misrepresented; you must not
+//   claim that you wrote the original software. If you use this software
+//   in a product, an acknowledgment in the product documentation would be
+//   appreciated but is not required.
+// 2. Altered source versions must be plainly marked as such, and must not be
+//   misrepresented as being the original software.
+// 3. This notice may not be removed or altered from any source distribution.
 
 function GZheader() {
   /* true if compressed data believed to be text */
@@ -22573,6 +22797,127 @@ class ContourHolesImage2DFilter extends Filter {
 * Lab       MCIN - Montreal Neurological Institute
 */
 
+
+/**
+* This Filter is a bit special in a sense that it does not output anything. It takes
+* an Image2D as output "0" and the event "pixel" must be defined, with a callback taking
+* two arguments: the position as an object {x: Number, y: Number} and the color as
+* an array, ie. [Number, Number, Number] for an RGB image.
+*
+* This filter is convenient for computing statistics or for anything where the output is mannually
+* created ( because the filter ForEachPixelImageFilter creates an output with same number of band.)
+*
+* **Usage**
+* - [the filter TerrainRgbToElevationImageFilter](https://github.com/jonathanlurie/pixpipejs/blob/master/src/filter/TerrainRgbToElevationImageFilter.js)
+*
+*/
+class ForEachPixelReadOnlyFilter extends Filter {
+
+  constructor(){
+    super();
+    this.addInputValidator(0, Image2D);
+  }
+
+
+  _run(){
+
+    // the input checking
+    if( ! this.hasValidInput()){
+      console.warn("A filter of type ForEachPixelReadOnlyFilter requires 1 input of category '0'.");
+      return;
+    }
+
+    if( ! ( this.hasEvent("pixel"))){
+      console.warn("No function to apply per pixel was specified.");
+      return;
+    }
+
+    var imageIn = this._getInput(0);
+    var ncpp = imageIn.getNcpp();
+    var width = imageIn.getWidth();
+    var height = imageIn.getHeight();
+
+    // reading pixel by pixel
+    for(var j=0; j<height; j++){
+      for(var i=0; i<width; i++){
+        var position = {x: i, y: j};
+        var color = imageIn.getPixel( position );
+        this.triggerEvent("pixel", position, color);
+      }
+    }
+  }
+
+} /* END of class ForEachPixelReadOnlyFilter */
+
+/*
+* Author   Jonathan Lurie - http://me.jonahanlurie.fr
+* License  MIT
+* Link      https://github.com/jonathanlurie/pixpipejs
+* Lab       MCIN - Montreal Neurological Institute
+*/
+
+
+/**
+* This filter's purpose is to convert Mapbox's TerrainRGB image data into monochannel
+* elevation (in meter).
+* See more info about the format here: https://www.mapbox.com/blog/terrain-rgb/
+* The filter takes an Image2D that respect Mapbox's format (can be a result of stictching tiles together)
+* and output a single component image with possibly up to 16777216 different values.
+*
+* **Usage**
+* - [examples/terrainRgbToElevation.html](../examples/terrainRgbToElevation.html)
+*
+*/
+class TerrainRgbToElevationImageFilter extends ImageToImageFilter {
+
+  constructor(){
+    super();
+    this.addInputValidator(0, Image2D);
+  }
+
+  _run(){
+    // the input checking
+    if( ! this.hasValidInput()){
+      console.warn("A filter of type TerrainRgbToElevationImageFilter requires 1 input of category '0'.");
+      return;
+    }
+
+    var imageIn = this._getInput(0);
+    var ncpp = imageIn.getNcpp();
+    var width = imageIn.getWidth();
+    var height = imageIn.getHeight();
+
+    // the image must be RGB or RGBA (we dont use A)
+    if(ncpp < 3){
+      console.warn("A filter of type TerrainRgbToElevationImageFilter requires an input with at least 3 components per pixel.");
+      return;
+    }
+
+    // monochannel output, init with zeros
+    var outputImg = new pixpipe.Image2D({width: width, height: height, color: [0]});
+    var forEachPixelFilterRead = new pixpipe.ForEachPixelReadOnlyFilter();
+
+    // add the input input
+    forEachPixelFilterRead.addInput( imageIn );
+
+    forEachPixelFilterRead.on( "pixel", function(position, color){
+      var elevation = -10000 + ((color[0] * 256 * 256 + color[1] * 256 + color[2]) * 0.1);
+      outputImg.setPixel( position, [ elevation ]);
+    });
+
+    forEachPixelFilterRead.update();
+    this._output[0] = outputImg;
+  }
+
+} /* END of class TerrainRgbToElevationImageFilter */
+
+/*
+* Author   Jonathan Lurie - http://me.jonahanlurie.fr
+* License  MIT
+* Link      https://github.com/jonathanlurie/pixpipejs
+* Lab       MCIN - Montreal Neurological Institute
+*/
+
 /**
 * AngleToHueWheelHelper has for goal to help visualize angular data such as gradient
 * orientation. The idea behind the "hue wheel" is to associate every direction (angle)
@@ -22978,6 +23323,8 @@ exports.NormalizeImageFilter = NormalizeImageFilter;
 exports.ContourImage2DFilter = ContourImage2DFilter;
 exports.FloodFillImageFilter = FloodFillImageFilter;
 exports.ContourHolesImage2DFilter = ContourHolesImage2DFilter;
+exports.ForEachPixelReadOnlyFilter = ForEachPixelReadOnlyFilter;
+exports.TerrainRgbToElevationImageFilter = TerrainRgbToElevationImageFilter;
 exports.AngleToHueWheelHelper = AngleToHueWheelHelper;
 exports.LineStringPrinterOnImage2DHelper = LineStringPrinterOnImage2DHelper;
 exports.Image3DToMosaicFilter = Image3DToMosaicFilter;

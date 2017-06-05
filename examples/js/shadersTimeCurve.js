@@ -25,7 +25,7 @@ shaders.fragmentMultipleInterpolation = `
   precision highp float;
 
   // a max number we allow, can be upt to 16
-  const int maxNbOfTextures = 16;
+  const int maxNbOfTextures = 15;
 
   // Number of texture used with this dataset
   // cannot be higher than maxNbOfTextures
@@ -43,12 +43,12 @@ shaders.fragmentMultipleInterpolation = `
   uniform float yspaceLength;
   uniform float zspaceLength;
   uniform int timespaceLength;
-  
+
   // the index within the timeseries
   uniform int timeIndex;
 
   uniform float forcedAlpha;
-  
+
   // a texture will contain a certain number of slices
   uniform sampler2D textures[maxNbOfTextures];
 
@@ -93,21 +93,21 @@ shaders.fragmentMultipleInterpolation = `
     float rowTextureAbsolute = floor( (indexSliceToDisplay + rounder) / nbSlicePerRow);
     float rowTexture = rowTextureAbsolute - (float(indexTextureInUse) * nbSlicePerCol) ;
     float colTexture = modI( indexSliceToDisplay, nbSlicePerRow );
-    
+
     // switch to a center-pixel reference (shift of half a pixel in unit-sized texture)
-    float halpPixH = sliceWidth / xspaceLength / 2.0; 
+    float halpPixH = sliceWidth / xspaceLength / 2.0;
     float halpPixV = sliceHeight / yspaceLength / 2.0;
-    
+
     // avoid being exactely between 2 slices because it can produce unpredictable result (stripes)
     if(mod(swc.x, 0.5) == 0.0){
       swc.x -= rounder;
     }
-    
+
     // avoid being exactely between 2 slices because it can produce unpredictable result (stripes)
     if(mod(swc.y, 0.5) == 0.0){
       swc.y -= rounder;
     }
-    
+
     // the actual textel 2D position of this 3D word coordinate
     vec2 posInTexture = vec2(
       sliceWidth * colTexture + ( swc.x/xspaceLength * sliceWidth) + halpPixH,
@@ -147,9 +147,9 @@ shaders.fragmentMultipleInterpolation = `
       color = texture2D(textures[13], posInTexture);
     }else if(indexTextureInUse == 14){
       color = texture2D(textures[14], posInTexture);
-    }else if(indexTextureInUse == 15){
+    }/*else if(indexTextureInUse == 15){
       color = texture2D(textures[15], posInTexture);
-    }/*else if(indexTextureInUse == 16){
+    }else if(indexTextureInUse == 16){
       color = texture2D(textures[16], posInTexture);
     }else if(indexTextureInUse == 17){
       color = texture2D(textures[17], posInTexture);
@@ -263,7 +263,7 @@ shaders.fragmentMultipleInterpolation = `
     }else{
       color = getIntensityWorldNearest(worldCoordShifted, timeIndex);
     }
-    
+
     // use curve for contrast
     if(enableCurve){
       vec4 curveColor = texture2D(curveTexture, vec2(color.r, 0.5));
@@ -271,10 +271,10 @@ shaders.fragmentMultipleInterpolation = `
       color.g = curveColor.g;
       color.b = curveColor.b;
     }
-    
+
     // forcing a lower alpha (when given)
     color.a = min(color.a, forcedAlpha);
-    
+
     gl_FragColor = color;
   }
 `
