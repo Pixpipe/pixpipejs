@@ -782,7 +782,7 @@ class Image2D extends PixpipeContainer{
 
 
   /**
-  * @param {Object} position - 2D positoin like {x, y}
+  * @param {Object} position - 2D positoin like {x: Number, y: Number}
   * @return {Array} the color of the given pixel.
   */
   getPixel( position ){
@@ -978,6 +978,88 @@ class Image2D extends PixpipeContainer{
     }
     return this.getMetadata("avg");
   }
+  
+  
+  /**
+  * Tells if a given point is inside or outside the image
+  * @param {Object} pos - position like {x: Number, y: Number}
+  * @return {Boolean} true for inside, false for outside
+  */
+  isInside( pos ){
+    return ( 
+      pos.x >= 0 && pos.x < this._metadata.width &&
+      pos.y >= 0 && pos.y < this._metadata.height
+    )
+  }
+  
+  /**
+  * Sample the color along a segment
+  * @param {Object} posFrom - starting position of type {x: Number, y: Number}
+  * @param {Object} posFrom - ending position of type {x: Number, y: Number}
+  * @return {Object} array of Array like that: {
+                                                  positions: [
+                                                    {x: x0, y: y0},
+                                                    {x: x1, y: y1},
+                                                    {x: x2, y: y2},
+                                                    ...
+                                                  ],
+                                                  labels: [
+                                                    "(x0, y0)", "(x1, y1)", "(x2, y2)", ...
+                                                  ],
+                                                  colors: [
+                                                            [r0, r1, r2 ...],
+                                                            [g0, g1, g2 ...],
+                                                            [b0, b1, b2 ...]
+                                                  ]
+                                                }
+     return null if posFrom or posTo is outside
+  */
+  getSegmentSample( posFrom, posTo ){
+    // both position must be inside the image
+    if( !this.isInside(posFrom) || !this.isInside(posTo) )
+      return null;
+      
+    var dx = posTo.x - posFrom.x;
+    var dy = posTo.y - posFrom.y;
+    var euclidianDistance = Math.sqrt( Math.pow(dx , 2) + Math.pow(dy , 2) );
+    var numberOfSamples = Math.floor( euclidianDistance + 1 );
+    
+    // we want to sample every unit distance along the segment
+    var stepX = dx / euclidianDistance;
+    var stepY = dy / euclidianDistance;
+    
+    var ncpp = this._metadata.ncpp;
+    var positions = new Array(numberOfSamples).fill(0);
+    var colors = new Array(ncpp).fill(0);
+    var labels = new Array(numberOfSamples).fill(0);
+    
+    // creating empty arrays for colors
+    for(var c=0; c<ncpp; c++){
+      colors[c] = new Array(numberOfSamples).fill(0) ;
+    }
+    
+    // walk along the segment, from posFrom to posTo
+    for(var i=0; i<numberOfSamples; i++){
+      var currentPos = {x: Math.round(posFrom.x + i*stepX) , y: Math.round(posFrom.y + i*stepY) };
+      positions[i] = currentPos;
+      labels[i] = "(" + currentPos.x + ", " + currentPos.y + ")";
+      
+      var pixValue = this.getPixel( currentPos );
+      
+      // each channel is dispatched in its array
+      for(var c=0; c<ncpp; c++){
+        colors[c][i] = pixValue[c];
+      }
+    }
+    
+    return {
+      positions: positions,
+      labels: labels,
+      colors: colors
+    }
+  } /* END of method getLineSample */
+  
+  
 
 } /* END of class Image2D */
 
@@ -2009,6 +2091,15 @@ class CanvasImageWriter extends Filter{
     this._ctx = null;
   }
 
+
+  /**
+  * Get the canvas used to print the Image2D;
+  * @return {Object} canvas
+  */
+  getCanvas(){
+    return this._canvas;
+  }
+  
 
   /**
   * [PRIVATE]
@@ -5291,27 +5382,6 @@ exports.setTyped = function (on) {
 exports.setTyped(TYPED_OK);
 });
 
-// (C) 1995-2013 Jean-loup Gailly and Mark Adler
-// (C) 2014-2017 Vitaly Puzrin and Andrey Tupitsin
-//
-// This software is provided 'as-is', without any express or implied
-// warranty. In no event will the authors be held liable for any damages
-// arising from the use of this software.
-//
-// Permission is granted to anyone to use this software for any purpose,
-// including commercial applications, and to alter it and redistribute it
-// freely, subject to the following restrictions:
-//
-// 1. The origin of this software must not be misrepresented; you must not
-//   claim that you wrote the original software. If you use this software
-//   in a product, an acknowledgment in the product documentation would be
-//   appreciated but is not required.
-// 2. Altered source versions must be plainly marked as such, and must not be
-//   misrepresented as being the original software.
-// 3. This notice may not be removed or altered from any source distribution.
-
-
-
 /* Public constants ==========================================================*/
 /* ===========================================================================*/
 
@@ -6522,25 +6592,6 @@ var trees = {
 // It doesn't worth to make additional optimizationa as in original.
 // Small size is preferable.
 
-// (C) 1995-2013 Jean-loup Gailly and Mark Adler
-// (C) 2014-2017 Vitaly Puzrin and Andrey Tupitsin
-//
-// This software is provided 'as-is', without any express or implied
-// warranty. In no event will the authors be held liable for any damages
-// arising from the use of this software.
-//
-// Permission is granted to anyone to use this software for any purpose,
-// including commercial applications, and to alter it and redistribute it
-// freely, subject to the following restrictions:
-//
-// 1. The origin of this software must not be misrepresented; you must not
-//   claim that you wrote the original software. If you use this software
-//   in a product, an acknowledgment in the product documentation would be
-//   appreciated but is not required.
-// 2. Altered source versions must be plainly marked as such, and must not be
-//   misrepresented as being the original software.
-// 3. This notice may not be removed or altered from any source distribution.
-
 function adler32(adler, buf, len, pos) {
   var s1 = (adler & 0xffff) |0,
       s2 = ((adler >>> 16) & 0xffff) |0,
@@ -6572,24 +6623,6 @@ var adler32_1 = adler32;
 // So write code to minimize size - no pregenerated tables
 // and array tools dependencies.
 
-// (C) 1995-2013 Jean-loup Gailly and Mark Adler
-// (C) 2014-2017 Vitaly Puzrin and Andrey Tupitsin
-//
-// This software is provided 'as-is', without any express or implied
-// warranty. In no event will the authors be held liable for any damages
-// arising from the use of this software.
-//
-// Permission is granted to anyone to use this software for any purpose,
-// including commercial applications, and to alter it and redistribute it
-// freely, subject to the following restrictions:
-//
-// 1. The origin of this software must not be misrepresented; you must not
-//   claim that you wrote the original software. If you use this software
-//   in a product, an acknowledgment in the product documentation would be
-//   appreciated but is not required.
-// 2. Altered source versions must be plainly marked as such, and must not be
-//   misrepresented as being the original software.
-// 3. This notice may not be removed or altered from any source distribution.
 
 // Use ordinary array, since untyped makes no boost here
 function makeTable() {
@@ -6626,25 +6659,6 @@ function crc32(crc, buf, len, pos) {
 
 var crc32_1 = crc32;
 
-// (C) 1995-2013 Jean-loup Gailly and Mark Adler
-// (C) 2014-2017 Vitaly Puzrin and Andrey Tupitsin
-//
-// This software is provided 'as-is', without any express or implied
-// warranty. In no event will the authors be held liable for any damages
-// arising from the use of this software.
-//
-// Permission is granted to anyone to use this software for any purpose,
-// including commercial applications, and to alter it and redistribute it
-// freely, subject to the following restrictions:
-//
-// 1. The origin of this software must not be misrepresented; you must not
-//   claim that you wrote the original software. If you use this software
-//   in a product, an acknowledgment in the product documentation would be
-//   appreciated but is not required.
-// 2. Altered source versions must be plainly marked as such, and must not be
-//   misrepresented as being the original software.
-// 3. This notice may not be removed or altered from any source distribution.
-
 var messages = {
   2:      'need dictionary',     /* Z_NEED_DICT       2  */
   1:      'stream end',          /* Z_STREAM_END      1  */
@@ -6656,31 +6670,6 @@ var messages = {
   '-5':   'buffer error',        /* Z_BUF_ERROR     (-5) */
   '-6':   'incompatible version' /* Z_VERSION_ERROR (-6) */
 };
-
-// (C) 1995-2013 Jean-loup Gailly and Mark Adler
-// (C) 2014-2017 Vitaly Puzrin and Andrey Tupitsin
-//
-// This software is provided 'as-is', without any express or implied
-// warranty. In no event will the authors be held liable for any damages
-// arising from the use of this software.
-//
-// Permission is granted to anyone to use this software for any purpose,
-// including commercial applications, and to alter it and redistribute it
-// freely, subject to the following restrictions:
-//
-// 1. The origin of this software must not be misrepresented; you must not
-//   claim that you wrote the original software. If you use this software
-//   in a product, an acknowledgment in the product documentation would be
-//   appreciated but is not required.
-// 2. Altered source versions must be plainly marked as such, and must not be
-//   misrepresented as being the original software.
-// 3. This notice may not be removed or altered from any source distribution.
-
-
-
-
-
-
 
 /* Public constants ==========================================================*/
 /* ===========================================================================*/
@@ -8729,25 +8718,6 @@ var strings = {
 	utf8border: utf8border
 };
 
-// (C) 1995-2013 Jean-loup Gailly and Mark Adler
-// (C) 2014-2017 Vitaly Puzrin and Andrey Tupitsin
-//
-// This software is provided 'as-is', without any express or implied
-// warranty. In no event will the authors be held liable for any damages
-// arising from the use of this software.
-//
-// Permission is granted to anyone to use this software for any purpose,
-// including commercial applications, and to alter it and redistribute it
-// freely, subject to the following restrictions:
-//
-// 1. The origin of this software must not be misrepresented; you must not
-//   claim that you wrote the original software. If you use this software
-//   in a product, an acknowledgment in the product documentation would be
-//   appreciated but is not required.
-// 2. Altered source versions must be plainly marked as such, and must not be
-//   misrepresented as being the original software.
-// 3. This notice may not be removed or altered from any source distribution.
-
 function ZStream() {
   /* next input byte */
   this.input = null; // JS specific, because we have no pointers
@@ -9174,25 +9144,6 @@ var deflate_1 = {
 	gzip: gzip_1
 };
 
-// (C) 1995-2013 Jean-loup Gailly and Mark Adler
-// (C) 2014-2017 Vitaly Puzrin and Andrey Tupitsin
-//
-// This software is provided 'as-is', without any express or implied
-// warranty. In no event will the authors be held liable for any damages
-// arising from the use of this software.
-//
-// Permission is granted to anyone to use this software for any purpose,
-// including commercial applications, and to alter it and redistribute it
-// freely, subject to the following restrictions:
-//
-// 1. The origin of this software must not be misrepresented; you must not
-//   claim that you wrote the original software. If you use this software
-//   in a product, an acknowledgment in the product documentation would be
-//   appreciated but is not required.
-// 2. Altered source versions must be plainly marked as such, and must not be
-//   misrepresented as being the original software.
-// 3. This notice may not be removed or altered from any source distribution.
-
 // See state defs from inflate.js
 var BAD$1 = 30;       /* got a data error -- remain here until reset */
 var TYPE$1 = 12;      /* i: waiting for type bits, including last-flag bit */
@@ -9518,27 +9469,6 @@ var inffast = function inflate_fast(strm, start) {
   return;
 };
 
-// (C) 1995-2013 Jean-loup Gailly and Mark Adler
-// (C) 2014-2017 Vitaly Puzrin and Andrey Tupitsin
-//
-// This software is provided 'as-is', without any express or implied
-// warranty. In no event will the authors be held liable for any damages
-// arising from the use of this software.
-//
-// Permission is granted to anyone to use this software for any purpose,
-// including commercial applications, and to alter it and redistribute it
-// freely, subject to the following restrictions:
-//
-// 1. The origin of this software must not be misrepresented; you must not
-//   claim that you wrote the original software. If you use this software
-//   in a product, an acknowledgment in the product documentation would be
-//   appreciated but is not required.
-// 2. Altered source versions must be plainly marked as such, and must not be
-//   misrepresented as being the original software.
-// 3. This notice may not be removed or altered from any source distribution.
-
-
-
 var MAXBITS = 15;
 var ENOUGH_LENS$1 = 852;
 var ENOUGH_DISTS$1 = 592;
@@ -9859,31 +9789,6 @@ var inftrees = function inflate_table(type, lens, lens_index, codes, table, tabl
   opts.bits = root;
   return 0;
 };
-
-// (C) 1995-2013 Jean-loup Gailly and Mark Adler
-// (C) 2014-2017 Vitaly Puzrin and Andrey Tupitsin
-//
-// This software is provided 'as-is', without any express or implied
-// warranty. In no event will the authors be held liable for any damages
-// arising from the use of this software.
-//
-// Permission is granted to anyone to use this software for any purpose,
-// including commercial applications, and to alter it and redistribute it
-// freely, subject to the following restrictions:
-//
-// 1. The origin of this software must not be misrepresented; you must not
-//   claim that you wrote the original software. If you use this software
-//   in a product, an acknowledgment in the product documentation would be
-//   appreciated but is not required.
-// 2. Altered source versions must be plainly marked as such, and must not be
-//   misrepresented as being the original software.
-// 3. This notice may not be removed or altered from any source distribution.
-
-
-
-
-
-
 
 var CODES = 0;
 var LENS = 1;
@@ -11429,25 +11334,6 @@ var inflate_1$2 = {
 	inflateInfo: inflateInfo
 };
 
-// (C) 1995-2013 Jean-loup Gailly and Mark Adler
-// (C) 2014-2017 Vitaly Puzrin and Andrey Tupitsin
-//
-// This software is provided 'as-is', without any express or implied
-// warranty. In no event will the authors be held liable for any damages
-// arising from the use of this software.
-//
-// Permission is granted to anyone to use this software for any purpose,
-// including commercial applications, and to alter it and redistribute it
-// freely, subject to the following restrictions:
-//
-// 1. The origin of this software must not be misrepresented; you must not
-//   claim that you wrote the original software. If you use this software
-//   in a product, an acknowledgment in the product documentation would be
-//   appreciated but is not required.
-// 2. Altered source versions must be plainly marked as such, and must not be
-//   misrepresented as being the original software.
-// 3. This notice may not be removed or altered from any source distribution.
-
 var constants = {
 
   /* Allowed flush values; see deflate() and inflate() below for details */
@@ -11495,25 +11381,6 @@ var constants = {
   Z_DEFLATED:               8
   //Z_NULL:                 null // Use -1 or null inline, depending on var type
 };
-
-// (C) 1995-2013 Jean-loup Gailly and Mark Adler
-// (C) 2014-2017 Vitaly Puzrin and Andrey Tupitsin
-//
-// This software is provided 'as-is', without any express or implied
-// warranty. In no event will the authors be held liable for any damages
-// arising from the use of this software.
-//
-// Permission is granted to anyone to use this software for any purpose,
-// including commercial applications, and to alter it and redistribute it
-// freely, subject to the following restrictions:
-//
-// 1. The origin of this software must not be misrepresented; you must not
-//   claim that you wrote the original software. If you use this software
-//   in a product, an acknowledgment in the product documentation would be
-//   appreciated but is not required.
-// 2. Altered source versions must be plainly marked as such, and must not be
-//   misrepresented as being the original software.
-// 3. This notice may not be removed or altered from any source distribution.
 
 function GZheader() {
   /* true if compressed data believed to be text */
@@ -22102,7 +21969,7 @@ class ImageDerivativeFilter extends ImageToImageFilter {
   _run(){
     // the input checking
     if( ! this.hasValidInput()){
-      console.warn("A filter of type SpatialConvolutionFilter requires 1 input of category '0' and one input of category '1'.");
+      console.warn("A filter of type ImageDerivativeFilter requires 1 input of category '0' and one input of category '1'.");
       return;
     }
     

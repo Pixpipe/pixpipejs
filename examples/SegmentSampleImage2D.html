@@ -1,0 +1,201 @@
+<html>
+<head>
+  <title>Segment sample Image2D</title>
+
+  
+
+  <script src="../dist/pixpipe.js"></script>
+
+  <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700,900" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  
+  
+  <link rel="stylesheet" href="http://cdn.jsdelivr.net/chartist.js/latest/chartist.min.css">
+  <script src="http://cdn.jsdelivr.net/chartist.js/latest/chartist.min.js"></script>
+
+  <style>
+    .ct-label {
+      color: #777;
+    }
+    
+    .ct-grid {
+      stroke: #444;
+      stroke-dasharray: none;
+    }
+    
+    .ct-line {
+      stroke-width: 1px;
+    }
+    
+    .ct-series-a .ct-line {
+      stroke: #ff4444;
+    }
+    
+    .ct-series-b .ct-line {
+      stroke: #8fff87;
+    }
+    
+    .ct-series-c .ct-line {
+      stroke: #87bdff;
+    }
+  
+  </style>
+
+</head>
+<body>
+  <h1><a href="https://github.com/jonathanlurie/pixpipejs"><span style="color: #ff91d7">Pixpipe</span><span style="color: #FFFFFF">js</span></a></h1>
+  <p>
+  This does the following :
+  <ul>
+    <li>opening a distant image file with AJAX request, using <code>pixpipe.UrlImageReader</code></li>
+    <li>displaying it in a canvas using <code>pixpipe.CanvasImageWriter</code></li>
+    <li>Sampling along a segment</li>
+  </ul>
+  </p>
+
+  <div id="myDiv"></div>
+  <div id="chartDiv"></div>
+
+  <script>
+
+  var loadedImage = null;
+  var canvas = null;
+  var canvasCtx = null;
+  
+
+  // create a filter to write the image into a canvas
+  var imageToCanvasFilter = new pixpipe.CanvasImageWriter();
+  imageToCanvasFilter.setMetadata( "parentDivID", "myDiv" );
+
+  // The filter to read image from URL
+  var url2ImgFilter = new pixpipe.UrlImageReader();
+
+  // the input of this reader is a simple string url. Can be local of distant, but if distant, the server must allow CORS.
+  url2ImgFilter.addInput( "images/sd.jpg" );
+
+  // the image is loaded...
+  // here, this = url2ImgFilter
+  url2ImgFilter.on("ready", function(){
+    loadedImage = this.getOutput();
+
+    
+    // use the output of the UrlImageReader as the input for CanvasImageWriter
+    imageToCanvasFilter.addInput( loadedImage );
+    // actually copy the data from the Image2D into the inner HTML5 canvas
+    imageToCanvasFilter.update();
+    
+    canvas = imageToCanvasFilter.getCanvas();
+    
+    initCanvasEvents()
+    
+  })
+
+  // Ask to fetch the image from URL
+  url2ImgFilter.update();
+
+  
+  function initCanvasEvents(){
+    var mouseCanvasScreenScale = {x: null, y: null};
+    var mouseCanvasImage2DScale = {x: null, y: null};
+    var mouseDown = false;
+    
+    canvasCtx = canvas.getContext("2d");
+
+    
+    var startPos = {x: null, y: null};
+    var endPos = {x: null, y: null};
+
+    
+    canvas.addEventListener('mousemove',
+      function( evt ){
+        var rect = canvas.getBoundingClientRect();
+        
+        
+        mouseCanvasScreenScale.x = evt.clientX - rect.left;
+        mouseCanvasScreenScale.y = evt.clientY - rect.top;
+        
+        mouseCanvasImage2DScale.x = mouseCanvasScreenScale.x * canvas.width / rect.width ;
+        mouseCanvasImage2DScale.y = mouseCanvasScreenScale.y * canvas.height / rect.height;
+        
+        /*
+        console.log( mouseCanvasScreenScale );
+        console.log( mouseCanvasImage2DScale );
+        console.log("-----------------");
+        */
+        
+        if(mouseDown){
+          endPos.x = mouseCanvasImage2DScale.x;
+          endPos.y = mouseCanvasImage2DScale.y;
+          
+          sampleData(startPos, endPos)
+        }
+        
+      }, 
+      false
+    );
+    
+    
+    
+    canvas.addEventListener('mousedown', 
+      function(evt){
+        mouseDown = true;
+        startPos.x = mouseCanvasImage2DScale.x;
+        startPos.y = mouseCanvasImage2DScale.y;
+
+      }
+      , false
+    );
+    
+    
+    canvas.addEventListener('mouseup', 
+      function(evt){
+        mouseDown = false;
+      }
+      , false
+    );
+    
+  }
+  
+  
+  function sampleData(posFrom, posTo){
+    
+    var segmentSampleData = loadedImage.getSegmentSample( posFrom, posTo)
+    
+    if( segmentSampleData ){
+      
+
+      canvasCtx.strokeStyle="#FFFFFF";
+      canvasCtx.lineWidth = 5
+      canvasCtx.beginPath();
+      canvasCtx.moveTo(posFrom.x, posFrom.y);
+      canvasCtx.lineTo(posTo.x, posTo.y);
+      canvasCtx.stroke();
+      
+      
+      var plot = new Chartist.Line('#chartDiv', {
+        labels: null /*segmentSampleData.labels*/,
+        series: [
+          segmentSampleData.colors[0],
+          segmentSampleData.colors[1],
+          segmentSampleData.colors[2]
+        ]
+      }, {
+        high: 255,
+        low: 0,
+        divisor: 5,
+        showPoint: false,
+        axisX: {
+          showLabel: false,
+          showGrid: false
+        },
+      });
+      
+    }
+  
+  }
+
+
+  </script>
+
+</body>
+</html>
