@@ -72,29 +72,17 @@ For saving intermediate or final results to a local storage, Pixpipe needs a fil
 
 
 # Todo
-- Export Image2D as png (and trigger a download)
-- Doc and tutorials for developers
 - Integrate wokers with Rollup
 - 2D FFT
+- 2D Wavelet (Haar, Daubechie)
 - Bilinear and trilinear interpolation + resampling filter
 - Oblique sampling for Image3D
-- Better test time series with NIfTI (maybe add an example)
 - crop an Image2D or Image3D
-- Add a checksum for file loading so that we can recognize them for sure
 - Add an example like volume3DNavigator but with autoload
 - Texture 16bit for volume3DNavigator
-- Better manage voxel access in Image3D
 - Build an Image3D from a list of Image2D
-- ~~Add an efficient way to minify the code~~
-- ~~Add a generic Image3D decoder so that a user does not have to care about format~~
-- ~~Load a file as a ArrayBuffer with a AJAX~~
-- ~~Export `Image2D`, `Image3D` or generic `*.pixp` file (using serialization and Pako)~~
-- ~~Load a file as a ArrayBuffer with a file dialog~~ DONE: `FileToArrayBufferReader`
-- ~~Readers for Minc and NIfTI~~ DONE: `Minc2Decoder` and `NiftiDecoder`
-- ~~Image3D~~
-- ~~Replace ncpp attribute by a metadata (Image2D & Image3D)~~
-- ~~Push some methods of MniVolume to Image3D~~
-- ~~export a/multiple Image2D of sliced Image3D (upon 2D size limit) with mosaic (for shader texturing)~~
+- Sample along a given line for Image2D and Image3D
+- Create a proper vector stucture iheritance pattern
 
 # License
 MIT - See [LICENSE file](LICENSE).

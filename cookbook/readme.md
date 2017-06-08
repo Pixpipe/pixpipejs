@@ -182,6 +182,7 @@ Here, we will learn what is an `Image2D`, how to display it in a canvas using `C
 ## Simple filters for Image2D
 See a `Filter` as a *box* that takes one or more input and produces one or more output. If some parameters are needed to make the filter work properly, this must happen using `setMetadata()`. To ask the filter to do its job, just call `update()`.  
 A `Filter` should **NEVER** modify the input data.
+- [Threshold an image](http://me.jonathanlurie.fr/pixpipejs/examples/imageThresholding.html) | [source](https://github.com/jonathanlurie/pixpipejs/tree/master/examples/imageThresholding.html)
 - [The filter that lets you apply a treatment at a pixel level](http://me.jonathanlurie.fr/pixpipejs/examples/forEachPixel.html) | [source](https://github.com/jonathanlurie/pixpipejs/tree/master/examples/forEachPixel.html)
 - [A pixel-wise filter that uses pixel position to adapt its behaviour](http://me.jonathanlurie.fr/pixpipejs/examples/forEachPixelGradient.html) | [source](https://github.com/jonathanlurie/pixpipejs/tree/master/examples/forEachPixelGradient.html)
 - [Use a math expression evaluator to blend an image and a mask](http://me.jonathanlurie.fr/pixpipejs/examples/imageBlending.html) | [source](https://github.com/jonathanlurie/pixpipejs/tree/master/examples/imageBlending.html)
