@@ -38,3 +38,11 @@ textarea {
 .canvasDiv{
   margin-bottom: 10px;
 }
+
+#chartDiv {
+  height: 500px;
+}
+
+canvas {
+  cursor: crosshair;
+}

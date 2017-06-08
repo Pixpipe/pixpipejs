@@ -83,6 +83,7 @@ For saving intermediate or final results to a local storage, Pixpipe needs a fil
 - Build an Image3D from a list of Image2D
 - Sample along a given line for Image2D and Image3D
 - Create a proper vector stucture iheritance pattern
+- Create a separate repo with sample data (just leave a file of each in this one)
 
 # License
 MIT - See [LICENSE file](LICENSE).

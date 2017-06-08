@@ -54,6 +54,15 @@ class CanvasImageWriter extends Filter{
 
 
   /**
+  * Get the canvas used to print the Image2D;
+  * @return {Object} canvas
+  */
+  getCanvas(){
+    return this._canvas;
+  }
+  
+
+  /**
   * [PRIVATE]
   * Initialize a new canvas object
   */
@@ -167,7 +176,7 @@ class CanvasImageWriter extends Filter{
         }
       }
     }
-
+    
     this._ctx.putImageData(canvasImageData, 0, 0);
   }
 
