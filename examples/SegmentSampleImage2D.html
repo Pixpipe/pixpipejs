@@ -39,6 +39,19 @@
       stroke: #87bdff;
     }
   
+    #content {
+      
+    }
+  
+    #myDiv {
+      position: relative;
+      
+    }
+    
+    #myDiv canvas {
+      position: absolute;
+    }
+  
   </style>
 
 </head>
@@ -51,16 +64,20 @@
     <li>displaying it in a canvas using <code>pixpipe.CanvasImageWriter</code></li>
     <li>Sampling along a segment</li>
   </ul>
+  Draw a segment on the image and look at the plot at the bottom of the page!
   </p>
 
-  <div id="myDiv"></div>
-  <div id="chartDiv"></div>
-
+  <div id="content">
+    <div id="myDiv"></div>
+    <div id="chartDiv"></div>
+  </div>
+  
   <script>
 
   var loadedImage = null;
-  var canvas = null;
+  var overlayCanvas = null;
   var canvasCtx = null;
+  var plot = null;
   
 
   // create a filter to write the image into a canvas
@@ -84,9 +101,8 @@
     // actually copy the data from the Image2D into the inner HTML5 canvas
     imageToCanvasFilter.update();
     
-    canvas = imageToCanvasFilter.getCanvas();
     
-    initCanvasEvents()
+    initOverlayCanvas()
     
   })
 
@@ -94,34 +110,31 @@
   url2ImgFilter.update();
 
   
-  function initCanvasEvents(){
+  function initOverlayCanvas(){
+    
+    createOverlayCanvas();
+    
     var mouseCanvasScreenScale = {x: null, y: null};
     var mouseCanvasImage2DScale = {x: null, y: null};
     var mouseDown = false;
     
-    canvasCtx = canvas.getContext("2d");
+    canvasCtx = overlayCanvas.getContext("2d");
 
     
     var startPos = {x: null, y: null};
     var endPos = {x: null, y: null};
 
     
-    canvas.addEventListener('mousemove',
+    overlayCanvas.addEventListener('mousemove',
       function( evt ){
-        var rect = canvas.getBoundingClientRect();
+        var rect = overlayCanvas.getBoundingClientRect();
         
         
         mouseCanvasScreenScale.x = evt.clientX - rect.left;
         mouseCanvasScreenScale.y = evt.clientY - rect.top;
         
-        mouseCanvasImage2DScale.x = mouseCanvasScreenScale.x * canvas.width / rect.width ;
-        mouseCanvasImage2DScale.y = mouseCanvasScreenScale.y * canvas.height / rect.height;
-        
-        /*
-        console.log( mouseCanvasScreenScale );
-        console.log( mouseCanvasImage2DScale );
-        console.log("-----------------");
-        */
+        mouseCanvasImage2DScale.x = mouseCanvasScreenScale.x * overlayCanvas.width / rect.width ;
+        mouseCanvasImage2DScale.y = mouseCanvasScreenScale.y * overlayCanvas.height / rect.height;
         
         if(mouseDown){
           endPos.x = mouseCanvasImage2DScale.x;
@@ -136,7 +149,7 @@
     
     
     
-    canvas.addEventListener('mousedown', 
+    overlayCanvas.addEventListener('mousedown', 
       function(evt){
         mouseDown = true;
         startPos.x = mouseCanvasImage2DScale.x;
@@ -147,7 +160,7 @@
     );
     
     
-    canvas.addEventListener('mouseup', 
+    overlayCanvas.addEventListener('mouseup', 
       function(evt){
         mouseDown = false;
       }
@@ -162,6 +175,9 @@
     var segmentSampleData = loadedImage.getSegmentSample( posFrom, posTo)
     
     if( segmentSampleData ){
+      cleanCanvas();
+
+      document.getElementById("myDiv").style.height = overlayCanvas.getBoundingClientRect().height + 15;
       
 
       canvasCtx.strokeStyle="#FFFFFF";
@@ -171,27 +187,56 @@
       canvasCtx.lineTo(posTo.x, posTo.y);
       canvasCtx.stroke();
       
-      
-      var plot = new Chartist.Line('#chartDiv', {
-        labels: null /*segmentSampleData.labels*/,
-        series: [
+      // refresh the line plot
+      if(plot){
+        plot.update( {series: [
           segmentSampleData.colors[0],
           segmentSampleData.colors[1],
           segmentSampleData.colors[2]
-        ]
-      }, {
-        high: 255,
-        low: 0,
-        divisor: 5,
-        showPoint: false,
-        axisX: {
-          showLabel: false,
-          showGrid: false
-        },
-      });
+        ]})
+        
+      }
+      // create the line plot
+      else{
+        plot = new Chartist.Line('#chartDiv', {
+          labels: null /*segmentSampleData.labels*/,
+          series: [
+            segmentSampleData.colors[0],
+            segmentSampleData.colors[1],
+            segmentSampleData.colors[2]
+          ]
+        }, {
+          high: 255,
+          low: 0,
+          divisor: 5,
+          showPoint: false,
+          //lineSmooth: Chartist.Interpolation.simple(),
+          lineSmooth: Chartist.Interpolation.none(),
+          axisX: {
+            showLabel: false,
+            showGrid: false
+          },
+        });  
+        
+      }
       
     }
+  }
   
+  
+  function cleanCanvas(){
+    canvasCtx.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
+  }
+  
+  
+  function createOverlayCanvas(){
+    overlayCanvas = document.createElement("canvas");
+    document.getElementById( "myDiv" ).appendChild(overlayCanvas);
+    // resizing the canvas
+    overlayCanvas.width = loadedImage.getWidth();
+    overlayCanvas.height = loadedImage.getHeight();
+    canvasCtx = overlayCanvas.getContext('2d');
+    cleanCanvas()
   }
 
 
