@@ -89,7 +89,7 @@ class CanvasImageWriter extends Filter{
 
     // not sure this is useful since the style is "pixelated"
     // (does not seem to well super well with Firefox)
-    this._ctx.imageSmoothingEnabled = true;
+    this._ctx.imageSmoothingEnabled = false;
     this._ctx.mozImageSmoothingEnabled = false;
     this._ctx.webkitImageSmoothingEnabled = false;
     this._ctx.ctxmsImageSmoothingEnabled = false;

@@ -177,6 +177,7 @@ Here, we will learn what is an `Image2D`, how to display it in a canvas using `C
 - [Same but with multiple images](http://me.jonathanlurie.fr/pixpipejs/examples/urlToImage2D_multiple.html) | [source](https://github.com/jonathanlurie/pixpipejs/tree/master/examples/urlToImage2D_multiple.html)
 - [Create an Image2D from a local file and display it](http://me.jonathanlurie.fr/pixpipejs/examples/fileToImage2D.html) | [source](https://github.com/jonathanlurie/pixpipejs/tree/master/examples/fileToImage2D.html)
 - [Open a Tiff and make it an Image2D](http://me.jonathanlurie.fr/pixpipejs/examples/fileToTiff.html) | [source](https://github.com/jonathanlurie/pixpipejs/tree/master/examples/fileToTiff.html)
+- [Sample pixel along a line](http://me.jonathanlurie.fr/pixpipejs/examples/SegmentSampleImage2D.html) | [source](https://github.com/jonathanlurie/pixpipejs/tree/master/examples/SegmentSampleImage2D.html)
 
 
 ## Simple filters for Image2D
