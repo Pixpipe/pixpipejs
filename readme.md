@@ -84,6 +84,10 @@ For saving intermediate or final results to a local storage, Pixpipe needs a fil
 - Sample along a given line for Image2D and Image3D
 - Create a proper vector stucture iheritance pattern
 - Create a separate repo with sample data (just leave a file of each in this one)
+- Create a sample filter in a separete repo, as a base example to play with
+- process Image2D on GPU
+- Make the pixel/voxel setter/getters format consistant from Image2D to Image3D
+- Create a mosaic filter that uses RGBA to store different info (more of them) - and the shader that goes with it!
 
 # License
 MIT - See [LICENSE file](LICENSE).

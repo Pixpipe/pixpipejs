@@ -106,19 +106,44 @@ class Image3DToMosaicFilter extends Filter{
 
     var outImage = null;
 
+    // the 3 following functions are a work around to fetch voxel along the right axis
+    function fetchAlongXspace(i, j, sliceIndex, time){
+      return inputImage3D.getIntensity_xyz(sliceIndex, i, j, time)
+    }
+
+    function fetchAlongYspace(i, j, sliceIndex, time){
+      return inputImage3D.getIntensity_xyz(i, sliceIndex, j, time)
+    }
+
+    function fetchAlongZspace(i, j, sliceIndex, time){
+      return inputImage3D.getIntensity_xyz(i, j,  sliceIndex, time)
+    }
+
+    var fetchAlongAxis = null;
+
+    if( this._metadata.axis === "xspace")
+      fetchAlongAxis = fetchAlongXspace;
+    else if( this._metadata.axis === "yspace")
+      fetchAlongAxis = fetchAlongYspace;
+    else if( this._metadata.axis === "zspace")
+      fetchAlongAxis = fetchAlongZspace;
+    
+    if( !fetchAlongAxis ){
+      console.warn("The axis to sample along for the mosaic was not properly set.");
+      return;
+    }
+
+    // to make it works no matter the ncpp
+    var initPixel = new Array( inputImage3D.getMetadata("ncpp") ).fill(0);
     
     for(var t=startTime; t<endTime; t++){
 
       // for each slice
       for(var sliceIndex=0; sliceIndex<numOfSlices; sliceIndex++){
         
-        // fetching the slice
-        var slice = inputImage3D.getSlice( this.getMetadata("axis") , sliceIndex, t);
-
-
         // create a new output image when the current is full (or not init)
         if( sliceCounter%slicePerOutputIm == 0 ){
-          outImage = new Image2D({width: outputWidth, height: outputHeight, color: [0]});
+          outImage = new Image2D({width: outputWidth, height: outputHeight, color: initPixel});
           this._output[ outputCounter ] = outImage;
           sliceIndexCurrentOutput = 0;
           outputCounter++;
@@ -131,18 +156,18 @@ class Image3DToMosaicFilter extends Filter{
         var offsetPixelCol = col * width;
         var offsetPixelRow = row * height;
 
-
         // for each row of the input slice
         for(var y=0; y<height; y++){
           // for each col of the output image
           for(var x=0; x<width; x++){
+            var voxelValue = [fetchAlongAxis(x, y,  sliceIndex, t)]
+            
             outImage.setPixel(
               {x: offsetPixelCol+x, y: offsetPixelRow+y},
-              slice.getPixel({x: x, y: y})
+              voxelValue
             )
           }
         }
-        
         sliceCounter ++;
 
       } /* END for each slice*/
