@@ -1113,10 +1113,16 @@ class Image3D extends PixpipeContainer{
     var zspace = {
       step: 1
     };
+    
+    var time = {
+      offset: 0,
+      space_length: 1
+    };
 
     this.setMetadata("xspace", xspace);
     this.setMetadata("yspace", yspace);
     this.setMetadata("zspace", zspace);
+    this.setMetadata("time", time);
 
     // replacing default value for ncpp
     if(options && "ncpp" in options){
@@ -1460,7 +1466,8 @@ class Image3D extends PixpipeContainer{
         return 0;
     }
 
-    var time_offset = this.hasMetadata( "time" ) ? time * this.getMetadata( "time" ).offset : 0;
+    //var time_offset = this.hasMetadata( "time" ) ? time * this.getMetadata( "time" ).offset : 0;
+    var time_offset = this._metadata.time.offset * time;
 
     var xyzt_offset = (
       i * this.getMetadata( order[0] ).offset +
@@ -1480,22 +1487,22 @@ class Image3D extends PixpipeContainer{
   * @param {Number} time - position in time (optional)
   */
   getIntensity_xyz(x, y, z, time = 0) {
-    var order = this.getMetadata("order");
 
-    if (x < 0 || x >= this.getMetadata( "xspace" ).space_length ||
-        y < 0 || y >= this.getMetadata( "yspace" ).space_length ||
-        z < 0 || z >= this.getMetadata( "zspace" ).space_length)
+    if (x < 0 || x >= this._metadata.xspace.space_length ||
+        y < 0 || y >= this._metadata.yspace.space_length ||
+        z < 0 || z >= this._metadata.zspace.space_length)
     {
         console.warn("getIntensity_xyz position is out of range.");
         return 0;
     }
 
-    var time_offset = this.hasMetadata( "time" ) ? time * this.getMetadata( "time" ).offset : 0;
-
+    //var time_offset = this.hasMetadata( "time" ) ? time * this.getMetadata( "time" ).offset : 0;
+    var time_offset = this._metadata.time.offset * time;
+    
     var xyzt_offset = (
-      x * this.getMetadata( "xspace" ).offset +
-      y * this.getMetadata( "yspace" ).offset +
-      z * this.getMetadata( "zspace" ).offset +
+      x * this._metadata.xspace.offset +
+      y * this._metadata.yspace.offset +
+      z * this._metadata.zspace.offset +
       time_offset);
 
     return this._data[xyzt_offset];
@@ -1508,6 +1515,88 @@ class Image3D extends PixpipeContainer{
   getTimeLength(){
     return ( this.hasMetadata("time") ? this.getMetadata("time").space_length : 1 );
   }
+
+
+  /**
+  * Tells if a given point is inside or outside the image
+  * @param {Object} pos - position like {x: Number, y: Number, z: Number}
+  * @return {Boolean} true for inside, false for outside
+  */
+  isInside( pos ){
+    return (
+      true
+    )
+    
+  }
+  
+
+  /**
+  * Sample the color along a segment
+  * @param {Object} posFrom - starting position of type {x: Number, y: Number, z: Number}
+  * @param {Object} posFrom - ending position of type {x: Number, y: Number, z: Number}
+  * @return {Object} array of Array like that: {
+                                                  positions: [
+                                                    {x: x0, y: y0, z: z0},
+                                                    {x: x1, y: y1, z: z1},
+                                                    {x: x2, y: y2, z: z2},
+                                                    ...
+                                                  ],
+                                                  labels: [
+                                                    "(x0, y0, z0)", "(x1, y1, z1)", "(x2, y2, z2)", ...
+                                                  ],
+                                                  colors: [
+                                                            [r0, r1, r2 ...],
+                                                            [g0, g1, g2 ...],
+                                                            [b0, b1, b2 ...]
+                                                  ]
+                                                }
+     return null if posFrom or posTo is outside
+  */
+  getSegmentSample( posFrom, posTo, time = 0 ){
+    // both position must be inside the image
+    if( !this.isInside(posFrom) || !this.isInside(posTo) )
+      return null;
+      
+    var dx = posTo.x - posFrom.x;
+    var dy = posTo.y - posFrom.y;
+    var euclidianDistance = Math.sqrt( Math.pow(dx , 2) + Math.pow(dy , 2) );
+    var numberOfSamples = Math.floor( euclidianDistance + 1 );
+    
+    // we want to sample every unit distance along the segment
+    var stepX = dx / euclidianDistance;
+    var stepY = dy / euclidianDistance;
+    
+    var ncpp = this._metadata.ncpp;
+    var positions = new Array(numberOfSamples).fill(0);
+    var colors = new Array(ncpp).fill(0);
+    var labels = new Array(numberOfSamples).fill(0);
+    
+    // creating empty arrays for colors
+    for(var c=0; c<ncpp; c++){
+      colors[c] = new Array(numberOfSamples).fill(0) ;
+    }
+    
+    // walk along the segment, from posFrom to posTo
+    for(var i=0; i<numberOfSamples; i++){
+      var currentPos = {x: Math.round(posFrom.x + i*stepX) , y: Math.round(posFrom.y + i*stepY) };
+      positions[i] = currentPos;
+      labels[i] = "(" + currentPos.x + ", " + currentPos.y + ")";
+      
+      var pixValue = this.getPixel( currentPos );
+      
+      // each channel is dispatched in its array
+      for(var c=0; c<ncpp; c++){
+        colors[c][i] = pixValue[c];
+      }
+    }
+    
+    return {
+      positions: positions,
+      labels: labels,
+      colors: colors
+    }
+  } /* END of method getLineSample */
+  
 
 } /* END of class Image3D */
 
@@ -2128,7 +2217,7 @@ class CanvasImageWriter extends Filter{
 
     // not sure this is useful since the style is "pixelated"
     // (does not seem to well super well with Firefox)
-    this._ctx.imageSmoothingEnabled = true;
+    this._ctx.imageSmoothingEnabled = false;
     this._ctx.mozImageSmoothingEnabled = false;
     this._ctx.webkitImageSmoothingEnabled = false;
     this._ctx.ctxmsImageSmoothingEnabled = false;
@@ -2215,7 +2304,7 @@ class CanvasImageWriter extends Filter{
         }
       }
     }
-
+    
     this._ctx.putImageData(canvasImageData, 0, 0);
   }
 
@@ -23112,19 +23201,44 @@ class Image3DToMosaicFilter extends Filter{
 
     var outImage = null;
 
+    // the 3 following functions are a work around to fetch voxel along the right axis
+    function fetchAlongXspace(i, j, sliceIndex, time){
+      return inputImage3D.getIntensity_xyz(sliceIndex, i, j, time)
+    }
+
+    function fetchAlongYspace(i, j, sliceIndex, time){
+      return inputImage3D.getIntensity_xyz(i, sliceIndex, j, time)
+    }
+
+    function fetchAlongZspace(i, j, sliceIndex, time){
+      return inputImage3D.getIntensity_xyz(i, j,  sliceIndex, time)
+    }
+
+    var fetchAlongAxis = null;
+
+    if( this._metadata.axis === "xspace")
+      fetchAlongAxis = fetchAlongXspace;
+    else if( this._metadata.axis === "yspace")
+      fetchAlongAxis = fetchAlongYspace;
+    else if( this._metadata.axis === "zspace")
+      fetchAlongAxis = fetchAlongZspace;
+    
+    if( !fetchAlongAxis ){
+      console.warn("The axis to sample along for the mosaic was not properly set.");
+      return;
+    }
+
+    // to make it works no matter the ncpp
+    var initPixel = new Array( inputImage3D.getMetadata("ncpp") ).fill(0);
     
     for(var t=startTime; t<endTime; t++){
 
       // for each slice
       for(var sliceIndex=0; sliceIndex<numOfSlices; sliceIndex++){
         
-        // fetching the slice
-        var slice = inputImage3D.getSlice( this.getMetadata("axis") , sliceIndex, t);
-
-
         // create a new output image when the current is full (or not init)
         if( sliceCounter%slicePerOutputIm == 0 ){
-          outImage = new Image2D({width: outputWidth, height: outputHeight, color: [0]});
+          outImage = new Image2D({width: outputWidth, height: outputHeight, color: initPixel});
           this._output[ outputCounter ] = outImage;
           sliceIndexCurrentOutput = 0;
           outputCounter++;
@@ -23137,18 +23251,18 @@ class Image3DToMosaicFilter extends Filter{
         var offsetPixelCol = col * width;
         var offsetPixelRow = row * height;
 
-
         // for each row of the input slice
         for(var y=0; y<height; y++){
           // for each col of the output image
           for(var x=0; x<width; x++){
+            var voxelValue = [fetchAlongAxis(x, y,  sliceIndex, t)];
+            
             outImage.setPixel(
               {x: offsetPixelCol+x, y: offsetPixelRow+y},
-              slice.getPixel({x: x, y: y})
+              voxelValue
             );
           }
         }
-        
         sliceCounter ++;
 
       } /* END for each slice*/
