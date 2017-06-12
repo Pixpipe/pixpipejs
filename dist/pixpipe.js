@@ -1523,10 +1523,9 @@ class Image3D extends PixpipeContainer{
   * @return {Boolean} true for inside, false for outside
   */
   isInside( pos ){
-    return (
-      true
-    )
-    
+    return !(pos.x < 0 || pos.x >= this._metadata.xspace.space_length ||
+             pos.y < 0 || pos.y >= this._metadata.yspace.space_length ||
+             pos.z < 0 || pos.z >= this._metadata.zspace.space_length)
   }
   
 
@@ -1559,12 +1558,14 @@ class Image3D extends PixpipeContainer{
       
     var dx = posTo.x - posFrom.x;
     var dy = posTo.y - posFrom.y;
-    var euclidianDistance = Math.sqrt( Math.pow(dx , 2) + Math.pow(dy , 2) );
+    var dz = posTo.z - posFrom.z;
+    var euclidianDistance = Math.sqrt( Math.pow(dx , 2) + Math.pow(dy , 2) + Math.pow(dz , 2) );
     var numberOfSamples = Math.floor( euclidianDistance + 1 );
     
     // we want to sample every unit distance along the segment
     var stepX = dx / euclidianDistance;
     var stepY = dy / euclidianDistance;
+    var stepZ = dz / euclidianDistance;
     
     var ncpp = this._metadata.ncpp;
     var positions = new Array(numberOfSamples).fill(0);
@@ -1573,16 +1574,21 @@ class Image3D extends PixpipeContainer{
     
     // creating empty arrays for colors
     for(var c=0; c<ncpp; c++){
-      colors[c] = new Array(numberOfSamples).fill(0) ;
+      colors[c] = new Array(numberOfSamples).fill(0);
     }
     
     // walk along the segment, from posFrom to posTo
     for(var i=0; i<numberOfSamples; i++){
-      var currentPos = {x: Math.round(posFrom.x + i*stepX) , y: Math.round(posFrom.y + i*stepY) };
-      positions[i] = currentPos;
-      labels[i] = "(" + currentPos.x + ", " + currentPos.y + ")";
+      var currentPos = {
+        x: Math.round(posFrom.x + i*stepX),
+        y: Math.round(posFrom.y + i*stepY),
+        z: Math.round(posFrom.z + i*stepZ)
+      };
       
-      var pixValue = this.getPixel( currentPos );
+      positions[i] = currentPos;
+      labels[i] = "(" + currentPos.x + ", " + currentPos.y + ", " + currentPos.z + ")";
+      
+      var pixValue = [this.getIntensity_xyz( currentPos.x, currentPos.y, currentPos.z )];
       
       // each channel is dispatched in its array
       for(var c=0; c<ncpp; c++){
