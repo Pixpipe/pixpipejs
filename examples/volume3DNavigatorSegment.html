@@ -6,9 +6,14 @@
   <script src='https://threejs.org/examples/js/libs/dat.gui.min.js'></script>
   <script src="https://threejs.org/examples/js/controls/OrbitControls.js"></script>
 
+  <link rel="stylesheet" href="http://cdn.jsdelivr.net/chartist.js/latest/chartist.min.css">
+  <script src="http://cdn.jsdelivr.net/chartist.js/latest/chartist.min.js"></script>
+
+  <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700,900" rel="stylesheet">
+  
   <script src="../dist/pixpipe.js"></script>
   <script src="js/shadersTime.js"></script>
-  <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700,900" rel="stylesheet">
+  
   <!--<link rel="stylesheet" href="css/style.css">-->
 
   <style>
@@ -18,6 +23,7 @@
     font-size: 15px;
     line-height: 18px;
     overflow: hidden;
+    cursor: default;
   }
 
   #info{
@@ -39,6 +45,40 @@
     font-family: inherit;
   }
   
+  #chartDiv {
+    position: absolute;
+    width: 30vw;
+    height: 30vh;
+    background-color: rgba(255, 255, 255, 0.5);
+    bottom: 0;
+    right: 0;
+    margin: 5px;
+    padding: 10px;
+  }
+  
+  key {
+    color: #333;
+    background: #e8e8e8;
+    padding: 3px 9px 3px 9px;
+    border-style: solid;
+    border-width: 1px;
+    border-radius: 4px;
+    border-color: #a0a0a0;
+    border-bottom-width: 3px;
+  }
+  
+
+  #footer {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    text-align: center;
+    padding: 15px;
+    font-family: inherit;
+    pointer-events: none;
+  }
+  
   .logoCorner{
     position: absolute;
     bottom: 0;
@@ -49,6 +89,25 @@
   .logoCorner:hover{
     filter: invert(100%);
   }
+  
+  
+    .ct-label {
+      color: #333;
+    }
+    
+    .ct-grid {
+      stroke: #444;
+      stroke-dasharray: none;
+    }
+    
+    .ct-line {
+      stroke-width: 1px;
+    }
+    
+    .ct-series-a .ct-line {
+      stroke: #ff4444;
+    }
+
 
   </style>
 </head>
@@ -64,9 +123,17 @@
     <span id="fileInfo"></span>
   </div>
   
+  <div id="chartDiv"></div>
+  
   <a href="https://github.com/jonathanlurie/pixpipejs/blob/master/examples/volume3DNavigator.html" target="_blank">
     <img class="logoCorner" src="images/githubLogo.png"/>
   </a>
+  
+  <div id="footer">
+    <p>Maintain key <key>Space</key> pressed and then</p>
+    <p>click on a plane + drag to draw a line</p>
+    <p>The plot on the right shows the pixel values along this segment</p>
+  </div>
 
   <script>
 
@@ -97,6 +164,7 @@
     }
     var orbitData = {}
     var drawModeEnabled = false;
+    var plot = null;
     
     var shiftedBox = new THREE.Box3();
     
@@ -117,6 +185,8 @@
         if( hitPoint ){
           sampleSegment.segment.geometry.vertices[1].copy( hitPoint );
           sampleSegment.segment.geometry.verticesNeedUpdate = true
+          
+          startSegmentSampling()
         }
       }
     }
@@ -127,15 +197,11 @@
         var hitPoint = getRaycastHitPosition();
         
         if( hitPoint ){
-          console.log("start segment:");
-          console.log( hitPoint);
           sampleSegment.started = true;
-
           sampleSegment.segment.geometry.vertices[0].copy( hitPoint );
           sampleSegment.segment.geometry.vertices[1].copy( hitPoint );
           sampleSegment.segment.visible = true;
           sampleSegment.segment.geometry.verticesNeedUpdate = true
-          
         }
       }
       
@@ -231,7 +297,7 @@
       console.log("initEnv3D...");
 
       // init renderer
-      renderer = new THREE.WebGLRenderer( { antialias: false } );
+      renderer = new THREE.WebGLRenderer( { antialias: true } );
       renderer.setPixelRatio( window.devicePixelRatio );
       renderer.setSize( window.innerWidth, window.innerHeight );
       renderer.setClearColor( 0xEEEEEE, 1 );
@@ -263,7 +329,9 @@
     
     function initSamplingSegment(){
       var material = new THREE.LineBasicMaterial({
-        color: 0x00aaaa
+        color: "#ff8888",
+        linewidth: 6,
+        linecap: "square"
       });
 
       var geometry = new THREE.Geometry();
@@ -593,7 +661,6 @@
           outputMosaic.setMetadata("max", mniVolume.getMetadata("voxel_max"));
 
           var data = outputMosaic.getDataAsUInt8Array();
-          //var data = outputMosaic.getData();
 
           var texture = new THREE.DataTexture(
             data,
@@ -604,7 +671,6 @@
           );
 
           texture.needsUpdate = true;
-
           textures.push(texture);
         }
 
@@ -645,6 +711,55 @@
       // Perform the reading + conversion ibto ArrayBuffer
       file2Buff.update();
 		});
+
+    
+    function startSegmentSampling(){
+      var fromPos = new THREE.Vector3( 
+        (sampleSegment.segment.geometry.vertices[0].x + spaceLength.x/2),
+        spaceLength.y - (sampleSegment.segment.geometry.vertices[0].y + spaceLength.y/2),
+        (sampleSegment.segment.geometry.vertices[0].z + spaceLength.z/2)
+      );
+      
+      var toPos = new THREE.Vector3( 
+        (sampleSegment.segment.geometry.vertices[1].x + spaceLength.x/2),
+        spaceLength.y - (sampleSegment.segment.geometry.vertices[1].y + spaceLength.y/2),
+        (sampleSegment.segment.geometry.vertices[1].z + spaceLength.z/2)
+      );
+      
+      var segmentSampleData = mniVolume.getSegmentSample( fromPos, toPos, (spaceLength.t > 1 ? guiParam.tPos : 0) )
+      
+      // refresh the line plot
+      if(plot){
+        plot.update( {series: [
+          segmentSampleData.colors[0]
+        ]})
+        
+      }
+      // create the line plot
+      else{
+        plot = new Chartist.Line('#chartDiv', {
+          labels: null /*segmentSampleData.labels*/,
+          series: [
+            segmentSampleData.colors[0]
+          ]
+        }, {
+          //high: mniVolume.getMetadata("voxel_max"),
+          low: mniVolume.getMetadata("voxel_min"),
+          divisor: 5,
+          showPoint: false,
+          //lineSmooth: Chartist.Interpolation.simple(),
+          lineSmooth: Chartist.Interpolation.none(),
+          axisX: {
+            showLabel: false,
+            showGrid: false
+          },
+          chartPadding: {
+            left: 20
+          },
+        });  
+        
+      }
+    }
 
   </script>
 
