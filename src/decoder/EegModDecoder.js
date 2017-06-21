@@ -106,21 +106,74 @@ class EegModDecoder extends Filter {
     
     for(var i=0; i<listSize; i++){
       var record = {
-        offset: this._view.getInt16(headerOfListOffset + i * (offsetByteSize+totalByteSize), littleEndian),
-        total: this._view.getUint8(headerOfListOffset + i * (offsetByteSize+totalByteSize) + offsetByteSize, littleEndian)
+        // !! IMPORTANT !! there is a know BUG in the offset value
+        //offset: this._view.getInt16(headerOfListOffset + i * (offsetByteSize+totalByteSize), littleEndian),
+        total: this._view.getUint8(headerOfListOffset + i * (offsetByteSize+totalByteSize) + offsetByteSize, littleEndian),
+        labels: []
       }
       headerOfList[i] = record;
     }
+    
+    headerOfList[0].description = "list of labels for measure dimension";
+    headerOfList[1].description = "list of labels for duration dimension";
+    headerOfList[2].description = "list of labels for first space dimension";
+    headerOfList[3].description = "list of labels for second space dimension";
+    headerOfList[4].description = "list of scales";
+    headerOfList[5].description = "list of units";
+    headerOfList[6].description = "list of transformations";
+    headerOfList[7].description = "list of context";
     
     console.log( headerOfList );
     
     
     // ------------- DECODING HEADER OF LIST SECTION -------------------
+    
+    
+    
     var infoSection2Offset = headerOfListOffset + 48;
     
-    var info2Bytes = new Uint8Array(inputBuffer, infoSection2Offset, 1000);
+    var info2Bytes = new Uint8Array(inputBuffer, infoSection2Offset, inputBuffer.byteLength - infoSection2Offset );
     var info2 = String.fromCharCode.apply(String, info2Bytes);
     console.log( info2 );
+    console.log(info2Bytes);
+    
+    for(var i=0; i<info2Bytes.length; i++){
+      console.log( info2Bytes[i] + " --> " + info2[i]);
+    }
+    
+    var labels = [];
+    
+    var localOffset = infoSection2Offset
+    var uintAtLocalOffset = this._view.getUint8(localOffset)
+    
+    while( uintAtLocalOffset > 0){
+      var strByteLength = this._view.getUint8(localOffset)
+      
+      var strBytes = new Uint8Array(inputBuffer, localOffset+1, strByteLength );
+      var str = String.fromCharCode.apply(String, strBytes);
+      
+      console.log( str );
+      
+      localOffset += strByteLength + 1;
+      
+      uintAtLocalOffset = this._view.getUint8(localOffset)
+    }
+    
+    /*
+    for(var i=0; i<info2Bytes.length; i++){
+      var charcode = info2Bytes[i]; // the charcode must be >=32 and < 128 so that it's a proper characther
+      
+      // 
+      if( charcode >= 32 && charcode < 128 ){
+        
+      }
+      
+      
+      var char = String.fromCharCode(charcode)
+      console.log( charcode + " --> " + char );
+    }
+    */
+    
   }
   
 } /* END of class EegModDecoder */
