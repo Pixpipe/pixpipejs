@@ -142,6 +142,22 @@ class PixpipeObject {
   getMetadataCopy(){
     return JSON.parse( JSON.stringify( this._metadata ) );
   }
+  
+  
+  /**
+  * [PRIVATE]
+  * Deal with an option object (usually as an argument of a constructor).
+  * @param {Object} optionsObject - the option object
+  * @param {String} key - a property name in this optionObject
+  * @param {Object} defaultValue - the value to return if the key in the optionObject was not found
+  * @return {Object} the value from the optionObject that has the property name key, unless this property does not exist, then it returns the defaultValue.
+  */
+  _getOption(optionsObject, key, defaultValue){
+    if(!optionsObject)
+      return defaultValue;
+      
+    return optionsObject[ key ] || defaultValue;
+  }
 
 }
 
@@ -23282,6 +23298,353 @@ class LineStringPrinterOnImage2DHelper extends ImageToImageFilter {
   
 } /* END of class LineStringPrinterOnImage2DHelper */
 
+/**
+* From https://github.com/bpostlethwaite/colormap
+*/
+
+var ColorScales = {
+	"jet":[{"index":0,"rgb":[0,0,131]},{"index":0.125,"rgb":[0,60,170]},{"index":0.375,"rgb":[5,255,255]},{"index":0.625,"rgb":[255,255,0]},{"index":0.875,"rgb":[250,0,0]},{"index":1,"rgb":[128,0,0]}],
+
+	"hsv":[{"index":0,"rgb":[255,0,0]},{"index":0.169,"rgb":[253,255,2]},{"index":0.173,"rgb":[247,255,2]},{"index":0.337,"rgb":[0,252,4]},{"index":0.341,"rgb":[0,252,10]},{"index":0.506,"rgb":[1,249,255]},{"index":0.671,"rgb":[2,0,253]},{"index":0.675,"rgb":[8,0,253]},{"index":0.839,"rgb":[255,0,251]},{"index":0.843,"rgb":[255,0,245]},{"index":1,"rgb":[255,0,6]}],
+
+	"hot":[{"index":0,"rgb":[0,0,0]},{"index":0.3,"rgb":[230,0,0]},{"index":0.6,"rgb":[255,210,0]},{"index":1,"rgb":[255,255,255]}],
+
+	"cool":[{"index":0,"rgb":[0,255,255]},{"index":1,"rgb":[255,0,255]}],
+
+	"spring":[{"index":0,"rgb":[255,0,255]},{"index":1,"rgb":[255,255,0]}],
+
+	"summer":[{"index":0,"rgb":[0,128,102]},{"index":1,"rgb":[255,255,102]}],
+
+	"autumn":[{"index":0,"rgb":[255,0,0]},{"index":1,"rgb":[255,255,0]}],
+
+	"winter":[{"index":0,"rgb":[0,0,255]},{"index":1,"rgb":[0,255,128]}],
+
+	"bone":[{"index":0,"rgb":[0,0,0]},{"index":0.376,"rgb":[84,84,116]},{"index":0.753,"rgb":[169,200,200]},{"index":1,"rgb":[255,255,255]}],
+
+	"copper":[{"index":0,"rgb":[0,0,0]},{"index":0.804,"rgb":[255,160,102]},{"index":1,"rgb":[255,199,127]}],
+
+	"greys":[{"index":0,"rgb":[0,0,0]},{"index":1,"rgb":[255,255,255]}],
+
+	"yignbu":[{"index":0,"rgb":[8,29,88]},{"index":0.125,"rgb":[37,52,148]},{"index":0.25,"rgb":[34,94,168]},{"index":0.375,"rgb":[29,145,192]},{"index":0.5,"rgb":[65,182,196]},{"index":0.625,"rgb":[127,205,187]},{"index":0.75,"rgb":[199,233,180]},{"index":0.875,"rgb":[237,248,217]},{"index":1,"rgb":[255,255,217]}],
+
+	"greens":[{"index":0,"rgb":[0,68,27]},{"index":0.125,"rgb":[0,109,44]},{"index":0.25,"rgb":[35,139,69]},{"index":0.375,"rgb":[65,171,93]},{"index":0.5,"rgb":[116,196,118]},{"index":0.625,"rgb":[161,217,155]},{"index":0.75,"rgb":[199,233,192]},{"index":0.875,"rgb":[229,245,224]},{"index":1,"rgb":[247,252,245]}],
+
+	"yiorrd":[{"index":0,"rgb":[128,0,38]},{"index":0.125,"rgb":[189,0,38]},{"index":0.25,"rgb":[227,26,28]},{"index":0.375,"rgb":[252,78,42]},{"index":0.5,"rgb":[253,141,60]},{"index":0.625,"rgb":[254,178,76]},{"index":0.75,"rgb":[254,217,118]},{"index":0.875,"rgb":[255,237,160]},{"index":1,"rgb":[255,255,204]}],
+
+	"bluered":[{"index":0,"rgb":[0,0,255]},{"index":1,"rgb":[255,0,0]}],
+
+	"rdbu":[{"index":0,"rgb":[5,10,172]},{"index":0.35,"rgb":[106,137,247]},{"index":0.5,"rgb":[190,190,190]},{"index":0.6,"rgb":[220,170,132]},{"index":0.7,"rgb":[230,145,90]},{"index":1,"rgb":[178,10,28]}],
+
+	"picnic":[{"index":0,"rgb":[0,0,255]},{"index":0.1,"rgb":[51,153,255]},{"index":0.2,"rgb":[102,204,255]},{"index":0.3,"rgb":[153,204,255]},{"index":0.4,"rgb":[204,204,255]},{"index":0.5,"rgb":[255,255,255]},{"index":0.6,"rgb":[255,204,255]},{"index":0.7,"rgb":[255,153,255]},{"index":0.8,"rgb":[255,102,204]},{"index":0.9,"rgb":[255,102,102]},{"index":1,"rgb":[255,0,0]}],
+
+	"rainbow":[{"index":0,"rgb":[150,0,90]},{"index":0.125,"rgb":[0,0,200]},{"index":0.25,"rgb":[0,25,255]},{"index":0.375,"rgb":[0,152,255]},{"index":0.5,"rgb":[44,255,150]},{"index":0.625,"rgb":[151,255,0]},{"index":0.75,"rgb":[255,234,0]},{"index":0.875,"rgb":[255,111,0]},{"index":1,"rgb":[255,0,0]}],
+
+	"portland":[{"index":0,"rgb":[12,51,131]},{"index":0.25,"rgb":[10,136,186]},{"index":0.5,"rgb":[242,211,56]},{"index":0.75,"rgb":[242,143,56]},{"index":1,"rgb":[217,30,30]}],
+
+	"blackbody":[{"index":0,"rgb":[0,0,0]},{"index":0.2,"rgb":[230,0,0]},{"index":0.4,"rgb":[230,210,0]},{"index":0.7,"rgb":[255,255,255]},{"index":1,"rgb":[160,200,255]}],
+
+	"earth":[{"index":0,"rgb":[0,0,130]},{"index":0.1,"rgb":[0,180,180]},{"index":0.2,"rgb":[40,210,40]},{"index":0.4,"rgb":[230,230,50]},{"index":0.6,"rgb":[120,70,20]},{"index":1,"rgb":[255,255,255]}],
+
+	"electric":[{"index":0,"rgb":[0,0,0]},{"index":0.15,"rgb":[30,0,100]},{"index":0.4,"rgb":[120,0,100]},{"index":0.6,"rgb":[160,90,0]},{"index":0.8,"rgb":[230,200,0]},{"index":1,"rgb":[255,250,220]}],
+
+	"viridis": [{"index":0,"rgb":[68,1,84]},{"index":0.13,"rgb":[71,44,122]},{"index":0.25,"rgb":[59,81,139]},{"index":0.38,"rgb":[44,113,142]},{"index":0.5,"rgb":[33,144,141]},{"index":0.63,"rgb":[39,173,129]},{"index":0.75,"rgb":[92,200,99]},{"index":0.88,"rgb":[170,220,50]},{"index":1,"rgb":[253,231,37]}],
+
+	"inferno": [{"index":0,"rgb":[0,0,4]},{"index":0.13,"rgb":[31,12,72]},{"index":0.25,"rgb":[85,15,109]},{"index":0.38,"rgb":[136,34,106]},{"index":0.5,"rgb":[186,54,85]},{"index":0.63,"rgb":[227,89,51]},{"index":0.75,"rgb":[249,140,10]},{"index":0.88,"rgb":[249,201,50]},{"index":1,"rgb":[252,255,164]}],
+
+	"magma": [{"index":0,"rgb":[0,0,4]},{"index":0.13,"rgb":[28,16,68]},{"index":0.25,"rgb":[79,18,123]},{"index":0.38,"rgb":[129,37,129]},{"index":0.5,"rgb":[181,54,122]},{"index":0.63,"rgb":[229,80,100]},{"index":0.75,"rgb":[251,135,97]},{"index":0.88,"rgb":[254,194,135]},{"index":1,"rgb":[252,253,191]}],
+
+	"plasma": [{"index":0,"rgb":[13,8,135]},{"index":0.13,"rgb":[75,3,161]},{"index":0.25,"rgb":[125,3,168]},{"index":0.38,"rgb":[168,34,150]},{"index":0.5,"rgb":[203,70,121]},{"index":0.63,"rgb":[229,107,93]},{"index":0.75,"rgb":[248,148,65]},{"index":0.88,"rgb":[253,195,40]},{"index":1,"rgb":[240,249,33]}],
+
+	"warm": [{"index":0,"rgb":[125,0,179]},{"index":0.13,"rgb":[172,0,187]},{"index":0.25,"rgb":[219,0,170]},{"index":0.38,"rgb":[255,0,130]},{"index":0.5,"rgb":[255,63,74]},{"index":0.63,"rgb":[255,123,0]},{"index":0.75,"rgb":[234,176,0]},{"index":0.88,"rgb":[190,228,0]},{"index":1,"rgb":[147,255,0]}],
+
+	"cool": [{"index":0,"rgb":[125,0,179]},{"index":0.13,"rgb":[116,0,218]},{"index":0.25,"rgb":[98,74,237]},{"index":0.38,"rgb":[68,146,231]},{"index":0.5,"rgb":[0,204,197]},{"index":0.63,"rgb":[0,247,146]},{"index":0.75,"rgb":[0,255,88]},{"index":0.88,"rgb":[40,255,8]},{"index":1,"rgb":[147,255,0]}],
+
+	"rainbow-soft": [{"index":0,"rgb":[125,0,179]},{"index":0.1,"rgb":[199,0,180]},{"index":0.2,"rgb":[255,0,121]},{"index":0.3,"rgb":[255,108,0]},{"index":0.4,"rgb":[222,194,0]},{"index":0.5,"rgb":[150,255,0]},{"index":0.6,"rgb":[0,255,55]},{"index":0.7,"rgb":[0,246,150]},{"index":0.8,"rgb":[50,167,222]},{"index":0.9,"rgb":[103,51,235]},{"index":1,"rgb":[124,0,186]}],
+
+	"bathymetry": [{"index":0,"rgb":[40,26,44]},{"index":0.13,"rgb":[59,49,90]},{"index":0.25,"rgb":[64,76,139]},{"index":0.38,"rgb":[63,110,151]},{"index":0.5,"rgb":[72,142,158]},{"index":0.63,"rgb":[85,174,163]},{"index":0.75,"rgb":[120,206,163]},{"index":0.88,"rgb":[187,230,172]},{"index":1,"rgb":[253,254,204]}],
+
+	"cdom": [{"index":0,"rgb":[47,15,62]},{"index":0.13,"rgb":[87,23,86]},{"index":0.25,"rgb":[130,28,99]},{"index":0.38,"rgb":[171,41,96]},{"index":0.5,"rgb":[206,67,86]},{"index":0.63,"rgb":[230,106,84]},{"index":0.75,"rgb":[242,149,103]},{"index":0.88,"rgb":[249,193,135]},{"index":1,"rgb":[254,237,176]}],
+
+	"chlorophyll": [{"index":0,"rgb":[18,36,20]},{"index":0.13,"rgb":[25,63,41]},{"index":0.25,"rgb":[24,91,59]},{"index":0.38,"rgb":[13,119,72]},{"index":0.5,"rgb":[18,148,80]},{"index":0.63,"rgb":[80,173,89]},{"index":0.75,"rgb":[132,196,122]},{"index":0.88,"rgb":[175,221,162]},{"index":1,"rgb":[215,249,208]}],
+
+	"density": [{"index":0,"rgb":[54,14,36]},{"index":0.13,"rgb":[89,23,80]},{"index":0.25,"rgb":[110,45,132]},{"index":0.38,"rgb":[120,77,178]},{"index":0.5,"rgb":[120,113,213]},{"index":0.63,"rgb":[115,151,228]},{"index":0.75,"rgb":[134,185,227]},{"index":0.88,"rgb":[177,214,227]},{"index":1,"rgb":[230,241,241]}],
+
+	"freesurface-blue": [{"index":0,"rgb":[30,4,110]},{"index":0.13,"rgb":[47,14,176]},{"index":0.25,"rgb":[41,45,236]},{"index":0.38,"rgb":[25,99,212]},{"index":0.5,"rgb":[68,131,200]},{"index":0.63,"rgb":[114,156,197]},{"index":0.75,"rgb":[157,181,203]},{"index":0.88,"rgb":[200,208,216]},{"index":1,"rgb":[241,237,236]}],
+
+	"freesurface-red": [{"index":0,"rgb":[60,9,18]},{"index":0.13,"rgb":[100,17,27]},{"index":0.25,"rgb":[142,20,29]},{"index":0.38,"rgb":[177,43,27]},{"index":0.5,"rgb":[192,87,63]},{"index":0.63,"rgb":[205,125,105]},{"index":0.75,"rgb":[216,162,148]},{"index":0.88,"rgb":[227,199,193]},{"index":1,"rgb":[241,237,236]}],
+
+	"oxygen": [{"index":0,"rgb":[64,5,5]},{"index":0.13,"rgb":[106,6,15]},{"index":0.25,"rgb":[144,26,7]},{"index":0.38,"rgb":[168,64,3]},{"index":0.5,"rgb":[188,100,4]},{"index":0.63,"rgb":[206,136,11]},{"index":0.75,"rgb":[220,174,25]},{"index":0.88,"rgb":[231,215,44]},{"index":1,"rgb":[248,254,105]}],
+
+	"par": [{"index":0,"rgb":[51,20,24]},{"index":0.13,"rgb":[90,32,35]},{"index":0.25,"rgb":[129,44,34]},{"index":0.38,"rgb":[159,68,25]},{"index":0.5,"rgb":[182,99,19]},{"index":0.63,"rgb":[199,134,22]},{"index":0.75,"rgb":[212,171,35]},{"index":0.88,"rgb":[221,210,54]},{"index":1,"rgb":[225,253,75]}],
+
+	"phase": [{"index":0,"rgb":[145,105,18]},{"index":0.13,"rgb":[184,71,38]},{"index":0.25,"rgb":[186,58,115]},{"index":0.38,"rgb":[160,71,185]},{"index":0.5,"rgb":[110,97,218]},{"index":0.63,"rgb":[50,123,164]},{"index":0.75,"rgb":[31,131,110]},{"index":0.88,"rgb":[77,129,34]},{"index":1,"rgb":[145,105,18]}],
+
+	"salinity": [{"index":0,"rgb":[42,24,108]},{"index":0.13,"rgb":[33,50,162]},{"index":0.25,"rgb":[15,90,145]},{"index":0.38,"rgb":[40,118,137]},{"index":0.5,"rgb":[59,146,135]},{"index":0.63,"rgb":[79,175,126]},{"index":0.75,"rgb":[120,203,104]},{"index":0.88,"rgb":[193,221,100]},{"index":1,"rgb":[253,239,154]}],
+
+	"temperature": [{"index":0,"rgb":[4,35,51]},{"index":0.13,"rgb":[23,51,122]},{"index":0.25,"rgb":[85,59,157]},{"index":0.38,"rgb":[129,79,143]},{"index":0.5,"rgb":[175,95,130]},{"index":0.63,"rgb":[222,112,101]},{"index":0.75,"rgb":[249,146,66]},{"index":0.88,"rgb":[249,196,65]},{"index":1,"rgb":[232,250,91]}],
+
+	"turbidity": [{"index":0,"rgb":[34,31,27]},{"index":0.13,"rgb":[65,50,41]},{"index":0.25,"rgb":[98,69,52]},{"index":0.38,"rgb":[131,89,57]},{"index":0.5,"rgb":[161,112,59]},{"index":0.63,"rgb":[185,140,66]},{"index":0.75,"rgb":[202,174,88]},{"index":0.88,"rgb":[216,209,126]},{"index":1,"rgb":[233,246,171]}],
+
+	"velocity-blue": [{"index":0,"rgb":[17,32,64]},{"index":0.13,"rgb":[35,52,116]},{"index":0.25,"rgb":[29,81,156]},{"index":0.38,"rgb":[31,113,162]},{"index":0.5,"rgb":[50,144,169]},{"index":0.63,"rgb":[87,173,176]},{"index":0.75,"rgb":[149,196,189]},{"index":0.88,"rgb":[203,221,211]},{"index":1,"rgb":[254,251,230]}],
+
+	"velocity-green": [{"index":0,"rgb":[23,35,19]},{"index":0.13,"rgb":[24,64,38]},{"index":0.25,"rgb":[11,95,45]},{"index":0.38,"rgb":[39,123,35]},{"index":0.5,"rgb":[95,146,12]},{"index":0.63,"rgb":[152,165,18]},{"index":0.75,"rgb":[201,186,69]},{"index":0.88,"rgb":[233,216,137]},{"index":1,"rgb":[255,253,205]}],
+
+	"cubehelix": [{"index":0,"rgb":[0,0,0]},{"index":0.07,"rgb":[22,5,59]},{"index":0.13,"rgb":[60,4,105]},{"index":0.2,"rgb":[109,1,135]},{"index":0.27,"rgb":[161,0,147]},{"index":0.33,"rgb":[210,2,142]},{"index":0.4,"rgb":[251,11,123]},{"index":0.47,"rgb":[255,29,97]},{"index":0.53,"rgb":[255,54,69]},{"index":0.6,"rgb":[255,85,46]},{"index":0.67,"rgb":[255,120,34]},{"index":0.73,"rgb":[255,157,37]},{"index":0.8,"rgb":[241,191,57]},{"index":0.87,"rgb":[224,220,93]},{"index":0.93,"rgb":[218,241,142]},{"index":1,"rgb":[227,253,198]}]
+};
+
+/*
+* Author   Jonathan Lurie - http://me.jonahanlurie.fr
+* License  MIT
+* Link      https://github.com/jonathanlurie/pixpipejs
+* Lab       MCIN - Montreal Neurological Institute
+*/
+
+
+/**
+*
+*/
+class Colormap extends PixpipeObject {
+  
+  /**
+  * Build a colormap with some options.
+  * @param {Object} options - here is the list of options:
+  *     style {String} - one of the available styles (see property names in ColorScales.js)
+  *     description {Object} - colormap description like in ColorScales.js.
+  *     lutSize {Number} - Number of samples to pregenerate a LUT
+  *     Note: "style" and "description" are mutually exclusive and "style" has the priority in case both are set.
+  */
+  constructor( options = {} ) {
+    super();
+    this._type = Colormap.TYPE();
+    this._colormapDescription = null;
+    this._LUT = [];
+    
+    var style = this._getOption(options, "style", null);
+    
+    if( style ){
+      if(style in ColorScales){
+        if( this._validateDescription( ColorScales[ style ] ) ){
+          this._colormapDescription = ColorScales[ style ];
+        }
+      }else {
+        console.warn("The given colormap style des not exist.");
+      }
+    }else {
+      var description = this._getOption(options, "description", null);
+      if( this._validateDescription(description) ){
+        this._colormapDescription = description;
+      }
+    }
+    
+    if( this._colormapDescription ){
+      var lutSize = this._getOption(options, "lutSize", null);
+      if( lutSize ){
+        this.buildLut( lutSize );
+      }
+    }
+    
+  }
+  
+  
+  /**
+  * Hardcode the datatype
+  */
+  static TYPE(){
+    return "COLORMAP";
+  }
+  
+  
+  _validateDescription( d ){
+    if( ! Array.isArray(d) ){
+      console.warn("The colormap description has to be an Array");
+      return false;
+    }
+      
+    for(var i=0; i<d.length; i++){
+      // each color segment is an object containing a position as 'index'
+      // and an array of number as "rgb"
+      
+      // each is a non-null object 
+      if( d[i] !== null && typeof d[i] === 'object' ){
+        if( "index" in d[i] && "rgb" in d[i]){
+          if(typeof d[i].index === 'number'){
+            if( d[i].index < 0 || d[i].index >1 ){
+              console.warn("Each colormap segment 'index' property should be in [0, 1]");
+              return false;
+            }
+          }else{
+            console.warn("Each colormap segment 'index' property should be a number.");
+            return false;
+          }
+          
+          // the rgb property has to be an array
+          if( Array.isArray( d[i].rgb ) ){
+            if(d[i].rgb.length == 3){
+              for(var j=0; j<d[i].rgb.length; j++){
+                if( d[i].rgb[j] < 0 || d[i].rgb[j] > 255 ){
+                  console.warn("The colormap must have only values in [0, 255]");
+                  return false;
+                }
+              }
+            }else{
+              console.warn("Each colormap segment 'rgb' should contain 3 values");
+              return false;
+            }
+          }
+        }else{
+          console.warn("Each colormap segment must have a 'index' property and a 'rgb' property.");
+          return false;
+        }
+      }else{
+        console.warn("Each colormap segment must be a non-null object");
+        return false;
+      }
+    }
+    return true;
+  }
+  
+  
+  /**
+  * Get the color at the colormap position
+  * @param {Number} position - position within the colormap in [0, 1]
+  * @return {Array} color array as [r, g, b] , values being in [0, 255]
+  */
+  getValueAt( position ){
+    if( !this._colormapDescription ){
+      console.warn("The colormap description is not defined.");
+      return null;
+    }
+    
+    // case 1: before the first "index" position
+    if(position <= this._colormapDescription[0].index){
+      return this._colormapDescription[0].rgb.slice()
+    }
+    
+    // case 2: after the last "index" position
+    if(position >= this._colormapDescription[this._colormapDescription.length - 1].index){
+      return this._colormapDescription[this._colormapDescription.length - 1].rgb.slice()
+    }
+    
+    // case 3: between 2 values of the descrition (most likely to happen)
+    for(var i=0; i<this._colormapDescription.length-1; i++){
+      if( position >= this._colormapDescription[i].index && position < this._colormapDescription[i+1].index ){
+        
+        var unitDistanceToFirst = (position - this._colormapDescription[i].index) / (this._colormapDescription[i+1].index -  this._colormapDescription[i].index);
+        var unitDistanceToSecond = 1 - unitDistanceToFirst;
+        
+        var color = [
+          Math.round(this._colormapDescription[i].rgb[0] * unitDistanceToSecond + this._colormapDescription[i+1].rgb[0] * unitDistanceToFirst), // R
+          Math.round(this._colormapDescription[i].rgb[1] * unitDistanceToSecond + this._colormapDescription[i+1].rgb[1] * unitDistanceToFirst), // G
+          Math.round(this._colormapDescription[i].rgb[2] * unitDistanceToSecond + this._colormapDescription[i+1].rgb[2] * unitDistanceToFirst), // B
+        ];
+        
+        return color;
+      }
+    }
+  }
+  
+  
+  /**
+  * Build a LUT from the colormap description
+  * @param {Number} size - number of samples in the LUT
+  */
+  buildLut( size ){
+    if( !this._colormapDescription ){
+      console.warn("The colormap description is not defined, the LUT cannot be created");
+      return null;
+    }
+    
+    if( size < 0 ){
+      console.warn("Size of the colormap can not be negative.");
+      return;
+    }
+    
+    this._LUT = new Array( size );
+    
+    for(var i=0; i<size; i++){
+      this._LUT[i] = this.getValueAt( i/size  + 0.5/size );
+    }
+  }
+  
+  
+  /**
+  * Get the color within the internal LUT
+  * @param {Number} index - the index in the LUT
+  * @return {Array} color array as [r, g, b] , values being in [0, 255]
+  */
+  getLutAt( index ){
+    if( index <0 || index > this._LUT.length )
+      return null;
+      
+    return this._LUT[ index ];
+  }
+  
+  
+  /**
+  * Creates an Image2D of a given size that display a horizontal gradient of the colormap
+  * @param {Number} width - width of the image
+  * @param {Number} height - height of the image
+  * @return {Image2D} the result image
+  */
+  createHorizontalLutImage( width, height, flip=false ){
+    if(! this._LUT ){
+      console.warn("The LUT must be built before creating a LUT image.");
+      return;
+    }
+    
+    var that = this;
+    var LutSize = this._LUT.length;
+    var colorStrip = new Image2D({width: width, height: height, color: [0, 0, 0]});
+    var forEachPixelFilter = new pixpipe.ForEachPixelImageFilter();
+    forEachPixelFilter.addInput( colorStrip );
+    
+    forEachPixelFilter.on( "pixel", function(position, color){
+      var positionInLut = Math.round( (position.x / (width-1)) * (LutSize-1) );
+      
+      if(flip)
+        positionInLut = LutSize - positionInLut - 1;
+        
+      return that._LUT[ positionInLut ];
+    });
+    
+    forEachPixelFilter.update();
+    return forEachPixelFilter.getOutput();
+  }
+  
+  
+  /**
+  * Creates an Image2D of a given size that display a vertical gradient of the colormap
+  * @param {Number} width - width of the image
+  * @param {Number} height - height of the image
+  * @return {Image2D} the result image
+  */
+  createVerticalLutImage( width, height, flip=false ){
+    if(! this._LUT ){
+      console.warn("The LUT must be built before creating a LUT image.");
+      return;
+    }
+    
+    var that = this;
+    var LutSize = this._LUT.length;
+    var colorStrip = new Image2D({width: width, height: height, color: [0, 0, 0]});
+    var forEachPixelFilter = new pixpipe.ForEachPixelImageFilter();
+    forEachPixelFilter.addInput( colorStrip );
+    
+    forEachPixelFilter.on( "pixel", function(position, color){
+      var positionInLut = Math.round( (position.y / (height-1)) * (LutSize-1) );
+      
+      if(flip)
+        positionInLut = LutSize - positionInLut - 1;
+        
+      return that._LUT[ positionInLut ];
+    });
+    
+    forEachPixelFilter.update();
+    return forEachPixelFilter.getOutput();
+  }
+  
+} /* END of class Colormap */
+
 /*
 * Author   Jonathan Lurie - http://me.jonahanlurie.fr
 * License  MIT
@@ -23493,6 +23856,7 @@ exports.ForEachPixelReadOnlyFilter = ForEachPixelReadOnlyFilter;
 exports.TerrainRgbToElevationImageFilter = TerrainRgbToElevationImageFilter;
 exports.AngleToHueWheelHelper = AngleToHueWheelHelper;
 exports.LineStringPrinterOnImage2DHelper = LineStringPrinterOnImage2DHelper;
+exports.Colormap = Colormap;
 exports.Image3DToMosaicFilter = Image3DToMosaicFilter;
 
 Object.defineProperty(exports, '__esModule', { value: true });

@@ -1,0 +1,44 @@
+<html>
+<head>
+  <title>Image2D To Canvas</title>
+
+  <script src="../dist/pixpipe.js"></script>
+
+  <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700,900" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+
+</head>
+<body>
+  <h1><a href="https://github.com/jonathanlurie/pixpipejs"><span style="color: #ff91d7">Pixpipe</span><span style="color: #FFFFFF">js</span></a></h1>
+  <p>
+  This does the following :
+  <ul>
+    <li>creating a <code>pixpipe.Image2D</code> with a given size and color</li>
+    <li>displaying it in a canvas using <code>pixpipe.CanvasImageWriter</code></li>
+  </ul>
+
+  </p>
+
+  <div id="myDiv"></div>
+
+  <script>
+
+  // create an instance of colormap using an existing style
+  var cm = new pixpipe.Colormap({ style: "blackbody", lutSize: 1000 });
+  
+  // get an image of the colormap
+  //var cmImg = cm.createVerticalLutImage(100, 100);
+  var cmImg = cm.createHorizontalLutImage(20, 20, true);
+
+  // create a filter to write the image into a canvas
+  var imageToCanvasFilter = new pixpipe.CanvasImageWriter( );
+  imageToCanvasFilter.setMetadata( "parentDivID", "myDiv" );
+  imageToCanvasFilter.addInput( cmImg );
+  imageToCanvasFilter.update();
+
+
+
+  </script>
+
+</body>
+</html>
