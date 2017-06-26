@@ -47,6 +47,7 @@ export { TerrainRgbToElevationImageFilter } from './filter/TerrainRgbToElevation
 // helpers
 export { AngleToHueWheelHelper } from './helper/AngleToHueWheelHelper.js';
 export { LineStringPrinterOnImage2DHelper } from './helper/LineStringPrinterOnImage2DHelper.js';
+export { Colormap } from './helper/Colormap.js';
 
 // filters - processing of Image3D
 export { Image3DToMosaicFilter } from './filter/Image3DToMosaicFilter.js';
