@@ -177,6 +177,8 @@ Here, we will learn what is an `Image2D`, how to display it in a canvas using `C
 - [Same but with multiple images](http://me.jonathanlurie.fr/pixpipejs/examples/urlToImage2D_multiple.html) | [source](https://github.com/jonathanlurie/pixpipejs/tree/master/examples/urlToImage2D_multiple.html)
 - [Create an Image2D from a local file and display it](http://me.jonathanlurie.fr/pixpipejs/examples/fileToImage2D.html) | [source](https://github.com/jonathanlurie/pixpipejs/tree/master/examples/fileToImage2D.html)
 - [Open a Tiff and make it an Image2D](http://me.jonathanlurie.fr/pixpipejs/examples/fileToTiff.html) | [source](https://github.com/jonathanlurie/pixpipejs/tree/master/examples/fileToTiff.html)
+- [Sample pixel along a line](http://me.jonathanlurie.fr/pixpipejs/examples/SegmentSampleImage2D.html) | [source](https://github.com/jonathanlurie/pixpipejs/tree/master/examples/SegmentSampleImage2D.html)
+- - [Create a colormap and display it](http://me.jonathanlurie.fr/pixpipejs/examples/colormap.html) | [source](https://github.com/jonathanlurie/pixpipejs/tree/master/examples/colormap.html)
 
 
 ## Simple filters for Image2D
@@ -225,7 +227,7 @@ As mentioned earlier, a filter must take at least one input et retrieve at least
 ## What should my filter inherit from?
 All filter should inherit from `Filter`, but some subtypes can also be used. For example, your custom filter can inherit from the class/interface `ImageToImageFilter`, which has the advantage of having some Image2D checking method already built-in.
 
-The class `ImageToImageFilter` itself also inherit from `Filter` and we could imagine creating other *interface* filters that carry some specific logic but no actual data processing. 
+The class `ImageToImageFilter` itself also inherit from `Filter` and we could imagine creating other *interface* filters that carry some specific logic but no actual data processing.
 
 
 ## What are inputs and outputs?
@@ -236,7 +238,7 @@ A *category* is just a way to give an identifier when adding an input (externall
 From outside of your custom filter, here are the methods you can use, without having to implement them since they are part of `Filter` class:
 
 ```javascript
-// Create a instance of your custom filter 
+// Create a instance of your custom filter
 var myFilter = new pixpipe.MyCustomFilterType();
 
 // we have only one input, no need to specify a category
@@ -255,7 +257,7 @@ myFilter.addInput( myImage2D_2, "image_two");
 myFilter.update()
 ...
 
-// If your filter has a single output, no need to 
+// If your filter has a single output, no need to
 var myOutput = myFilter.getOutput();
 
 // If your filter has more than one output
@@ -313,7 +315,7 @@ this._addOutput( Image2D );
 // the same but with a given category
 this._addOutput( Image2D, "the_first_output" );
 
-// then retrieve the blank output 
+// then retrieve the blank output
 var outputImg = this.getOutput();
 
 // and initialize it with real values
@@ -334,7 +336,7 @@ In the case of a filter that performs an algorithm, all the settings must be sto
 Here are the metadata-related methods you can use from the outside:
 
 ```javascript
-// Create a instance of your custom filter 
+// Create a instance of your custom filter
 var myFilter = new pixpipe.MyCustomFilterType();
 
 // Specify a metadata
@@ -363,7 +365,7 @@ Yes, like any other *class*, your custom filter can use attributes to store temp
 ## How to make the filter runnable?
 As seen earlier, to run a filter, the method `.update()` should be called, though, the method that should be implemented in every new custom filter is `_run()`.  
 
-The `_run()` method is called by `update()` along with some others. It should perform the reading of inputs, the processing and the writing of outputs. 
+The `_run()` method is called by `update()` along with some others. It should perform the reading of inputs, the processing and the writing of outputs.
 
 **A FILTER SHOULD NEVER ALTER THE INPUT**.
 
@@ -394,11 +396,11 @@ class SimpleThresholdFilter extends ImageToImageFilter {
   constructor(){
     // ... to be implemented
   }
-  
+
   _run(){
     // ... to be implemented
   }
-  
+
 } /* END of class SimpleThresholdFilter */
 
 // make SimpleThresholdFilter importable
@@ -421,19 +423,19 @@ class SimpleThresholdFilter extends ImageToImageFilter {
 
   constructor(){
     super();
-    
+
     // default values
     this.setMetadata("threshold", 128);
     this.setMetadata("lowValue", 0);
     this.setMetadata("highValue", 255);
     this.setMetadata("preserveAlpha", true);
   }
-  
-  
+
+
   _run(){
     // ... to be implemented
   }
-  
+
 } /* END of class SimpleThresholdFilter */
 
 // make SimpleThresholdFilter importable
@@ -526,7 +528,7 @@ Now, we are dealing with checking the number of components per pixel, remember, 
 if(ncpp == 1 || ncpp == 3 || ncpp == 4){
 
   // later, a few things will go here
-  
+
 }else{
   outputBuffer = null;
   console.warn("The input data must have 1, 3 or 4 components per pixel.");
@@ -546,10 +548,10 @@ if(ncpp == 1 || ncpp == 3 || ncpp == 4){
 
 
   /**************** PART 1 *********************************************/
-  
+
   // we want to preserve transparency ( = not affected by thresholding)
   if( this.getMetadata("preserveAlpha") && ncpp == 4){
-    
+
   /**************** PART 1.1 *********************************************/
     for(var i=0; i<outputBuffer.length; i++){
       // every four band is an alpha band
@@ -558,7 +560,7 @@ if(ncpp == 1 || ncpp == 3 || ncpp == 4){
       }
       outputBuffer[i] = outputBuffer[i] < threshold ? lowValue : highValue;
     }
-    
+
   // transparency is altered by the threshold like any other channel
   }else{
   /**************** PART 1.2 *********************************************/
@@ -568,7 +570,7 @@ if(ncpp == 1 || ncpp == 3 || ncpp == 4){
   }
 
   /**************** PART 2 *********************************************/
-  
+
   /**************** PART 2.1 *********************************************/
   // creating a blank Image2D output and getting the ref
   var outputImg = this._addOutput( Image2D );
@@ -581,9 +583,9 @@ if(ncpp == 1 || ncpp == 3 || ncpp == 4){
     inputImg.getHeight(),
     ncpp
   );
-  
-  
-  
+
+
+
 }else{
   outputBuffer = null;
   console.warn("The input data must have 1, 3 or 4 components per pixel.");
@@ -636,7 +638,7 @@ For example, in the class `FileImageReader`, the *\_run()* method triggers the c
 ```javascript
 ...
 img.onload = function(){
-  
+
   // in the "onload" method, the image is already loaded
   // but we still have to convert it into an Image2D
   ...
@@ -661,7 +663,7 @@ url2ImgFilter.addInput( "images/sd.jpg" );
 url2ImgFilter.on("ready", function(){
   // get the output image
   myImage = this.getOutput();
-  
+
   ...
 })
 
@@ -704,7 +706,7 @@ url2ImgFilter.on( "ready", function(){
 
   // run the filter
   forEachPixelFilter.update();
-  
+
   ...
 });
 ```
@@ -718,7 +720,7 @@ As seen on the previous part, when using a filter (from the outside), an event s
 ```javascript
 myFilter.on( 'myEventName', function( /* possibly some args */ ){
   ...
-  
+
   // returning is not mandatory
   return 20;
 });

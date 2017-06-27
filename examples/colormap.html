@@ -1,0 +1,110 @@
+<html>
+<head>
+  <title>Image2D To Canvas</title>
+
+  <script src="../dist/pixpipe.js"></script>
+
+  <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700,900" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+
+  <style>
+    #myDiv canvas {
+      height: 100px;
+    }
+
+    #slider {
+      width: 300px;
+      margin-left: 10px;
+    }
+  </style>
+
+</head>
+<body>
+  <h1><a href="https://github.com/jonathanlurie/pixpipejs"><span style="color: #ff91d7">Pixpipe</span><span style="color: #FFFFFF">js</span></a></h1>
+  <p>
+  This does the following :
+  <ul>
+    <li>creating a <code>pixpipe.Image2D</code> with a given size and color</li>
+    <li>displaying it in a canvas using <code>pixpipe.CanvasImageWriter</code></li>
+  </ul>
+
+  </p>
+
+  <p>
+    <select id="colormapStyles" onchange="updateStyle(event)"></select>
+  </p>
+  <p>
+    <label>Number of samples</label><input id="slider" type="range" min="4" max="100" value="30" oninput="updateNbSamples(event)" onchange="updateNbSamples(event)" width="200px"/><span id="sliderFeedback"></span>
+  </p>
+
+  <div id="myDiv"></div>
+
+  <script>
+
+  var styles = pixpipe.Colormap.getAvailableStyles();
+  var dropdown = document.getElementById( "colormapStyles" );
+  for(var i=0; i<styles.length; i++){
+    var op = new Option();
+    op.value = styles[i];
+    op.text = styles[i];
+    dropdown.options.add(op);
+  }
+
+  var currentStyle = styles[0];
+  var slider = document.getElementById( "slider" );
+  var sliderFeedback = document.getElementById( "sliderFeedback" );
+  var currentNbSamples = 20;
+  sliderFeedback.textContent = currentNbSamples;
+
+
+  // a canvas writer
+  var imageToCanvasFilter = new pixpipe.CanvasImageWriter( );
+  imageToCanvasFilter.setMetadata( "parentDivID", "myDiv" );
+
+  // create an instance of colormap using an existing style
+  var cm = new pixpipe.Colormap();
+
+  refreshColormap();
+
+
+  function updateStyle(evt){
+    currentStyle = evt.target.value;
+
+    refreshColormap();
+  }
+
+  function updateNbSamples(evt){
+    currentNbSamples = evt.target.value;
+    sliderFeedback.textContent = currentNbSamples;
+
+    refreshColormap();
+  }
+
+  function refreshColormap(){
+
+    /*
+    // set by defining the description as a JSON string
+    var desc = '[{"index":0,"rgb":[0,0,4]},{"index":0.13,"rgb":[28,16,68]},{"index":0.25,"rgb":[79,18,123]},{"index":0.38,"rgb":[129,37,129]},{"index":0.5,"rgb":[181,54,122]},{"index":0.63,"rgb":[229,80,100]},{"index":0.75,"rgb":[251,135,97]},{"index":0.88,"rgb":[254,194,135]},{"index":1,"rgb":[252,253,191]}]';
+    cm.setDescription( desc );
+    */
+
+    cm.setStyle( currentStyle );
+
+    /*
+    // add or remove colors
+    cm.addColor(0.5, [0, 255, 0]);
+    cm.removeColor( 0.3 );
+    */
+
+    cm.buildLut( currentNbSamples );
+
+    var cmImg = cm.createHorizontalLutImage( false );
+    imageToCanvasFilter.addInput( cmImg );
+    imageToCanvasFilter.update();
+  }
+
+
+  </script>
+
+</body>
+</html>

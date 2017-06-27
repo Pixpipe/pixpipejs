@@ -142,6 +142,22 @@ class PixpipeObject {
   getMetadataCopy(){
     return JSON.parse( JSON.stringify( this._metadata ) );
   }
+  
+  
+  /**
+  * [PRIVATE]
+  * Deal with an option object (usually as an argument of a constructor).
+  * @param {Object} optionsObject - the option object
+  * @param {String} key - a property name in this optionObject
+  * @param {Object} defaultValue - the value to return if the key in the optionObject was not found
+  * @return {Object} the value from the optionObject that has the property name key, unless this property does not exist, then it returns the defaultValue.
+  */
+  _getOption(optionsObject, key, defaultValue){
+    if(!optionsObject)
+      return defaultValue;
+      
+    return optionsObject[ key ] || defaultValue;
+  }
 
 }
 
@@ -782,7 +798,7 @@ class Image2D extends PixpipeContainer{
 
 
   /**
-  * @param {Object} position - 2D positoin like {x, y}
+  * @param {Object} position - 2D positoin like {x: Number, y: Number}
   * @return {Array} the color of the given pixel.
   */
   getPixel( position ){
@@ -978,6 +994,88 @@ class Image2D extends PixpipeContainer{
     }
     return this.getMetadata("avg");
   }
+  
+  
+  /**
+  * Tells if a given point is inside or outside the image
+  * @param {Object} pos - position like {x: Number, y: Number}
+  * @return {Boolean} true for inside, false for outside
+  */
+  isInside( pos ){
+    return ( 
+      pos.x >= 0 && pos.x < this._metadata.width &&
+      pos.y >= 0 && pos.y < this._metadata.height
+    )
+  }
+  
+  /**
+  * Sample the color along a segment
+  * @param {Object} posFrom - starting position of type {x: Number, y: Number}
+  * @param {Object} posFrom - ending position of type {x: Number, y: Number}
+  * @return {Object} array of Array like that: {
+                                                  positions: [
+                                                    {x: x0, y: y0},
+                                                    {x: x1, y: y1},
+                                                    {x: x2, y: y2},
+                                                    ...
+                                                  ],
+                                                  labels: [
+                                                    "(x0, y0)", "(x1, y1)", "(x2, y2)", ...
+                                                  ],
+                                                  colors: [
+                                                            [r0, r1, r2 ...],
+                                                            [g0, g1, g2 ...],
+                                                            [b0, b1, b2 ...]
+                                                  ]
+                                                }
+     return null if posFrom or posTo is outside
+  */
+  getSegmentSample( posFrom, posTo ){
+    // both position must be inside the image
+    if( !this.isInside(posFrom) || !this.isInside(posTo) )
+      return null;
+      
+    var dx = posTo.x - posFrom.x;
+    var dy = posTo.y - posFrom.y;
+    var euclidianDistance = Math.sqrt( Math.pow(dx , 2) + Math.pow(dy , 2) );
+    var numberOfSamples = Math.floor( euclidianDistance + 1 );
+    
+    // we want to sample every unit distance along the segment
+    var stepX = dx / euclidianDistance;
+    var stepY = dy / euclidianDistance;
+    
+    var ncpp = this._metadata.ncpp;
+    var positions = new Array(numberOfSamples).fill(0);
+    var colors = new Array(ncpp).fill(0);
+    var labels = new Array(numberOfSamples).fill(0);
+    
+    // creating empty arrays for colors
+    for(var c=0; c<ncpp; c++){
+      colors[c] = new Array(numberOfSamples).fill(0) ;
+    }
+    
+    // walk along the segment, from posFrom to posTo
+    for(var i=0; i<numberOfSamples; i++){
+      var currentPos = {x: Math.round(posFrom.x + i*stepX) , y: Math.round(posFrom.y + i*stepY) };
+      positions[i] = currentPos;
+      labels[i] = "(" + currentPos.x + ", " + currentPos.y + ")";
+      
+      var pixValue = this.getPixel( currentPos );
+      
+      // each channel is dispatched in its array
+      for(var c=0; c<ncpp; c++){
+        colors[c][i] = pixValue[c];
+      }
+    }
+    
+    return {
+      positions: positions,
+      labels: labels,
+      colors: colors
+    }
+  } /* END of method getLineSample */
+  
+  
 
 } /* END of class Image2D */
 
@@ -1031,10 +1129,16 @@ class Image3D extends PixpipeContainer{
     var zspace = {
       step: 1
     };
+    
+    var time = {
+      offset: 0,
+      space_length: 1
+    };
 
     this.setMetadata("xspace", xspace);
     this.setMetadata("yspace", yspace);
     this.setMetadata("zspace", zspace);
+    this.setMetadata("time", time);
 
     // replacing default value for ncpp
     if(options && "ncpp" in options){
@@ -1378,7 +1482,8 @@ class Image3D extends PixpipeContainer{
         return 0;
     }
 
-    var time_offset = this.hasMetadata( "time" ) ? time * this.getMetadata( "time" ).offset : 0;
+    //var time_offset = this.hasMetadata( "time" ) ? time * this.getMetadata( "time" ).offset : 0;
+    var time_offset = this._metadata.time.offset * time;
 
     var xyzt_offset = (
       i * this.getMetadata( order[0] ).offset +
@@ -1398,22 +1503,22 @@ class Image3D extends PixpipeContainer{
   * @param {Number} time - position in time (optional)
   */
   getIntensity_xyz(x, y, z, time = 0) {
-    var order = this.getMetadata("order");
 
-    if (x < 0 || x >= this.getMetadata( "xspace" ).space_length ||
-        y < 0 || y >= this.getMetadata( "yspace" ).space_length ||
-        z < 0 || z >= this.getMetadata( "zspace" ).space_length)
+    if (x < 0 || x >= this._metadata.xspace.space_length ||
+        y < 0 || y >= this._metadata.yspace.space_length ||
+        z < 0 || z >= this._metadata.zspace.space_length)
     {
         console.warn("getIntensity_xyz position is out of range.");
         return 0;
     }
 
-    var time_offset = this.hasMetadata( "time" ) ? time * this.getMetadata( "time" ).offset : 0;
-
+    //var time_offset = this.hasMetadata( "time" ) ? time * this.getMetadata( "time" ).offset : 0;
+    var time_offset = this._metadata.time.offset * time;
+    
     var xyzt_offset = (
-      x * this.getMetadata( "xspace" ).offset +
-      y * this.getMetadata( "yspace" ).offset +
-      z * this.getMetadata( "zspace" ).offset +
+      x * this._metadata.xspace.offset +
+      y * this._metadata.yspace.offset +
+      z * this._metadata.zspace.offset +
       time_offset);
 
     return this._data[xyzt_offset];
@@ -1426,6 +1531,94 @@ class Image3D extends PixpipeContainer{
   getTimeLength(){
     return ( this.hasMetadata("time") ? this.getMetadata("time").space_length : 1 );
   }
+
+
+  /**
+  * Tells if a given point is inside or outside the image
+  * @param {Object} pos - position like {x: Number, y: Number, z: Number}
+  * @return {Boolean} true for inside, false for outside
+  */
+  isInside( pos ){
+    return !(pos.x < 0 || pos.x >= this._metadata.xspace.space_length ||
+             pos.y < 0 || pos.y >= this._metadata.yspace.space_length ||
+             pos.z < 0 || pos.z >= this._metadata.zspace.space_length)
+  }
+  
+
+  /**
+  * Sample the color along a segment
+  * @param {Object} posFrom - starting position of type {x: Number, y: Number, z: Number}
+  * @param {Object} posFrom - ending position of type {x: Number, y: Number, z: Number}
+  * @return {Object} array of Array like that: {
+                                                  positions: [
+                                                    {x: x0, y: y0, z: z0},
+                                                    {x: x1, y: y1, z: z1},
+                                                    {x: x2, y: y2, z: z2},
+                                                    ...
+                                                  ],
+                                                  labels: [
+                                                    "(x0, y0, z0)", "(x1, y1, z1)", "(x2, y2, z2)", ...
+                                                  ],
+                                                  colors: [
+                                                            [r0, r1, r2 ...],
+                                                            [g0, g1, g2 ...],
+                                                            [b0, b1, b2 ...]
+                                                  ]
+                                                }
+     return null if posFrom or posTo is outside
+  */
+  getSegmentSample( posFrom, posTo, time = 0 ){
+    // both position must be inside the image
+    if( !this.isInside(posFrom) || !this.isInside(posTo) )
+      return null;
+      
+    var dx = posTo.x - posFrom.x;
+    var dy = posTo.y - posFrom.y;
+    var dz = posTo.z - posFrom.z;
+    var euclidianDistance = Math.sqrt( Math.pow(dx , 2) + Math.pow(dy , 2) + Math.pow(dz , 2) );
+    var numberOfSamples = Math.floor( euclidianDistance + 1 );
+    
+    // we want to sample every unit distance along the segment
+    var stepX = dx / euclidianDistance;
+    var stepY = dy / euclidianDistance;
+    var stepZ = dz / euclidianDistance;
+    
+    var ncpp = this._metadata.ncpp;
+    var positions = new Array(numberOfSamples).fill(0);
+    var colors = new Array(ncpp).fill(0);
+    var labels = new Array(numberOfSamples).fill(0);
+    
+    // creating empty arrays for colors
+    for(var c=0; c<ncpp; c++){
+      colors[c] = new Array(numberOfSamples).fill(0);
+    }
+    
+    // walk along the segment, from posFrom to posTo
+    for(var i=0; i<numberOfSamples; i++){
+      var currentPos = {
+        x: Math.round(posFrom.x + i*stepX),
+        y: Math.round(posFrom.y + i*stepY),
+        z: Math.round(posFrom.z + i*stepZ)
+      };
+      
+      positions[i] = currentPos;
+      labels[i] = "(" + currentPos.x + ", " + currentPos.y + ", " + currentPos.z + ")";
+      
+      var pixValue = [this.getIntensity_xyz( currentPos.x, currentPos.y, currentPos.z )];
+      
+      // each channel is dispatched in its array
+      for(var c=0; c<ncpp; c++){
+        colors[c][i] = pixValue[c];
+      }
+    }
+    
+    return {
+      positions: positions,
+      labels: labels,
+      colors: colors
+    }
+  } /* END of method getLineSample */
+  
 
 } /* END of class Image3D */
 
@@ -2011,6 +2204,15 @@ class CanvasImageWriter extends Filter{
 
 
   /**
+  * Get the canvas used to print the Image2D;
+  * @return {Object} canvas
+  */
+  getCanvas(){
+    return this._canvas;
+  }
+  
+
+  /**
   * [PRIVATE]
   * Initialize a new canvas object
   */
@@ -2037,7 +2239,7 @@ class CanvasImageWriter extends Filter{
 
     // not sure this is useful since the style is "pixelated"
     // (does not seem to well super well with Firefox)
-    this._ctx.imageSmoothingEnabled = true;
+    this._ctx.imageSmoothingEnabled = false;
     this._ctx.mozImageSmoothingEnabled = false;
     this._ctx.webkitImageSmoothingEnabled = false;
     this._ctx.ctxmsImageSmoothingEnabled = false;
@@ -2124,7 +2326,7 @@ class CanvasImageWriter extends Filter{
         }
       }
     }
-
+    
     this._ctx.putImageData(canvasImageData, 0, 0);
   }
 
@@ -20174,6 +20376,184 @@ class TiffDecoder extends Filter {
   
 } /* END of class TiffDecoder */
 
+class EegModDecoder extends Filter {
+  
+  constructor() {
+    super();
+    this.addInputValidator(0, ArrayBuffer);
+    this.setMetadata("debug", false);
+    
+    // a soon-to-be DataView to read the input buffer
+    this._view = null;
+  }
+  
+  _run(){
+    var inputBuffer = this._getInput(0);
+
+    if(!inputBuffer){
+      console.warn("EegModDecoder requires an ArrayBuffer as input \"0\". Unable to continue.");
+      return;
+    }
+    
+    this._view = new DataView( inputBuffer );
+    var littleEndian = true;
+    
+    // ------------- DECODING HEADER -------------------
+    
+    var header = {};
+    
+    // Protection Mask
+    // Offset: 0, length: 2
+    header.protectionMask = this._view.getUint16(0, littleEndian);
+    
+    // Comment (first byte is the real length)
+    // Offset: 2, length: 81
+    var commentRealLength = this._view.getUint8(2);
+    var commentBytes = new Uint8Array(inputBuffer, 3, commentRealLength);
+    header.comment = String.fromCharCode.apply(String, commentBytes);
+    
+    // Measure (M) Size
+    // Offset: 83, length: 2
+    header.measureSize = this._view.getUint16(83, littleEndian);
+    
+    // Duration (D) Size
+    // Offset: 85, length: 2
+    header.durationSize = this._view.getUint16(85, littleEndian);
+    
+    // First space (F) Size
+    // Offset: 87, length: 2
+    header.firstSpaceSize = this._view.getUint16(87, littleEndian);
+    
+    // Second space (S) Size
+    // Offset: 89, length: 2
+    header.secondSpaceSize = this._view.getUint16(89, littleEndian);
+    
+    // Reserved bytes
+    // Offset: 91, length: 2
+    header.reservedBytes = this._view.getUint16(91, littleEndian);
+    
+    // Data size
+    // Offset: 93, length: 2
+    header.dataSize = this._view.getUint16(93, littleEndian);
+    
+    console.log( header );
+    
+    // ------------- DECODING MATRIX -------------------
+    var matrixOffset = 95;
+    
+    var matrixSizeElements =  header.measureSize * 
+                              header.durationSize * 
+                              header.firstSpaceSize * 
+                              header.secondSpaceSize;
+                              
+    var matrixSizeBytes = matrixSizeElements * header.dataSize;
+                          
+    var matrixData = new Float32Array(matrixSizeElements);
+    
+    for(var i=0; i<matrixSizeElements; i++){
+      matrixData[i] = this._view.getFloat32(matrixOffset + i * header.dataSize, littleEndian); 
+    }
+
+    
+    console.log(matrixData);
+    
+    // ------------- DECODING RESERVED BYTE SECTION -------------------
+    var reservedBytesSectionOffset = matrixOffset + matrixSizeBytes;
+    
+    // we dont care about this section
+    
+    // ------------- DECODING INFO SECTION -------------------
+    var infoSectionOffset = reservedBytesSectionOffset + header.reservedBytes;
+    var infoRealLength = this._view.getUint8(infoSectionOffset);
+    var infoBytes = new Uint8Array(inputBuffer, infoSectionOffset+1, infoRealLength);
+    var info = String.fromCharCode.apply(String, infoBytes);
+    
+    console.log(infoRealLength);
+    console.log( info );
+    
+    
+    // ------------- DECODING HEADER OF LIST SECTION -------------------
+    var headerOfListOffset = infoSectionOffset + 9;
+    
+    var listSize = 8;
+    var offsetByteSize = 4;
+    var totalByteSize = 2;
+    var headerOfList = new Array(listSize);
+    
+    for(var i=0; i<listSize; i++){
+      var record = {
+        // !! IMPORTANT !! there is a know BUG in the offset value
+        //offset: this._view.getInt16(headerOfListOffset + i * (offsetByteSize+totalByteSize), littleEndian),
+        total: this._view.getUint8(headerOfListOffset + i * (offsetByteSize+totalByteSize) + offsetByteSize, littleEndian),
+        labels: []
+      };
+      headerOfList[i] = record;
+    }
+    
+    headerOfList[0].description = "list of labels for measure dimension";
+    headerOfList[1].description = "list of labels for duration dimension";
+    headerOfList[2].description = "list of labels for first space dimension";
+    headerOfList[3].description = "list of labels for second space dimension";
+    headerOfList[4].description = "list of scales";
+    headerOfList[5].description = "list of units";
+    headerOfList[6].description = "list of transformations";
+    headerOfList[7].description = "list of context";
+    
+    console.log( headerOfList );
+    
+    
+    // ------------- DECODING HEADER OF LIST SECTION -------------------
+    
+    
+    
+    var infoSection2Offset = headerOfListOffset + 48;
+    
+    var info2Bytes = new Uint8Array(inputBuffer, infoSection2Offset, inputBuffer.byteLength - infoSection2Offset );
+    var info2 = String.fromCharCode.apply(String, info2Bytes);
+    console.log( info2 );
+    console.log(info2Bytes);
+    
+    for(var i=0; i<info2Bytes.length; i++){
+      console.log( info2Bytes[i] + " --> " + info2[i]);
+    }
+    
+    var labels = [];
+    
+    var localOffset = infoSection2Offset;
+    var uintAtLocalOffset = this._view.getUint8(localOffset);
+    
+    while( uintAtLocalOffset > 0){
+      var strByteLength = this._view.getUint8(localOffset);
+      
+      var strBytes = new Uint8Array(inputBuffer, localOffset+1, strByteLength );
+      var str = String.fromCharCode.apply(String, strBytes);
+      
+      console.log( str );
+      
+      localOffset += strByteLength + 1;
+      
+      uintAtLocalOffset = this._view.getUint8(localOffset);
+    }
+    
+    /*
+    for(var i=0; i<info2Bytes.length; i++){
+      var charcode = info2Bytes[i]; // the charcode must be >=32 and < 128 so that it's a proper characther
+      
+      // 
+      if( charcode >= 32 && charcode < 128 ){
+        
+      }
+      
+      
+      var char = String.fromCharCode(charcode)
+      console.log( charcode + " --> " + char );
+    }
+    */
+    
+  }
+  
+} /* END of class EegModDecoder */
+
 /*
 * Author   Jonathan Lurie - http://me.jonahanlurie.fr
 * License  MIT
@@ -22102,7 +22482,7 @@ class ImageDerivativeFilter extends ImageToImageFilter {
   _run(){
     // the input checking
     if( ! this.hasValidInput()){
-      console.warn("A filter of type SpatialConvolutionFilter requires 1 input of category '0' and one input of category '1'.");
+      console.warn("A filter of type ImageDerivativeFilter requires 1 input of category '0' and one input of category '1'.");
       return;
     }
     
@@ -23142,6 +23522,466 @@ class LineStringPrinterOnImage2DHelper extends ImageToImageFilter {
   
 } /* END of class LineStringPrinterOnImage2DHelper */
 
+/**
+* From https://github.com/bpostlethwaite/colormap
+*/
+
+var ColorScales = {
+	"jet":[{"index":0,"rgb":[0,0,131]},{"index":0.125,"rgb":[0,60,170]},{"index":0.375,"rgb":[5,255,255]},{"index":0.625,"rgb":[255,255,0]},{"index":0.875,"rgb":[250,0,0]},{"index":1,"rgb":[128,0,0]}],
+
+	"hsv":[{"index":0,"rgb":[255,0,0]},{"index":0.169,"rgb":[253,255,2]},{"index":0.173,"rgb":[247,255,2]},{"index":0.337,"rgb":[0,252,4]},{"index":0.341,"rgb":[0,252,10]},{"index":0.506,"rgb":[1,249,255]},{"index":0.671,"rgb":[2,0,253]},{"index":0.675,"rgb":[8,0,253]},{"index":0.839,"rgb":[255,0,251]},{"index":0.843,"rgb":[255,0,245]},{"index":1,"rgb":[255,0,6]}],
+
+	"hot":[{"index":0,"rgb":[0,0,0]},{"index":0.3,"rgb":[230,0,0]},{"index":0.6,"rgb":[255,210,0]},{"index":1,"rgb":[255,255,255]}],
+
+	"cool":[{"index":0,"rgb":[0,255,255]},{"index":1,"rgb":[255,0,255]}],
+
+	"spring":[{"index":0,"rgb":[255,0,255]},{"index":1,"rgb":[255,255,0]}],
+
+	"summer":[{"index":0,"rgb":[0,128,102]},{"index":1,"rgb":[255,255,102]}],
+
+	"autumn":[{"index":0,"rgb":[255,0,0]},{"index":1,"rgb":[255,255,0]}],
+
+	"winter":[{"index":0,"rgb":[0,0,255]},{"index":1,"rgb":[0,255,128]}],
+
+	"bone":[{"index":0,"rgb":[0,0,0]},{"index":0.376,"rgb":[84,84,116]},{"index":0.753,"rgb":[169,200,200]},{"index":1,"rgb":[255,255,255]}],
+
+	"copper":[{"index":0,"rgb":[0,0,0]},{"index":0.804,"rgb":[255,160,102]},{"index":1,"rgb":[255,199,127]}],
+
+	"greys":[{"index":0,"rgb":[0,0,0]},{"index":1,"rgb":[255,255,255]}],
+
+	"yignbu":[{"index":0,"rgb":[8,29,88]},{"index":0.125,"rgb":[37,52,148]},{"index":0.25,"rgb":[34,94,168]},{"index":0.375,"rgb":[29,145,192]},{"index":0.5,"rgb":[65,182,196]},{"index":0.625,"rgb":[127,205,187]},{"index":0.75,"rgb":[199,233,180]},{"index":0.875,"rgb":[237,248,217]},{"index":1,"rgb":[255,255,217]}],
+
+	"greens":[{"index":0,"rgb":[0,68,27]},{"index":0.125,"rgb":[0,109,44]},{"index":0.25,"rgb":[35,139,69]},{"index":0.375,"rgb":[65,171,93]},{"index":0.5,"rgb":[116,196,118]},{"index":0.625,"rgb":[161,217,155]},{"index":0.75,"rgb":[199,233,192]},{"index":0.875,"rgb":[229,245,224]},{"index":1,"rgb":[247,252,245]}],
+
+	"yiorrd":[{"index":0,"rgb":[128,0,38]},{"index":0.125,"rgb":[189,0,38]},{"index":0.25,"rgb":[227,26,28]},{"index":0.375,"rgb":[252,78,42]},{"index":0.5,"rgb":[253,141,60]},{"index":0.625,"rgb":[254,178,76]},{"index":0.75,"rgb":[254,217,118]},{"index":0.875,"rgb":[255,237,160]},{"index":1,"rgb":[255,255,204]}],
+
+	"bluered":[{"index":0,"rgb":[0,0,255]},{"index":1,"rgb":[255,0,0]}],
+
+	"rdbu":[{"index":0,"rgb":[5,10,172]},{"index":0.35,"rgb":[106,137,247]},{"index":0.5,"rgb":[190,190,190]},{"index":0.6,"rgb":[220,170,132]},{"index":0.7,"rgb":[230,145,90]},{"index":1,"rgb":[178,10,28]}],
+
+	"picnic":[{"index":0,"rgb":[0,0,255]},{"index":0.1,"rgb":[51,153,255]},{"index":0.2,"rgb":[102,204,255]},{"index":0.3,"rgb":[153,204,255]},{"index":0.4,"rgb":[204,204,255]},{"index":0.5,"rgb":[255,255,255]},{"index":0.6,"rgb":[255,204,255]},{"index":0.7,"rgb":[255,153,255]},{"index":0.8,"rgb":[255,102,204]},{"index":0.9,"rgb":[255,102,102]},{"index":1,"rgb":[255,0,0]}],
+
+	"rainbow":[{"index":0,"rgb":[150,0,90]},{"index":0.125,"rgb":[0,0,200]},{"index":0.25,"rgb":[0,25,255]},{"index":0.375,"rgb":[0,152,255]},{"index":0.5,"rgb":[44,255,150]},{"index":0.625,"rgb":[151,255,0]},{"index":0.75,"rgb":[255,234,0]},{"index":0.875,"rgb":[255,111,0]},{"index":1,"rgb":[255,0,0]}],
+
+	"portland":[{"index":0,"rgb":[12,51,131]},{"index":0.25,"rgb":[10,136,186]},{"index":0.5,"rgb":[242,211,56]},{"index":0.75,"rgb":[242,143,56]},{"index":1,"rgb":[217,30,30]}],
+
+	"blackbody":[{"index":0,"rgb":[0,0,0]},{"index":0.2,"rgb":[230,0,0]},{"index":0.4,"rgb":[230,210,0]},{"index":0.7,"rgb":[255,255,255]},{"index":1,"rgb":[160,200,255]}],
+
+	"earth":[{"index":0,"rgb":[0,0,130]},{"index":0.1,"rgb":[0,180,180]},{"index":0.2,"rgb":[40,210,40]},{"index":0.4,"rgb":[230,230,50]},{"index":0.6,"rgb":[120,70,20]},{"index":1,"rgb":[255,255,255]}],
+
+	"electric":[{"index":0,"rgb":[0,0,0]},{"index":0.15,"rgb":[30,0,100]},{"index":0.4,"rgb":[120,0,100]},{"index":0.6,"rgb":[160,90,0]},{"index":0.8,"rgb":[230,200,0]},{"index":1,"rgb":[255,250,220]}],
+
+	"viridis": [{"index":0,"rgb":[68,1,84]},{"index":0.13,"rgb":[71,44,122]},{"index":0.25,"rgb":[59,81,139]},{"index":0.38,"rgb":[44,113,142]},{"index":0.5,"rgb":[33,144,141]},{"index":0.63,"rgb":[39,173,129]},{"index":0.75,"rgb":[92,200,99]},{"index":0.88,"rgb":[170,220,50]},{"index":1,"rgb":[253,231,37]}],
+
+	"inferno": [{"index":0,"rgb":[0,0,4]},{"index":0.13,"rgb":[31,12,72]},{"index":0.25,"rgb":[85,15,109]},{"index":0.38,"rgb":[136,34,106]},{"index":0.5,"rgb":[186,54,85]},{"index":0.63,"rgb":[227,89,51]},{"index":0.75,"rgb":[249,140,10]},{"index":0.88,"rgb":[249,201,50]},{"index":1,"rgb":[252,255,164]}],
+
+	"magma": [{"index":0,"rgb":[0,0,4]},{"index":0.13,"rgb":[28,16,68]},{"index":0.25,"rgb":[79,18,123]},{"index":0.38,"rgb":[129,37,129]},{"index":0.5,"rgb":[181,54,122]},{"index":0.63,"rgb":[229,80,100]},{"index":0.75,"rgb":[251,135,97]},{"index":0.88,"rgb":[254,194,135]},{"index":1,"rgb":[252,253,191]}],
+
+	"plasma": [{"index":0,"rgb":[13,8,135]},{"index":0.13,"rgb":[75,3,161]},{"index":0.25,"rgb":[125,3,168]},{"index":0.38,"rgb":[168,34,150]},{"index":0.5,"rgb":[203,70,121]},{"index":0.63,"rgb":[229,107,93]},{"index":0.75,"rgb":[248,148,65]},{"index":0.88,"rgb":[253,195,40]},{"index":1,"rgb":[240,249,33]}],
+
+	"warm": [{"index":0,"rgb":[125,0,179]},{"index":0.13,"rgb":[172,0,187]},{"index":0.25,"rgb":[219,0,170]},{"index":0.38,"rgb":[255,0,130]},{"index":0.5,"rgb":[255,63,74]},{"index":0.63,"rgb":[255,123,0]},{"index":0.75,"rgb":[234,176,0]},{"index":0.88,"rgb":[190,228,0]},{"index":1,"rgb":[147,255,0]}],
+
+	"cool2": [{"index":0,"rgb":[125,0,179]},{"index":0.13,"rgb":[116,0,218]},{"index":0.25,"rgb":[98,74,237]},{"index":0.38,"rgb":[68,146,231]},{"index":0.5,"rgb":[0,204,197]},{"index":0.63,"rgb":[0,247,146]},{"index":0.75,"rgb":[0,255,88]},{"index":0.88,"rgb":[40,255,8]},{"index":1,"rgb":[147,255,0]}],
+
+	"rainbow-soft": [{"index":0,"rgb":[125,0,179]},{"index":0.1,"rgb":[199,0,180]},{"index":0.2,"rgb":[255,0,121]},{"index":0.3,"rgb":[255,108,0]},{"index":0.4,"rgb":[222,194,0]},{"index":0.5,"rgb":[150,255,0]},{"index":0.6,"rgb":[0,255,55]},{"index":0.7,"rgb":[0,246,150]},{"index":0.8,"rgb":[50,167,222]},{"index":0.9,"rgb":[103,51,235]},{"index":1,"rgb":[124,0,186]}],
+
+	"bathymetry": [{"index":0,"rgb":[40,26,44]},{"index":0.13,"rgb":[59,49,90]},{"index":0.25,"rgb":[64,76,139]},{"index":0.38,"rgb":[63,110,151]},{"index":0.5,"rgb":[72,142,158]},{"index":0.63,"rgb":[85,174,163]},{"index":0.75,"rgb":[120,206,163]},{"index":0.88,"rgb":[187,230,172]},{"index":1,"rgb":[253,254,204]}],
+
+	"cdom": [{"index":0,"rgb":[47,15,62]},{"index":0.13,"rgb":[87,23,86]},{"index":0.25,"rgb":[130,28,99]},{"index":0.38,"rgb":[171,41,96]},{"index":0.5,"rgb":[206,67,86]},{"index":0.63,"rgb":[230,106,84]},{"index":0.75,"rgb":[242,149,103]},{"index":0.88,"rgb":[249,193,135]},{"index":1,"rgb":[254,237,176]}],
+
+	"chlorophyll": [{"index":0,"rgb":[18,36,20]},{"index":0.13,"rgb":[25,63,41]},{"index":0.25,"rgb":[24,91,59]},{"index":0.38,"rgb":[13,119,72]},{"index":0.5,"rgb":[18,148,80]},{"index":0.63,"rgb":[80,173,89]},{"index":0.75,"rgb":[132,196,122]},{"index":0.88,"rgb":[175,221,162]},{"index":1,"rgb":[215,249,208]}],
+
+	"density": [{"index":0,"rgb":[54,14,36]},{"index":0.13,"rgb":[89,23,80]},{"index":0.25,"rgb":[110,45,132]},{"index":0.38,"rgb":[120,77,178]},{"index":0.5,"rgb":[120,113,213]},{"index":0.63,"rgb":[115,151,228]},{"index":0.75,"rgb":[134,185,227]},{"index":0.88,"rgb":[177,214,227]},{"index":1,"rgb":[230,241,241]}],
+
+	"freesurface-blue": [{"index":0,"rgb":[30,4,110]},{"index":0.13,"rgb":[47,14,176]},{"index":0.25,"rgb":[41,45,236]},{"index":0.38,"rgb":[25,99,212]},{"index":0.5,"rgb":[68,131,200]},{"index":0.63,"rgb":[114,156,197]},{"index":0.75,"rgb":[157,181,203]},{"index":0.88,"rgb":[200,208,216]},{"index":1,"rgb":[241,237,236]}],
+
+	"freesurface-red": [{"index":0,"rgb":[60,9,18]},{"index":0.13,"rgb":[100,17,27]},{"index":0.25,"rgb":[142,20,29]},{"index":0.38,"rgb":[177,43,27]},{"index":0.5,"rgb":[192,87,63]},{"index":0.63,"rgb":[205,125,105]},{"index":0.75,"rgb":[216,162,148]},{"index":0.88,"rgb":[227,199,193]},{"index":1,"rgb":[241,237,236]}],
+
+	"oxygen": [{"index":0,"rgb":[64,5,5]},{"index":0.13,"rgb":[106,6,15]},{"index":0.25,"rgb":[144,26,7]},{"index":0.38,"rgb":[168,64,3]},{"index":0.5,"rgb":[188,100,4]},{"index":0.63,"rgb":[206,136,11]},{"index":0.75,"rgb":[220,174,25]},{"index":0.88,"rgb":[231,215,44]},{"index":1,"rgb":[248,254,105]}],
+
+	"par": [{"index":0,"rgb":[51,20,24]},{"index":0.13,"rgb":[90,32,35]},{"index":0.25,"rgb":[129,44,34]},{"index":0.38,"rgb":[159,68,25]},{"index":0.5,"rgb":[182,99,19]},{"index":0.63,"rgb":[199,134,22]},{"index":0.75,"rgb":[212,171,35]},{"index":0.88,"rgb":[221,210,54]},{"index":1,"rgb":[225,253,75]}],
+
+	"phase": [{"index":0,"rgb":[145,105,18]},{"index":0.13,"rgb":[184,71,38]},{"index":0.25,"rgb":[186,58,115]},{"index":0.38,"rgb":[160,71,185]},{"index":0.5,"rgb":[110,97,218]},{"index":0.63,"rgb":[50,123,164]},{"index":0.75,"rgb":[31,131,110]},{"index":0.88,"rgb":[77,129,34]},{"index":1,"rgb":[145,105,18]}],
+
+	"salinity": [{"index":0,"rgb":[42,24,108]},{"index":0.13,"rgb":[33,50,162]},{"index":0.25,"rgb":[15,90,145]},{"index":0.38,"rgb":[40,118,137]},{"index":0.5,"rgb":[59,146,135]},{"index":0.63,"rgb":[79,175,126]},{"index":0.75,"rgb":[120,203,104]},{"index":0.88,"rgb":[193,221,100]},{"index":1,"rgb":[253,239,154]}],
+
+	"temperature": [{"index":0,"rgb":[4,35,51]},{"index":0.13,"rgb":[23,51,122]},{"index":0.25,"rgb":[85,59,157]},{"index":0.38,"rgb":[129,79,143]},{"index":0.5,"rgb":[175,95,130]},{"index":0.63,"rgb":[222,112,101]},{"index":0.75,"rgb":[249,146,66]},{"index":0.88,"rgb":[249,196,65]},{"index":1,"rgb":[232,250,91]}],
+
+	"turbidity": [{"index":0,"rgb":[34,31,27]},{"index":0.13,"rgb":[65,50,41]},{"index":0.25,"rgb":[98,69,52]},{"index":0.38,"rgb":[131,89,57]},{"index":0.5,"rgb":[161,112,59]},{"index":0.63,"rgb":[185,140,66]},{"index":0.75,"rgb":[202,174,88]},{"index":0.88,"rgb":[216,209,126]},{"index":1,"rgb":[233,246,171]}],
+
+	"velocity-blue": [{"index":0,"rgb":[17,32,64]},{"index":0.13,"rgb":[35,52,116]},{"index":0.25,"rgb":[29,81,156]},{"index":0.38,"rgb":[31,113,162]},{"index":0.5,"rgb":[50,144,169]},{"index":0.63,"rgb":[87,173,176]},{"index":0.75,"rgb":[149,196,189]},{"index":0.88,"rgb":[203,221,211]},{"index":1,"rgb":[254,251,230]}],
+
+	"velocity-green": [{"index":0,"rgb":[23,35,19]},{"index":0.13,"rgb":[24,64,38]},{"index":0.25,"rgb":[11,95,45]},{"index":0.38,"rgb":[39,123,35]},{"index":0.5,"rgb":[95,146,12]},{"index":0.63,"rgb":[152,165,18]},{"index":0.75,"rgb":[201,186,69]},{"index":0.88,"rgb":[233,216,137]},{"index":1,"rgb":[255,253,205]}],
+
+	"cubehelix": [{"index":0,"rgb":[0,0,0]},{"index":0.07,"rgb":[22,5,59]},{"index":0.13,"rgb":[60,4,105]},{"index":0.2,"rgb":[109,1,135]},{"index":0.27,"rgb":[161,0,147]},{"index":0.33,"rgb":[210,2,142]},{"index":0.4,"rgb":[251,11,123]},{"index":0.47,"rgb":[255,29,97]},{"index":0.53,"rgb":[255,54,69]},{"index":0.6,"rgb":[255,85,46]},{"index":0.67,"rgb":[255,120,34]},{"index":0.73,"rgb":[255,157,37]},{"index":0.8,"rgb":[241,191,57]},{"index":0.87,"rgb":[224,220,93]},{"index":0.93,"rgb":[218,241,142]},{"index":1,"rgb":[227,253,198]}]
+};
+
+/*
+* Author   Jonathan Lurie - http://me.jonahanlurie.fr
+* License  MIT
+* Link      https://github.com/jonathanlurie/pixpipejs
+* Lab       MCIN - Montreal Neurological Institute
+*/
+
+
+/**
+* A Colormap instance is a range of color and can be used in two ways. The first,
+* is by getting a single color using `.getValueAt(p)` where `p` is a position in [0, 1] and, second,
+* by building en entire LUT with a given granularity and then getting back these values.
+* In case of intensive use (ie. applying fake colors), building a LUT is a faster option.
+* Once a LUT is built,  an image of this LUT can be created (horizontal or vertical, flipped or not).
+* This image, which is an Image2D is not supposed to be used as a LUT but just as a visual reference.
+*
+* **Usage**
+* - [examples/colormap.html](../examples/colormap.html)
+*
+*/
+class Colormap extends PixpipeObject {
+
+  /**
+  * Build a colormap with some options.
+  * @param {Object} options - here is the list of options:
+  *     style {String} - one of the available styles (see property names in ColorScales.js)
+  *     description {Object} - colormap description like in ColorScales.js. Can also be the equivalent JSON string.
+  *     lutSize {Number} - Number of samples to pregenerate a LUT
+  *     Note: "style" and "description" are mutually exclusive and "style" has the priority in case both are set.
+  */
+  constructor( options = {} ) {
+    super();
+    this._type = Colormap.TYPE();
+    this._colormapDescription = null;
+    this._LUT = [];
+
+    var style = this._getOption(options, "style", null);
+
+    if( style ){
+      this.setStyle( style );
+    }else {
+      var description = this._getOption(options, "description", null);
+      this.setDescription( description );
+    }
+
+    if( this._colormapDescription ){
+      var lutSize = this._getOption(options, "lutSize", null);
+      if( lutSize ){
+        this.buildLut( lutSize );
+      }
+    }
+
+  }
+
+
+  /**
+  * Hardcode the datatype
+  */
+  static TYPE(){
+    return "COLORMAP";
+  }
+
+
+  /**
+  * [STATIC]
+  * Get all the style id available
+  * @return {Array} all the styles
+  */
+  static getAvailableStyles(){
+    return Object.keys(ColorScales)
+  }
+
+
+  /**
+  * Define the style of the colormap
+  * @param {String} style - the colormap style. They are all listed with `Colormap.getAvailableStyles()`
+  */
+  setStyle( style ){
+    if(style in ColorScales){
+      if( this._validateDescription( ColorScales[ style ] ) ){
+        this._colormapDescription = JSON.parse(JSON.stringify( ColorScales[ style ] ));
+      }
+    }else {
+      console.warn("The given colormap style des not exist.");
+    }
+  }
+
+
+  /**
+  * Set the description of the colormap. See ColorScales.js for the format
+  * @param {Object} d - description, can be the equivalent JSON string
+  */
+  setDescription( d ){
+    // the description in argument can be a json string
+    var description = typeof d === "string" ? JSON.parse( d ) : d;
+
+    if(description && this._validateDescription(description) ){
+      this._colormapDescription = description;
+    }
+  }
+
+
+  /**
+  * [PRIVATE]
+  * Validates a colormap description integrity.
+  * @return {Boolean} true is the description is valid, false if not
+  */
+  _validateDescription( d ){
+    if( ! Array.isArray(d) ){
+      console.warn("The colormap description has to be an Array");
+      return false;
+    }
+
+    for(var i=0; i<d.length; i++){
+      // each color segment is an object containing a position as 'index'
+      // and an array of number as "rgb"
+
+      // each is a non-null object
+      if( d[i] !== null && typeof d[i] === 'object' ){
+        if( "index" in d[i] && "rgb" in d[i]){
+          if(typeof d[i].index === 'number'){
+            if( d[i].index < 0 || d[i].index >1 ){
+              console.warn("Each colormap segment 'index' property should be in [0, 1]");
+              return false;
+            }
+          }else{
+            console.warn("Each colormap segment 'index' property should be a number.");
+            return false;
+          }
+
+          // the rgb property has to be an array
+          if( Array.isArray( d[i].rgb ) ){
+            if(d[i].rgb.length == 3){
+              for(var j=0; j<d[i].rgb.length; j++){
+                if( d[i].rgb[j] < 0 || d[i].rgb[j] > 255 ){
+                  console.warn("The colormap must have only values in [0, 255]");
+                  return false;
+                }
+              }
+            }else{
+              console.warn("Each colormap segment 'rgb' should contain 3 values");
+              return false;
+            }
+          }
+        }else{
+          console.warn("Each colormap segment must have a 'index' property and a 'rgb' property.");
+          return false;
+        }
+      }else{
+        console.warn("Each colormap segment must be a non-null object");
+        return false;
+      }
+    }
+    return true;
+  }
+
+
+  /**
+  * Get the color at the colormap position
+  * @param {Number} position - position within the colormap in [0, 1]
+  * @return {Array} color array as [r, g, b] , values being in [0, 255]
+  */
+  getValueAt( position ){
+    if( !this._colormapDescription ){
+      console.warn("The colormap description is not defined.");
+      return null;
+    }
+
+    // case 1: before the first "index" position
+    if(position <= this._colormapDescription[0].index){
+      return this._colormapDescription[0].rgb.slice()
+    }
+
+    // case 2: after the last "index" position
+    if(position >= this._colormapDescription[this._colormapDescription.length - 1].index){
+      return this._colormapDescription[this._colormapDescription.length - 1].rgb.slice()
+    }
+
+    // case 3: between 2 values of the descrition (most likely to happen)
+    for(var i=0; i<this._colormapDescription.length-1; i++){
+      if( position >= this._colormapDescription[i].index && position < this._colormapDescription[i+1].index ){
+
+        var unitDistanceToFirst = (position - this._colormapDescription[i].index) / (this._colormapDescription[i+1].index -  this._colormapDescription[i].index);
+        var unitDistanceToSecond = 1 - unitDistanceToFirst;
+
+        var color = [
+          Math.round(this._colormapDescription[i].rgb[0] * unitDistanceToSecond + this._colormapDescription[i+1].rgb[0] * unitDistanceToFirst), // R
+          Math.round(this._colormapDescription[i].rgb[1] * unitDistanceToSecond + this._colormapDescription[i+1].rgb[1] * unitDistanceToFirst), // G
+          Math.round(this._colormapDescription[i].rgb[2] * unitDistanceToSecond + this._colormapDescription[i+1].rgb[2] * unitDistanceToFirst), // B
+        ];
+
+        return color;
+      }
+    }
+  }
+
+
+  /**
+  * Build a LUT from the colormap description
+  * @param {Number} size - number of samples in the LUT
+  */
+  buildLut( size ){
+    if( !this._colormapDescription ){
+      console.warn("The colormap description is not defined, the LUT cannot be created");
+      return null;
+    }
+
+    if( size < 0 ){
+      console.warn("Size of the colormap can not be negative.");
+      return;
+    }
+
+    this._LUT = new Array( size );
+
+    for(var i=0; i<size; i++){
+      this._LUT[i] = this.getValueAt( i/size  + 0.5/size );
+    }
+  }
+
+
+  /**
+  * Get the color within the internal LUT
+  * @param {Number} index - the index in the LUT
+  * @return {Array} color array as [r, g, b] , values being in [0, 255]
+  */
+  getLutAt( index ){
+    if( index <0 || index > this._LUT.length )
+      return null;
+
+    return this._LUT[ index ];
+  }
+
+
+  /**
+  * Creates a horizontal Image2D of the colormap. The height is 1px and
+  * the width is the size of the LUT currently in use.
+  * @param {Boolean} flip - flips the colormap image
+  * @return {Image2D} the result image
+  */
+  createHorizontalLutImage( flip=false ){
+    if(! this._LUT ){
+      console.warn("The LUT must be built before creating a LUT image.");
+      return;
+    }
+
+    var LutSize = this._LUT.length;
+    var colorStrip = new Image2D({width: LutSize, height: 1, color: [0, 0, 0]});
+
+    for(var i=0; i<LutSize; i++){
+      var positionInLut = flip ? (LutSize - i - 1) : i;
+      colorStrip.setPixel( {x: i, y: 0},  this._LUT[ positionInLut ] );
+    }
+
+    return colorStrip;
+  }
+
+
+  /**
+  * Creates a vertical Image2D of the colormap. The height is 1px and
+  * the width is the size of the LUT currently in use.
+  * @param {Boolean} flip - flips the colormap image
+  * @return {Image2D} the result image
+  */
+  createVerticalLutImage( flip=false ){
+    if(! this._LUT ){
+      console.warn("The LUT must be built before creating a LUT image.");
+      return;
+    }
+
+    var LutSize = this._LUT.length;
+    var colorStrip = new Image2D({width: 1, height: LutSize, color: [0, 0, 0]});
+
+    for(var i=0; i<LutSize; i++){
+      var positionInLut = flip ? (LutSize - i - 1) : i;
+      colorStrip.setPixel( {x: 0, y: i},  this._LUT[ positionInLut ] );
+    }
+
+    return colorStrip;
+  }
+
+
+  /**
+  * Add a color to the color description. This color must be at a non-taken index
+  * @param {Number} index - index to place the color, must be in [0, 1]
+  * @param {Array} rgb - rgb array of the form [r, g, b], each value being in [0, 255]
+  * @return {Boolean} true if the color was succesfully added, false if not
+  */
+  addColor( index, rgb ){
+    // the colormap is possibly empty
+    if( !this._colormapDescription ){
+      this._colormapDescription = [];
+    }
+
+    if(index<0 || index>1){
+      console.warn("The color cannot be added because its index is out of range [0, 1]");
+      return false;
+    }
+
+    // checking if a color is already present at the given index
+    var indexAlreadyPresent = this._colormapDescription.find(function(indexAndColor){
+      return indexAndColor.index == index;
+    });
+
+    if( indexAlreadyPresent ){
+      console.warn("A color is already present at index " + index);
+      return false;
+    }
+
+    if( rgb && Array.isArray(rgb) && rgb.length == 3){
+      for(var i=0; i<rgb.length; i++){
+        if(typeof rgb[i] !== 'number' || rgb[i] < 0  || rgb[i] > 255){
+          console.warn("The rgb colors must be in [0, 255]");
+          return false;
+        }
+      }
+    }else{
+      console.warn("The color cannot be added because its rgb array is the wrong size.");
+      return false;
+    }
+
+    // data integrity is ok
+    this._colormapDescription.push({"index":index,"rgb":rgb.slice()});
+    this._colormapDescription.sort(function(a, b) {
+      return a.index - b.index;
+    });
+
+    return true;
+  }
+
+
+  /**
+  * Remove the color at the given index
+  * @param {Number} index - the [0, 1] index of the color to remove
+  * @return {Boolean} true if successfully remove, false if not
+  */
+  removeColor( index ){
+    if( !this._colormapDescription ){
+      console.warn("The colormap description is empty.");
+      return false;
+    }
+
+    var indexAlreadyIn = this._colormapDescription.findIndex(function(element){
+      return (element.index == index);
+    });
+
+    if( indexAlreadyIn == -1 ){
+      console.warn("Such index does not exist.");
+      return false;
+    }
+
+    this._colormapDescription.splice(indexAlreadyIn, 1);
+    return true;
+  }
+
+
+  /**
+  * Get a json version of the colormap description
+  * @return {String} the json string
+  */
+  toJson(){
+    return JSON.stringify(this._colormapDescription);
+  }
+
+
+} /* END of class Colormap */
+
 /*
 * Author   Jonathan Lurie - http://me.jonahanlurie.fr
 * License  MIT
@@ -23245,19 +24085,44 @@ class Image3DToMosaicFilter extends Filter{
 
     var outImage = null;
 
+    // the 3 following functions are a work around to fetch voxel along the right axis
+    function fetchAlongXspace(i, j, sliceIndex, time){
+      return inputImage3D.getIntensity_xyz(sliceIndex, i, j, time)
+    }
+
+    function fetchAlongYspace(i, j, sliceIndex, time){
+      return inputImage3D.getIntensity_xyz(i, sliceIndex, j, time)
+    }
+
+    function fetchAlongZspace(i, j, sliceIndex, time){
+      return inputImage3D.getIntensity_xyz(i, j,  sliceIndex, time)
+    }
+
+    var fetchAlongAxis = null;
+
+    if( this._metadata.axis === "xspace")
+      fetchAlongAxis = fetchAlongXspace;
+    else if( this._metadata.axis === "yspace")
+      fetchAlongAxis = fetchAlongYspace;
+    else if( this._metadata.axis === "zspace")
+      fetchAlongAxis = fetchAlongZspace;
+    
+    if( !fetchAlongAxis ){
+      console.warn("The axis to sample along for the mosaic was not properly set.");
+      return;
+    }
+
+    // to make it works no matter the ncpp
+    var initPixel = new Array( inputImage3D.getMetadata("ncpp") ).fill(0);
     
     for(var t=startTime; t<endTime; t++){
 
       // for each slice
       for(var sliceIndex=0; sliceIndex<numOfSlices; sliceIndex++){
         
-        // fetching the slice
-        var slice = inputImage3D.getSlice( this.getMetadata("axis") , sliceIndex, t);
-
-
         // create a new output image when the current is full (or not init)
         if( sliceCounter%slicePerOutputIm == 0 ){
-          outImage = new Image2D({width: outputWidth, height: outputHeight, color: [0]});
+          outImage = new Image2D({width: outputWidth, height: outputHeight, color: initPixel});
           this._output[ outputCounter ] = outImage;
           sliceIndexCurrentOutput = 0;
           outputCounter++;
@@ -23270,18 +24135,18 @@ class Image3DToMosaicFilter extends Filter{
         var offsetPixelCol = col * width;
         var offsetPixelRow = row * height;
 
-
         // for each row of the input slice
         for(var y=0; y<height; y++){
           // for each col of the output image
           for(var x=0; x<width; x++){
+            var voxelValue = [fetchAlongAxis(x, y,  sliceIndex, t)];
+            
             outImage.setPixel(
               {x: offsetPixelCol+x, y: offsetPixelRow+y},
-              slice.getPixel({x: x, y: y})
+              voxelValue
             );
           }
         }
-        
         sliceCounter ++;
 
       } /* END for each slice*/
@@ -23311,6 +24176,7 @@ exports.PixpDecoder = PixpDecoder;
 exports.Image3DGenericDecoder = Image3DGenericDecoder;
 exports.TiffDecoder = TiffDecoder;
 exports.MghDecoder = MghDecoder;
+exports.EegModDecoder = EegModDecoder;
 exports.ForEachPixelImageFilter = ForEachPixelImageFilter;
 exports.SpectralScaleImageFilter = SpectralScaleImageFilter;
 exports.ImageBlendExpressionFilter = ImageBlendExpressionFilter;
@@ -23327,6 +24193,7 @@ exports.ForEachPixelReadOnlyFilter = ForEachPixelReadOnlyFilter;
 exports.TerrainRgbToElevationImageFilter = TerrainRgbToElevationImageFilter;
 exports.AngleToHueWheelHelper = AngleToHueWheelHelper;
 exports.LineStringPrinterOnImage2DHelper = LineStringPrinterOnImage2DHelper;
+exports.Colormap = Colormap;
 exports.Image3DToMosaicFilter = Image3DToMosaicFilter;
 
 Object.defineProperty(exports, '__esModule', { value: true });

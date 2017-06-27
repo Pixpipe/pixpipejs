@@ -26,6 +26,7 @@ export { PixpDecoder } from './decoder/PixpDecoder.js';
 export { Image3DGenericDecoder } from './decoder/Image3DGenericDecoder.js';
 export { TiffDecoder } from './decoder/TiffDecoder.js';
 export { MghDecoder } from './decoder/MghDecoder.js';
+export { EegModDecoder } from './decoder/EegModDecoder.js';
 
 // filters - processing of Images2D
 export { ForEachPixelImageFilter } from './filter/ForEachPixelImageFilter.js';
@@ -46,6 +47,7 @@ export { TerrainRgbToElevationImageFilter } from './filter/TerrainRgbToElevation
 // helpers
 export { AngleToHueWheelHelper } from './helper/AngleToHueWheelHelper.js';
 export { LineStringPrinterOnImage2DHelper } from './helper/LineStringPrinterOnImage2DHelper.js';
+export { Colormap } from './helper/Colormap.js';
 
 // filters - processing of Image3D
 export { Image3DToMosaicFilter } from './filter/Image3DToMosaicFilter.js';
