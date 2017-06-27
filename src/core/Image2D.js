@@ -193,7 +193,7 @@ class Image2D extends PixpipeContainer{
 
 
   /**
-  * @param {Object} position - 2D positoin like {x, y}
+  * @param {Object} position - 2D positoin like {x: Number, y: Number}
   * @return {Array} the color of the given pixel.
   */
   getPixel( position ){
@@ -389,6 +389,88 @@ class Image2D extends PixpipeContainer{
     }
     return this.getMetadata("avg");
   }
+  
+  
+  /**
+  * Tells if a given point is inside or outside the image
+  * @param {Object} pos - position like {x: Number, y: Number}
+  * @return {Boolean} true for inside, false for outside
+  */
+  isInside( pos ){
+    return ( 
+      pos.x >= 0 && pos.x < this._metadata.width &&
+      pos.y >= 0 && pos.y < this._metadata.height
+    )
+  }
+  
+  /**
+  * Sample the color along a segment
+  * @param {Object} posFrom - starting position of type {x: Number, y: Number}
+  * @param {Object} posFrom - ending position of type {x: Number, y: Number}
+  * @return {Object} array of Array like that: {
+                                                  positions: [
+                                                    {x: x0, y: y0},
+                                                    {x: x1, y: y1},
+                                                    {x: x2, y: y2},
+                                                    ...
+                                                  ],
+                                                  labels: [
+                                                    "(x0, y0)", "(x1, y1)", "(x2, y2)", ...
+                                                  ],
+                                                  colors: [
+                                                            [r0, r1, r2 ...],
+                                                            [g0, g1, g2 ...],
+                                                            [b0, b1, b2 ...]
+                                                  ]
+                                                }
+     return null if posFrom or posTo is outside
+  */
+  getSegmentSample( posFrom, posTo ){
+    // both position must be inside the image
+    if( !this.isInside(posFrom) || !this.isInside(posTo) )
+      return null;
+      
+    var dx = posTo.x - posFrom.x;
+    var dy = posTo.y - posFrom.y;
+    var euclidianDistance = Math.sqrt( Math.pow(dx , 2) + Math.pow(dy , 2) );
+    var numberOfSamples = Math.floor( euclidianDistance + 1 );
+    
+    // we want to sample every unit distance along the segment
+    var stepX = dx / euclidianDistance;
+    var stepY = dy / euclidianDistance;
+    
+    var ncpp = this._metadata.ncpp;
+    var positions = new Array(numberOfSamples).fill(0);
+    var colors = new Array(ncpp).fill(0);
+    var labels = new Array(numberOfSamples).fill(0);
+    
+    // creating empty arrays for colors
+    for(var c=0; c<ncpp; c++){
+      colors[c] = new Array(numberOfSamples).fill(0) ;
+    }
+    
+    // walk along the segment, from posFrom to posTo
+    for(var i=0; i<numberOfSamples; i++){
+      var currentPos = {x: Math.round(posFrom.x + i*stepX) , y: Math.round(posFrom.y + i*stepY) };
+      positions[i] = currentPos;
+      labels[i] = "(" + currentPos.x + ", " + currentPos.y + ")";
+      
+      var pixValue = this.getPixel( currentPos );
+      
+      // each channel is dispatched in its array
+      for(var c=0; c<ncpp; c++){
+        colors[c][i] = pixValue[c];
+      }
+    }
+    
+    return {
+      positions: positions,
+      labels: labels,
+      colors: colors
+    }
+  } /* END of method getLineSample */
+  
+  
 
 } /* END of class Image2D */
 

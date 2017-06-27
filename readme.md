@@ -20,7 +20,7 @@ To make image processing:
 [Here](http://me.jonathanlurie.fr/slides/pixpipejs_01) are some slides to present Pixpipejs. Maybe an easier introduction.
 
 # Cookbook
-The best way to learn how to uses Pixpipe is by going through the [cookbook](cookbook/readme.md) (there is also [the web version](http://me.jonathanlurie.fr/pixpipejs/cookbook/)). You'll find in-depth descriptions of the core components, examples and how-to's.
+The best way to learn how to uses Pixpipe is by going through the [cookbook](cookbook/readme.md) (there is also [the web version](http://me.jonathanlurie.fr/pixpipejs/cookbook/)). You'll find in-depth descriptions of the core components, [examples](cookbook/readme.md#learning-with-examples) and how-to's.
 
 
 # Documentation
@@ -72,17 +72,8 @@ For saving intermediate or final results to a local storage, Pixpipe needs a fil
 
 
 # Todo
-- Integrate wokers with Rollup
-- 2D FFT
-- 2D Wavelet (Haar, Daubechie)
-- Bilinear and trilinear interpolation + resampling filter
-- Oblique sampling for Image3D
-- crop an Image2D or Image3D
-- Add an example like volume3DNavigator but with autoload
-- Texture 16bit for volume3DNavigator
-- Build an Image3D from a list of Image2D
-- Sample along a given line for Image2D and Image3D
-- Create a proper vector stucture iheritance pattern
+- [Feature related](https://github.com/jonathanlurie/pixpipejs/projects/1)
+- [Non-feature related](https://github.com/jonathanlurie/pixpipejs/projects/2)
 
 # License
 MIT - See [LICENSE file](LICENSE).

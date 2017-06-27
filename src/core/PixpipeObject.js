@@ -136,6 +136,22 @@ class PixpipeObject {
   getMetadataCopy(){
     return JSON.parse( JSON.stringify( this._metadata ) );
   }
+  
+  
+  /**
+  * [PRIVATE]
+  * Deal with an option object (usually as an argument of a constructor).
+  * @param {Object} optionsObject - the option object
+  * @param {String} key - a property name in this optionObject
+  * @param {Object} defaultValue - the value to return if the key in the optionObject was not found
+  * @return {Object} the value from the optionObject that has the property name key, unless this property does not exist, then it returns the defaultValue.
+  */
+  _getOption(optionsObject, key, defaultValue){
+    if(!optionsObject)
+      return defaultValue;
+      
+    return optionsObject[ key ] || defaultValue;
+  }
 
 }
 
