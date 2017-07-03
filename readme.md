@@ -19,6 +19,7 @@ To make image processing:
 # Presentation
 [Here](http://me.jonathanlurie.fr/slides/pixpipejs_01) are some slides to present Pixpipejs. Maybe an easier introduction.
 
+
 # Cookbook
 The best way to learn how to uses Pixpipe is by going through the [cookbook](cookbook/readme.md) (there is also [the web version](http://me.jonathanlurie.fr/pixpipejs/cookbook/)). You'll find in-depth descriptions of the core components, [examples](cookbook/readme.md#learning-with-examples) and how-to's.
 
@@ -36,6 +37,9 @@ Here is the list of compatible formats:
 - Minc2 (to Image3D / MniVolume)
 - MGH/MHZ (to Image3D / MniVolume)
 - Pixp (generic *Pixpipe* format for both Image2D and Image3D )
+
+# Sample data
+[HERE](https://github.com/jonathanlurie/pixpipeData) is the repo where some sample data are stored (mainly to avoid this repos to be too fat).
 
 
 # The Pixp format
