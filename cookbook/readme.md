@@ -8,6 +8,7 @@ This cookbook will help you to become familiar with the architecture of **Pixpip
 # Table of content
 - [Overview](#overview)
 - [Projects used in Pixpipe](#projects-used-in-pixpipe)
+- [Sample data](#sample-data)
 - [Core architecture](#core-architecture)
   - [PixpipeObject](#pixpipeobject)
   - [PixpipeContainer](pixpipecontainer)
@@ -60,6 +61,10 @@ Sometimes, it's just not worth reinventing the wheel. Here are the libraries Pix
 - [expr-eval](https://github.com/silentmatt/expr-eval), to evaluate math expression and create quick filter prototype
 - [js-md5](https://github.com/emn178/js-md5), to generate a unique checksum for each loaded files
 - [geotiff](https://github.com/constantinius/geotiff.js) to decode Tiff and BigTiff images
+
+
+# Sample data
+[HERE](https://github.com/jonathanlurie/pixpipeData) is the repo where some sample data are stored (mainly to avoid this repos to be too fat).
 
 
 # Core architecture
