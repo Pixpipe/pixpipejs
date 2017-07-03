@@ -123,7 +123,7 @@ class EegModDecoder extends Filter {
     headerOfList[6].description = "list of transformations";
     headerOfList[7].description = "list of context";
     
-    console.log( headerOfList );
+    //console.log( headerOfList );
     
     
     // ------------- DECODING HEADER OF LIST SECTION -------------------
@@ -137,15 +137,43 @@ class EegModDecoder extends Filter {
     console.log( info2 );
     console.log(info2Bytes);
     
+    /*
     for(var i=0; i<info2Bytes.length; i++){
       console.log( info2Bytes[i] + " --> " + info2[i]);
     }
+    */
     
     var labels = [];
     
     var localOffset = infoSection2Offset
-    var uintAtLocalOffset = this._view.getUint8(localOffset)
+
     
+    
+    for(var i=0; i<headerOfList.length; i++){
+      var nbOfElem = headerOfList[i].total;
+      headerOfList[i].elements = new Array( nbOfElem ).fill(0);
+      
+      for(var j=0; j<nbOfElem; j++){
+        var strByteLength = this._view.getUint8(localOffset)
+        
+        if( strByteLength ){
+          var strBytes = new Uint8Array(inputBuffer, localOffset+1, strByteLength );
+          var str = String.fromCharCode.apply(String, strBytes);
+          headerOfList[i].elements[j] = str;
+          
+          localOffset += strByteLength + 1;
+        }else{
+          localOffset += strByteLength + 1;
+        }
+        
+      }
+      
+    }
+    
+    console.log( headerOfList );
+    
+    /*
+    var uintAtLocalOffset = this._view.getUint8(localOffset)
     while( uintAtLocalOffset > 0){
       var strByteLength = this._view.getUint8(localOffset)
       
@@ -158,7 +186,7 @@ class EegModDecoder extends Filter {
       
       uintAtLocalOffset = this._view.getUint8(localOffset)
     }
-    
+    */
     /*
     for(var i=0; i<info2Bytes.length; i++){
       var charcode = info2Bytes[i]; // the charcode must be >=32 and < 128 so that it's a proper characther
