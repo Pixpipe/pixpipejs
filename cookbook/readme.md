@@ -8,6 +8,7 @@ This cookbook will help you to become familiar with the architecture of **Pixpip
 # Table of content
 - [Overview](#overview)
 - [Projects used in Pixpipe](#projects-used-in-pixpipe)
+- [Sample data](#sample-data)
 - [Core architecture](#core-architecture)
   - [PixpipeObject](#pixpipeobject)
   - [PixpipeContainer](pixpipecontainer)
@@ -60,6 +61,10 @@ Sometimes, it's just not worth reinventing the wheel. Here are the libraries Pix
 - [expr-eval](https://github.com/silentmatt/expr-eval), to evaluate math expression and create quick filter prototype
 - [js-md5](https://github.com/emn178/js-md5), to generate a unique checksum for each loaded files
 - [geotiff](https://github.com/constantinius/geotiff.js) to decode Tiff and BigTiff images
+
+
+# Sample data
+[HERE](https://github.com/jonathanlurie/pixpipeData) is the repo where some sample data are stored (mainly to avoid this repos to be too fat).
 
 
 # Core architecture
@@ -203,7 +208,6 @@ A `Filter` should **NEVER** modify the input data.
 - [Open a local Minc2 file, extract 3 orthogonal slices and display in canvas](http://me.jonathanlurie.fr/pixpipejs/examples/fileToMinc2.html) | [source](https://github.com/jonathanlurie/pixpipejs/tree/master/examples/fileToMinc2.html)
 - [Open a local  NIfTI file, extract 3 orthogonal slices and display in canvas](http://me.jonathanlurie.fr/pixpipejs/examples/fileToNifti.html) | [source](https://github.com/jonathanlurie/pixpipejs/tree/master/examples/fileToNifti.html)
 - [Open a local  MGH file, extract 3 orthogonal slices and display in canvas](http://me.jonathanlurie.fr/pixpipejs/examples/fileToMgh.html) | [source](https://github.com/jonathanlurie/pixpipejs/tree/master/examples/fileToMgh.html)
-- [Convert a Minc2 file into a generic `*.pixp` file](http://me.jonathanlurie.fr/pixpipejs/examples/Minc2ToPixpFile.html) | [source](https://github.com/jonathanlurie/pixpipejs/tree/master/examples/Minc2ToPixpFile.html)
 - [Open a `*.pixp` containing an Image3D file and display 3 otho slices](http://me.jonathanlurie.fr/pixpipejs/examples/fileToPixp.html) | [source](https://github.com/jonathanlurie/pixpipejs/tree/master/examples/fileToPixp.html)
 - [Convert a NIfTI/MINC/MGH file to a pixp file](http://me.jonathanlurie.fr/pixpipejs/examples/Image3DToPixpConverter.html) | [source](https://github.com/jonathanlurie/pixpipejs/tree/master/examples/Image3DToPixpConverter.html)
 
