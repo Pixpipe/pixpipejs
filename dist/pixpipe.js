@@ -20260,7 +20260,7 @@ class EegModDecoder extends Filter {
       var record = {
         // !! IMPORTANT !! there is a know BUG in the offset value
         //offset: this._view.getInt16(headerOfListOffset + i * (offsetByteSize+totalByteSize), littleEndian),
-        total: this._view.getUint8(headerOfListOffset + i * (offsetByteSize+totalByteSize) + offsetByteSize, littleEndian),
+        total: this._view.getUint16(headerOfListOffset + i * (offsetByteSize+totalByteSize) + offsetByteSize, littleEndian),
         labels: []
       };
       headerOfList[i] = record;
@@ -20273,7 +20273,7 @@ class EegModDecoder extends Filter {
     headerOfList[4].description = "list of scales";
     headerOfList[5].description = "list of units";
     headerOfList[6].description = "list of transformations";
-    headerOfList[7].description = "list of context";
+    headerOfList[7].description = "list of contexts";
     
     //console.log( headerOfList );
     
@@ -20284,12 +20284,13 @@ class EegModDecoder extends Filter {
     
     var infoSection2Offset = headerOfListOffset + 48;
     
+    /*
     var info2Bytes = new Uint8Array(inputBuffer, infoSection2Offset, inputBuffer.byteLength - infoSection2Offset );
     var info2 = String.fromCharCode.apply(String, info2Bytes);
     console.log( info2 );
     console.log(info2Bytes);
     
-    /*
+    
     for(var i=0; i<info2Bytes.length; i++){
       console.log( info2Bytes[i] + " --> " + info2[i]);
     }
@@ -20299,9 +20300,7 @@ class EegModDecoder extends Filter {
     
     var localOffset = infoSection2Offset;
 
-    
-    
-    for(var i=0; i<headerOfList.length; i++){
+    for(var i=0; i<headerOfList.length - 1; i++){
       var nbOfElem = headerOfList[i].total;
       headerOfList[i].elements = new Array( nbOfElem ).fill(0);
       
@@ -20322,37 +20321,76 @@ class EegModDecoder extends Filter {
       
     }
     
+    
     console.log( headerOfList );
     
-    /*
-    var uintAtLocalOffset = this._view.getUint8(localOffset)
-    while( uintAtLocalOffset > 0){
-      var strByteLength = this._view.getUint8(localOffset)
-      
-      var strBytes = new Uint8Array(inputBuffer, localOffset+1, strByteLength );
-      var str = String.fromCharCode.apply(String, strBytes);
-      
-      console.log( str );
-      
-      localOffset += strByteLength + 1;
-      
-      uintAtLocalOffset = this._view.getUint8(localOffset)
-    }
-    */
+    var offSetForListOfContexts = localOffset;
+    
+    var info2Bytes = new Uint8Array(inputBuffer, offSetForListOfContexts, inputBuffer.byteLength - offSetForListOfContexts );
+    var info2 = String.fromCharCode.apply(String, info2Bytes);
+    console.log( info2 );
+    console.log(info2Bytes);
+    
     /*
     for(var i=0; i<info2Bytes.length; i++){
-      var charcode = info2Bytes[i]; // the charcode must be >=32 and < 128 so that it's a proper characther
-      
-      // 
-      if( charcode >= 32 && charcode < 128 ){
-        
-      }
-      
-      
-      var char = String.fromCharCode(charcode)
-      console.log( charcode + " --> " + char );
+      console.log( '[' + (offSetForListOfContexts + i) + '] ' + info2Bytes[i] + " --> " + info2[i]);
     }
     */
+    
+    // parsing the list of contexts
+    var listOfContexts = headerOfList[ headerOfList.length - 1];
+    listOfContexts.contextsByteLength = new Array( listOfContexts.total );
+    listOfContexts.types = new Array( listOfContexts.total );
+    listOfContexts.values = new Array( listOfContexts.total );
+    
+    const regexTypeDetection = /[a-zA-Z ]*\:{1}([a-zA-Z]*)[\[]?\d*[\]]?/;
+    
+    for(var iCtx=0; iCtx<listOfContexts.total; iCtx++){
+  //  var iCtx = 0;
+  //  while(  iCtx < listOfContexts.total){
+      var strByteLength = this._view.getUint8(localOffset);
+
+      var strBytes = new Uint8Array(inputBuffer, localOffset+1, strByteLength );
+      var str = String.fromCharCode.apply(String, strBytes);
+      listOfContexts.labels[iCtx] = str;
+      //listOfContexts.contextsByteLength[iCtx] = this._view.getUint8(localOffset + strByteLength + 1) ;
+      listOfContexts.contextsByteLength[iCtx] = this._view.getUint16(localOffset + strByteLength + 1, littleEndian);
+      
+      var typeMatch = regexTypeDetection.exec( str );
+      if(typeMatch){
+        listOfContexts.types[iCtx] = typeMatch[1].toLowerCase();
+      }else{
+        listOfContexts.types[iCtx] = null;
+      }
+      
+      localOffset += strByteLength + 3;
+    }
+    
+    
+    // getting the values for the contexts
+    for(var iCtx=0; iCtx<listOfContexts.total; iCtx++){
+      var value = null;
+      if( listOfContexts.types[iCtx] === "single" ){
+        // single precision floats are on 4 bytes
+        value = this._view.getFloat32(localOffset, littleEndian);
+        
+      }else if(listOfContexts.types[iCtx] === "boolean"){
+        value = new Array(listOfContexts.contextsByteLength[iCtx]);
+        for(var b=0; b<value.length; b++){
+          value[b] = !!this._view.getUint8(localOffset + b);
+        }
+        
+      }else if(listOfContexts.types[iCtx] === "string"){
+        var strByteLength = this._view.getUint8(localOffset);
+        var strBytes = new Uint8Array(inputBuffer, localOffset+1, strByteLength );
+        value = String.fromCharCode.apply(String, strBytes);
+      }
+      
+      localOffset += listOfContexts.contextsByteLength[iCtx];
+      listOfContexts.values[ iCtx ] = value;
+      
+    }
+    
     
   }
   
