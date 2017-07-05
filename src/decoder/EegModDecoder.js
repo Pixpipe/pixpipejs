@@ -60,6 +60,7 @@ class EegModDecoder extends Filter {
     // Offset: 93, length: 2
     header.dataSize = this._view.getUint16(93, littleEndian);
     
+    console.log( "header ");
     console.log( header );
     
     // ------------- DECODING MATRIX -------------------
@@ -78,23 +79,22 @@ class EegModDecoder extends Filter {
       matrixData[i] = this._view.getFloat32(matrixOffset + i * header.dataSize, littleEndian) 
     }
 
-    
+    console.log("matrixData");
     console.log(matrixData);
     
     // ------------- DECODING RESERVED BYTE SECTION -------------------
-    var reservedBytesSectionOffset = matrixOffset + matrixSizeBytes;
-    
-    // we dont care about this section
+    var reservedBytesSectionOffset = matrixOffset + matrixSizeBytes ;
+    // we dont care about this section - we wont use it
     
     // ------------- DECODING INFO SECTION -------------------
+    // This info section is lways corrupted - we wont use it
     var infoSectionOffset = reservedBytesSectionOffset + header.reservedBytes;
     var infoRealLength = this._view.getUint8(infoSectionOffset);
     var infoBytes = new Uint8Array(inputBuffer, infoSectionOffset+1, infoRealLength);
     var info = String.fromCharCode.apply(String, infoBytes);
     
-    console.log(infoRealLength);
-    console.log( info );
-    
+    //console.log("info");
+    //console.log( info );
     
     // ------------- DECODING HEADER OF LIST SECTION -------------------
     var headerOfListOffset = infoSectionOffset + 9;
@@ -106,11 +106,10 @@ class EegModDecoder extends Filter {
     
     for(var i=0; i<listSize; i++){
       var record = {
-        // !! IMPORTANT !! there is a know BUG in the offset value
+        // !! IMPORTANT !! there is a known BUG in the offset value
         //offset: this._view.getInt16(headerOfListOffset + i * (offsetByteSize+totalByteSize), littleEndian),
-        // TODO: this is most likely to be a Uint16 here!! (but then it shifts a few things)
-        total: this._view.getUint8(headerOfListOffset + i * (offsetByteSize+totalByteSize) + offsetByteSize, littleEndian),
-        labels: []
+        total: this._view.getUint16(headerOfListOffset + i * (offsetByteSize+totalByteSize) + offsetByteSize, littleEndian),
+        labels: null
       }
       headerOfList[i] = record;
     }
@@ -124,55 +123,60 @@ class EegModDecoder extends Filter {
     headerOfList[6].description = "list of transformations";
     headerOfList[7].description = "list of contexts";
     
-    //console.log( headerOfList );
-    
-    
-    // ------------- DECODING HEADER OF LIST SECTION -------------------
-    
-    
-    
     var infoSection2Offset = headerOfListOffset + 48;
     
     /*
     var info2Bytes = new Uint8Array(inputBuffer, infoSection2Offset, inputBuffer.byteLength - infoSection2Offset );
-    var info2 = String.fromCharCode.apply(String, info2Bytes);
-    console.log( info2 );
-    console.log(info2Bytes);
+    var info2 = String.fromCharCode(...info2Bytes);
+    //console.log( info2 );
+    //console.log(info2Bytes);
     
     
     for(var i=0; i<info2Bytes.length; i++){
+      //if(info2Bytes[i] > 128 )
       console.log( info2Bytes[i] + " --> " + info2[i]);
     }
     */
     
-    var labels = [];
     
     var localOffset = infoSection2Offset
 
-    for(var i=0; i<headerOfList.length - 1; i++){
+    // list 1 to 6 (0 to 5 on out 0-indexed array)
+    for(var i=0; i<headerOfList.length - 2; i++){
       var nbOfElem = headerOfList[i].total;
-      headerOfList[i].elements = new Array( nbOfElem ).fill(0);
+      
+      
+      headerOfList[i].labels = nbOfElem ? new Array( nbOfElem ).fill("") : 0;
       
       for(var j=0; j<nbOfElem; j++){
         var strByteLength = this._view.getUint8(localOffset)
         
         if( strByteLength ){
-          var strBytes = new Uint8Array(inputBuffer, localOffset+1, strByteLength );
-          var str = String.fromCharCode.apply(String, strBytes);
-          headerOfList[i].elements[j] = str;
           
-          localOffset += strByteLength + 1;
-        }else{
-          localOffset += strByteLength + 1;
+          var strBytes = new Uint8Array(inputBuffer, localOffset+1, strByteLength );
+          //var str = String.fromCharCode.apply(String, strBytes);
+          var str = String.fromCharCode(...strBytes);
+          // some ASCII charcode are wrong, hopefully always in the same way
+          headerOfList[i].labels[j] = str.replace("æ", "µ").replace("ý", "²"); 
         }
+        
+        localOffset += strByteLength + 1;
         
       }
       
     }
     
+    console.log("ICI: " + localOffset);
     
-    console.log( headerOfList );
+    // particular case for list 7 (6 on our 0-indexed array) -- the transformations
+    // the total value is not the length but the actual value to consider
+    var transformation = this._view.getUint8(localOffset);
+    headerOfList[6].labels = transformation;
     
+    localOffset += headerOfList[6].total*(transformation + 1);
+    
+    console.log("ICI2: " + localOffset);
+    /*
     var offSetForListOfContexts = localOffset;
     
     var info2Bytes = new Uint8Array(inputBuffer, offSetForListOfContexts, inputBuffer.byteLength - offSetForListOfContexts );
@@ -180,11 +184,13 @@ class EegModDecoder extends Filter {
     console.log( info2 );
     console.log(info2Bytes);
     
-    /*
+    
     for(var i=0; i<info2Bytes.length; i++){
       console.log( '[' + (offSetForListOfContexts + i) + '] ' + info2Bytes[i] + " --> " + info2[i]);
     }
     */
+    
+    // ------------- DECODING THE LIST OF CONTEXT -------------------
     
     // parsing the list of contexts
     var listOfContexts = headerOfList[ headerOfList.length - 1];
@@ -194,6 +200,8 @@ class EegModDecoder extends Filter {
     
     const regexTypeDetection = /[a-zA-Z ]*\:{1}([a-zA-Z]*)[\[]?\d*[\]]?/;
     
+    listOfContexts.labels = new Array( listOfContexts.total ).fill("");
+    
     for(var iCtx=0; iCtx<listOfContexts.total; iCtx++){
   //  var iCtx = 0;
   //  while(  iCtx < listOfContexts.total){
@@ -201,7 +209,7 @@ class EegModDecoder extends Filter {
 
       var strBytes = new Uint8Array(inputBuffer, localOffset+1, strByteLength );
       var str = String.fromCharCode.apply(String, strBytes);
-      listOfContexts.labels[iCtx] = str;
+      listOfContexts.labels[iCtx] = str.split(":")[0];
       //listOfContexts.contextsByteLength[iCtx] = this._view.getUint8(localOffset + strByteLength + 1) ;
       listOfContexts.contextsByteLength[iCtx] = this._view.getUint16(localOffset + strByteLength + 1, littleEndian);
       
@@ -238,6 +246,29 @@ class EegModDecoder extends Filter {
       localOffset += listOfContexts.contextsByteLength[iCtx];
       listOfContexts.values[ iCtx ] = value;
       
+    }
+    
+    // ------------- CLEANING HEADER OF LIST -------------------
+    
+    for(var i=0; i<headerOfList.length; i++){
+      delete headerOfList[i].total;
+    }
+    
+    delete headerOfList[7].contextsByteLength;
+    delete headerOfList[7].types;
+    
+    console.log( "headerOfList" );
+    console.log( headerOfList );
+    
+    var modEegMetadata = {
+      comment: header.comment,
+      sizes: {
+        measure: header.measureSize,
+        duration: header.durationSize,
+        firstSpace: header.firstSpaceSize,
+        secondSpace: header.secondSpaceSize,
+      },
+      informationList: headerOfList
     }
     
     
