@@ -28,6 +28,7 @@ export { TiffDecoder } from './decoder/TiffDecoder.js';
 export { MghDecoder } from './decoder/MghDecoder.js';
 export { EegModDecoder } from './decoder/EegModDecoder.js';
 export { PixBinEncoder } from './decoder/PixBinEncoder.js';
+export { PixBinDecoder } from './decoder/PixBinDecoder.js';
 
 // filters - processing of Images2D
 export { ForEachPixelImageFilter } from './filter/ForEachPixelImageFilter.js';
