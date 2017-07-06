@@ -1,6 +1,6 @@
 <html>
 <head>
-  <title>File to Image2D</title>
+  <title>Convert an Image2D to Pixp File</title>
 
   <script src="../dist/pixpipe.js"></script>
   <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700,900" rel="stylesheet">
@@ -13,7 +13,8 @@
   <ul>
     <li>opening a local image file, using <code>pixpipe.FileImageReader</code></li>
     <li>converting it into a <code>pixpipe.Image2D</code> object</li>
-    <li>displaying it in a canvas using <code>pixpipe.CanvasImageWriter</code></li>
+    <li>Feed a <code>pixpipe.PixpEncoder</code> with the image to build a Pixp file stream </li>
+    <li>download the pixp file with a button</li>
   </ul>
 
   </p>
@@ -55,12 +56,9 @@
       imageToCanvasFilter.addInput( image );
       // actually copy the data from the Image2D into the inner HTML5 canvas
       imageToCanvasFilter.update();
-      
-      
+            
       document.getElementById('fileInfo').innerHTML = "Converting " + filename + " ...";
-      
-      
-      
+
       // set the output filename
       encoder.setMetadata("filename", filename.split('.')[0] + '.pixp'); // optional, default: untitled.pixp
       encoder.addInput( image );
