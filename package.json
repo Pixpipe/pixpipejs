@@ -36,6 +36,7 @@
     "geotiff": "^0.4.1",
     "js-md5": "^0.4.2",
     "pako": "^1.0.4",
+    "qeegmodfileparser": "github:jonathanlurie/qeegmodfileparser",
     "rollup-plugin-bundle-worker": "^0.1.0"
   },
   "devDependencies": {

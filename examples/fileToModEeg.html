@@ -47,8 +47,8 @@
       decoder.addInput( buff );
       decoder.update();
 
-      
-      
+      var eegData = decoder.getOutput();
+      console.log( eegData );
 
     });
 
