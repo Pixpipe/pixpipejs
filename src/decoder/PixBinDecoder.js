@@ -70,17 +70,25 @@ class PixBinDecoder extends Filter {
       return;
     }
     
-    var data = new constructorHost[ extendedMetadata.dataType ]( input, offsetFromHere,  inputByteLength - offsetFromHere);
+    /*
+      There is a known issues in JS that a TypedArray cannot be created starting at a non-multiple-of-2 start offset 
+      if the type of data within this array is supposed to take more than one byte (ie. Uint16, Float32, etc.).
+      The error is stated like that (in Chrome):
+      "Uncaught RangeError: start offset of Uint16Array should be a multiple of 2"
+      When it comes to Float32, Chrome wants an offset that is multiple of 4, and so on.
+      
+      The workaround is to slice the buffer to take only the data part of it (basically to remove what is before)
+      so that this new array starts with an offset 0, no matter what was before.
+    */
+    
+    var data = new constructorHost[ extendedMetadata.dataType ]( input.slice( offsetFromHere ) )
     
     var output = new pixpipe[ extendedMetadata.pixpipeType ];
     output.setRawData( data );
     output.setRawMetadata( extendedMetadata.metadata );
 
     this._output[0] = output;
-    
-    //console.log( output );
   }
-
 
 
 } /* END of class PixBinDecoder */
