@@ -15,6 +15,7 @@ import { Minc2Decoder } from './Minc2Decoder.js';
 import { NiftiDecoder } from './NiftiDecoder.js';
 import { MghDecoder } from './MghDecoder.js';
 import { PixpDecoder } from './PixpDecoder.js';
+import { PixBinDecoder } from './PixBinDecoder.js';
 
 
 /**
@@ -38,7 +39,8 @@ class Image3DGenericDecoder extends Filter {
       Minc2Decoder,
       NiftiDecoder,
       MghDecoder,
-      PixpDecoder
+      PixpDecoder,
+      PixBinDecoder
     ];
   }
   
