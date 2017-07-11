@@ -62,7 +62,7 @@ class PixBinEncoder extends Filter {
     }
 
     // this is a typed array
-    var data = input.getDataCopy();
+    var data = input.getData();
     
     var metadataJsonString = JSON.stringify( pixBinMetadata );
     var metadataByteArray = new Uint8Array( metadataJsonString.length );
@@ -70,14 +70,12 @@ class PixBinEncoder extends Filter {
     // converting the json string into a byte stream
     for(var i = 0; i < metadataJsonString.length; ++i)
       metadataByteArray[i] = metadataJsonString.charCodeAt(i);
-    
-    console.log( metadataByteArray );
-    
+
     // creating the buffer
-    var fileBuffer = new ArrayBuffer( 8 + metadataByteArray.length + data.buffer.byteLength );
+    var metadataBuffer = new ArrayBuffer( 8 + metadataByteArray.length );
 
     // the data view is used to write into the buffer
-    var view = new DataView( fileBuffer );
+    var view = new DataView( metadataBuffer );
     
     var offsetFromHere = 0;
     
@@ -90,21 +88,11 @@ class PixBinEncoder extends Filter {
       view.setUint8(offsetFromHere, metadataByteArray[i] );
       offsetFromHere++;
     }
-    
-    // write the data
-    var bytesPerElem = data.BYTES_PER_ELEMENT;
-    for(var i=0; i<data.length; i++){
-      view.setUint8(offsetFromHere, data[i] );
-      offsetFromHere += bytesPerElem;
-    }
-    
+
     // making a blob to be saved
-    //this._output[0] = new Blob([deflator.result], {type: "application/gzip"} );
-    this._output[0] = new Blob([fileBuffer], {type: 'application/octet-binary'} );
+    this._output[0] = new Blob([metadataBuffer, data], {type: 'application/octet-binary'} );
   }
 
-
-  
 
   /**
   * Download the generated file
