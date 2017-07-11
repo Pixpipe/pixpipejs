@@ -16056,6 +16056,97 @@ class MghDecoder extends Filter {
 * Lab       MCIN - Montreal Neurological Institute
 */
 
+/**
+* A PixBinDecoder instance decodes a *.pixp file and output an Image2D or Image3D.
+* The input, specified by `.addInput(...)` must be an ArrayBuffer
+* (from an `UrlToArrayBufferFilter`, an `UrlToArrayBufferReader` or anothrer source ).
+*
+* **Usage**
+* - [examples/pixpFileToImage2D.html](../examples/pixpFileToImage2D.html)
+*/
+class PixBinDecoder extends Filter {
+  constructor(){
+    super();
+    this.addInputValidator(0, ArrayBuffer);
+  }
+
+
+  _run(){
+
+    if(! this.hasValidInput() ){
+      console.warn("PixBinDecoder can only decode ArrayBuffer.");
+      return;
+    }
+
+    var input = this._getInput();
+    var inputByteLength = input.byteLength;
+
+    // the view to decode the buffer
+    var view = new DataView( input );
+    var offsetFromHere = 0;
+    
+    // fetch the extendedMetadata string length
+    var extendedMetadataStringLength = view.getUint32( offsetFromHere );
+    offsetFromHere += 8;
+    
+    // getting extendedMetadata
+    var extendedMetadataBytes = new Uint8Array(input, offsetFromHere, extendedMetadataStringLength);
+    var extendedMetadata = JSON.parse( String.fromCharCode( ...extendedMetadataBytes ) );
+    offsetFromHere += extendedMetadataStringLength;
+    
+    // getting the data
+    var constructorHost = null;
+    
+    try{
+      constructorHost = window; // in a web browser
+    }catch( e ){
+      try{
+        constructorHost = GLOBAL; // in node
+      }catch( e ){
+        console.warn( "You are not in a Javascript environment?? Weird." );
+        return;
+      }
+    }
+    
+    if(! constructorHost[ extendedMetadata.dataType ]){
+      console.warn( "Data array from pixb file is unknown: " + extendedMetadata.dataType );
+      return;
+    }
+    
+    /*
+      There is a known issues in JS that a TypedArray cannot be created starting at a non-multiple-of-2 start offset 
+      if the type of data within this array is supposed to take more than one byte (ie. Uint16, Float32, etc.).
+      The error is stated like that (in Chrome):
+      "Uncaught RangeError: start offset of Uint16Array should be a multiple of 2"
+      When it comes to Float32, Chrome wants an offset that is multiple of 4, and so on.
+      
+      The workaround is to make a new array that 
+    */
+
+    //var dataInt8 = new Int8Array( input.slice( offsetFromHere ));
+    //var data = new constructorHost[ extendedMetadata.dataType ]( dataInt8.buffer )
+    
+    var data = new constructorHost[ extendedMetadata.dataType ]( input.slice( offsetFromHere ) );
+    
+    var output = new pixpipe[ extendedMetadata.pixpipeType ];
+    output.setRawData( data );
+    output.setRawMetadata( extendedMetadata.metadata );
+
+    this._output[0] = output;
+  }
+
+
+
+} /* END of class PixBinDecoder */
+
+/*
+* Author    Jonathan Lurie - http://me.jonahanlurie.fr
+*
+* License   MIT
+* Link      https://github.com/jonathanlurie/pixpipejs
+* Lab       MCIN - Montreal Neurological Institute
+*/
+
 
 // decoders
 /**
@@ -16079,7 +16170,8 @@ class Image3DGenericDecoder extends Filter {
       Minc2Decoder,
       NiftiDecoder,
       MghDecoder,
-      PixpDecoder
+      PixpDecoder,
+      PixBinDecoder
     ];
   }
   
@@ -20521,7 +20613,7 @@ class PixBinEncoder extends Filter {
     };
 
     // this is a typed array
-    var data = input.getDataCopy();
+    var data = input.getData();
     
     var metadataJsonString = JSON.stringify( pixBinMetadata );
     var metadataByteArray = new Uint8Array( metadataJsonString.length );
@@ -20529,14 +20621,12 @@ class PixBinEncoder extends Filter {
     // converting the json string into a byte stream
     for(var i = 0; i < metadataJsonString.length; ++i)
       metadataByteArray[i] = metadataJsonString.charCodeAt(i);
-    
-    console.log( metadataByteArray );
-    
+
     // creating the buffer
-    var fileBuffer = new ArrayBuffer( 8 + metadataByteArray.length + data.buffer.byteLength );
+    var metadataBuffer = new ArrayBuffer( 8 + metadataByteArray.length );
 
     // the data view is used to write into the buffer
-    var view = new DataView( fileBuffer );
+    var view = new DataView( metadataBuffer );
     
     var offsetFromHere = 0;
     
@@ -20549,21 +20639,11 @@ class PixBinEncoder extends Filter {
       view.setUint8(offsetFromHere, metadataByteArray[i] );
       offsetFromHere++;
     }
-    
-    // write the data
-    var bytesPerElem = data.BYTES_PER_ELEMENT;
-    for(var i=0; i<data.length; i++){
-      view.setUint8(offsetFromHere, data[i] );
-      offsetFromHere += bytesPerElem;
-    }
-    
+
     // making a blob to be saved
-    //this._output[0] = new Blob([deflator.result], {type: "application/gzip"} );
-    this._output[0] = new Blob([fileBuffer], {type: 'application/octet-binary'} );
+    this._output[0] = new Blob([metadataBuffer, data], {type: 'application/octet-binary'} );
   }
 
-
-  
 
   /**
   * Download the generated file
@@ -20579,86 +20659,6 @@ class PixBinEncoder extends Filter {
   }
 
 } /* END of class PixBinEncoder */
-
-/*
-* Author    Jonathan Lurie - http://me.jonahanlurie.fr
-*
-* License   MIT
-* Link      https://github.com/jonathanlurie/pixpipejs
-* Lab       MCIN - Montreal Neurological Institute
-*/
-
-/**
-* A PixBinDecoder instance decodes a *.pixp file and output an Image2D or Image3D.
-* The input, specified by `.addInput(...)` must be an ArrayBuffer
-* (from an `UrlToArrayBufferFilter`, an `UrlToArrayBufferReader` or anothrer source ).
-*
-* **Usage**
-* - [examples/pixpFileToImage2D.html](../examples/pixpFileToImage2D.html)
-*/
-class PixBinDecoder extends Filter {
-  constructor(){
-    super();
-    this.addInputValidator(0, ArrayBuffer);
-  }
-
-
-  _run(){
-
-    if(! this.hasValidInput() ){
-      console.warn("PixBinDecoder can only decode ArrayBuffer.");
-      return;
-    }
-
-    var input = this._getInput();
-    var inputByteLength = input.byteLength;
-
-    // the view to decode the buffer
-    var view = new DataView( input );
-    var offsetFromHere = 0;
-    
-    // fetch the extendedMetadata string length
-    var extendedMetadataStringLength = view.getUint32( offsetFromHere );
-    offsetFromHere += 8;
-    
-    // getting extendedMetadata
-    var extendedMetadataBytes = new Uint8Array(input, offsetFromHere, extendedMetadataStringLength);
-    var extendedMetadata = JSON.parse( String.fromCharCode( ...extendedMetadataBytes ) );
-    offsetFromHere += extendedMetadataStringLength;
-    
-    // getting the data
-    var constructorHost = null;
-    
-    try{
-      constructorHost = window; // in a web browser
-    }catch( e ){
-      try{
-        constructorHost = GLOBAL; // in node
-      }catch( e ){
-        console.warn( "You are not in a Javascript environment?? Weird." );
-        return;
-      }
-    }
-    
-    if(! constructorHost[ extendedMetadata.dataType ]){
-      console.warn( "Data array from pixb file is unknown: " + extendedMetadata.dataType );
-      return;
-    }
-    
-    var data = new constructorHost[ extendedMetadata.dataType ]( input, offsetFromHere,  inputByteLength - offsetFromHere);
-    
-    var output = new pixpipe[ extendedMetadata.pixpipeType ];
-    output.setRawData( data );
-    output.setRawMetadata( extendedMetadata.metadata );
-
-    this._output[0] = output;
-    
-    //console.log( output );
-  }
-
-
-
-} /* END of class PixBinDecoder */
 
 /*
 * Author   Jonathan Lurie - http://me.jonahanlurie.fr
