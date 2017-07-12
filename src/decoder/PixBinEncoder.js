@@ -72,7 +72,7 @@ class PixBinEncoder extends Filter {
       metadataByteArray[i] = metadataJsonString.charCodeAt(i);
 
     // creating the buffer
-    var metadataBuffer = new ArrayBuffer( 8 + metadataByteArray.length );
+    var metadataBuffer = new ArrayBuffer( 4 + metadataByteArray.length );
 
     // the data view is used to write into the buffer
     var view = new DataView( metadataBuffer );
@@ -83,7 +83,7 @@ class PixBinEncoder extends Filter {
     view.setUint32(offsetFromHere, metadataByteArray.length );
     
     // write the metadata themselves
-    offsetFromHere += 8;
+    offsetFromHere += 4;
     for(var i=0; i<metadataByteArray.length; i++){
       view.setUint8(offsetFromHere, metadataByteArray[i] );
       offsetFromHere++;

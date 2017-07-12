@@ -45,6 +45,7 @@ export { FloodFillImageFilter } from './filter/FloodFillImageFilter.js';
 export { ContourHolesImage2DFilter } from './filter/ContourHolesImage2DFilter.js';
 export { ForEachPixelReadOnlyFilter } from './filter/ForEachPixelReadOnlyFilter.js';
 export { TerrainRgbToElevationImageFilter } from './filter/TerrainRgbToElevationImageFilter.js';
+export { NearestNeighborSparseInterpolationImageFilter } from './filter/NearestNeighborSparseInterpolationImageFilter.js';
 
 // helpers
 export { AngleToHueWheelHelper } from './helper/AngleToHueWheelHelper.js';

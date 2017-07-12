@@ -1,0 +1,63 @@
+<html>
+<head>
+  <title>Image2D To Canvas</title>
+
+  <script src="../dist/pixpipe.js"></script>
+
+  <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700,900" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+
+</head>
+<body>
+  <h1><a href="https://github.com/jonathanlurie/pixpipejs"><span style="color: #ff91d7">Pixpipe</span><span style="color: #FFFFFF">js</span></a></h1>
+  <p>
+  This does the following :
+  <ul>
+    <li>creating a set of random (sparse) points with random values</li>
+    <li>Interpolate them using <code>pixpipe.NearestNeighborSparseInterpolationImageFilter</code></li>
+    <li>displaying the output image with a <code>pixpipe.CanvasImageWriter</code></li>
+  </ul>
+
+  </p>
+
+  <div id="myDiv"></div>
+
+  <script>
+  
+  var outWidth = 1000;
+  var outHeight = 500;
+
+  var nearestSparseF = new pixpipe.NearestNeighborSparseInterpolationImageFilter()
+
+  nearestSparseF.setMetadata( "outputSize", {width: outWidth, height: outHeight})
+  
+  // create random points, with random values
+  var randomPoints = new Array( 30 );
+  
+  for(var i=0; i<randomPoints.length; i++){
+    randomPoints[i] = {
+      x: Math.ceil( Math.random() * outWidth ),
+      y: Math.ceil( Math.random() * outHeight ),
+      value: Math.ceil( Math.random() * 255 ),
+    }
+  }
+  
+  nearestSparseF.addInput( randomPoints )
+  
+  nearestSparseF.update();
+
+  // create an image
+  var myImage = nearestSparseF.getOutput();
+
+  // create a filter to write the image into a canvas
+  var imageToCanvasFilter = new pixpipe.CanvasImageWriter( );
+  imageToCanvasFilter.setMetadata( "parentDivID", "myDiv" );
+  imageToCanvasFilter.addInput( myImage );
+  imageToCanvasFilter.update();
+
+
+
+  </script>
+
+</body>
+</html>

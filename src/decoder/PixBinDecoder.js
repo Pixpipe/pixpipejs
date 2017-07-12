@@ -44,7 +44,7 @@ class PixBinDecoder extends Filter {
     
     // fetch the extendedMetadata string length
     var extendedMetadataStringLength = view.getUint32( offsetFromHere );
-    offsetFromHere += 8;
+    offsetFromHere += 4;
     
     // getting extendedMetadata
     var extendedMetadataBytes = new Uint8Array(input, offsetFromHere, extendedMetadataStringLength);
