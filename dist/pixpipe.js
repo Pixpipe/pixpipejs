@@ -16087,7 +16087,7 @@ class PixBinDecoder extends Filter {
     
     // fetch the extendedMetadata string length
     var extendedMetadataStringLength = view.getUint32( offsetFromHere );
-    offsetFromHere += 8;
+    offsetFromHere += 4;
     
     // getting extendedMetadata
     var extendedMetadataBytes = new Uint8Array(input, offsetFromHere, extendedMetadataStringLength);
@@ -16120,11 +16120,9 @@ class PixBinDecoder extends Filter {
       "Uncaught RangeError: start offset of Uint16Array should be a multiple of 2"
       When it comes to Float32, Chrome wants an offset that is multiple of 4, and so on.
       
-      The workaround is to make a new array that 
+      The workaround is to slice the buffer to take only the data part of it (basically to remove what is before)
+      so that this new array starts with an offset 0, no matter what was before.
     */
-
-    //var dataInt8 = new Int8Array( input.slice( offsetFromHere ));
-    //var data = new constructorHost[ extendedMetadata.dataType ]( dataInt8.buffer )
     
     var data = new constructorHost[ extendedMetadata.dataType ]( input.slice( offsetFromHere ) );
     
@@ -16134,7 +16132,6 @@ class PixBinDecoder extends Filter {
 
     this._output[0] = output;
   }
-
 
 
 } /* END of class PixBinDecoder */
@@ -20623,7 +20620,7 @@ class PixBinEncoder extends Filter {
       metadataByteArray[i] = metadataJsonString.charCodeAt(i);
 
     // creating the buffer
-    var metadataBuffer = new ArrayBuffer( 8 + metadataByteArray.length );
+    var metadataBuffer = new ArrayBuffer( 4 + metadataByteArray.length );
 
     // the data view is used to write into the buffer
     var view = new DataView( metadataBuffer );
@@ -20634,7 +20631,7 @@ class PixBinEncoder extends Filter {
     view.setUint32(offsetFromHere, metadataByteArray.length );
     
     // write the metadata themselves
-    offsetFromHere += 8;
+    offsetFromHere += 4;
     for(var i=0; i<metadataByteArray.length; i++){
       view.setUint8(offsetFromHere, metadataByteArray[i] );
       offsetFromHere++;
@@ -23398,6 +23395,87 @@ class TerrainRgbToElevationImageFilter extends ImageToImageFilter {
 } /* END of class TerrainRgbToElevationImageFilter */
 
 /*
+* Author    Jonathan Lurie - http://me.jonahanlurie.fr
+*
+* License   MIT
+* Link      https://github.com/jonathanlurie/pixpipejs
+* Lab       MCIN - Montreal Neurological Institute
+*/
+
+
+/**
+* With a given set of points ( each being {x: Number, y: Number, value: Number} )
+* An instance of NearestNeighborSparseInterpolationImageFilter creates an image where
+* each value is the closest from the given point.
+* 
+* The original points/measures must be given as an Array of Object using
+* the method `.addInput([...])`
+*
+* The output image size must be set using the method
+* `.setMetadata( "outputSize", {width: Number, height: Number})`
+*
+* The given point can be outside the output image boundaries.
+* 
+*/ 
+class NearestNeighborSparseInterpolationImageFilter extends Filter {
+  constructor(){
+    super();
+    
+    this.setMetadata( "outputSize", {width: 0, height: 0});
+  }
+  
+  _run(){
+    
+    var points = null;
+    
+    // getting the input
+    if( "0" in this._input ){
+      points = this._input[ 0 ];
+    }else{
+      console.warn("No input point set were given.");
+      return;
+    }
+    
+    var outputSize = this.getMetadata( "outputSize" );
+    
+    // checking output size
+    if( outputSize.width == 0 || outputSize.height == 0 ){
+      console.warn("The output size cannot be 0.");
+      return;
+    }
+    
+    // creating the output image
+    var out = new pixpipe.Image2D({width: outputSize.width, height: outputSize.height, color: [0]});
+    
+    // for each pixel of the image...
+    for(var i=0; i<outputSize.width; i++){
+      for(var j=0; j<outputSize.height; j++){
+        
+        var nearestPointIndex = 0;
+        var nearestDistance = Infinity;
+        
+        // for each point of the original set...
+        for(var p=0; p<points.length; p++){
+          
+          // compute euclidian distance from [i, j] to p(x, y)
+          var d = Math.sqrt( Math.pow( points[p].x - i, 2 ) + Math.pow( points[p].y - j, 2) );
+          
+          if( d < nearestDistance){
+            nearestDistance = d;
+            nearestPointIndex = p;
+          }
+        }
+        
+        out.setPixel( {x: i, y: j}, [ points[nearestPointIndex].value ] );
+      }
+    }
+    
+    this._output[ 0 ] = out;
+  }
+  
+} /* END of class NearestNeighborSparseInterpolationImageFilter */
+
+/*
 * Author   Jonathan Lurie - http://me.jonahanlurie.fr
 * License  MIT
 * Link      https://github.com/jonathanlurie/pixpipejs
@@ -24299,6 +24377,7 @@ exports.FloodFillImageFilter = FloodFillImageFilter;
 exports.ContourHolesImage2DFilter = ContourHolesImage2DFilter;
 exports.ForEachPixelReadOnlyFilter = ForEachPixelReadOnlyFilter;
 exports.TerrainRgbToElevationImageFilter = TerrainRgbToElevationImageFilter;
+exports.NearestNeighborSparseInterpolationImageFilter = NearestNeighborSparseInterpolationImageFilter;
 exports.AngleToHueWheelHelper = AngleToHueWheelHelper;
 exports.LineStringPrinterOnImage2DHelper = LineStringPrinterOnImage2DHelper;
 exports.Colormap = Colormap;
