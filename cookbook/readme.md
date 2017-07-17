@@ -61,6 +61,7 @@ Sometimes, it's just not worth reinventing the wheel. Here are the libraries Pix
 - [expr-eval](https://github.com/silentmatt/expr-eval), to evaluate math expression and create quick filter prototype
 - [js-md5](https://github.com/emn178/js-md5), to generate a unique checksum for each loaded files
 - [geotiff](https://github.com/constantinius/geotiff.js) to decode Tiff and BigTiff images
+- [delaunay](https://github.com/ironwallaby/delaunay) Delaunay triangulation
 
 
 # Sample data

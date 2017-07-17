@@ -47,7 +47,7 @@ export { ForEachPixelReadOnlyFilter } from './filter/ForEachPixelReadOnlyFilter.
 export { TerrainRgbToElevationImageFilter } from './filter/TerrainRgbToElevationImageFilter.js';
 export { NearestNeighborSparseInterpolationImageFilter } from './filter/NearestNeighborSparseInterpolationImageFilter.js';
 export { IDWSparseInterpolationImageFilter } from './filter/IDWSparseInterpolationImageFilter.js';
-
+export { TriangulationSparseInterpolationImageFilter } from './filter/TriangulationSparseInterpolationImageFilter.js';
 
 // helpers
 export { AngleToHueWheelHelper } from './helper/AngleToHueWheelHelper.js';

@@ -1,0 +1,167 @@
+/*
+* Author    Jonathan Lurie - http://me.jonahanlurie.fr
+*
+* License   MIT
+* Link      https://github.com/jonathanlurie/pixpipejs
+* Lab       MCIN - Montreal Neurological Institute
+*/
+
+
+import { Filter } from '../core/Filter.js';
+import { Image2D } from '../core/Image2D.js';
+
+import Delaunay from 'delaunay-fast';
+
+/**
+* Ressources:
+* https://github.com/ironwallaby/delaunay
+* 
+* **Usage**
+* - [examples/.html](../examples/.html)
+*/ 
+
+class TriangulationSparseInterpolationImageFilter extends Filter {
+  
+  constructor(){
+    super()
+    this.setMetadata( "outputSize", {width: 0, height: 0})
+    
+    this._samplingPeriod = 20;
+    this._regularGridSamples = null;
+  }
+  
+  _run(){
+    
+    var origPoints = null;
+    
+    // getting the input
+    if( "0" in this._input ){
+      origPoints = this._input[ 0 ];
+    }else{
+      console.warn("No input point set were given.");
+      return;
+    }
+    
+    var outputSize = this.getMetadata( "outputSize" );
+    
+    // checking output size
+    if( outputSize.width == 0 || outputSize.height == 0 ){
+      console.warn("The output size cannot be 0.");
+      return;
+    }
+    
+    // remapping the point as an array of ArrayBuffer
+    var points = origPoints.map( function(p){
+      return [p.x, p.y];
+    })
+    
+    // computing the list of triangles
+    var triangleVertices = Delaunay.triangulate( points );
+
+    // rearranging the triangles in a propper array that group by 3 the index of vertices used
+    var triangles = [];
+    for(var i=0; i<=triangleVertices.length-3; i+=3){
+      triangles.push( [
+        triangleVertices[i],
+        triangleVertices[i+1],
+        triangleVertices[i+2],
+      ] );
+    }
+
+    console.log( points );
+    console.log( triangles );
+    
+    // return the area of a triangle using Heron's formula
+    // Each point A, B and C is a couple of 2D coords like [Number, Number] 
+    function getTriangleArea(A, B, C){
+      // manhattan distances
+      var _AB = [ A[0] - B[0], A[1] - B[1]];
+      var _BC = [ B[0] - C[0], B[1] - C[1]];
+      var _CA = [ C[0] - A[0], C[1] - A[1]];
+      
+      // Euclidian distances - Pythagore
+      var a = Math.sqrt( _BC[0]*_BC[0] + _BC[1]*_BC[1] );
+      var b = Math.sqrt( _CA[0]*_CA[0] + _CA[1]*_CA[1] );
+      var c = Math.sqrt( _AB[0]*_AB[0] + _AB[1]*_AB[1] );
+      
+      // semiperimeter
+      var s = (a + b + c) / 2;
+      
+      var area = Math.sqrt( s*(s-a)*(s-b)*(s-c) );
+      return area;
+    }
+    
+    // creating the output image
+    var out = new pixpipe.Image2D({width: outputSize.width, height: outputSize.height, color: [0]})
+    this._regularGridSamples = [];
+    
+    // each line of the output image...
+    for(var i=0; i<outputSize.width; i++){
+      // each column of the output image...
+      for(var j=0; j<outputSize.height; j++){
+    
+        var pixelValue = 0;
+        var isInsideTriangle = false;
+        var encompassingTriangle = 0;
+        
+        // each triangle...
+        for(var t=0; t<triangles.length; t++){
+          var contain = Delaunay.contains( 
+            [
+              points[ triangles[t][0] ], points[ triangles[t][1] ], points[ triangles[t][2] ],
+            ],
+            [ i, j ]
+          );
+          
+          if( contain ){
+            isInsideTriangle = true;
+            encompassingTriangle = triangles[ t ];
+            break;
+          }
+        }
+    
+        if( isInsideTriangle ){
+          // vectices of the emcompassing triangle
+          var _A = points[ encompassingTriangle[0] ];
+          var _B = points[ encompassingTriangle[1] ];
+          var _C = points[ encompassingTriangle[2] ];
+          
+          // current point of the image
+          var _P = [ i, j ];
+          
+          // area of the emcompassing triangle (made only from points of the original dataset)
+          var areaTriEncomp = getTriangleArea( _A, _B, _C );
+          
+          // area of each subtriangles
+          var areaABP = getTriangleArea( _A, _B, _P );
+          var areaBCP = getTriangleArea( _B, _C, _P );
+          var areaCAP = getTriangleArea( _C, _A, _P );
+          
+          
+          // making the color mix
+          pixelValue = (areaABP / areaTriEncomp) * origPoints[ encompassingTriangle[2] ].value +
+                       (areaBCP / areaTriEncomp) * origPoints[ encompassingTriangle[0] ].value +
+                       (areaCAP / areaTriEncomp) * origPoints[ encompassingTriangle[1] ].value ;
+
+          
+        }
+    
+        out.setPixel( {x: i, y: j}, [ pixelValue ] );
+        
+        if( i % this._samplingPeriod == 0 && j % this._samplingPeriod == 0 ){
+          this._regularGridSamples.push( {x: i , y: j, value: pixelValue} );
+        }
+      }
+    }
+    
+    
+    
+    this._output[ 0 ] = out;
+    
+  } // en of _run
+  
+  
+  
+} /* END of class TriangulationSparseInterpolationImageFilter */
+
+export { TriangulationSparseInterpolationImageFilter }
