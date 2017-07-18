@@ -11,6 +11,22 @@ import { Filter } from '../core/Filter.js';
 import { Image2D } from '../core/Image2D.js';
 
 /**
+* An instance of IDWSparseInterpolationImageFilter performs a 2D interpolation from 
+* a sparse dataset using the method of Inverse Distance Weighting.
+* The original dataset is specified using the method `.addInput( points )`, where
+* `points` is an `Array` of `{x: Number, y: Number, value: Number}`.
+* This filter outputs an `Image2D` with interpolated values. The size of the output must be
+* specified using the method `.setMetadata( "outputSize", {width: Number, height: Number})`.
+*
+* The IDW algorithm can be tuned with a "strength", which is essentially the value
+* of exponent of the distances. Default is `2` but it is common the see a value
+* of `1` or `3`. With higher values, the output will look like a cells pattern.
+* The strength can be defined using the method `.setMetadata( "strength", Number )`
+*
+* Note 1: points can be outside the boundaries of the original image
+* Note 2: interpolated values are floating point
+*
+* Note that only single-component images are outputed from this filter.
 * Ressources:
 * https://www.e-education.psu.edu/geog486/node/1877
 * 
@@ -20,7 +36,7 @@ import { Image2D } from '../core/Image2D.js';
 class IDWSparseInterpolationImageFilter extends Filter {
   constructor(){
     super()
-    this.setMetadata( "strength",2 );
+    this.setMetadata( "strength", 2 );
     this.setMetadata( "outputSize", {width: 0, height: 0})
   }
   

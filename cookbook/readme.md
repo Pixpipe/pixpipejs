@@ -218,6 +218,9 @@ A `Filter` should **NEVER** modify the input data.
 - [Detect contours and internal polygons](http://me.jonathanlurie.fr/pixpipejs/examples/contourHolesImage2D.html) | [source](https://github.com/jonathanlurie/pixpipejs/tree/master/examples/contourHolesImage2D.html)
 - [Flood fill an Image2D](http://me.jonathanlurie.fr/pixpipejs/examples/floodFillImage2D.html) | [source](https://github.com/jonathanlurie/pixpipejs/tree/master/examples/floodFillImage2D.html)
 
+## Interpolation
+- [2D sparse dataset inverse distance weighting](http://me.jonathanlurie.fr/pixpipejs/examples/IDWSparseInterpolation.html) | [source](https://github.com/jonathanlurie/pixpipejs/tree/master/examples/IDWSparseInterpolation.html)
+- [2D sparse dataset triangulation](http://me.jonathanlurie.fr/pixpipejs/examples/TriangleSparseInterpolation.html) | [source](https://github.com/jonathanlurie/pixpipejs/tree/master/examples/TriangleSparseInterpolation.html)
 
 ## Advanced
 - [Open a local file as an ArrayBuffer](http://me.jonathanlurie.fr/pixpipejs/examples/fileToArrayBuffer.html) | [source](https://github.com/jonathanlurie/pixpipejs/tree/master/examples/fileToArrayBuffer.html). Actually very simple but a good starting point to create a new binary file parser

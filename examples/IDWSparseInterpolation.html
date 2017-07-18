@@ -1,6 +1,6 @@
 <html>
 <head>
-  <title>Image2D To Canvas</title>
+  <title>IDW</title>
 
   <script src="../dist/pixpipe.js"></script>
 
@@ -30,10 +30,10 @@
   var nearestSparseF = new pixpipe.IDWSparseInterpolationImageFilter()
 
   nearestSparseF.setMetadata( "outputSize", {width: outWidth, height: outHeight})
-  nearestSparseF.setMetadata( "strength", 2 );
+  nearestSparseF.setMetadata( "strength", 3 );
   // create random points, with random values
   
-  /*
+  
   var randomPoints = new Array( 50 );
   for(var i=0; i<randomPoints.length; i++){
     randomPoints[i] = {
@@ -43,7 +43,7 @@
     }
   }
   nearestSparseF.addInput( randomPoints )
-  */
+  
   
   /*
   nearestSparseF.addInput( [
@@ -61,7 +61,7 @@
   ] )
   */
   
-  
+  /*
   nearestSparseF.addInput( [
     {x: 10 , y: 10, value: 125},
     {x: 190 , y: 190, value: 0},
@@ -70,7 +70,7 @@
     
     {x: 100 , y: 100, value: 250},
   ] )
-  
+  */
   
   nearestSparseF.update();
 
