@@ -23487,6 +23487,22 @@ class NearestNeighborSparseInterpolationImageFilter extends Filter {
 
 
 /**
+* An instance of IDWSparseInterpolationImageFilter performs a 2D interpolation from 
+* a sparse dataset using the method of Inverse Distance Weighting.
+* The original dataset is specified using the method `.addInput( points )`, where
+* `points` is an `Array` of `{x: Number, y: Number, value: Number}`.
+* This filter outputs an `Image2D` with interpolated values. The size of the output must be
+* specified using the method `.setMetadata( "outputSize", {width: Number, height: Number})`.
+*
+* The IDW algorithm can be tuned with a "strength", which is essentially the value
+* of exponent of the distances. Default is `2` but it is common the see a value
+* of `1` or `3`. With higher values, the output will look like a cells pattern.
+* The strength can be defined using the method `.setMetadata( "strength", Number )`
+*
+* Note 1: points can be outside the boundaries of the original image
+* Note 2: interpolated values are floating point
+*
+* Note that only single-component images are outputed from this filter.
 * Ressources:
 * https://www.e-education.psu.edu/geog486/node/1877
 * 
@@ -23496,7 +23512,7 @@ class NearestNeighborSparseInterpolationImageFilter extends Filter {
 class IDWSparseInterpolationImageFilter extends Filter {
   constructor(){
     super();
-    this.setMetadata( "strength",2 );
+    this.setMetadata( "strength", 2 );
     this.setMetadata( "outputSize", {width: 0, height: 0});
   }
   
@@ -23816,11 +23832,24 @@ var Delaunay;
 
 
 /**
-* Ressources:
-* https://github.com/ironwallaby/delaunay
+* An instance of TriangulationSparseInterpolationImageFilter performs a triangulation
+* of an original dataset followed by a barycentric 2D interpolation. It is used to
+* perform a 2D linear interpolation of a sparse dataset.
+* The original dataset is specified using the method `.addInput( points )`, where
+* `points` is an `Array` of `{x: Number, y: Number, value: Number}`.
+* The triangulation is the result of a Delaunay triangulation.
+* This filter outputs an `Image2D` with interpolated values only within the boundaries
+* of the convex hull created by the triangulation. The size of the output must be
+* specified using the method `.setMetadata( "outputSize", {width: Number, height: Number})`.
+*
+* Note 1: at least 3 unaligned points are required to perform a triangulation
+* Note 2: points can be outside the boundaries of the original image
+* Note 3: interpolated values are floating point
+*
+* Note that only single-component images are outputed from this filter.
 * 
 * **Usage**
-* - [examples/.html](../examples/.html)
+* - [examples/TriangleSparseInterpolation.html](../examples/TriangleSparseInterpolation.html)
 */ 
 
 class TriangulationSparseInterpolationImageFilter extends Filter {
@@ -23828,9 +23857,6 @@ class TriangulationSparseInterpolationImageFilter extends Filter {
   constructor(){
     super();
     this.setMetadata( "outputSize", {width: 0, height: 0});
-    
-    this._samplingPeriod = 20;
-    this._regularGridSamples = null;
   }
   
   _run(){
@@ -23895,8 +23921,7 @@ class TriangulationSparseInterpolationImageFilter extends Filter {
     }
     
     // creating the output image
-    var out = new pixpipe.Image2D({width: outputSize.width, height: outputSize.height, color: [0]});
-    this._regularGridSamples = [];
+    var out = new pixpipe.Image2D({width: Math.round(outputSize.width), height: Math.round(outputSize.height), color: [0]});
     
     // each line of the output image...
     for(var i=0; i<outputSize.width; i++){
@@ -23945,24 +23970,14 @@ class TriangulationSparseInterpolationImageFilter extends Filter {
           pixelValue = (areaABP / areaTriEncomp) * origPoints[ encompassingTriangle[2] ].value +
                        (areaBCP / areaTriEncomp) * origPoints[ encompassingTriangle[0] ].value +
                        (areaCAP / areaTriEncomp) * origPoints[ encompassingTriangle[1] ].value ;
-
-          
         }
     
         out.setPixel( {x: i, y: j}, [ pixelValue ] );
-        
-        if( i % this._samplingPeriod == 0 && j % this._samplingPeriod == 0 ){
-          this._regularGridSamples.push( {x: i , y: j, value: pixelValue} );
-        }
       }
     }
     
-    
-    
     this._output[ 0 ] = out;
-    
   } // en of _run
-  
   
   
 } /* END of class TriangulationSparseInterpolationImageFilter */

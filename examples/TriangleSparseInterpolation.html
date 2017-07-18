@@ -1,6 +1,6 @@
 <html>
 <head>
-  <title>Image2D To Canvas</title>
+  <title>Triangulation</title>
 
   <script src="../dist/pixpipe.js"></script>
 
@@ -28,7 +28,9 @@
   var outHeight = 200;
 
   var triSparseInterp = new pixpipe.TriangulationSparseInterpolationImageFilter()
+
   triSparseInterp.setMetadata( "outputSize", {width: outWidth, height: outHeight})
+  triSparseInterp.setMetadata( "strength", 2 );
   // create random points, with random values
   
   
@@ -73,20 +75,8 @@
   triSparseInterp.update();
 
   // create an image
-  //var myImage = triSparseInterp.getOutput();
+  var myImage = triSparseInterp.getOutput();
 
-
-  var regularGridSamples = triSparseInterp._regularGridSamples.concat( randomPoints );
-  //regularGridSamples.concat( randomPoints );
-  
-
-  var idwSparseInterp = new pixpipe.IDWSparseInterpolationImageFilter()
-  idwSparseInterp.setMetadata( "outputSize", {width: outWidth, height: outHeight})
-  idwSparseInterp.setMetadata( "strength", 2 );
-  idwSparseInterp.addInput( regularGridSamples )
-  idwSparseInterp.update();
-  
-  var myImage = idwSparseInterp.getOutput();
   console.log( myImage );
 
   // create a filter to write the image into a canvas
