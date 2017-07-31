@@ -27,6 +27,8 @@ export { Image3DGenericDecoder } from './decoder/Image3DGenericDecoder.js';
 export { TiffDecoder } from './decoder/TiffDecoder.js';
 export { MghDecoder } from './decoder/MghDecoder.js';
 export { EegModDecoder } from './decoder/EegModDecoder.js';
+export { PixBinEncoder } from './decoder/PixBinEncoder.js';
+export { PixBinDecoder } from './decoder/PixBinDecoder.js';
 
 // filters - processing of Images2D
 export { ForEachPixelImageFilter } from './filter/ForEachPixelImageFilter.js';
@@ -43,6 +45,9 @@ export { FloodFillImageFilter } from './filter/FloodFillImageFilter.js';
 export { ContourHolesImage2DFilter } from './filter/ContourHolesImage2DFilter.js';
 export { ForEachPixelReadOnlyFilter } from './filter/ForEachPixelReadOnlyFilter.js';
 export { TerrainRgbToElevationImageFilter } from './filter/TerrainRgbToElevationImageFilter.js';
+export { NearestNeighborSparseInterpolationImageFilter } from './filter/NearestNeighborSparseInterpolationImageFilter.js';
+export { IDWSparseInterpolationImageFilter } from './filter/IDWSparseInterpolationImageFilter.js';
+export { TriangulationSparseInterpolationImageFilter } from './filter/TriangulationSparseInterpolationImageFilter.js';
 
 // helpers
 export { AngleToHueWheelHelper } from './helper/AngleToHueWheelHelper.js';

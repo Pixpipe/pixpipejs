@@ -31,11 +31,13 @@
   },
   "homepage": "https://github.com/jonathanlurie/pixpipejs#readme",
   "dependencies": {
+    "delaunay-fast": "github:pixpipe/delaunay",
     "expr-eval": "^1.0.0",
     "file-saver": "^1.3.3",
     "geotiff": "^0.4.1",
     "js-md5": "^0.4.2",
     "pako": "^1.0.4",
+    "qeegmodfileparser": "github:jonathanlurie/qeegmodfileparser",
     "rollup-plugin-bundle-worker": "^0.1.0"
   },
   "devDependencies": {

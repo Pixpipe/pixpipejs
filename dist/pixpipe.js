@@ -15693,7 +15693,19 @@ class PixpDecoder extends Filter {
       return;
     }
 
-    var constructorHost = (window || this);
+    var constructorHost = null;
+    
+    try{
+      constructorHost = window;
+    }catch( e ){
+      try{
+        constructorHost = GLOBAL;
+      }catch( e ){
+        console.warn( "You are not in a Javascript environment?? Weird." );
+        return;
+      }
+    }
+    
     if(! constructorHost[ pixpObject.dataType ]){
       console.warn( "Data array from pixp file is unknown: " + pixpObject.dataType );
       return;
@@ -16044,6 +16056,94 @@ class MghDecoder extends Filter {
 * Lab       MCIN - Montreal Neurological Institute
 */
 
+/**
+* A PixBinDecoder instance decodes a *.pixp file and output an Image2D or Image3D.
+* The input, specified by `.addInput(...)` must be an ArrayBuffer
+* (from an `UrlToArrayBufferFilter`, an `UrlToArrayBufferReader` or anothrer source ).
+*
+* **Usage**
+* - [examples/pixpFileToImage2D.html](../examples/pixpFileToImage2D.html)
+*/
+class PixBinDecoder extends Filter {
+  constructor(){
+    super();
+    this.addInputValidator(0, ArrayBuffer);
+  }
+
+
+  _run(){
+
+    if(! this.hasValidInput() ){
+      console.warn("PixBinDecoder can only decode ArrayBuffer.");
+      return;
+    }
+
+    var input = this._getInput();
+    var inputByteLength = input.byteLength;
+
+    // the view to decode the buffer
+    var view = new DataView( input );
+    var offsetFromHere = 0;
+    
+    // fetch the extendedMetadata string length
+    var extendedMetadataStringLength = view.getUint32( offsetFromHere );
+    offsetFromHere += 4;
+    
+    // getting extendedMetadata
+    var extendedMetadataBytes = new Uint8Array(input, offsetFromHere, extendedMetadataStringLength);
+    var extendedMetadata = JSON.parse( String.fromCharCode( ...extendedMetadataBytes ) );
+    offsetFromHere += extendedMetadataStringLength;
+    
+    // getting the data
+    var constructorHost = null;
+    
+    try{
+      constructorHost = window; // in a web browser
+    }catch( e ){
+      try{
+        constructorHost = GLOBAL; // in node
+      }catch( e ){
+        console.warn( "You are not in a Javascript environment?? Weird." );
+        return;
+      }
+    }
+    
+    if(! constructorHost[ extendedMetadata.dataType ]){
+      console.warn( "Data array from pixb file is unknown: " + extendedMetadata.dataType );
+      return;
+    }
+    
+    /*
+      There is a known issues in JS that a TypedArray cannot be created starting at a non-multiple-of-2 start offset 
+      if the type of data within this array is supposed to take more than one byte (ie. Uint16, Float32, etc.).
+      The error is stated like that (in Chrome):
+      "Uncaught RangeError: start offset of Uint16Array should be a multiple of 2"
+      When it comes to Float32, Chrome wants an offset that is multiple of 4, and so on.
+      
+      The workaround is to slice the buffer to take only the data part of it (basically to remove what is before)
+      so that this new array starts with an offset 0, no matter what was before.
+    */
+    
+    var data = new constructorHost[ extendedMetadata.dataType ]( input.slice( offsetFromHere ) );
+    
+    var output = new pixpipe[ extendedMetadata.pixpipeType ];
+    output.setRawData( data );
+    output.setRawMetadata( extendedMetadata.metadata );
+
+    this._output[0] = output;
+  }
+
+
+} /* END of class PixBinDecoder */
+
+/*
+* Author    Jonathan Lurie - http://me.jonahanlurie.fr
+*
+* License   MIT
+* Link      https://github.com/jonathanlurie/pixpipejs
+* Lab       MCIN - Montreal Neurological Institute
+*/
+
 
 // decoders
 /**
@@ -16067,7 +16167,8 @@ class Image3DGenericDecoder extends Filter {
       Minc2Decoder,
       NiftiDecoder,
       MghDecoder,
-      PixpDecoder
+      PixpDecoder,
+      PixBinDecoder
     ];
   }
   
@@ -20152,6 +20253,275 @@ class TiffDecoder extends Filter {
   
 } /* END of class TiffDecoder */
 
+/*
+* Author    Jonathan Lurie - http://me.jonahanlurie.fr
+* License   MIT
+* Link      https://github.com/jonathanlurie/es6module
+* Lab       MCIN - http://mcin.ca/ - Montreal Neurological Institute
+*/
+
+
+/**
+* An instance of QeegModFileParser can be used to parse several file
+* (you don't need to create a QeegModFileParser instance per file to parse).
+* The Qeeg MOD file usually have the .MOD extension, though this parser does not
+* need the filename or the extension.
+*
+*/
+class QeegModFileParser {
+  constructor(){
+    this._rawData = null;
+  }
+  
+  /**
+  * Feed the parser with raw data to be parsed
+  * @param {ArrayBuffer} data - the raw data
+  */
+  setRawData( data ){
+    this._rawData = data;
+  }
+  
+  
+  /**
+  * Launch the parsing of the ArrayBuffer that was given with the method setRawData
+  * @return {Object} - the MOD file data in a readable format
+  */
+  parse(){
+    var qeegData = null;
+    try{
+      qeegData = this._parseNoException();
+    }catch(e){
+      //console.error( e );
+      console.warn("This file is not compatible.");
+    }
+    
+    return qeegData;
+  }
+  
+  
+  /**
+  * [PRIVATE]
+  * This method parses the data without caring of potential exception to be raised,
+  * it does not handle them. Thus, this method is unsafe to use as is and should
+  * no be used directly.
+  * @return {Object} - the MOD file data in a readable format
+  */
+  _parseNoException(){
+    if( !this._rawData ){
+      console.warn("The input buffer is null. Nothing to be parsed here.");
+      return null;
+    }
+    
+    var inputBuffer = this._rawData;
+    
+    var view = new DataView( inputBuffer );
+    var littleEndian = true;
+    
+    // ------------- DECODING HEADER -------------------
+    
+    var header = {};
+    
+    // Protection Mask
+    // Offset: 0, length: 2
+    header.protectionMask = view.getUint16(0, littleEndian);
+    
+    // Comment (first byte is the real length)
+    // Offset: 2, length: 81
+    var commentRealLength = view.getUint8(2);
+    var commentBytes = new Uint8Array(inputBuffer, 3, commentRealLength);
+    header.comment = String.fromCharCode.apply(String, commentBytes);
+    
+    // Measure (M) Size
+    // Offset: 83, length: 2
+    header.measureSize = view.getUint16(83, littleEndian);
+    
+    // Duration (D) Size
+    // Offset: 85, length: 2
+    header.durationSize = view.getUint16(85, littleEndian);
+    
+    // First space (F) Size
+    // Offset: 87, length: 2
+    header.firstSpaceSize = view.getUint16(87, littleEndian);
+    
+    // Second space (S) Size
+    // Offset: 89, length: 2
+    header.secondSpaceSize = view.getUint16(89, littleEndian);
+    
+    // Reserved bytes
+    // Offset: 91, length: 2
+    header.reservedBytes = view.getUint16(91, littleEndian);
+    
+    // Data size
+    // Offset: 93, length: 2
+    header.dataSize = view.getUint16(93, littleEndian);
+    
+    // ------------- DECODING MATRIX -------------------
+    var matrixOffset = 95;
+    
+    var matrixSizeElements =  header.measureSize * 
+                              header.durationSize * 
+                              header.firstSpaceSize * 
+                              header.secondSpaceSize;
+                              
+    var matrixSizeBytes = matrixSizeElements * header.dataSize;
+                          
+    var matrixData = new Float32Array(matrixSizeElements);
+    
+    for(var i=0; i<matrixSizeElements; i++){
+      matrixData[i] = view.getFloat32(matrixOffset + i * header.dataSize, littleEndian); 
+    }
+    
+    // ------------- DECODING RESERVED BYTE SECTION -------------------
+    var reservedBytesSectionOffset = matrixOffset + matrixSizeBytes;
+    // we dont care about this section - we wont use it
+    
+    // ------------- DECODING INFO SECTION -------------------
+    // This info section is lways corrupted - we wont use it
+    var infoSectionOffset = reservedBytesSectionOffset + header.reservedBytes;
+    var infoRealLength = view.getUint8(infoSectionOffset);
+    var infoBytes = new Uint8Array(inputBuffer, infoSectionOffset+1, infoRealLength);
+    var info = String.fromCharCode.apply(String, infoBytes);
+    
+    // ------------- DECODING HEADER OF LIST SECTION -------------------
+    var headerOfListOffset = infoSectionOffset + 9;
+    
+    var listSize = 8;
+    var offsetByteSize = 4;
+    var totalByteSize = 2;
+    var headerOfList = new Array(listSize);
+    
+    for(var i=0; i<listSize; i++){
+      var record = {
+        // !! IMPORTANT !! there is a known BUG in the offset value
+        //offset: view.getInt16(headerOfListOffset + i * (offsetByteSize+totalByteSize), littleEndian),
+        total: view.getUint16(headerOfListOffset + i * (offsetByteSize+totalByteSize) + offsetByteSize, littleEndian),
+        labels: null
+      };
+      headerOfList[i] = record;
+    }
+    
+    headerOfList[0].description = "list of labels for measure dimension";
+    headerOfList[1].description = "list of labels for duration dimension";
+    headerOfList[2].description = "list of labels for first space dimension";
+    headerOfList[3].description = "list of labels for second space dimension";
+    headerOfList[4].description = "list of scales";
+    headerOfList[5].description = "list of units";
+    headerOfList[6].description = "list of transformations";
+    headerOfList[7].description = "list of contexts";
+    
+    var infoSection2Offset = headerOfListOffset + 48;
+    var localOffset = infoSection2Offset;
+
+    // list 1 to 6 (0 to 5 on out 0-indexed array)
+    for(var i=0; i<headerOfList.length - 2; i++){
+      var nbOfElem = headerOfList[i].total;
+      
+      headerOfList[i].labels = nbOfElem ? new Array( nbOfElem ).fill("") : 0;
+      
+      for(var j=0; j<nbOfElem; j++){
+        var strByteLength = view.getUint8(localOffset);
+        
+        if( strByteLength ){
+          var strBytes = new Uint8Array(inputBuffer, localOffset+1, strByteLength );
+          //var str = String.fromCharCode.apply(String, strBytes);
+          var str = String.fromCharCode(...strBytes);
+          // some ASCII charcode are wrong, hopefully always in the same way
+          headerOfList[i].labels[j] = str.replace("æ", "µ").replace("ý", "²"); 
+        }
+        
+        localOffset += strByteLength + 1;
+      }
+      
+    }
+
+    // particular case for list 7 (6 on our 0-indexed array) -- the transformations
+    // the total value is not the length but the actual value to consider
+    var transformation = view.getUint8(localOffset);
+    headerOfList[6].labels = transformation;
+    localOffset += headerOfList[6].total*(transformation + 1);
+    
+    // ------------- DECODING THE LIST OF CONTEXT -------------------
+    
+    // parsing the list of contexts
+    var listOfContexts = headerOfList[ headerOfList.length - 1];
+    listOfContexts.contextsByteLength = new Array( listOfContexts.total );
+    listOfContexts.types = new Array( listOfContexts.total );
+    listOfContexts.values = new Array( listOfContexts.total );
+    
+    const regexTypeDetection = /[a-zA-Z ]*\:{1}([a-zA-Z]*)[\[]?\d*[\]]?/;
+    
+    listOfContexts.labels = new Array( listOfContexts.total ).fill("");
+    
+    for(var iCtx=0; iCtx<listOfContexts.total; iCtx++){
+      var strByteLength = view.getUint8(localOffset);
+      var strBytes = new Uint8Array(inputBuffer, localOffset+1, strByteLength );
+      var str = String.fromCharCode.apply(String, strBytes);
+      listOfContexts.labels[iCtx] = str.split(":")[0];
+      listOfContexts.contextsByteLength[iCtx] = view.getUint16(localOffset + strByteLength + 1, littleEndian);
+      
+      var typeMatch = regexTypeDetection.exec( str );
+      if(typeMatch){
+        listOfContexts.types[iCtx] = typeMatch[1].toLowerCase();
+      }else{
+        listOfContexts.types[iCtx] = null;
+      }
+      
+      localOffset += strByteLength + 3;
+    }
+    
+    // getting the values for the contexts
+    for(var iCtx=0; iCtx<listOfContexts.total; iCtx++){
+      var value = null;
+      if( listOfContexts.types[iCtx] === "single" ){
+        // single precision floats are on 4 bytes
+        value = view.getFloat32(localOffset, littleEndian);
+        
+      }else if(listOfContexts.types[iCtx] === "boolean"){
+        value = new Array(listOfContexts.contextsByteLength[iCtx]);
+        for(var b=0; b<value.length; b++){
+          value[b] = !!view.getUint8(localOffset + b);
+        }
+        
+      }else if(listOfContexts.types[iCtx] === "string"){
+        var strByteLength = view.getUint8(localOffset);
+        var strBytes = new Uint8Array(inputBuffer, localOffset+1, strByteLength );
+        value = String.fromCharCode.apply(String, strBytes);
+      }
+      
+      localOffset += listOfContexts.contextsByteLength[iCtx];
+      listOfContexts.values[ iCtx ] = value;
+    }
+    
+    // ------------- CLEANING HEADER OF LIST -------------------
+    
+    for(var i=0; i<headerOfList.length; i++){
+      delete headerOfList[i].total;
+    }
+    
+    delete headerOfList[7].contextsByteLength;
+    delete headerOfList[7].types;
+    
+    var modEeg = {
+      metadata: {
+        comment: header.comment,
+        sizes: {
+          measure: header.measureSize,
+          duration: header.durationSize,
+          firstSpace: header.firstSpaceSize,
+          secondSpace: header.secondSpaceSize,
+        },
+        informationList: headerOfList
+      },
+      
+      data: matrixData
+    };
+    
+    return modEeg;
+  }
+  
+  
+} /* END of QeegModFileParser */
+
 class EegModDecoder extends Filter {
   
   constructor() {
@@ -20171,192 +20541,121 @@ class EegModDecoder extends Filter {
       return;
     }
     
-    this._view = new DataView( inputBuffer );
-    var littleEndian = true;
+    var modParser = new QeegModFileParser();
+    modParser.setRawData( inputBuffer );
+    var qeegData = modParser.parse();
     
-    // ------------- DECODING HEADER -------------------
-    
-    var header = {};
-    
-    // Protection Mask
-    // Offset: 0, length: 2
-    header.protectionMask = this._view.getUint16(0, littleEndian);
-    
-    // Comment (first byte is the real length)
-    // Offset: 2, length: 81
-    var commentRealLength = this._view.getUint8(2);
-    var commentBytes = new Uint8Array(inputBuffer, 3, commentRealLength);
-    header.comment = String.fromCharCode.apply(String, commentBytes);
-    
-    // Measure (M) Size
-    // Offset: 83, length: 2
-    header.measureSize = this._view.getUint16(83, littleEndian);
-    
-    // Duration (D) Size
-    // Offset: 85, length: 2
-    header.durationSize = this._view.getUint16(85, littleEndian);
-    
-    // First space (F) Size
-    // Offset: 87, length: 2
-    header.firstSpaceSize = this._view.getUint16(87, littleEndian);
-    
-    // Second space (S) Size
-    // Offset: 89, length: 2
-    header.secondSpaceSize = this._view.getUint16(89, littleEndian);
-    
-    // Reserved bytes
-    // Offset: 91, length: 2
-    header.reservedBytes = this._view.getUint16(91, littleEndian);
-    
-    // Data size
-    // Offset: 93, length: 2
-    header.dataSize = this._view.getUint16(93, littleEndian);
-    
-    console.log( header );
-    
-    // ------------- DECODING MATRIX -------------------
-    var matrixOffset = 95;
-    
-    var matrixSizeElements =  header.measureSize * 
-                              header.durationSize * 
-                              header.firstSpaceSize * 
-                              header.secondSpaceSize;
-                              
-    var matrixSizeBytes = matrixSizeElements * header.dataSize;
-                          
-    var matrixData = new Float32Array(matrixSizeElements);
-    
-    for(var i=0; i<matrixSizeElements; i++){
-      matrixData[i] = this._view.getFloat32(matrixOffset + i * header.dataSize, littleEndian); 
+    if( qeegData ){
+      this._output[0] = qeegData;
     }
-
-    
-    console.log(matrixData);
-    
-    // ------------- DECODING RESERVED BYTE SECTION -------------------
-    var reservedBytesSectionOffset = matrixOffset + matrixSizeBytes;
-    
-    // we dont care about this section
-    
-    // ------------- DECODING INFO SECTION -------------------
-    var infoSectionOffset = reservedBytesSectionOffset + header.reservedBytes;
-    var infoRealLength = this._view.getUint8(infoSectionOffset);
-    var infoBytes = new Uint8Array(inputBuffer, infoSectionOffset+1, infoRealLength);
-    var info = String.fromCharCode.apply(String, infoBytes);
-    
-    console.log(infoRealLength);
-    console.log( info );
-    
-    
-    // ------------- DECODING HEADER OF LIST SECTION -------------------
-    var headerOfListOffset = infoSectionOffset + 9;
-    
-    var listSize = 8;
-    var offsetByteSize = 4;
-    var totalByteSize = 2;
-    var headerOfList = new Array(listSize);
-    
-    for(var i=0; i<listSize; i++){
-      var record = {
-        // !! IMPORTANT !! there is a know BUG in the offset value
-        //offset: this._view.getInt16(headerOfListOffset + i * (offsetByteSize+totalByteSize), littleEndian),
-        total: this._view.getUint8(headerOfListOffset + i * (offsetByteSize+totalByteSize) + offsetByteSize, littleEndian),
-        labels: []
-      };
-      headerOfList[i] = record;
-    }
-    
-    headerOfList[0].description = "list of labels for measure dimension";
-    headerOfList[1].description = "list of labels for duration dimension";
-    headerOfList[2].description = "list of labels for first space dimension";
-    headerOfList[3].description = "list of labels for second space dimension";
-    headerOfList[4].description = "list of scales";
-    headerOfList[5].description = "list of units";
-    headerOfList[6].description = "list of transformations";
-    headerOfList[7].description = "list of context";
-    
-    //console.log( headerOfList );
-    
-    
-    // ------------- DECODING HEADER OF LIST SECTION -------------------
-    
-    
-    
-    var infoSection2Offset = headerOfListOffset + 48;
-    
-    var info2Bytes = new Uint8Array(inputBuffer, infoSection2Offset, inputBuffer.byteLength - infoSection2Offset );
-    var info2 = String.fromCharCode.apply(String, info2Bytes);
-    console.log( info2 );
-    console.log(info2Bytes);
-    
-    /*
-    for(var i=0; i<info2Bytes.length; i++){
-      console.log( info2Bytes[i] + " --> " + info2[i]);
-    }
-    */
-    
-    var labels = [];
-    
-    var localOffset = infoSection2Offset;
-
-    
-    
-    for(var i=0; i<headerOfList.length; i++){
-      var nbOfElem = headerOfList[i].total;
-      headerOfList[i].elements = new Array( nbOfElem ).fill(0);
-      
-      for(var j=0; j<nbOfElem; j++){
-        var strByteLength = this._view.getUint8(localOffset);
-        
-        if( strByteLength ){
-          var strBytes = new Uint8Array(inputBuffer, localOffset+1, strByteLength );
-          var str = String.fromCharCode.apply(String, strBytes);
-          headerOfList[i].elements[j] = str;
-          
-          localOffset += strByteLength + 1;
-        }else{
-          localOffset += strByteLength + 1;
-        }
-        
-      }
-      
-    }
-    
-    console.log( headerOfList );
-    
-    /*
-    var uintAtLocalOffset = this._view.getUint8(localOffset)
-    while( uintAtLocalOffset > 0){
-      var strByteLength = this._view.getUint8(localOffset)
-      
-      var strBytes = new Uint8Array(inputBuffer, localOffset+1, strByteLength );
-      var str = String.fromCharCode.apply(String, strBytes);
-      
-      console.log( str );
-      
-      localOffset += strByteLength + 1;
-      
-      uintAtLocalOffset = this._view.getUint8(localOffset)
-    }
-    */
-    /*
-    for(var i=0; i<info2Bytes.length; i++){
-      var charcode = info2Bytes[i]; // the charcode must be >=32 and < 128 so that it's a proper characther
-      
-      // 
-      if( charcode >= 32 && charcode < 128 ){
-        
-      }
-      
-      
-      var char = String.fromCharCode(charcode)
-      console.log( charcode + " --> " + char );
-    }
-    */
     
   }
   
 } /* END of class EegModDecoder */
+
+/*
+* Author    Jonathan Lurie - http://me.jonahanlurie.fr
+*
+* License   MIT
+* Link      https://github.com/jonathanlurie/pixpipejs
+* Lab       MCIN - Montreal Neurological Institute
+*/
+
+//import JSZip from "jszip";
+/**
+* A PixBinEncoder instance takes an Image2D or Image3D as input with `addInput(...)`
+* and encode it so that it can be saved as a *.pixp file.
+* An output filename can be specified using `.setMetadata("filename", "yourName.pixp");`,
+* by default, the name is "untitled.pixp".
+* When `update()` is called, a gzip blog is prepared as output[0] and can then be downloaded
+* when calling the method `.download()`. The gzip blob could also be sent over AJAX
+* using a third party library.
+*
+* **Usage**
+* - [examples/savePixpFile.html](../examples/savePixpFile.html)
+*/
+class PixBinEncoder extends Filter {
+  constructor(){
+    super();
+    this.setMetadata("filename", "untitled.pixb");
+    this.setMetadata("extension", "pixb");
+
+  }
+
+
+  /**
+  * [PRIVATE]
+  * overwrite the original from Filter
+  * Only accept Image2D and Image3D
+  */
+  hasValidInput(){
+    var input = this._getInput();
+    return input && ( input.isOfType(Image2D.TYPE()) || input.isOfType(Image3D.TYPE()) );
+  }
+
+
+  _run(){
+
+    if(! this.hasValidInput() ){
+      console.warn("PixBinEncoder can only encode Image2D and Image3D.");
+      return;
+    }
+
+    var input = this._getInput();
+
+    var pixBinMetadata = {
+      dataType: input.getData().constructor.name, // typed array type
+      pixpipeType: input.constructor.name, // most likely "Image2D", "Image3D", "MniVolume", "LineString", etc.
+      metadata: input.getMetadataCopy(),  // Image2D/Image3D._metadata
+    };
+
+    // this is a typed array
+    var data = input.getData();
+    
+    var metadataJsonString = JSON.stringify( pixBinMetadata );
+    var metadataByteArray = new Uint8Array( metadataJsonString.length );
+    
+    // converting the json string into a byte stream
+    for(var i = 0; i < metadataJsonString.length; ++i)
+      metadataByteArray[i] = metadataJsonString.charCodeAt(i);
+
+    // creating the buffer
+    var metadataBuffer = new ArrayBuffer( 4 + metadataByteArray.length );
+
+    // the data view is used to write into the buffer
+    var view = new DataView( metadataBuffer );
+    
+    var offsetFromHere = 0;
+    
+    // write the size of the metadata string
+    view.setUint32(offsetFromHere, metadataByteArray.length );
+    
+    // write the metadata themselves
+    offsetFromHere += 4;
+    for(var i=0; i<metadataByteArray.length; i++){
+      view.setUint8(offsetFromHere, metadataByteArray[i] );
+      offsetFromHere++;
+    }
+
+    // making a blob to be saved
+    this._output[0] = new Blob([metadataBuffer, data], {type: 'application/octet-binary'} );
+  }
+
+
+  /**
+  * Download the generated file
+  */
+  download(){
+    var output = this.getOutput();
+
+    if(output){
+      FileSaver.saveAs( this.getOutput(), this.getMetadata("filename"));
+    }else{
+      console.warn("No output computed yet.");
+    }
+  }
+
+} /* END of class PixBinEncoder */
 
 /*
 * Author   Jonathan Lurie - http://me.jonahanlurie.fr
@@ -23096,6 +23395,594 @@ class TerrainRgbToElevationImageFilter extends ImageToImageFilter {
 } /* END of class TerrainRgbToElevationImageFilter */
 
 /*
+* Author    Jonathan Lurie - http://me.jonahanlurie.fr
+*
+* License   MIT
+* Link      https://github.com/jonathanlurie/pixpipejs
+* Lab       MCIN - Montreal Neurological Institute
+*/
+
+
+/**
+* With a given set of points ( each being {x: Number, y: Number, value: Number} )
+* An instance of NearestNeighborSparseInterpolationImageFilter creates an image where
+* each value is the closest from the given point.
+* 
+* The original points/measures must be given as an Array of Object using
+* the method `.addInput([...])`
+*
+* The output image size must be set using the method
+* `.setMetadata( "outputSize", {width: Number, height: Number})`
+*
+* The given point can be outside the output image boundaries.
+* 
+* **Usage**
+* - [examples/nearestSparseInterpolation.html](../examples/nearestSparseInterpolation.html)
+*/ 
+class NearestNeighborSparseInterpolationImageFilter extends Filter {
+  constructor(){
+    super();
+    
+    this.setMetadata( "outputSize", {width: 0, height: 0});
+  }
+  
+  _run(){
+    
+    var points = null;
+    
+    // getting the input
+    if( "0" in this._input ){
+      points = this._input[ 0 ];
+    }else{
+      console.warn("No input point set were given.");
+      return;
+    }
+    
+    var outputSize = this.getMetadata( "outputSize" );
+    
+    // checking output size
+    if( outputSize.width == 0 || outputSize.height == 0 ){
+      console.warn("The output size cannot be 0.");
+      return;
+    }
+    
+    // creating the output image
+    var out = new pixpipe.Image2D({width: outputSize.width, height: outputSize.height, color: [0]});
+    
+    // for each pixel of the image...
+    for(var i=0; i<outputSize.width; i++){
+      for(var j=0; j<outputSize.height; j++){
+        
+        var nearestPointIndex = 0;
+        var nearestDistance = Infinity;
+        
+        // for each point of the original set...
+        for(var p=0; p<points.length; p++){
+          
+          // compute euclidian distance from [i, j] to p(x, y)
+          var d = Math.sqrt( Math.pow( points[p].x - i, 2 ) + Math.pow( points[p].y - j, 2) );
+          
+          if( d < nearestDistance){
+            nearestDistance = d;
+            nearestPointIndex = p;
+          }
+        }
+        
+        out.setPixel( {x: i, y: j}, [ points[nearestPointIndex].value ] );
+      }
+    }
+    
+    this._output[ 0 ] = out;
+  }
+  
+} /* END of class NearestNeighborSparseInterpolationImageFilter */
+
+/*
+* Author    Jonathan Lurie - http://me.jonahanlurie.fr
+*
+* License   MIT
+* Link      https://github.com/jonathanlurie/pixpipejs
+* Lab       MCIN - Montreal Neurological Institute
+*/
+
+
+/**
+* An instance of IDWSparseInterpolationImageFilter performs a 2D interpolation from 
+* a sparse dataset using the method of Inverse Distance Weighting.
+* The original dataset is specified using the method `.addInput( points )`, where
+* `points` is an `Array` of `{x: Number, y: Number, value: Number}`.
+* This filter outputs an `Image2D` with interpolated values. The size of the output must be
+* specified using the method `.setMetadata( "outputSize", {width: Number, height: Number})`.
+*
+* The IDW algorithm can be tuned with a "strength", which is essentially the value
+* of exponent of the distances. Default is `2` but it is common the see a value
+* of `1` or `3`. With higher values, the output will look like a cells pattern.
+* The strength can be defined using the method `.setMetadata( "strength", Number )`
+*
+* Note 1: points can be outside the boundaries of the original image
+* Note 2: interpolated values are floating point
+*
+* Note that only single-component images are outputed from this filter.
+* Ressources:
+* https://www.e-education.psu.edu/geog486/node/1877
+* 
+* **Usage**
+* - [examples/nearestSparseInterpolation.html](../examples/nearestSparseInterpolation.html)
+*/ 
+class IDWSparseInterpolationImageFilter extends Filter {
+  constructor(){
+    super();
+    this.setMetadata( "strength", 2 );
+    this.setMetadata( "outputSize", {width: 0, height: 0});
+  }
+  
+  _run(){
+    
+    var points = null;
+    
+    // getting the input
+    if( "0" in this._input ){
+      points = this._input[ 0 ];
+    }else{
+      console.warn("No input point set were given.");
+      return;
+    }
+    
+    var outputSize = this.getMetadata( "outputSize" );
+    
+    // checking output size
+    if( outputSize.width == 0 || outputSize.height == 0 ){
+      console.warn("The output size cannot be 0.");
+      return;
+    }
+    
+    // creating the output image
+    var out = new pixpipe.Image2D({width: outputSize.width, height: outputSize.height, color: [0]});
+    var strength = this.getMetadata( "strength" );
+    var distances = new Float32Array( points.length );
+    
+    
+    // for each pixel of the image...
+    for(var i=0; i<outputSize.width; i++){
+      for(var j=0; j<outputSize.height; j++){
+        
+        if( i == 90 && j == 90 ){
+          console.log( "here" );
+        }
+        
+        var numerator = 0;
+        var denominator = 0;
+        
+        // value taken when a pixel is exactely on one of the original point
+        var pointValue = null;
+        var isOnPoint = false;
+        
+        // for each point of the original set...
+        for(var p=0; p<points.length; p++){
+          // compute euclidian distance from [i, j] to p(x, y)
+          var d = Math.sqrt( Math.pow( points[p].x - i, 2 ) + Math.pow( points[p].y - j, 2) );
+          
+          if( d == 0){
+            isOnPoint = true;
+            pointValue = points[p].value;
+            break;
+          }
+          
+          
+          numerator += ( points[p].value / Math.pow( d, strength ) );
+          denominator += ( 1 / Math.pow(d, strength ) );
+        }
+        
+        var pixelValue = isOnPoint ? pointValue : ( numerator / denominator );
+        
+        out.setPixel( {x: i, y: j}, [ pixelValue ] );
+      }
+    }
+    
+    this._output[ 0 ] = out;
+  }
+  
+} /* END of class IDWSparseInterpolationImageFilter */
+
+var delaunay = createCommonjsModule(function (module) {
+var Delaunay;
+
+(function() {
+  "use strict";
+
+  var EPSILON = 1.0 / 1048576.0;
+
+  function supertriangle(vertices) {
+    var xmin = Number.POSITIVE_INFINITY,
+        ymin = Number.POSITIVE_INFINITY,
+        xmax = Number.NEGATIVE_INFINITY,
+        ymax = Number.NEGATIVE_INFINITY,
+        i, dx, dy, dmax, xmid, ymid;
+
+    for(i = vertices.length; i--; ) {
+      if(vertices[i][0] < xmin) xmin = vertices[i][0];
+      if(vertices[i][0] > xmax) xmax = vertices[i][0];
+      if(vertices[i][1] < ymin) ymin = vertices[i][1];
+      if(vertices[i][1] > ymax) ymax = vertices[i][1];
+    }
+
+    dx = xmax - xmin;
+    dy = ymax - ymin;
+    dmax = Math.max(dx, dy);
+    xmid = xmin + dx * 0.5;
+    ymid = ymin + dy * 0.5;
+
+    return [
+      [xmid - 20 * dmax, ymid -      dmax],
+      [xmid            , ymid + 20 * dmax],
+      [xmid + 20 * dmax, ymid -      dmax]
+    ];
+  }
+
+  function circumcircle(vertices, i, j, k) {
+    var x1 = vertices[i][0],
+        y1 = vertices[i][1],
+        x2 = vertices[j][0],
+        y2 = vertices[j][1],
+        x3 = vertices[k][0],
+        y3 = vertices[k][1],
+        fabsy1y2 = Math.abs(y1 - y2),
+        fabsy2y3 = Math.abs(y2 - y3),
+        xc, yc, m1, m2, mx1, mx2, my1, my2, dx, dy;
+
+    /* Check for coincident points */
+    if(fabsy1y2 < EPSILON && fabsy2y3 < EPSILON)
+      throw new Error("Eek! Coincident points!");
+
+    if(fabsy1y2 < EPSILON) {
+      m2  = -((x3 - x2) / (y3 - y2));
+      mx2 = (x2 + x3) / 2.0;
+      my2 = (y2 + y3) / 2.0;
+      xc  = (x2 + x1) / 2.0;
+      yc  = m2 * (xc - mx2) + my2;
+    }
+
+    else if(fabsy2y3 < EPSILON) {
+      m1  = -((x2 - x1) / (y2 - y1));
+      mx1 = (x1 + x2) / 2.0;
+      my1 = (y1 + y2) / 2.0;
+      xc  = (x3 + x2) / 2.0;
+      yc  = m1 * (xc - mx1) + my1;
+    }
+
+    else {
+      m1  = -((x2 - x1) / (y2 - y1));
+      m2  = -((x3 - x2) / (y3 - y2));
+      mx1 = (x1 + x2) / 2.0;
+      mx2 = (x2 + x3) / 2.0;
+      my1 = (y1 + y2) / 2.0;
+      my2 = (y2 + y3) / 2.0;
+      xc  = (m1 * mx1 - m2 * mx2 + my2 - my1) / (m1 - m2);
+      yc  = (fabsy1y2 > fabsy2y3) ?
+        m1 * (xc - mx1) + my1 :
+        m2 * (xc - mx2) + my2;
+    }
+
+    dx = x2 - xc;
+    dy = y2 - yc;
+    return {i: i, j: j, k: k, x: xc, y: yc, r: dx * dx + dy * dy};
+  }
+
+  function dedup(edges) {
+    var i, j, a, b, m, n;
+
+    for(j = edges.length; j; ) {
+      b = edges[--j];
+      a = edges[--j];
+
+      for(i = j; i; ) {
+        n = edges[--i];
+        m = edges[--i];
+
+        if((a === m && b === n) || (a === n && b === m)) {
+          edges.splice(j, 2);
+          edges.splice(i, 2);
+          break;
+        }
+      }
+    }
+  }
+
+  Delaunay = {
+    triangulate: function(vertices, key) {
+      var n = vertices.length,
+          i, j, indices, st, open, closed, edges, dx, dy, a, b, c;
+
+      /* Bail if there aren't enough vertices to form any triangles. */
+      if(n < 3)
+        return [];
+
+      /* Slice out the actual vertices from the passed objects. (Duplicate the
+       * array even if we don't, though, since we need to make a supertriangle
+       * later on!) */
+      vertices = vertices.slice(0);
+
+      if(key)
+        for(i = n; i--; )
+          vertices[i] = vertices[i][key];
+
+      /* Make an array of indices into the vertex array, sorted by the
+       * vertices' x-position. Force stable sorting by comparing indices if
+       * the x-positions are equal. */
+      indices = new Array(n);
+
+      for(i = n; i--; )
+        indices[i] = i;
+
+      indices.sort(function(i, j) {
+        var diff = vertices[j][0] - vertices[i][0];
+        return diff !== 0 ? diff : i - j;
+      });
+
+      /* Next, find the vertices of the supertriangle (which contains all other
+       * triangles), and append them onto the end of a (copy of) the vertex
+       * array. */
+      st = supertriangle(vertices);
+      vertices.push(st[0], st[1], st[2]);
+      
+      /* Initialize the open list (containing the supertriangle and nothing
+       * else) and the closed list (which is empty since we havn't processed
+       * any triangles yet). */
+      open   = [circumcircle(vertices, n + 0, n + 1, n + 2)];
+      closed = [];
+      edges  = [];
+
+      /* Incrementally add each vertex to the mesh. */
+      for(i = indices.length; i--; edges.length = 0) {
+        c = indices[i];
+
+        /* For each open triangle, check to see if the current point is
+         * inside it's circumcircle. If it is, remove the triangle and add
+         * it's edges to an edge list. */
+        for(j = open.length; j--; ) {
+          /* If this point is to the right of this triangle's circumcircle,
+           * then this triangle should never get checked again. Remove it
+           * from the open list, add it to the closed list, and skip. */
+          dx = vertices[c][0] - open[j].x;
+          if(dx > 0.0 && dx * dx > open[j].r) {
+            closed.push(open[j]);
+            open.splice(j, 1);
+            continue;
+          }
+
+          /* If we're outside the circumcircle, skip this triangle. */
+          dy = vertices[c][1] - open[j].y;
+          if(dx * dx + dy * dy - open[j].r > EPSILON)
+            continue;
+
+          /* Remove the triangle and add it's edges to the edge list. */
+          edges.push(
+            open[j].i, open[j].j,
+            open[j].j, open[j].k,
+            open[j].k, open[j].i
+          );
+          open.splice(j, 1);
+        }
+
+        /* Remove any doubled edges. */
+        dedup(edges);
+
+        /* Add a new triangle for each edge. */
+        for(j = edges.length; j; ) {
+          b = edges[--j];
+          a = edges[--j];
+          open.push(circumcircle(vertices, a, b, c));
+        }
+      }
+
+      /* Copy any remaining open triangles to the closed list, and then
+       * remove any triangles that share a vertex with the supertriangle,
+       * building a list of triplets that represent triangles. */
+      for(i = open.length; i--; )
+        closed.push(open[i]);
+      open.length = 0;
+
+      for(i = closed.length; i--; )
+        if(closed[i].i < n && closed[i].j < n && closed[i].k < n)
+          open.push(closed[i].i, closed[i].j, closed[i].k);
+
+      /* Yay, we're done! */
+      return open;
+    },
+    contains: function(tri, p) {
+      /* Bounding box test first, for quick rejections. */
+      if((p[0] < tri[0][0] && p[0] < tri[1][0] && p[0] < tri[2][0]) ||
+         (p[0] > tri[0][0] && p[0] > tri[1][0] && p[0] > tri[2][0]) ||
+         (p[1] < tri[0][1] && p[1] < tri[1][1] && p[1] < tri[2][1]) ||
+         (p[1] > tri[0][1] && p[1] > tri[1][1] && p[1] > tri[2][1]))
+        return null;
+
+      var a = tri[1][0] - tri[0][0],
+          b = tri[2][0] - tri[0][0],
+          c = tri[1][1] - tri[0][1],
+          d = tri[2][1] - tri[0][1],
+          i = a * d - b * c;
+
+      /* Degenerate tri. */
+      if(i === 0.0)
+        return null;
+
+      var u = (d * (p[0] - tri[0][0]) - b * (p[1] - tri[0][1])) / i,
+          v = (a * (p[1] - tri[0][1]) - c * (p[0] - tri[0][0])) / i;
+
+      /* If we're outside the tri, fail. */
+      if(u < 0.0 || v < 0.0 || (u + v) > 1.0)
+        return null;
+
+      return [u, v];
+    }
+  };
+
+  module.exports = Delaunay;
+})();
+});
+
+/*
+* Author    Jonathan Lurie - http://me.jonahanlurie.fr
+*
+* License   MIT
+* Link      https://github.com/jonathanlurie/pixpipejs
+* Lab       MCIN - Montreal Neurological Institute
+*/
+
+
+/**
+* An instance of TriangulationSparseInterpolationImageFilter performs a triangulation
+* of an original dataset followed by a barycentric 2D interpolation. It is used to
+* perform a 2D linear interpolation of a sparse dataset.
+* The original dataset is specified using the method `.addInput( points )`, where
+* `points` is an `Array` of `{x: Number, y: Number, value: Number}`.
+* The triangulation is the result of a Delaunay triangulation.
+* This filter outputs an `Image2D` with interpolated values only within the boundaries
+* of the convex hull created by the triangulation. The size of the output must be
+* specified using the method `.setMetadata( "outputSize", {width: Number, height: Number})`.
+*
+* Note 1: at least 3 unaligned points are required to perform a triangulation
+* Note 2: points can be outside the boundaries of the original image
+* Note 3: interpolated values are floating point
+*
+* Note that only single-component images are outputed from this filter.
+* 
+* **Usage**
+* - [examples/TriangleSparseInterpolation.html](../examples/TriangleSparseInterpolation.html)
+*/ 
+
+class TriangulationSparseInterpolationImageFilter extends Filter {
+  
+  constructor(){
+    super();
+    this.setMetadata( "outputSize", {width: 0, height: 0});
+  }
+  
+  _run(){
+    
+    var origPoints = null;
+    
+    // getting the input
+    if( "0" in this._input ){
+      origPoints = this._input[ 0 ];
+    }else{
+      console.warn("No input point set were given.");
+      return;
+    }
+    
+    var outputSize = this.getMetadata( "outputSize" );
+    
+    // checking output size
+    if( outputSize.width == 0 || outputSize.height == 0 ){
+      console.warn("The output size cannot be 0.");
+      return;
+    }
+    
+    // remapping the point as an array of ArrayBuffer
+    var points = origPoints.map( function(p){
+      return [p.x, p.y];
+    });
+    
+    // computing the list of triangles
+    var triangleVertices = delaunay.triangulate( points );
+
+    // rearranging the triangles in a propper array that group by 3 the index of vertices used
+    var triangles = [];
+    for(var i=0; i<=triangleVertices.length-3; i+=3){
+      triangles.push( [
+        triangleVertices[i],
+        triangleVertices[i+1],
+        triangleVertices[i+2],
+      ] );
+    }
+
+    console.log( points );
+    console.log( triangles );
+    
+    // return the area of a triangle using Heron's formula
+    // Each point A, B and C is a couple of 2D coords like [Number, Number] 
+    function getTriangleArea(A, B, C){
+      // manhattan distances
+      var _AB = [ A[0] - B[0], A[1] - B[1]];
+      var _BC = [ B[0] - C[0], B[1] - C[1]];
+      var _CA = [ C[0] - A[0], C[1] - A[1]];
+      
+      // Euclidian distances - Pythagore
+      var a = Math.sqrt( _BC[0]*_BC[0] + _BC[1]*_BC[1] );
+      var b = Math.sqrt( _CA[0]*_CA[0] + _CA[1]*_CA[1] );
+      var c = Math.sqrt( _AB[0]*_AB[0] + _AB[1]*_AB[1] );
+      
+      // semiperimeter
+      var s = (a + b + c) / 2;
+      
+      var area = Math.sqrt( s*(s-a)*(s-b)*(s-c) );
+      return area;
+    }
+    
+    // creating the output image
+    var out = new pixpipe.Image2D({width: Math.round(outputSize.width), height: Math.round(outputSize.height), color: [0]});
+    
+    // each line of the output image...
+    for(var i=0; i<outputSize.width; i++){
+      // each column of the output image...
+      for(var j=0; j<outputSize.height; j++){
+    
+        var pixelValue = 0;
+        var isInsideTriangle = false;
+        var encompassingTriangle = 0;
+        
+        // each triangle...
+        for(var t=0; t<triangles.length; t++){
+          var contain = delaunay.contains( 
+            [
+              points[ triangles[t][0] ], points[ triangles[t][1] ], points[ triangles[t][2] ],
+            ],
+            [ i, j ]
+          );
+          
+          if( contain ){
+            isInsideTriangle = true;
+            encompassingTriangle = triangles[ t ];
+            break;
+          }
+        }
+    
+        if( isInsideTriangle ){
+          // vectices of the emcompassing triangle
+          var _A = points[ encompassingTriangle[0] ];
+          var _B = points[ encompassingTriangle[1] ];
+          var _C = points[ encompassingTriangle[2] ];
+          
+          // current point of the image
+          var _P = [ i, j ];
+          
+          // area of the emcompassing triangle (made only from points of the original dataset)
+          var areaTriEncomp = getTriangleArea( _A, _B, _C );
+          
+          // area of each subtriangles
+          var areaABP = getTriangleArea( _A, _B, _P );
+          var areaBCP = getTriangleArea( _B, _C, _P );
+          var areaCAP = getTriangleArea( _C, _A, _P );
+          
+          
+          // making the color mix
+          pixelValue = (areaABP / areaTriEncomp) * origPoints[ encompassingTriangle[2] ].value +
+                       (areaBCP / areaTriEncomp) * origPoints[ encompassingTriangle[0] ].value +
+                       (areaCAP / areaTriEncomp) * origPoints[ encompassingTriangle[1] ].value ;
+        }
+    
+        out.setPixel( {x: i, y: j}, [ pixelValue ] );
+      }
+    }
+    
+    this._output[ 0 ] = out;
+  } // en of _run
+  
+  
+} /* END of class TriangulationSparseInterpolationImageFilter */
+
+/*
 * Author   Jonathan Lurie - http://me.jonahanlurie.fr
 * License  MIT
 * Link      https://github.com/jonathanlurie/pixpipejs
@@ -23981,6 +24868,8 @@ exports.Image3DGenericDecoder = Image3DGenericDecoder;
 exports.TiffDecoder = TiffDecoder;
 exports.MghDecoder = MghDecoder;
 exports.EegModDecoder = EegModDecoder;
+exports.PixBinEncoder = PixBinEncoder;
+exports.PixBinDecoder = PixBinDecoder;
 exports.ForEachPixelImageFilter = ForEachPixelImageFilter;
 exports.SpectralScaleImageFilter = SpectralScaleImageFilter;
 exports.ImageBlendExpressionFilter = ImageBlendExpressionFilter;
@@ -23995,6 +24884,9 @@ exports.FloodFillImageFilter = FloodFillImageFilter;
 exports.ContourHolesImage2DFilter = ContourHolesImage2DFilter;
 exports.ForEachPixelReadOnlyFilter = ForEachPixelReadOnlyFilter;
 exports.TerrainRgbToElevationImageFilter = TerrainRgbToElevationImageFilter;
+exports.NearestNeighborSparseInterpolationImageFilter = NearestNeighborSparseInterpolationImageFilter;
+exports.IDWSparseInterpolationImageFilter = IDWSparseInterpolationImageFilter;
+exports.TriangulationSparseInterpolationImageFilter = TriangulationSparseInterpolationImageFilter;
 exports.AngleToHueWheelHelper = AngleToHueWheelHelper;
 exports.LineStringPrinterOnImage2DHelper = LineStringPrinterOnImage2DHelper;
 exports.Colormap = Colormap;

@@ -68,7 +68,19 @@ class PixpDecoder extends Filter {
       return;
     }
 
-    var constructorHost = (window || this);
+    var constructorHost = null;
+    
+    try{
+      constructorHost = window;
+    }catch( e ){
+      try{
+        constructorHost = GLOBAL;
+      }catch( e ){
+        console.warn( "You are not in a Javascript environment?? Weird." );
+        return;
+      }
+    }
+    
     if(! constructorHost[ pixpObject.dataType ]){
       console.warn( "Data array from pixp file is unknown: " + pixpObject.dataType );
       return;
