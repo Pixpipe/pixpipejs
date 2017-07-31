@@ -205,7 +205,7 @@ class Filter extends PixpipeObject {
     this._timer = {};
 
     this._isOutputReady = false;
-    
+
     this.setMetadata("time", true);
 
   }
@@ -407,7 +407,7 @@ class Filter extends PixpipeObject {
     var that = this;
     var inputCategories = Object.keys( this._inputValidator );
     var valid = true;
-    
+
     if(inputCategories.length == 0){
       valid = false;
       console.warn("No input validator was added. Filter cannot run. Use addInputValidator(...) to specify input types.");
@@ -415,7 +415,7 @@ class Filter extends PixpipeObject {
 
     inputCategories.forEach( function(key){
       var inputOfCategory = that._getInput( key );
-      
+
       if(inputOfCategory){
         if("isOfType" in inputOfCategory){
           valid = valid && inputOfCategory.isOfType( that._inputValidator[ key ] );
@@ -426,13 +426,13 @@ class Filter extends PixpipeObject {
             valid = false;
           }
         }
-          
+
       }
       // input simply not existing!
       else{
         valid = false;
       }
-    
+
     });
 
     if(!valid){
@@ -476,7 +476,7 @@ class Filter extends PixpipeObject {
   * @param {String} recordName - name of the record
   */
   addTimeRecord( recordName ){
-    this._timer[ recordName ] = performance.now();
+    this._timer[ recordName ] = 0;
   }
 
 
@@ -516,16 +516,16 @@ class Filter extends PixpipeObject {
   */
   triggerEvent( eventName /* any other arguments to follow */ ){
     var returnValue = null;
-    
+
     if(this.hasEvent(eventName)){
       if( arguments.length > 1 ){
-        
+
         // a-la-mano slicing argument array to comply with V8 JS engine optimization...
         var argToSend = [];
         for(var i=1; i<arguments.length; i++){
           argToSend.push( arguments[i] );
         }
-        
+
         returnValue = this._events[eventName].apply(this, argToSend );
       }else{
         returnValue = this._events[eventName].call(this);
@@ -533,7 +533,7 @@ class Filter extends PixpipeObject {
     }else{
       console.warn("The event " + eventName + " does not exist.");
     }
-    
+
     return returnValue;
   }
 
@@ -604,6 +604,47 @@ class PixpipeContainer extends PixpipeObject {
   }
 
 } /* END of class PixpipeContainer */
+
+class Signal1D extends PixpipeContainer {
+  constructor() {
+    super();
+    this._type = Signal1D.TYPE();
+    this.setMetadata('length', 0);
+  }
+
+  static TYPE() {
+    return 'SIGNAL1D';
+  }
+
+  getData() {
+    return this._data;
+  }
+
+  setData(array, deepCopy = false) {
+    if (deepCopy) {
+      this._data = new array.constructor(array);
+    } else {
+      this._data = array;
+    }
+
+    this.setMetadata('length', array.length);
+  }
+
+  clone(){
+    const copy = new Signal1D();
+    if (this._data) {
+      copy.setData(this._data, true);
+    }
+    return copy;
+  }
+
+  hollowClone(){
+    const copy = new Signal1D();
+    const length = this.getMetadata('length');
+    copy.setData( new Float32Array(length).fill(0) );
+    return copy
+  }
+}
 
 /*
 * Author   Jonathan Lurie - http://me.jonahanlurie.fr
@@ -2708,19 +2749,19 @@ function chdir (dir) {
 function umask() { return 0; }
 
 // from https://github.com/kumavis/browser-process-hrtime/blob/master/index.js
-var performance$1 = global$1.performance || {};
+var performance = global$1.performance || {};
 var performanceNow =
-  performance$1.now        ||
-  performance$1.mozNow     ||
-  performance$1.msNow      ||
-  performance$1.oNow       ||
-  performance$1.webkitNow  ||
+  performance.now        ||
+  performance.mozNow     ||
+  performance.msNow      ||
+  performance.oNow       ||
+  performance.webkitNow  ||
   function(){ return (new Date()).getTime() };
 
 // generate timestamp or delta
 // see http://nodejs.org/api/process.html#process_process_hrtime
 function hrtime(previousTimestamp){
-  var clocktime = performanceNow.call(performance$1)*1e-3;
+  var clocktime = performanceNow.call(performance)*1e-3;
   var seconds = Math.floor(clocktime);
   var nanoseconds = Math.floor((clocktime%1)*1e9);
   if (previousTimestamp) {
@@ -5493,6 +5534,27 @@ exports.setTyped = function (on) {
 exports.setTyped(TYPED_OK);
 });
 
+// (C) 1995-2013 Jean-loup Gailly and Mark Adler
+// (C) 2014-2017 Vitaly Puzrin and Andrey Tupitsin
+//
+// This software is provided 'as-is', without any express or implied
+// warranty. In no event will the authors be held liable for any damages
+// arising from the use of this software.
+//
+// Permission is granted to anyone to use this software for any purpose,
+// including commercial applications, and to alter it and redistribute it
+// freely, subject to the following restrictions:
+//
+// 1. The origin of this software must not be misrepresented; you must not
+//   claim that you wrote the original software. If you use this software
+//   in a product, an acknowledgment in the product documentation would be
+//   appreciated but is not required.
+// 2. Altered source versions must be plainly marked as such, and must not be
+//   misrepresented as being the original software.
+// 3. This notice may not be removed or altered from any source distribution.
+
+
+
 /* Public constants ==========================================================*/
 /* ===========================================================================*/
 
@@ -6703,6 +6765,25 @@ var trees = {
 // It doesn't worth to make additional optimizationa as in original.
 // Small size is preferable.
 
+// (C) 1995-2013 Jean-loup Gailly and Mark Adler
+// (C) 2014-2017 Vitaly Puzrin and Andrey Tupitsin
+//
+// This software is provided 'as-is', without any express or implied
+// warranty. In no event will the authors be held liable for any damages
+// arising from the use of this software.
+//
+// Permission is granted to anyone to use this software for any purpose,
+// including commercial applications, and to alter it and redistribute it
+// freely, subject to the following restrictions:
+//
+// 1. The origin of this software must not be misrepresented; you must not
+//   claim that you wrote the original software. If you use this software
+//   in a product, an acknowledgment in the product documentation would be
+//   appreciated but is not required.
+// 2. Altered source versions must be plainly marked as such, and must not be
+//   misrepresented as being the original software.
+// 3. This notice may not be removed or altered from any source distribution.
+
 function adler32(adler, buf, len, pos) {
   var s1 = (adler & 0xffff) |0,
       s2 = ((adler >>> 16) & 0xffff) |0,
@@ -6734,6 +6815,24 @@ var adler32_1 = adler32;
 // So write code to minimize size - no pregenerated tables
 // and array tools dependencies.
 
+// (C) 1995-2013 Jean-loup Gailly and Mark Adler
+// (C) 2014-2017 Vitaly Puzrin and Andrey Tupitsin
+//
+// This software is provided 'as-is', without any express or implied
+// warranty. In no event will the authors be held liable for any damages
+// arising from the use of this software.
+//
+// Permission is granted to anyone to use this software for any purpose,
+// including commercial applications, and to alter it and redistribute it
+// freely, subject to the following restrictions:
+//
+// 1. The origin of this software must not be misrepresented; you must not
+//   claim that you wrote the original software. If you use this software
+//   in a product, an acknowledgment in the product documentation would be
+//   appreciated but is not required.
+// 2. Altered source versions must be plainly marked as such, and must not be
+//   misrepresented as being the original software.
+// 3. This notice may not be removed or altered from any source distribution.
 
 // Use ordinary array, since untyped makes no boost here
 function makeTable() {
@@ -6770,6 +6869,25 @@ function crc32(crc, buf, len, pos) {
 
 var crc32_1 = crc32;
 
+// (C) 1995-2013 Jean-loup Gailly and Mark Adler
+// (C) 2014-2017 Vitaly Puzrin and Andrey Tupitsin
+//
+// This software is provided 'as-is', without any express or implied
+// warranty. In no event will the authors be held liable for any damages
+// arising from the use of this software.
+//
+// Permission is granted to anyone to use this software for any purpose,
+// including commercial applications, and to alter it and redistribute it
+// freely, subject to the following restrictions:
+//
+// 1. The origin of this software must not be misrepresented; you must not
+//   claim that you wrote the original software. If you use this software
+//   in a product, an acknowledgment in the product documentation would be
+//   appreciated but is not required.
+// 2. Altered source versions must be plainly marked as such, and must not be
+//   misrepresented as being the original software.
+// 3. This notice may not be removed or altered from any source distribution.
+
 var messages = {
   2:      'need dictionary',     /* Z_NEED_DICT       2  */
   1:      'stream end',          /* Z_STREAM_END      1  */
@@ -6781,6 +6899,31 @@ var messages = {
   '-5':   'buffer error',        /* Z_BUF_ERROR     (-5) */
   '-6':   'incompatible version' /* Z_VERSION_ERROR (-6) */
 };
+
+// (C) 1995-2013 Jean-loup Gailly and Mark Adler
+// (C) 2014-2017 Vitaly Puzrin and Andrey Tupitsin
+//
+// This software is provided 'as-is', without any express or implied
+// warranty. In no event will the authors be held liable for any damages
+// arising from the use of this software.
+//
+// Permission is granted to anyone to use this software for any purpose,
+// including commercial applications, and to alter it and redistribute it
+// freely, subject to the following restrictions:
+//
+// 1. The origin of this software must not be misrepresented; you must not
+//   claim that you wrote the original software. If you use this software
+//   in a product, an acknowledgment in the product documentation would be
+//   appreciated but is not required.
+// 2. Altered source versions must be plainly marked as such, and must not be
+//   misrepresented as being the original software.
+// 3. This notice may not be removed or altered from any source distribution.
+
+
+
+
+
+
 
 /* Public constants ==========================================================*/
 /* ===========================================================================*/
@@ -8829,6 +8972,25 @@ var strings = {
 	utf8border: utf8border
 };
 
+// (C) 1995-2013 Jean-loup Gailly and Mark Adler
+// (C) 2014-2017 Vitaly Puzrin and Andrey Tupitsin
+//
+// This software is provided 'as-is', without any express or implied
+// warranty. In no event will the authors be held liable for any damages
+// arising from the use of this software.
+//
+// Permission is granted to anyone to use this software for any purpose,
+// including commercial applications, and to alter it and redistribute it
+// freely, subject to the following restrictions:
+//
+// 1. The origin of this software must not be misrepresented; you must not
+//   claim that you wrote the original software. If you use this software
+//   in a product, an acknowledgment in the product documentation would be
+//   appreciated but is not required.
+// 2. Altered source versions must be plainly marked as such, and must not be
+//   misrepresented as being the original software.
+// 3. This notice may not be removed or altered from any source distribution.
+
 function ZStream() {
   /* next input byte */
   this.input = null; // JS specific, because we have no pointers
@@ -9255,6 +9417,25 @@ var deflate_1 = {
 	gzip: gzip_1
 };
 
+// (C) 1995-2013 Jean-loup Gailly and Mark Adler
+// (C) 2014-2017 Vitaly Puzrin and Andrey Tupitsin
+//
+// This software is provided 'as-is', without any express or implied
+// warranty. In no event will the authors be held liable for any damages
+// arising from the use of this software.
+//
+// Permission is granted to anyone to use this software for any purpose,
+// including commercial applications, and to alter it and redistribute it
+// freely, subject to the following restrictions:
+//
+// 1. The origin of this software must not be misrepresented; you must not
+//   claim that you wrote the original software. If you use this software
+//   in a product, an acknowledgment in the product documentation would be
+//   appreciated but is not required.
+// 2. Altered source versions must be plainly marked as such, and must not be
+//   misrepresented as being the original software.
+// 3. This notice may not be removed or altered from any source distribution.
+
 // See state defs from inflate.js
 var BAD$1 = 30;       /* got a data error -- remain here until reset */
 var TYPE$1 = 12;      /* i: waiting for type bits, including last-flag bit */
@@ -9580,6 +9761,27 @@ var inffast = function inflate_fast(strm, start) {
   return;
 };
 
+// (C) 1995-2013 Jean-loup Gailly and Mark Adler
+// (C) 2014-2017 Vitaly Puzrin and Andrey Tupitsin
+//
+// This software is provided 'as-is', without any express or implied
+// warranty. In no event will the authors be held liable for any damages
+// arising from the use of this software.
+//
+// Permission is granted to anyone to use this software for any purpose,
+// including commercial applications, and to alter it and redistribute it
+// freely, subject to the following restrictions:
+//
+// 1. The origin of this software must not be misrepresented; you must not
+//   claim that you wrote the original software. If you use this software
+//   in a product, an acknowledgment in the product documentation would be
+//   appreciated but is not required.
+// 2. Altered source versions must be plainly marked as such, and must not be
+//   misrepresented as being the original software.
+// 3. This notice may not be removed or altered from any source distribution.
+
+
+
 var MAXBITS = 15;
 var ENOUGH_LENS$1 = 852;
 var ENOUGH_DISTS$1 = 592;
@@ -9900,6 +10102,31 @@ var inftrees = function inflate_table(type, lens, lens_index, codes, table, tabl
   opts.bits = root;
   return 0;
 };
+
+// (C) 1995-2013 Jean-loup Gailly and Mark Adler
+// (C) 2014-2017 Vitaly Puzrin and Andrey Tupitsin
+//
+// This software is provided 'as-is', without any express or implied
+// warranty. In no event will the authors be held liable for any damages
+// arising from the use of this software.
+//
+// Permission is granted to anyone to use this software for any purpose,
+// including commercial applications, and to alter it and redistribute it
+// freely, subject to the following restrictions:
+//
+// 1. The origin of this software must not be misrepresented; you must not
+//   claim that you wrote the original software. If you use this software
+//   in a product, an acknowledgment in the product documentation would be
+//   appreciated but is not required.
+// 2. Altered source versions must be plainly marked as such, and must not be
+//   misrepresented as being the original software.
+// 3. This notice may not be removed or altered from any source distribution.
+
+
+
+
+
+
 
 var CODES = 0;
 var LENS = 1;
@@ -11445,6 +11672,25 @@ var inflate_1$2 = {
 	inflateInfo: inflateInfo
 };
 
+// (C) 1995-2013 Jean-loup Gailly and Mark Adler
+// (C) 2014-2017 Vitaly Puzrin and Andrey Tupitsin
+//
+// This software is provided 'as-is', without any express or implied
+// warranty. In no event will the authors be held liable for any damages
+// arising from the use of this software.
+//
+// Permission is granted to anyone to use this software for any purpose,
+// including commercial applications, and to alter it and redistribute it
+// freely, subject to the following restrictions:
+//
+// 1. The origin of this software must not be misrepresented; you must not
+//   claim that you wrote the original software. If you use this software
+//   in a product, an acknowledgment in the product documentation would be
+//   appreciated but is not required.
+// 2. Altered source versions must be plainly marked as such, and must not be
+//   misrepresented as being the original software.
+// 3. This notice may not be removed or altered from any source distribution.
+
 var constants = {
 
   /* Allowed flush values; see deflate() and inflate() below for details */
@@ -11492,6 +11738,25 @@ var constants = {
   Z_DEFLATED:               8
   //Z_NULL:                 null // Use -1 or null inline, depending on var type
 };
+
+// (C) 1995-2013 Jean-loup Gailly and Mark Adler
+// (C) 2014-2017 Vitaly Puzrin and Andrey Tupitsin
+//
+// This software is provided 'as-is', without any express or implied
+// warranty. In no event will the authors be held liable for any damages
+// arising from the use of this software.
+//
+// Permission is granted to anyone to use this software for any purpose,
+// including commercial applications, and to alter it and redistribute it
+// freely, subject to the following restrictions:
+//
+// 1. The origin of this software must not be misrepresented; you must not
+//   claim that you wrote the original software. If you use this software
+//   in a product, an acknowledgment in the product documentation would be
+//   appreciated but is not required.
+// 2. Altered source versions must be plainly marked as such, and must not be
+//   misrepresented as being the original software.
+// 3. This notice may not be removed or altered from any source distribution.
 
 function GZheader() {
   /* true if compressed data believed to be text */
@@ -20523,16 +20788,16 @@ class QeegModFileParser {
 } /* END of QeegModFileParser */
 
 class EegModDecoder extends Filter {
-  
+
   constructor() {
     super();
     this.addInputValidator(0, ArrayBuffer);
     this.setMetadata("debug", false);
-    
+
     // a soon-to-be DataView to read the input buffer
     this._view = null;
   }
-  
+
   _run(){
     var inputBuffer = this._getInput(0);
 
@@ -20540,17 +20805,17 @@ class EegModDecoder extends Filter {
       console.warn("EegModDecoder requires an ArrayBuffer as input \"0\". Unable to continue.");
       return;
     }
-    
+
     var modParser = new QeegModFileParser();
     modParser.setRawData( inputBuffer );
     var qeegData = modParser.parse();
-    
+
     if( qeegData ){
       this._output[0] = qeegData;
     }
-    
+
   }
-  
+
 } /* END of class EegModDecoder */
 
 /*
@@ -20656,6 +20921,2259 @@ class PixBinEncoder extends Filter {
   }
 
 } /* END of class PixBinEncoder */
+
+function iota(n) {
+  var result = new Array(n);
+  for(var i=0; i<n; ++i) {
+    result[i] = i;
+  }
+  return result
+}
+
+var iota_1 = iota;
+
+/*!
+ * Determine if an object is a Buffer
+ *
+ * @author   Feross Aboukhadijeh <feross@feross.org> <http://feross.org>
+ * @license  MIT
+ */
+
+// The _isBuffer check is for Safari 5-7 support, because it's missing
+// Object.prototype.constructor. Remove this eventually
+var index$2 = function (obj) {
+  return obj != null && (isBuffer$1(obj) || isSlowBuffer$1(obj) || !!obj._isBuffer)
+};
+
+function isBuffer$1 (obj) {
+  return !!obj.constructor && typeof obj.constructor.isBuffer === 'function' && obj.constructor.isBuffer(obj)
+}
+
+// For Node v0.10 support. Remove this eventually.
+function isSlowBuffer$1 (obj) {
+  return typeof obj.readFloatLE === 'function' && typeof obj.slice === 'function' && isBuffer$1(obj.slice(0, 0))
+}
+
+var hasTypedArrays  = ((typeof Float64Array) !== "undefined");
+
+function compare1st(a, b) {
+  return a[0] - b[0]
+}
+
+function order() {
+  var stride = this.stride;
+  var terms = new Array(stride.length);
+  var i;
+  for(i=0; i<terms.length; ++i) {
+    terms[i] = [Math.abs(stride[i]), i];
+  }
+  terms.sort(compare1st);
+  var result = new Array(terms.length);
+  for(i=0; i<result.length; ++i) {
+    result[i] = terms[i][1];
+  }
+  return result
+}
+
+function compileConstructor(dtype, dimension) {
+  var className = ["View", dimension, "d", dtype].join("");
+  if(dimension < 0) {
+    className = "View_Nil" + dtype;
+  }
+  var useGetters = (dtype === "generic");
+
+  if(dimension === -1) {
+    //Special case for trivial arrays
+    var code =
+      "function "+className+"(a){this.data=a;};\
+var proto="+className+".prototype;\
+proto.dtype='"+dtype+"';\
+proto.index=function(){return -1};\
+proto.size=0;\
+proto.dimension=-1;\
+proto.shape=proto.stride=proto.order=[];\
+proto.lo=proto.hi=proto.transpose=proto.step=\
+function(){return new "+className+"(this.data);};\
+proto.get=proto.set=function(){};\
+proto.pick=function(){return null};\
+return function construct_"+className+"(a){return new "+className+"(a);}";
+    var procedure = new Function(code);
+    return procedure()
+  } else if(dimension === 0) {
+    //Special case for 0d arrays
+    var code =
+      "function "+className+"(a,d) {\
+this.data = a;\
+this.offset = d\
+};\
+var proto="+className+".prototype;\
+proto.dtype='"+dtype+"';\
+proto.index=function(){return this.offset};\
+proto.dimension=0;\
+proto.size=1;\
+proto.shape=\
+proto.stride=\
+proto.order=[];\
+proto.lo=\
+proto.hi=\
+proto.transpose=\
+proto.step=function "+className+"_copy() {\
+return new "+className+"(this.data,this.offset)\
+};\
+proto.pick=function "+className+"_pick(){\
+return TrivialArray(this.data);\
+};\
+proto.valueOf=proto.get=function "+className+"_get(){\
+return "+(useGetters ? "this.data.get(this.offset)" : "this.data[this.offset]")+
+"};\
+proto.set=function "+className+"_set(v){\
+return "+(useGetters ? "this.data.set(this.offset,v)" : "this.data[this.offset]=v")+"\
+};\
+return function construct_"+className+"(a,b,c,d){return new "+className+"(a,d)}";
+    var procedure = new Function("TrivialArray", code);
+    return procedure(CACHED_CONSTRUCTORS[dtype][0])
+  }
+
+  var code = ["'use strict'"];
+
+  //Create constructor for view
+  var indices = iota_1(dimension);
+  var args = indices.map(function(i) { return "i"+i });
+  var index_str = "this.offset+" + indices.map(function(i) {
+        return "this.stride[" + i + "]*i" + i
+      }).join("+");
+  var shapeArg = indices.map(function(i) {
+      return "b"+i
+    }).join(",");
+  var strideArg = indices.map(function(i) {
+      return "c"+i
+    }).join(",");
+  code.push(
+    "function "+className+"(a," + shapeArg + "," + strideArg + ",d){this.data=a",
+      "this.shape=[" + shapeArg + "]",
+      "this.stride=[" + strideArg + "]",
+      "this.offset=d|0}",
+    "var proto="+className+".prototype",
+    "proto.dtype='"+dtype+"'",
+    "proto.dimension="+dimension);
+
+  //view.size:
+  code.push("Object.defineProperty(proto,'size',{get:function "+className+"_size(){\
+return "+indices.map(function(i) { return "this.shape["+i+"]" }).join("*"),
+"}})");
+
+  //view.order:
+  if(dimension === 1) {
+    code.push("proto.order=[0]");
+  } else {
+    code.push("Object.defineProperty(proto,'order',{get:");
+    if(dimension < 4) {
+      code.push("function "+className+"_order(){");
+      if(dimension === 2) {
+        code.push("return (Math.abs(this.stride[0])>Math.abs(this.stride[1]))?[1,0]:[0,1]}})");
+      } else if(dimension === 3) {
+        code.push(
+"var s0=Math.abs(this.stride[0]),s1=Math.abs(this.stride[1]),s2=Math.abs(this.stride[2]);\
+if(s0>s1){\
+if(s1>s2){\
+return [2,1,0];\
+}else if(s0>s2){\
+return [1,2,0];\
+}else{\
+return [1,0,2];\
+}\
+}else if(s0>s2){\
+return [2,0,1];\
+}else if(s2>s1){\
+return [0,1,2];\
+}else{\
+return [0,2,1];\
+}}})");
+      }
+    } else {
+      code.push("ORDER})");
+    }
+  }
+
+  //view.set(i0, ..., v):
+  code.push(
+"proto.set=function "+className+"_set("+args.join(",")+",v){");
+  if(useGetters) {
+    code.push("return this.data.set("+index_str+",v)}");
+  } else {
+    code.push("return this.data["+index_str+"]=v}");
+  }
+
+  //view.get(i0, ...):
+  code.push("proto.get=function "+className+"_get("+args.join(",")+"){");
+  if(useGetters) {
+    code.push("return this.data.get("+index_str+")}");
+  } else {
+    code.push("return this.data["+index_str+"]}");
+  }
+
+  //view.index:
+  code.push(
+    "proto.index=function "+className+"_index(", args.join(), "){return "+index_str+"}");
+
+  //view.hi():
+  code.push("proto.hi=function "+className+"_hi("+args.join(",")+"){return new "+className+"(this.data,"+
+    indices.map(function(i) {
+      return ["(typeof i",i,"!=='number'||i",i,"<0)?this.shape[", i, "]:i", i,"|0"].join("")
+    }).join(",")+","+
+    indices.map(function(i) {
+      return "this.stride["+i + "]"
+    }).join(",")+",this.offset)}");
+
+  //view.lo():
+  var a_vars = indices.map(function(i) { return "a"+i+"=this.shape["+i+"]" });
+  var c_vars = indices.map(function(i) { return "c"+i+"=this.stride["+i+"]" });
+  code.push("proto.lo=function "+className+"_lo("+args.join(",")+"){var b=this.offset,d=0,"+a_vars.join(",")+","+c_vars.join(","));
+  for(var i=0; i<dimension; ++i) {
+    code.push(
+"if(typeof i"+i+"==='number'&&i"+i+">=0){\
+d=i"+i+"|0;\
+b+=c"+i+"*d;\
+a"+i+"-=d}");
+  }
+  code.push("return new "+className+"(this.data,"+
+    indices.map(function(i) {
+      return "a"+i
+    }).join(",")+","+
+    indices.map(function(i) {
+      return "c"+i
+    }).join(",")+",b)}");
+
+  //view.step():
+  code.push("proto.step=function "+className+"_step("+args.join(",")+"){var "+
+    indices.map(function(i) {
+      return "a"+i+"=this.shape["+i+"]"
+    }).join(",")+","+
+    indices.map(function(i) {
+      return "b"+i+"=this.stride["+i+"]"
+    }).join(",")+",c=this.offset,d=0,ceil=Math.ceil");
+  for(var i=0; i<dimension; ++i) {
+    code.push(
+"if(typeof i"+i+"==='number'){\
+d=i"+i+"|0;\
+if(d<0){\
+c+=b"+i+"*(a"+i+"-1);\
+a"+i+"=ceil(-a"+i+"/d)\
+}else{\
+a"+i+"=ceil(a"+i+"/d)\
+}\
+b"+i+"*=d\
+}");
+  }
+  code.push("return new "+className+"(this.data,"+
+    indices.map(function(i) {
+      return "a" + i
+    }).join(",")+","+
+    indices.map(function(i) {
+      return "b" + i
+    }).join(",")+",c)}");
+
+  //view.transpose():
+  var tShape = new Array(dimension);
+  var tStride = new Array(dimension);
+  for(var i=0; i<dimension; ++i) {
+    tShape[i] = "a[i"+i+"]";
+    tStride[i] = "b[i"+i+"]";
+  }
+  code.push("proto.transpose=function "+className+"_transpose("+args+"){"+
+    args.map(function(n,idx) { return n + "=(" + n + "===undefined?" + idx + ":" + n + "|0)"}).join(";"),
+    "var a=this.shape,b=this.stride;return new "+className+"(this.data,"+tShape.join(",")+","+tStride.join(",")+",this.offset)}");
+
+  //view.pick():
+  code.push("proto.pick=function "+className+"_pick("+args+"){var a=[],b=[],c=this.offset");
+  for(var i=0; i<dimension; ++i) {
+    code.push("if(typeof i"+i+"==='number'&&i"+i+">=0){c=(c+this.stride["+i+"]*i"+i+")|0}else{a.push(this.shape["+i+"]);b.push(this.stride["+i+"])}");
+  }
+  code.push("var ctor=CTOR_LIST[a.length+1];return ctor(this.data,a,b,c)}");
+
+  //Add return statement
+  code.push("return function construct_"+className+"(data,shape,stride,offset){return new "+className+"(data,"+
+    indices.map(function(i) {
+      return "shape["+i+"]"
+    }).join(",")+","+
+    indices.map(function(i) {
+      return "stride["+i+"]"
+    }).join(",")+",offset)}");
+
+  //Compile procedure
+  var procedure = new Function("CTOR_LIST", "ORDER", code.join("\n"));
+  return procedure(CACHED_CONSTRUCTORS[dtype], order)
+}
+
+function arrayDType(data) {
+  if(index$2(data)) {
+    return "buffer"
+  }
+  if(hasTypedArrays) {
+    switch(Object.prototype.toString.call(data)) {
+      case "[object Float64Array]":
+        return "float64"
+      case "[object Float32Array]":
+        return "float32"
+      case "[object Int8Array]":
+        return "int8"
+      case "[object Int16Array]":
+        return "int16"
+      case "[object Int32Array]":
+        return "int32"
+      case "[object Uint8Array]":
+        return "uint8"
+      case "[object Uint16Array]":
+        return "uint16"
+      case "[object Uint32Array]":
+        return "uint32"
+      case "[object Uint8ClampedArray]":
+        return "uint8_clamped"
+    }
+  }
+  if(Array.isArray(data)) {
+    return "array"
+  }
+  return "generic"
+}
+
+var CACHED_CONSTRUCTORS = {
+  "float32":[],
+  "float64":[],
+  "int8":[],
+  "int16":[],
+  "int32":[],
+  "uint8":[],
+  "uint16":[],
+  "uint32":[],
+  "array":[],
+  "uint8_clamped":[],
+  "buffer":[],
+  "generic":[]
+};function wrappedNDArrayCtor(data, shape, stride, offset) {
+  if(data === undefined) {
+    var ctor = CACHED_CONSTRUCTORS.array[0];
+    return ctor([])
+  } else if(typeof data === "number") {
+    data = [data];
+  }
+  if(shape === undefined) {
+    shape = [ data.length ];
+  }
+  var d = shape.length;
+  if(stride === undefined) {
+    stride = new Array(d);
+    for(var i=d-1, sz=1; i>=0; --i) {
+      stride[i] = sz;
+      sz *= shape[i];
+    }
+  }
+  if(offset === undefined) {
+    offset = 0;
+    for(var i=0; i<d; ++i) {
+      if(stride[i] < 0) {
+        offset -= (shape[i]-1)*stride[i];
+      }
+    }
+  }
+  var dtype = arrayDType(data);
+  var ctor_list = CACHED_CONSTRUCTORS[dtype];
+  while(ctor_list.length <= d+1) {
+    ctor_list.push(compileConstructor(dtype, ctor_list.length-1));
+  }
+  var ctor = ctor_list[d+1];
+  return ctor(data, shape, stride, offset)
+}
+
+var ndarray = wrappedNDArrayCtor;
+
+function unique_pred(list, compare) {
+  var ptr = 1
+    , len = list.length
+    , a=list[0], b=list[0];
+  for(var i=1; i<len; ++i) {
+    b = a;
+    a = list[i];
+    if(compare(a, b)) {
+      if(i === ptr) {
+        ptr++;
+        continue
+      }
+      list[ptr++] = a;
+    }
+  }
+  list.length = ptr;
+  return list
+}
+
+function unique_eq(list) {
+  var ptr = 1
+    , len = list.length
+    , a=list[0], b = list[0];
+  for(var i=1; i<len; ++i, b=a) {
+    b = a;
+    a = list[i];
+    if(a !== b) {
+      if(i === ptr) {
+        ptr++;
+        continue
+      }
+      list[ptr++] = a;
+    }
+  }
+  list.length = ptr;
+  return list
+}
+
+function unique(list, compare, sorted) {
+  if(list.length === 0) {
+    return list
+  }
+  if(compare) {
+    if(!sorted) {
+      list.sort(compare);
+    }
+    return unique_pred(list, compare)
+  }
+  if(!sorted) {
+    list.sort();
+  }
+  return unique_eq(list)
+}
+
+var uniq = unique;
+
+// This function generates very simple loops analogous to how you typically traverse arrays (the outermost loop corresponds to the slowest changing index, the innermost loop to the fastest changing index)
+// TODO: If two arrays have the same strides (and offsets) there is potential for decreasing the number of "pointers" and related variables. The drawback is that the type signature would become more specific and that there would thus be less potential for caching, but it might still be worth it, especially when dealing with large numbers of arguments.
+function innerFill(order, proc, body) {
+  var dimension = order.length
+    , nargs = proc.arrayArgs.length
+    , has_index = proc.indexArgs.length>0
+    , code = []
+    , vars = []
+    , idx=0, pidx=0, i, j;
+  for(i=0; i<dimension; ++i) { // Iteration variables
+    vars.push(["i",i,"=0"].join(""));
+  }
+  //Compute scan deltas
+  for(j=0; j<nargs; ++j) {
+    for(i=0; i<dimension; ++i) {
+      pidx = idx;
+      idx = order[i];
+      if(i === 0) { // The innermost/fastest dimension's delta is simply its stride
+        vars.push(["d",j,"s",i,"=t",j,"p",idx].join(""));
+      } else { // For other dimensions the delta is basically the stride minus something which essentially "rewinds" the previous (more inner) dimension
+        vars.push(["d",j,"s",i,"=(t",j,"p",idx,"-s",pidx,"*t",j,"p",pidx,")"].join(""));
+      }
+    }
+  }
+  if (vars.length > 0) {
+    code.push("var " + vars.join(","));
+  }  
+  //Scan loop
+  for(i=dimension-1; i>=0; --i) { // Start at largest stride and work your way inwards
+    idx = order[i];
+    code.push(["for(i",i,"=0;i",i,"<s",idx,";++i",i,"){"].join(""));
+  }
+  //Push body of inner loop
+  code.push(body);
+  //Advance scan pointers
+  for(i=0; i<dimension; ++i) {
+    pidx = idx;
+    idx = order[i];
+    for(j=0; j<nargs; ++j) {
+      code.push(["p",j,"+=d",j,"s",i].join(""));
+    }
+    if(has_index) {
+      if(i > 0) {
+        code.push(["index[",pidx,"]-=s",pidx].join(""));
+      }
+      code.push(["++index[",idx,"]"].join(""));
+    }
+    code.push("}");
+  }
+  return code.join("\n")
+}
+
+// Generate "outer" loops that loop over blocks of data, applying "inner" loops to the blocks by manipulating the local variables in such a way that the inner loop only "sees" the current block.
+// TODO: If this is used, then the previous declaration (done by generateCwiseOp) of s* is essentially unnecessary.
+//       I believe the s* are not used elsewhere (in particular, I don't think they're used in the pre/post parts and "shape" is defined independently), so it would be possible to make defining the s* dependent on what loop method is being used.
+function outerFill(matched, order, proc, body) {
+  var dimension = order.length
+    , nargs = proc.arrayArgs.length
+    , blockSize = proc.blockSize
+    , has_index = proc.indexArgs.length > 0
+    , code = [];
+  for(var i=0; i<nargs; ++i) {
+    code.push(["var offset",i,"=p",i].join(""));
+  }
+  //Generate loops for unmatched dimensions
+  // The order in which these dimensions are traversed is fairly arbitrary (from small stride to large stride, for the first argument)
+  // TODO: It would be nice if the order in which these loops are placed would also be somehow "optimal" (at the very least we should check that it really doesn't hurt us if they're not).
+  for(var i=matched; i<dimension; ++i) {
+    code.push(["for(var j"+i+"=SS[", order[i], "]|0;j", i, ">0;){"].join("")); // Iterate back to front
+    code.push(["if(j",i,"<",blockSize,"){"].join("")); // Either decrease j by blockSize (s = blockSize), or set it to zero (after setting s = j).
+    code.push(["s",order[i],"=j",i].join(""));
+    code.push(["j",i,"=0"].join(""));
+    code.push(["}else{s",order[i],"=",blockSize].join(""));
+    code.push(["j",i,"-=",blockSize,"}"].join(""));
+    if(has_index) {
+      code.push(["index[",order[i],"]=j",i].join(""));
+    }
+  }
+  for(var i=0; i<nargs; ++i) {
+    var indexStr = ["offset"+i];
+    for(var j=matched; j<dimension; ++j) {
+      indexStr.push(["j",j,"*t",i,"p",order[j]].join(""));
+    }
+    code.push(["p",i,"=(",indexStr.join("+"),")"].join(""));
+  }
+  code.push(innerFill(order, proc, body));
+  for(var i=matched; i<dimension; ++i) {
+    code.push("}");
+  }
+  return code.join("\n")
+}
+
+//Count the number of compatible inner orders
+// This is the length of the longest common prefix of the arrays in orders.
+// Each array in orders lists the dimensions of the correspond ndarray in order of increasing stride.
+// This is thus the maximum number of dimensions that can be efficiently traversed by simple nested loops for all arrays.
+function countMatches(orders) {
+  var matched = 0, dimension = orders[0].length;
+  while(matched < dimension) {
+    for(var j=1; j<orders.length; ++j) {
+      if(orders[j][matched] !== orders[0][matched]) {
+        return matched
+      }
+    }
+    ++matched;
+  }
+  return matched
+}
+
+//Processes a block according to the given data types
+// Replaces variable names by different ones, either "local" ones (that are then ferried in and out of the given array) or ones matching the arguments that the function performing the ultimate loop will accept.
+function processBlock(block, proc, dtypes) {
+  var code = block.body;
+  var pre = [];
+  var post = [];
+  for(var i=0; i<block.args.length; ++i) {
+    var carg = block.args[i];
+    if(carg.count <= 0) {
+      continue
+    }
+    var re = new RegExp(carg.name, "g");
+    var ptrStr = "";
+    var arrNum = proc.arrayArgs.indexOf(i);
+    switch(proc.argTypes[i]) {
+      case "offset":
+        var offArgIndex = proc.offsetArgIndex.indexOf(i);
+        var offArg = proc.offsetArgs[offArgIndex];
+        arrNum = offArg.array;
+        ptrStr = "+q" + offArgIndex; // Adds offset to the "pointer" in the array
+      case "array":
+        ptrStr = "p" + arrNum + ptrStr;
+        var localStr = "l" + i;
+        var arrStr = "a" + arrNum;
+        if (proc.arrayBlockIndices[arrNum] === 0) { // Argument to body is just a single value from this array
+          if(carg.count === 1) { // Argument/array used only once(?)
+            if(dtypes[arrNum] === "generic") {
+              if(carg.lvalue) {
+                pre.push(["var ", localStr, "=", arrStr, ".get(", ptrStr, ")"].join("")); // Is this necessary if the argument is ONLY used as an lvalue? (keep in mind that we can have a += something, so we would actually need to check carg.rvalue)
+                code = code.replace(re, localStr);
+                post.push([arrStr, ".set(", ptrStr, ",", localStr,")"].join(""));
+              } else {
+                code = code.replace(re, [arrStr, ".get(", ptrStr, ")"].join(""));
+              }
+            } else {
+              code = code.replace(re, [arrStr, "[", ptrStr, "]"].join(""));
+            }
+          } else if(dtypes[arrNum] === "generic") {
+            pre.push(["var ", localStr, "=", arrStr, ".get(", ptrStr, ")"].join("")); // TODO: Could we optimize by checking for carg.rvalue?
+            code = code.replace(re, localStr);
+            if(carg.lvalue) {
+              post.push([arrStr, ".set(", ptrStr, ",", localStr,")"].join(""));
+            }
+          } else {
+            pre.push(["var ", localStr, "=", arrStr, "[", ptrStr, "]"].join("")); // TODO: Could we optimize by checking for carg.rvalue?
+            code = code.replace(re, localStr);
+            if(carg.lvalue) {
+              post.push([arrStr, "[", ptrStr, "]=", localStr].join(""));
+            }
+          }
+        } else { // Argument to body is a "block"
+          var reStrArr = [carg.name], ptrStrArr = [ptrStr];
+          for(var j=0; j<Math.abs(proc.arrayBlockIndices[arrNum]); j++) {
+            reStrArr.push("\\s*\\[([^\\]]+)\\]");
+            ptrStrArr.push("$" + (j+1) + "*t" + arrNum + "b" + j); // Matched index times stride
+          }
+          re = new RegExp(reStrArr.join(""), "g");
+          ptrStr = ptrStrArr.join("+");
+          if(dtypes[arrNum] === "generic") {
+            /*if(carg.lvalue) {
+              pre.push(["var ", localStr, "=", arrStr, ".get(", ptrStr, ")"].join("")) // Is this necessary if the argument is ONLY used as an lvalue? (keep in mind that we can have a += something, so we would actually need to check carg.rvalue)
+              code = code.replace(re, localStr)
+              post.push([arrStr, ".set(", ptrStr, ",", localStr,")"].join(""))
+            } else {
+              code = code.replace(re, [arrStr, ".get(", ptrStr, ")"].join(""))
+            }*/
+            throw new Error("cwise: Generic arrays not supported in combination with blocks!")
+          } else {
+            // This does not produce any local variables, even if variables are used multiple times. It would be possible to do so, but it would complicate things quite a bit.
+            code = code.replace(re, [arrStr, "[", ptrStr, "]"].join(""));
+          }
+        }
+      break
+      case "scalar":
+        code = code.replace(re, "Y" + proc.scalarArgs.indexOf(i));
+      break
+      case "index":
+        code = code.replace(re, "index");
+      break
+      case "shape":
+        code = code.replace(re, "shape");
+      break
+    }
+  }
+  return [pre.join("\n"), code, post.join("\n")].join("\n").trim()
+}
+
+function typeSummary(dtypes) {
+  var summary = new Array(dtypes.length);
+  var allEqual = true;
+  for(var i=0; i<dtypes.length; ++i) {
+    var t = dtypes[i];
+    var digits = t.match(/\d+/);
+    if(!digits) {
+      digits = "";
+    } else {
+      digits = digits[0];
+    }
+    if(t.charAt(0) === 0) {
+      summary[i] = "u" + t.charAt(1) + digits;
+    } else {
+      summary[i] = t.charAt(0) + digits;
+    }
+    if(i > 0) {
+      allEqual = allEqual && summary[i] === summary[i-1];
+    }
+  }
+  if(allEqual) {
+    return summary[0]
+  }
+  return summary.join("")
+}
+
+//Generates a cwise operator
+function generateCWiseOp(proc, typesig) {
+
+  //Compute dimension
+  // Arrays get put first in typesig, and there are two entries per array (dtype and order), so this gets the number of dimensions in the first array arg.
+  var dimension = (typesig[1].length - Math.abs(proc.arrayBlockIndices[0]))|0;
+  var orders = new Array(proc.arrayArgs.length);
+  var dtypes = new Array(proc.arrayArgs.length);
+  for(var i=0; i<proc.arrayArgs.length; ++i) {
+    dtypes[i] = typesig[2*i];
+    orders[i] = typesig[2*i+1];
+  }
+  
+  //Determine where block and loop indices start and end
+  var blockBegin = [], blockEnd = []; // These indices are exposed as blocks
+  var loopBegin = [], loopEnd = []; // These indices are iterated over
+  var loopOrders = []; // orders restricted to the loop indices
+  for(var i=0; i<proc.arrayArgs.length; ++i) {
+    if (proc.arrayBlockIndices[i]<0) {
+      loopBegin.push(0);
+      loopEnd.push(dimension);
+      blockBegin.push(dimension);
+      blockEnd.push(dimension+proc.arrayBlockIndices[i]);
+    } else {
+      loopBegin.push(proc.arrayBlockIndices[i]); // Non-negative
+      loopEnd.push(proc.arrayBlockIndices[i]+dimension);
+      blockBegin.push(0);
+      blockEnd.push(proc.arrayBlockIndices[i]);
+    }
+    var newOrder = [];
+    for(var j=0; j<orders[i].length; j++) {
+      if (loopBegin[i]<=orders[i][j] && orders[i][j]<loopEnd[i]) {
+        newOrder.push(orders[i][j]-loopBegin[i]); // If this is a loop index, put it in newOrder, subtracting loopBegin, to make sure that all loopOrders are using a common set of indices.
+      }
+    }
+    loopOrders.push(newOrder);
+  }
+
+  //First create arguments for procedure
+  var arglist = ["SS"]; // SS is the overall shape over which we iterate
+  var code = ["'use strict'"];
+  var vars = [];
+  
+  for(var j=0; j<dimension; ++j) {
+    vars.push(["s", j, "=SS[", j, "]"].join("")); // The limits for each dimension.
+  }
+  for(var i=0; i<proc.arrayArgs.length; ++i) {
+    arglist.push("a"+i); // Actual data array
+    arglist.push("t"+i); // Strides
+    arglist.push("p"+i); // Offset in the array at which the data starts (also used for iterating over the data)
+    
+    for(var j=0; j<dimension; ++j) { // Unpack the strides into vars for looping
+      vars.push(["t",i,"p",j,"=t",i,"[",loopBegin[i]+j,"]"].join(""));
+    }
+    
+    for(var j=0; j<Math.abs(proc.arrayBlockIndices[i]); ++j) { // Unpack the strides into vars for block iteration
+      vars.push(["t",i,"b",j,"=t",i,"[",blockBegin[i]+j,"]"].join(""));
+    }
+  }
+  for(var i=0; i<proc.scalarArgs.length; ++i) {
+    arglist.push("Y" + i);
+  }
+  if(proc.shapeArgs.length > 0) {
+    vars.push("shape=SS.slice(0)"); // Makes the shape over which we iterate available to the user defined functions (so you can use width/height for example)
+  }
+  if(proc.indexArgs.length > 0) {
+    // Prepare an array to keep track of the (logical) indices, initialized to dimension zeroes.
+    var zeros = new Array(dimension);
+    for(var i=0; i<dimension; ++i) {
+      zeros[i] = "0";
+    }
+    vars.push(["index=[", zeros.join(","), "]"].join(""));
+  }
+  for(var i=0; i<proc.offsetArgs.length; ++i) { // Offset arguments used for stencil operations
+    var off_arg = proc.offsetArgs[i];
+    var init_string = [];
+    for(var j=0; j<off_arg.offset.length; ++j) {
+      if(off_arg.offset[j] === 0) {
+        continue
+      } else if(off_arg.offset[j] === 1) {
+        init_string.push(["t", off_arg.array, "p", j].join(""));      
+      } else {
+        init_string.push([off_arg.offset[j], "*t", off_arg.array, "p", j].join(""));
+      }
+    }
+    if(init_string.length === 0) {
+      vars.push("q" + i + "=0");
+    } else {
+      vars.push(["q", i, "=", init_string.join("+")].join(""));
+    }
+  }
+
+  //Prepare this variables
+  var thisVars = uniq([].concat(proc.pre.thisVars)
+                      .concat(proc.body.thisVars)
+                      .concat(proc.post.thisVars));
+  vars = vars.concat(thisVars);
+  if (vars.length > 0) {
+    code.push("var " + vars.join(","));
+  }
+  for(var i=0; i<proc.arrayArgs.length; ++i) {
+    code.push("p"+i+"|=0");
+  }
+  
+  //Inline prelude
+  if(proc.pre.body.length > 3) {
+    code.push(processBlock(proc.pre, proc, dtypes));
+  }
+
+  //Process body
+  var body = processBlock(proc.body, proc, dtypes);
+  var matched = countMatches(loopOrders);
+  if(matched < dimension) {
+    code.push(outerFill(matched, loopOrders[0], proc, body)); // TODO: Rather than passing loopOrders[0], it might be interesting to look at passing an order that represents the majority of the arguments for example.
+  } else {
+    code.push(innerFill(loopOrders[0], proc, body));
+  }
+
+  //Inline epilog
+  if(proc.post.body.length > 3) {
+    code.push(processBlock(proc.post, proc, dtypes));
+  }
+  
+  if(proc.debug) {
+    console.log("-----Generated cwise routine for ", typesig, ":\n" + code.join("\n") + "\n----------");
+  }
+  
+  var loopName = [(proc.funcName||"unnamed"), "_cwise_loop_", orders[0].join("s"),"m",matched,typeSummary(dtypes)].join("");
+  var f = new Function(["function ",loopName,"(", arglist.join(","),"){", code.join("\n"),"} return ", loopName].join(""));
+  return f()
+}
+var compile = generateCWiseOp;
+
+// The function below is called when constructing a cwise function object, and does the following:
+// A function object is constructed which accepts as argument a compilation function and returns another function.
+// It is this other function that is eventually returned by createThunk, and this function is the one that actually
+// checks whether a certain pattern of arguments has already been used before and compiles new loops as needed.
+// The compilation passed to the first function object is used for compiling new functions.
+// Once this function object is created, it is called with compile as argument, where the first argument of compile
+// is bound to "proc" (essentially containing a preprocessed version of the user arguments to cwise).
+// So createThunk roughly works like this:
+// function createThunk(proc) {
+//   var thunk = function(compileBound) {
+//     var CACHED = {}
+//     return function(arrays and scalars) {
+//       if (dtype and order of arrays in CACHED) {
+//         var func = CACHED[dtype and order of arrays]
+//       } else {
+//         var func = CACHED[dtype and order of arrays] = compileBound(dtype and order of arrays)
+//       }
+//       return func(arrays and scalars)
+//     }
+//   }
+//   return thunk(compile.bind1(proc))
+// }
+
+
+
+function createThunk(proc) {
+  var code = ["'use strict'", "var CACHED={}"];
+  var vars = [];
+  var thunkName = proc.funcName + "_cwise_thunk";
+  
+  //Build thunk
+  code.push(["return function ", thunkName, "(", proc.shimArgs.join(","), "){"].join(""));
+  var typesig = [];
+  var string_typesig = [];
+  var proc_args = [["array",proc.arrayArgs[0],".shape.slice(", // Slice shape so that we only retain the shape over which we iterate (which gets passed to the cwise operator as SS).
+                    Math.max(0,proc.arrayBlockIndices[0]),proc.arrayBlockIndices[0]<0?(","+proc.arrayBlockIndices[0]+")"):")"].join("")];
+  var shapeLengthConditions = [], shapeConditions = [];
+  // Process array arguments
+  for(var i=0; i<proc.arrayArgs.length; ++i) {
+    var j = proc.arrayArgs[i];
+    vars.push(["t", j, "=array", j, ".dtype,",
+               "r", j, "=array", j, ".order"].join(""));
+    typesig.push("t" + j);
+    typesig.push("r" + j);
+    string_typesig.push("t"+j);
+    string_typesig.push("r"+j+".join()");
+    proc_args.push("array" + j + ".data");
+    proc_args.push("array" + j + ".stride");
+    proc_args.push("array" + j + ".offset|0");
+    if (i>0) { // Gather conditions to check for shape equality (ignoring block indices)
+      shapeLengthConditions.push("array" + proc.arrayArgs[0] + ".shape.length===array" + j + ".shape.length+" + (Math.abs(proc.arrayBlockIndices[0])-Math.abs(proc.arrayBlockIndices[i])));
+      shapeConditions.push("array" + proc.arrayArgs[0] + ".shape[shapeIndex+" + Math.max(0,proc.arrayBlockIndices[0]) + "]===array" + j + ".shape[shapeIndex+" + Math.max(0,proc.arrayBlockIndices[i]) + "]");
+    }
+  }
+  // Check for shape equality
+  if (proc.arrayArgs.length > 1) {
+    code.push("if (!(" + shapeLengthConditions.join(" && ") + ")) throw new Error('cwise: Arrays do not all have the same dimensionality!')");
+    code.push("for(var shapeIndex=array" + proc.arrayArgs[0] + ".shape.length-" + Math.abs(proc.arrayBlockIndices[0]) + "; shapeIndex-->0;) {");
+    code.push("if (!(" + shapeConditions.join(" && ") + ")) throw new Error('cwise: Arrays do not all have the same shape!')");
+    code.push("}");
+  }
+  // Process scalar arguments
+  for(var i=0; i<proc.scalarArgs.length; ++i) {
+    proc_args.push("scalar" + proc.scalarArgs[i]);
+  }
+  // Check for cached function (and if not present, generate it)
+  vars.push(["type=[", string_typesig.join(","), "].join()"].join(""));
+  vars.push("proc=CACHED[type]");
+  code.push("var " + vars.join(","));
+  
+  code.push(["if(!proc){",
+             "CACHED[type]=proc=compile([", typesig.join(","), "])}",
+             "return proc(", proc_args.join(","), ")}"].join(""));
+
+  if(proc.debug) {
+    console.log("-----Generated thunk:\n" + code.join("\n") + "\n----------");
+  }
+  
+  //Compile thunk
+  var thunk = new Function("compile", code.join("\n"));
+  return thunk(compile.bind(undefined, proc))
+}
+
+var thunk = createThunk;
+
+function Procedure() {
+  this.argTypes = [];
+  this.shimArgs = [];
+  this.arrayArgs = [];
+  this.arrayBlockIndices = [];
+  this.scalarArgs = [];
+  this.offsetArgs = [];
+  this.offsetArgIndex = [];
+  this.indexArgs = [];
+  this.shapeArgs = [];
+  this.funcName = "";
+  this.pre = null;
+  this.body = null;
+  this.post = null;
+  this.debug = false;
+}
+
+function compileCwise(user_args) {
+  //Create procedure
+  var proc = new Procedure();
+  
+  //Parse blocks
+  proc.pre    = user_args.pre;
+  proc.body   = user_args.body;
+  proc.post   = user_args.post;
+
+  //Parse arguments
+  var proc_args = user_args.args.slice(0);
+  proc.argTypes = proc_args;
+  for(var i=0; i<proc_args.length; ++i) {
+    var arg_type = proc_args[i];
+    if(arg_type === "array" || (typeof arg_type === "object" && arg_type.blockIndices)) {
+      proc.argTypes[i] = "array";
+      proc.arrayArgs.push(i);
+      proc.arrayBlockIndices.push(arg_type.blockIndices ? arg_type.blockIndices : 0);
+      proc.shimArgs.push("array" + i);
+      if(i < proc.pre.args.length && proc.pre.args[i].count>0) {
+        throw new Error("cwise: pre() block may not reference array args")
+      }
+      if(i < proc.post.args.length && proc.post.args[i].count>0) {
+        throw new Error("cwise: post() block may not reference array args")
+      }
+    } else if(arg_type === "scalar") {
+      proc.scalarArgs.push(i);
+      proc.shimArgs.push("scalar" + i);
+    } else if(arg_type === "index") {
+      proc.indexArgs.push(i);
+      if(i < proc.pre.args.length && proc.pre.args[i].count > 0) {
+        throw new Error("cwise: pre() block may not reference array index")
+      }
+      if(i < proc.body.args.length && proc.body.args[i].lvalue) {
+        throw new Error("cwise: body() block may not write to array index")
+      }
+      if(i < proc.post.args.length && proc.post.args[i].count > 0) {
+        throw new Error("cwise: post() block may not reference array index")
+      }
+    } else if(arg_type === "shape") {
+      proc.shapeArgs.push(i);
+      if(i < proc.pre.args.length && proc.pre.args[i].lvalue) {
+        throw new Error("cwise: pre() block may not write to array shape")
+      }
+      if(i < proc.body.args.length && proc.body.args[i].lvalue) {
+        throw new Error("cwise: body() block may not write to array shape")
+      }
+      if(i < proc.post.args.length && proc.post.args[i].lvalue) {
+        throw new Error("cwise: post() block may not write to array shape")
+      }
+    } else if(typeof arg_type === "object" && arg_type.offset) {
+      proc.argTypes[i] = "offset";
+      proc.offsetArgs.push({ array: arg_type.array, offset:arg_type.offset });
+      proc.offsetArgIndex.push(i);
+    } else {
+      throw new Error("cwise: Unknown argument type " + proc_args[i])
+    }
+  }
+  
+  //Make sure at least one array argument was specified
+  if(proc.arrayArgs.length <= 0) {
+    throw new Error("cwise: No array arguments specified")
+  }
+  
+  //Make sure arguments are correct
+  if(proc.pre.args.length > proc_args.length) {
+    throw new Error("cwise: Too many arguments in pre() block")
+  }
+  if(proc.body.args.length > proc_args.length) {
+    throw new Error("cwise: Too many arguments in body() block")
+  }
+  if(proc.post.args.length > proc_args.length) {
+    throw new Error("cwise: Too many arguments in post() block")
+  }
+
+  //Check debug flag
+  proc.debug = !!user_args.printCode || !!user_args.debug;
+  
+  //Retrieve name
+  proc.funcName = user_args.funcName || "cwise";
+  
+  //Read in block size
+  proc.blockSize = user_args.blockSize || 64;
+
+  return thunk(proc)
+}
+
+var compiler = compileCwise;
+
+var ndarrayOps = createCommonjsModule(function (module, exports) {
+"use strict";
+
+
+
+var EmptyProc = {
+  body: "",
+  args: [],
+  thisVars: [],
+  localVars: []
+};
+
+function fixup(x) {
+  if(!x) {
+    return EmptyProc
+  }
+  for(var i=0; i<x.args.length; ++i) {
+    var a = x.args[i];
+    if(i === 0) {
+      x.args[i] = {name: a, lvalue:true, rvalue: !!x.rvalue, count:x.count||1 };
+    } else {
+      x.args[i] = {name: a, lvalue:false, rvalue:true, count: 1};
+    }
+  }
+  if(!x.thisVars) {
+    x.thisVars = [];
+  }
+  if(!x.localVars) {
+    x.localVars = [];
+  }
+  return x
+}
+
+function pcompile(user_args) {
+  return compiler({
+    args:     user_args.args,
+    pre:      fixup(user_args.pre),
+    body:     fixup(user_args.body),
+    post:     fixup(user_args.proc),
+    funcName: user_args.funcName
+  })
+}
+
+function makeOp(user_args) {
+  var args = [];
+  for(var i=0; i<user_args.args.length; ++i) {
+    args.push("a"+i);
+  }
+  var wrapper = new Function("P", [
+    "return function ", user_args.funcName, "_ndarrayops(", args.join(","), ") {P(", args.join(","), ");return a0}"
+  ].join(""));
+  return wrapper(pcompile(user_args))
+}
+
+var assign_ops = {
+  add:  "+",
+  sub:  "-",
+  mul:  "*",
+  div:  "/",
+  mod:  "%",
+  band: "&",
+  bor:  "|",
+  bxor: "^",
+  lshift: "<<",
+  rshift: ">>",
+  rrshift: ">>>"
+};(function(){
+  for(var id in assign_ops) {
+    var op = assign_ops[id];
+    exports[id] = makeOp({
+      args: ["array","array","array"],
+      body: {args:["a","b","c"],
+             body: "a=b"+op+"c"},
+      funcName: id
+    });
+    exports[id+"eq"] = makeOp({
+      args: ["array","array"],
+      body: {args:["a","b"],
+             body:"a"+op+"=b"},
+      rvalue: true,
+      funcName: id+"eq"
+    });
+    exports[id+"s"] = makeOp({
+      args: ["array", "array", "scalar"],
+      body: {args:["a","b","s"],
+             body:"a=b"+op+"s"},
+      funcName: id+"s"
+    });
+    exports[id+"seq"] = makeOp({
+      args: ["array","scalar"],
+      body: {args:["a","s"],
+             body:"a"+op+"=s"},
+      rvalue: true,
+      funcName: id+"seq"
+    });
+  }
+})();
+
+var unary_ops = {
+  not: "!",
+  bnot: "~",
+  neg: "-",
+  recip: "1.0/"
+};(function(){
+  for(var id in unary_ops) {
+    var op = unary_ops[id];
+    exports[id] = makeOp({
+      args: ["array", "array"],
+      body: {args:["a","b"],
+             body:"a="+op+"b"},
+      funcName: id
+    });
+    exports[id+"eq"] = makeOp({
+      args: ["array"],
+      body: {args:["a"],
+             body:"a="+op+"a"},
+      rvalue: true,
+      count: 2,
+      funcName: id+"eq"
+    });
+  }
+})();
+
+var binary_ops = {
+  and: "&&",
+  or: "||",
+  eq: "===",
+  neq: "!==",
+  lt: "<",
+  gt: ">",
+  leq: "<=",
+  geq: ">="
+};(function() {
+  for(var id in binary_ops) {
+    var op = binary_ops[id];
+    exports[id] = makeOp({
+      args: ["array","array","array"],
+      body: {args:["a", "b", "c"],
+             body:"a=b"+op+"c"},
+      funcName: id
+    });
+    exports[id+"s"] = makeOp({
+      args: ["array","array","scalar"],
+      body: {args:["a", "b", "s"],
+             body:"a=b"+op+"s"},
+      funcName: id+"s"
+    });
+    exports[id+"eq"] = makeOp({
+      args: ["array", "array"],
+      body: {args:["a", "b"],
+             body:"a=a"+op+"b"},
+      rvalue:true,
+      count:2,
+      funcName: id+"eq"
+    });
+    exports[id+"seq"] = makeOp({
+      args: ["array", "scalar"],
+      body: {args:["a","s"],
+             body:"a=a"+op+"s"},
+      rvalue:true,
+      count:2,
+      funcName: id+"seq"
+    });
+  }
+})();
+
+var math_unary = [
+  "abs",
+  "acos",
+  "asin",
+  "atan",
+  "ceil",
+  "cos",
+  "exp",
+  "floor",
+  "log",
+  "round",
+  "sin",
+  "sqrt",
+  "tan"
+];(function() {
+  for(var i=0; i<math_unary.length; ++i) {
+    var f = math_unary[i];
+    exports[f] = makeOp({
+                    args: ["array", "array"],
+                    pre: {args:[], body:"this_f=Math."+f, thisVars:["this_f"]},
+                    body: {args:["a","b"], body:"a=this_f(b)", thisVars:["this_f"]},
+                    funcName: f
+                  });
+    exports[f+"eq"] = makeOp({
+                      args: ["array"],
+                      pre: {args:[], body:"this_f=Math."+f, thisVars:["this_f"]},
+                      body: {args: ["a"], body:"a=this_f(a)", thisVars:["this_f"]},
+                      rvalue: true,
+                      count: 2,
+                      funcName: f+"eq"
+                    });
+  }
+})();
+
+var math_comm = [
+  "max",
+  "min",
+  "atan2",
+  "pow"
+];(function(){
+  for(var i=0; i<math_comm.length; ++i) {
+    var f= math_comm[i];
+    exports[f] = makeOp({
+                  args:["array", "array", "array"],
+                  pre: {args:[], body:"this_f=Math."+f, thisVars:["this_f"]},
+                  body: {args:["a","b","c"], body:"a=this_f(b,c)", thisVars:["this_f"]},
+                  funcName: f
+                });
+    exports[f+"s"] = makeOp({
+                  args:["array", "array", "scalar"],
+                  pre: {args:[], body:"this_f=Math."+f, thisVars:["this_f"]},
+                  body: {args:["a","b","c"], body:"a=this_f(b,c)", thisVars:["this_f"]},
+                  funcName: f+"s"
+                  });
+    exports[f+"eq"] = makeOp({ args:["array", "array"],
+                  pre: {args:[], body:"this_f=Math."+f, thisVars:["this_f"]},
+                  body: {args:["a","b"], body:"a=this_f(a,b)", thisVars:["this_f"]},
+                  rvalue: true,
+                  count: 2,
+                  funcName: f+"eq"
+                  });
+    exports[f+"seq"] = makeOp({ args:["array", "scalar"],
+                  pre: {args:[], body:"this_f=Math."+f, thisVars:["this_f"]},
+                  body: {args:["a","b"], body:"a=this_f(a,b)", thisVars:["this_f"]},
+                  rvalue:true,
+                  count:2,
+                  funcName: f+"seq"
+                  });
+  }
+})();
+
+var math_noncomm = [
+  "atan2",
+  "pow"
+];(function(){
+  for(var i=0; i<math_noncomm.length; ++i) {
+    var f= math_noncomm[i];
+    exports[f+"op"] = makeOp({
+                  args:["array", "array", "array"],
+                  pre: {args:[], body:"this_f=Math."+f, thisVars:["this_f"]},
+                  body: {args:["a","b","c"], body:"a=this_f(c,b)", thisVars:["this_f"]},
+                  funcName: f+"op"
+                });
+    exports[f+"ops"] = makeOp({
+                  args:["array", "array", "scalar"],
+                  pre: {args:[], body:"this_f=Math."+f, thisVars:["this_f"]},
+                  body: {args:["a","b","c"], body:"a=this_f(c,b)", thisVars:["this_f"]},
+                  funcName: f+"ops"
+                  });
+    exports[f+"opeq"] = makeOp({ args:["array", "array"],
+                  pre: {args:[], body:"this_f=Math."+f, thisVars:["this_f"]},
+                  body: {args:["a","b"], body:"a=this_f(b,a)", thisVars:["this_f"]},
+                  rvalue: true,
+                  count: 2,
+                  funcName: f+"opeq"
+                  });
+    exports[f+"opseq"] = makeOp({ args:["array", "scalar"],
+                  pre: {args:[], body:"this_f=Math."+f, thisVars:["this_f"]},
+                  body: {args:["a","b"], body:"a=this_f(b,a)", thisVars:["this_f"]},
+                  rvalue:true,
+                  count:2,
+                  funcName: f+"opseq"
+                  });
+  }
+})();
+
+exports.any = compiler({
+  args:["array"],
+  pre: EmptyProc,
+  body: {args:[{name:"a", lvalue:false, rvalue:true, count:1}], body: "if(a){return true}", localVars: [], thisVars: []},
+  post: {args:[], localVars:[], thisVars:[], body:"return false"},
+  funcName: "any"
+});
+
+exports.all = compiler({
+  args:["array"],
+  pre: EmptyProc,
+  body: {args:[{name:"x", lvalue:false, rvalue:true, count:1}], body: "if(!x){return false}", localVars: [], thisVars: []},
+  post: {args:[], localVars:[], thisVars:[], body:"return true"},
+  funcName: "all"
+});
+
+exports.sum = compiler({
+  args:["array"],
+  pre: {args:[], localVars:[], thisVars:["this_s"], body:"this_s=0"},
+  body: {args:[{name:"a", lvalue:false, rvalue:true, count:1}], body: "this_s+=a", localVars: [], thisVars: ["this_s"]},
+  post: {args:[], localVars:[], thisVars:["this_s"], body:"return this_s"},
+  funcName: "sum"
+});
+
+exports.prod = compiler({
+  args:["array"],
+  pre: {args:[], localVars:[], thisVars:["this_s"], body:"this_s=1"},
+  body: {args:[{name:"a", lvalue:false, rvalue:true, count:1}], body: "this_s*=a", localVars: [], thisVars: ["this_s"]},
+  post: {args:[], localVars:[], thisVars:["this_s"], body:"return this_s"},
+  funcName: "prod"
+});
+
+exports.norm2squared = compiler({
+  args:["array"],
+  pre: {args:[], localVars:[], thisVars:["this_s"], body:"this_s=0"},
+  body: {args:[{name:"a", lvalue:false, rvalue:true, count:2}], body: "this_s+=a*a", localVars: [], thisVars: ["this_s"]},
+  post: {args:[], localVars:[], thisVars:["this_s"], body:"return this_s"},
+  funcName: "norm2squared"
+});
+  
+exports.norm2 = compiler({
+  args:["array"],
+  pre: {args:[], localVars:[], thisVars:["this_s"], body:"this_s=0"},
+  body: {args:[{name:"a", lvalue:false, rvalue:true, count:2}], body: "this_s+=a*a", localVars: [], thisVars: ["this_s"]},
+  post: {args:[], localVars:[], thisVars:["this_s"], body:"return Math.sqrt(this_s)"},
+  funcName: "norm2"
+});
+  
+
+exports.norminf = compiler({
+  args:["array"],
+  pre: {args:[], localVars:[], thisVars:["this_s"], body:"this_s=0"},
+  body: {args:[{name:"a", lvalue:false, rvalue:true, count:4}], body:"if(-a>this_s){this_s=-a}else if(a>this_s){this_s=a}", localVars: [], thisVars: ["this_s"]},
+  post: {args:[], localVars:[], thisVars:["this_s"], body:"return this_s"},
+  funcName: "norminf"
+});
+
+exports.norm1 = compiler({
+  args:["array"],
+  pre: {args:[], localVars:[], thisVars:["this_s"], body:"this_s=0"},
+  body: {args:[{name:"a", lvalue:false, rvalue:true, count:3}], body: "this_s+=a<0?-a:a", localVars: [], thisVars: ["this_s"]},
+  post: {args:[], localVars:[], thisVars:["this_s"], body:"return this_s"},
+  funcName: "norm1"
+});
+
+exports.sup = compiler({
+  args: [ "array" ],
+  pre:
+   { body: "this_h=-Infinity",
+     args: [],
+     thisVars: [ "this_h" ],
+     localVars: [] },
+  body:
+   { body: "if(_inline_1_arg0_>this_h)this_h=_inline_1_arg0_",
+     args: [{"name":"_inline_1_arg0_","lvalue":false,"rvalue":true,"count":2} ],
+     thisVars: [ "this_h" ],
+     localVars: [] },
+  post:
+   { body: "return this_h",
+     args: [],
+     thisVars: [ "this_h" ],
+     localVars: [] }
+ });
+
+exports.inf = compiler({
+  args: [ "array" ],
+  pre:
+   { body: "this_h=Infinity",
+     args: [],
+     thisVars: [ "this_h" ],
+     localVars: [] },
+  body:
+   { body: "if(_inline_1_arg0_<this_h)this_h=_inline_1_arg0_",
+     args: [{"name":"_inline_1_arg0_","lvalue":false,"rvalue":true,"count":2} ],
+     thisVars: [ "this_h" ],
+     localVars: [] },
+  post:
+   { body: "return this_h",
+     args: [],
+     thisVars: [ "this_h" ],
+     localVars: [] }
+ });
+
+exports.argmin = compiler({
+  args:["index","array","shape"],
+  pre:{
+    body:"{this_v=Infinity;this_i=_inline_0_arg2_.slice(0)}",
+    args:[
+      {name:"_inline_0_arg0_",lvalue:false,rvalue:false,count:0},
+      {name:"_inline_0_arg1_",lvalue:false,rvalue:false,count:0},
+      {name:"_inline_0_arg2_",lvalue:false,rvalue:true,count:1}
+      ],
+    thisVars:["this_i","this_v"],
+    localVars:[]},
+  body:{
+    body:"{if(_inline_1_arg1_<this_v){this_v=_inline_1_arg1_;for(var _inline_1_k=0;_inline_1_k<_inline_1_arg0_.length;++_inline_1_k){this_i[_inline_1_k]=_inline_1_arg0_[_inline_1_k]}}}",
+    args:[
+      {name:"_inline_1_arg0_",lvalue:false,rvalue:true,count:2},
+      {name:"_inline_1_arg1_",lvalue:false,rvalue:true,count:2}],
+    thisVars:["this_i","this_v"],
+    localVars:["_inline_1_k"]},
+  post:{
+    body:"{return this_i}",
+    args:[],
+    thisVars:["this_i"],
+    localVars:[]}
+});
+
+exports.argmax = compiler({
+  args:["index","array","shape"],
+  pre:{
+    body:"{this_v=-Infinity;this_i=_inline_0_arg2_.slice(0)}",
+    args:[
+      {name:"_inline_0_arg0_",lvalue:false,rvalue:false,count:0},
+      {name:"_inline_0_arg1_",lvalue:false,rvalue:false,count:0},
+      {name:"_inline_0_arg2_",lvalue:false,rvalue:true,count:1}
+      ],
+    thisVars:["this_i","this_v"],
+    localVars:[]},
+  body:{
+    body:"{if(_inline_1_arg1_>this_v){this_v=_inline_1_arg1_;for(var _inline_1_k=0;_inline_1_k<_inline_1_arg0_.length;++_inline_1_k){this_i[_inline_1_k]=_inline_1_arg0_[_inline_1_k]}}}",
+    args:[
+      {name:"_inline_1_arg0_",lvalue:false,rvalue:true,count:2},
+      {name:"_inline_1_arg1_",lvalue:false,rvalue:true,count:2}],
+    thisVars:["this_i","this_v"],
+    localVars:["_inline_1_k"]},
+  post:{
+    body:"{return this_i}",
+    args:[],
+    thisVars:["this_i"],
+    localVars:[]}
+});  
+
+exports.random = makeOp({
+  args: ["array"],
+  pre: {args:[], body:"this_f=Math.random", thisVars:["this_f"]},
+  body: {args: ["a"], body:"a=this_f()", thisVars:["this_f"]},
+  funcName: "random"
+});
+
+exports.assign = makeOp({
+  args:["array", "array"],
+  body: {args:["a", "b"], body:"a=b"},
+  funcName: "assign" });
+
+exports.assigns = makeOp({
+  args:["array", "scalar"],
+  body: {args:["a", "b"], body:"a=b"},
+  funcName: "assigns" });
+
+
+exports.equals = compiler({
+  args:["array", "array"],
+  pre: EmptyProc,
+  body: {args:[{name:"x", lvalue:false, rvalue:true, count:1},
+               {name:"y", lvalue:false, rvalue:true, count:1}], 
+        body: "if(x!==y){return false}", 
+        localVars: [], 
+        thisVars: []},
+  post: {args:[], localVars:[], thisVars:[], body:"return true"},
+  funcName: "equals"
+});
+});
+
+/**
+ * Bit twiddling hacks for JavaScript.
+ *
+ * Author: Mikola Lysenko
+ *
+ * Ported from Stanford bit twiddling hack library:
+ *    http://graphics.stanford.edu/~seander/bithacks.html
+ */
+
+//Number of bits in an integer
+var INT_BITS = 32;
+
+//Constants
+var INT_BITS_1  = INT_BITS;
+var INT_MAX   =  0x7fffffff;
+var INT_MIN   = -1<<(INT_BITS-1);
+
+//Returns -1, 0, +1 depending on sign of x
+var sign = function(v) {
+  return (v > 0) - (v < 0);
+};
+
+//Computes absolute value of integer
+var abs = function(v) {
+  var mask = v >> (INT_BITS-1);
+  return (v ^ mask) - mask;
+};
+
+//Computes minimum of integers x and y
+var min = function(x, y) {
+  return y ^ ((x ^ y) & -(x < y));
+};
+
+//Computes maximum of integers x and y
+var max = function(x, y) {
+  return x ^ ((x ^ y) & -(x < y));
+};
+
+//Checks if a number is a power of two
+var isPow2 = function(v) {
+  return !(v & (v-1)) && (!!v);
+};
+
+//Computes log base 2 of v
+var log2 = function(v) {
+  var r, shift;
+  r =     (v > 0xFFFF) << 4; v >>>= r;
+  shift = (v > 0xFF  ) << 3; v >>>= shift; r |= shift;
+  shift = (v > 0xF   ) << 2; v >>>= shift; r |= shift;
+  shift = (v > 0x3   ) << 1; v >>>= shift; r |= shift;
+  return r | (v >> 1);
+};
+
+//Computes log base 10 of v
+var log10 = function(v) {
+  return  (v >= 1000000000) ? 9 : (v >= 100000000) ? 8 : (v >= 10000000) ? 7 :
+          (v >= 1000000) ? 6 : (v >= 100000) ? 5 : (v >= 10000) ? 4 :
+          (v >= 1000) ? 3 : (v >= 100) ? 2 : (v >= 10) ? 1 : 0;
+};
+
+//Counts number of bits
+var popCount = function(v) {
+  v = v - ((v >>> 1) & 0x55555555);
+  v = (v & 0x33333333) + ((v >>> 2) & 0x33333333);
+  return ((v + (v >>> 4) & 0xF0F0F0F) * 0x1010101) >>> 24;
+};
+
+//Counts number of trailing zeros
+function countTrailingZeros(v) {
+  var c = 32;
+  v &= -v;
+  if (v) c--;
+  if (v & 0x0000FFFF) c -= 16;
+  if (v & 0x00FF00FF) c -= 8;
+  if (v & 0x0F0F0F0F) c -= 4;
+  if (v & 0x33333333) c -= 2;
+  if (v & 0x55555555) c -= 1;
+  return c;
+}
+var countTrailingZeros_1 = countTrailingZeros;
+
+//Rounds to next power of 2
+var nextPow2 = function(v) {
+  v += v === 0;
+  --v;
+  v |= v >>> 1;
+  v |= v >>> 2;
+  v |= v >>> 4;
+  v |= v >>> 8;
+  v |= v >>> 16;
+  return v + 1;
+};
+
+//Rounds down to previous power of 2
+var prevPow2 = function(v) {
+  v |= v >>> 1;
+  v |= v >>> 2;
+  v |= v >>> 4;
+  v |= v >>> 8;
+  v |= v >>> 16;
+  return v - (v>>>1);
+};
+
+//Computes parity of word
+var parity = function(v) {
+  v ^= v >>> 16;
+  v ^= v >>> 8;
+  v ^= v >>> 4;
+  v &= 0xf;
+  return (0x6996 >>> v) & 1;
+};
+
+var REVERSE_TABLE = new Array(256);
+
+(function(tab) {
+  for(var i=0; i<256; ++i) {
+    var v = i, r = i, s = 7;
+    for (v >>>= 1; v; v >>>= 1) {
+      r <<= 1;
+      r |= v & 1;
+      --s;
+    }
+    tab[i] = (r << s) & 0xff;
+  }
+})(REVERSE_TABLE);
+
+//Reverse bits in a 32 bit word
+var reverse = function(v) {
+  return  (REVERSE_TABLE[ v         & 0xff] << 24) |
+          (REVERSE_TABLE[(v >>> 8)  & 0xff] << 16) |
+          (REVERSE_TABLE[(v >>> 16) & 0xff] << 8)  |
+           REVERSE_TABLE[(v >>> 24) & 0xff];
+};
+
+//Interleave bits of 2 coordinates with 16 bits.  Useful for fast quadtree codes
+var interleave2 = function(x, y) {
+  x &= 0xFFFF;
+  x = (x | (x << 8)) & 0x00FF00FF;
+  x = (x | (x << 4)) & 0x0F0F0F0F;
+  x = (x | (x << 2)) & 0x33333333;
+  x = (x | (x << 1)) & 0x55555555;
+
+  y &= 0xFFFF;
+  y = (y | (y << 8)) & 0x00FF00FF;
+  y = (y | (y << 4)) & 0x0F0F0F0F;
+  y = (y | (y << 2)) & 0x33333333;
+  y = (y | (y << 1)) & 0x55555555;
+
+  return x | (y << 1);
+};
+
+//Extracts the nth interleaved component
+var deinterleave2 = function(v, n) {
+  v = (v >>> n) & 0x55555555;
+  v = (v | (v >>> 1))  & 0x33333333;
+  v = (v | (v >>> 2))  & 0x0F0F0F0F;
+  v = (v | (v >>> 4))  & 0x00FF00FF;
+  v = (v | (v >>> 16)) & 0x000FFFF;
+  return (v << 16) >> 16;
+};
+
+
+//Interleave bits of 3 coordinates, each with 10 bits.  Useful for fast octree codes
+var interleave3 = function(x, y, z) {
+  x &= 0x3FF;
+  x  = (x | (x<<16)) & 4278190335;
+  x  = (x | (x<<8))  & 251719695;
+  x  = (x | (x<<4))  & 3272356035;
+  x  = (x | (x<<2))  & 1227133513;
+
+  y &= 0x3FF;
+  y  = (y | (y<<16)) & 4278190335;
+  y  = (y | (y<<8))  & 251719695;
+  y  = (y | (y<<4))  & 3272356035;
+  y  = (y | (y<<2))  & 1227133513;
+  x |= (y << 1);
+  
+  z &= 0x3FF;
+  z  = (z | (z<<16)) & 4278190335;
+  z  = (z | (z<<8))  & 251719695;
+  z  = (z | (z<<4))  & 3272356035;
+  z  = (z | (z<<2))  & 1227133513;
+  
+  return x | (z << 2);
+};
+
+//Extracts nth interleaved component of a 3-tuple
+var deinterleave3 = function(v, n) {
+  v = (v >>> n)       & 1227133513;
+  v = (v | (v>>>2))   & 3272356035;
+  v = (v | (v>>>4))   & 251719695;
+  v = (v | (v>>>8))   & 4278190335;
+  v = (v | (v>>>16))  & 0x3FF;
+  return (v<<22)>>22;
+};
+
+//Computes next combination in colexicographic order (this is mistakenly called nextPermutation on the bit twiddling hacks page)
+var nextCombination = function(v) {
+  var t = v | (v - 1);
+  return (t + 1) | (((~t & -~t) - 1) >>> (countTrailingZeros(v) + 1));
+};
+
+var twiddle = {
+	INT_BITS: INT_BITS_1,
+	INT_MAX: INT_MAX,
+	INT_MIN: INT_MIN,
+	sign: sign,
+	abs: abs,
+	min: min,
+	max: max,
+	isPow2: isPow2,
+	log2: log2,
+	log10: log10,
+	popCount: popCount,
+	countTrailingZeros: countTrailingZeros_1,
+	nextPow2: nextPow2,
+	prevPow2: prevPow2,
+	parity: parity,
+	reverse: reverse,
+	interleave2: interleave2,
+	deinterleave2: deinterleave2,
+	interleave3: interleave3,
+	deinterleave3: deinterleave3,
+	nextCombination: nextCombination
+};
+
+function dupe_array(count, value, i) {
+  var c = count[i]|0;
+  if(c <= 0) {
+    return []
+  }
+  var result = new Array(c), j;
+  if(i === count.length-1) {
+    for(j=0; j<c; ++j) {
+      result[j] = value;
+    }
+  } else {
+    for(j=0; j<c; ++j) {
+      result[j] = dupe_array(count, value, i+1);
+    }
+  }
+  return result
+}
+
+function dupe_number(count, value) {
+  var result, i;
+  result = new Array(count);
+  for(i=0; i<count; ++i) {
+    result[i] = value;
+  }
+  return result
+}
+
+function dupe(count, value) {
+  if(typeof value === "undefined") {
+    value = 0;
+  }
+  switch(typeof count) {
+    case "number":
+      if(count > 0) {
+        return dupe_number(count|0, value)
+      }
+    break
+    case "object":
+      if(typeof (count.length) === "number") {
+        return dupe_array(count, value, 0)
+      }
+    break
+  }
+  return []
+}
+
+var dup = dupe;
+
+var pool = createCommonjsModule(function (module, exports) {
+'use strict';
+
+
+
+
+//Legacy pool support
+if(!commonjsGlobal.__TYPEDARRAY_POOL) {
+  commonjsGlobal.__TYPEDARRAY_POOL = {
+      UINT8   : dup([32, 0])
+    , UINT16  : dup([32, 0])
+    , UINT32  : dup([32, 0])
+    , INT8    : dup([32, 0])
+    , INT16   : dup([32, 0])
+    , INT32   : dup([32, 0])
+    , FLOAT   : dup([32, 0])
+    , DOUBLE  : dup([32, 0])
+    , DATA    : dup([32, 0])
+    , UINT8C  : dup([32, 0])
+    , BUFFER  : dup([32, 0])
+  };
+}
+
+var hasUint8C = (typeof Uint8ClampedArray) !== 'undefined';
+var POOL = commonjsGlobal.__TYPEDARRAY_POOL;
+
+//Upgrade pool
+if(!POOL.UINT8C) {
+  POOL.UINT8C = dup([32, 0]);
+}
+if(!POOL.BUFFER) {
+  POOL.BUFFER = dup([32, 0]);
+}
+
+//New technique: Only allocate from ArrayBufferView and Buffer
+var DATA    = POOL.DATA
+  , BUFFER  = POOL.BUFFER;
+
+exports.free = function free(array) {
+  if(isBuffer(array)) {
+    BUFFER[twiddle.log2(array.length)].push(array);
+  } else {
+    if(Object.prototype.toString.call(array) !== '[object ArrayBuffer]') {
+      array = array.buffer;
+    }
+    if(!array) {
+      return
+    }
+    var n = array.length || array.byteLength;
+    var log_n = twiddle.log2(n)|0;
+    DATA[log_n].push(array);
+  }
+};
+
+function freeArrayBuffer(buffer) {
+  if(!buffer) {
+    return
+  }
+  var n = buffer.length || buffer.byteLength;
+  var log_n = twiddle.log2(n);
+  DATA[log_n].push(buffer);
+}
+
+function freeTypedArray(array) {
+  freeArrayBuffer(array.buffer);
+}
+
+exports.freeUint8 =
+exports.freeUint16 =
+exports.freeUint32 =
+exports.freeInt8 =
+exports.freeInt16 =
+exports.freeInt32 =
+exports.freeFloat32 = 
+exports.freeFloat =
+exports.freeFloat64 = 
+exports.freeDouble = 
+exports.freeUint8Clamped = 
+exports.freeDataView = freeTypedArray;
+
+exports.freeArrayBuffer = freeArrayBuffer;
+
+exports.freeBuffer = function freeBuffer(array) {
+  BUFFER[twiddle.log2(array.length)].push(array);
+};
+
+exports.malloc = function malloc(n, dtype) {
+  if(dtype === undefined || dtype === 'arraybuffer') {
+    return mallocArrayBuffer(n)
+  } else {
+    switch(dtype) {
+      case 'uint8':
+        return mallocUint8(n)
+      case 'uint16':
+        return mallocUint16(n)
+      case 'uint32':
+        return mallocUint32(n)
+      case 'int8':
+        return mallocInt8(n)
+      case 'int16':
+        return mallocInt16(n)
+      case 'int32':
+        return mallocInt32(n)
+      case 'float':
+      case 'float32':
+        return mallocFloat(n)
+      case 'double':
+      case 'float64':
+        return mallocDouble(n)
+      case 'uint8_clamped':
+        return mallocUint8Clamped(n)
+      case 'buffer':
+        return mallocBuffer(n)
+      case 'data':
+      case 'dataview':
+        return mallocDataView(n)
+
+      default:
+        return null
+    }
+  }
+  return null
+};
+
+function mallocArrayBuffer(n) {
+  var n = twiddle.nextPow2(n);
+  var log_n = twiddle.log2(n);
+  var d = DATA[log_n];
+  if(d.length > 0) {
+    return d.pop()
+  }
+  return new ArrayBuffer(n)
+}
+exports.mallocArrayBuffer = mallocArrayBuffer;
+
+function mallocUint8(n) {
+  return new Uint8Array(mallocArrayBuffer(n), 0, n)
+}
+exports.mallocUint8 = mallocUint8;
+
+function mallocUint16(n) {
+  return new Uint16Array(mallocArrayBuffer(2*n), 0, n)
+}
+exports.mallocUint16 = mallocUint16;
+
+function mallocUint32(n) {
+  return new Uint32Array(mallocArrayBuffer(4*n), 0, n)
+}
+exports.mallocUint32 = mallocUint32;
+
+function mallocInt8(n) {
+  return new Int8Array(mallocArrayBuffer(n), 0, n)
+}
+exports.mallocInt8 = mallocInt8;
+
+function mallocInt16(n) {
+  return new Int16Array(mallocArrayBuffer(2*n), 0, n)
+}
+exports.mallocInt16 = mallocInt16;
+
+function mallocInt32(n) {
+  return new Int32Array(mallocArrayBuffer(4*n), 0, n)
+}
+exports.mallocInt32 = mallocInt32;
+
+function mallocFloat(n) {
+  return new Float32Array(mallocArrayBuffer(4*n), 0, n)
+}
+exports.mallocFloat32 = exports.mallocFloat = mallocFloat;
+
+function mallocDouble(n) {
+  return new Float64Array(mallocArrayBuffer(8*n), 0, n)
+}
+exports.mallocFloat64 = exports.mallocDouble = mallocDouble;
+
+function mallocUint8Clamped(n) {
+  if(hasUint8C) {
+    return new Uint8ClampedArray(mallocArrayBuffer(n), 0, n)
+  } else {
+    return mallocUint8(n)
+  }
+}
+exports.mallocUint8Clamped = mallocUint8Clamped;
+
+function mallocDataView(n) {
+  return new DataView(mallocArrayBuffer(n), 0, n)
+}
+exports.mallocDataView = mallocDataView;
+
+function mallocBuffer(n) {
+  n = twiddle.nextPow2(n);
+  var log_n = twiddle.log2(n);
+  var cache = BUFFER[log_n];
+  if(cache.length > 0) {
+    return cache.pop()
+  }
+  return new Buffer(n)
+}
+exports.mallocBuffer = mallocBuffer;
+
+exports.clearCache = function clearCache() {
+  for(var i=0; i<32; ++i) {
+    POOL.UINT8[i].length = 0;
+    POOL.UINT16[i].length = 0;
+    POOL.UINT32[i].length = 0;
+    POOL.INT8[i].length = 0;
+    POOL.INT16[i].length = 0;
+    POOL.INT32[i].length = 0;
+    POOL.FLOAT[i].length = 0;
+    POOL.DOUBLE[i].length = 0;
+    POOL.UINT8C[i].length = 0;
+    DATA[i].length = 0;
+    BUFFER[i].length = 0;
+  }
+};
+});
+
+function fft$1(dir, nrows, ncols, buffer, x_ptr, y_ptr, scratch_ptr) {
+  dir |= 0;
+  nrows |= 0;
+  ncols |= 0;
+  x_ptr |= 0;
+  y_ptr |= 0;
+  if(twiddle.isPow2(ncols)) {
+    fftRadix2(dir, nrows, ncols, buffer, x_ptr, y_ptr);
+  } else {
+    fftBluestein(dir, nrows, ncols, buffer, x_ptr, y_ptr, scratch_ptr);
+  }
+}
+var fftMatrix = fft$1;
+
+function scratchMemory(n) {
+  if(twiddle.isPow2(n)) {
+    return 0
+  }
+  return 2 * n + 4 * twiddle.nextPow2(2*n + 1)
+}
+var scratchMemory_1 = scratchMemory;
+
+
+//Radix 2 FFT Adapted from Paul Bourke's C Implementation
+function fftRadix2(dir, nrows, ncols, buffer, x_ptr, y_ptr) {
+  dir |= 0;
+  nrows |= 0;
+  ncols |= 0;
+  x_ptr |= 0;
+  y_ptr |= 0;
+  var nn,m,i,i1,j,k,i2,l,l1,l2;
+  var c1,c2,t,t1,t2,u1,u2,z,row,a,b,c,d,k1,k2,k3;
+  
+  // Calculate the number of points
+  nn = ncols;
+  m = twiddle.log2(nn);
+  
+  for(row=0; row<nrows; ++row) {  
+    // Do the bit reversal
+    i2 = nn >> 1;
+    j = 0;
+    for(i=0;i<nn-1;i++) {
+      if(i < j) {
+        t = buffer[x_ptr+i];
+        buffer[x_ptr+i] = buffer[x_ptr+j];
+        buffer[x_ptr+j] = t;
+        t = buffer[y_ptr+i];
+        buffer[y_ptr+i] = buffer[y_ptr+j];
+        buffer[y_ptr+j] = t;
+      }
+      k = i2;
+      while(k <= j) {
+        j -= k;
+        k >>= 1;
+      }
+      j += k;
+    }
+    
+    // Compute the FFT
+    c1 = -1.0;
+    c2 = 0.0;
+    l2 = 1;
+    for(l=0;l<m;l++) {
+      l1 = l2;
+      l2 <<= 1;
+      u1 = 1.0;
+      u2 = 0.0;
+      for(j=0;j<l1;j++) {
+        for(i=j;i<nn;i+=l2) {
+          i1 = i + l1;
+          a = buffer[x_ptr+i1];
+          b = buffer[y_ptr+i1];
+          c = buffer[x_ptr+i];
+          d = buffer[y_ptr+i];
+          k1 = u1 * (a + b);
+          k2 = a * (u2 - u1);
+          k3 = b * (u1 + u2);
+          t1 = k1 - k3;
+          t2 = k1 + k2;
+          buffer[x_ptr+i1] = c - t1;
+          buffer[y_ptr+i1] = d - t2;
+          buffer[x_ptr+i] += t1;
+          buffer[y_ptr+i] += t2;
+        }
+        k1 = c1 * (u1 + u2);
+        k2 = u1 * (c2 - c1);
+        k3 = u2 * (c1 + c2);
+        u1 = k1 - k3;
+        u2 = k1 + k2;
+      }
+      c2 = Math.sqrt((1.0 - c1) / 2.0);
+      if(dir < 0) {
+        c2 = -c2;
+      }
+      c1 = Math.sqrt((1.0 + c1) / 2.0);
+    }
+    
+    // Scaling for inverse transform
+    if(dir < 0) {
+      var scale_f = 1.0 / nn;
+      for(i=0;i<nn;i++) {
+        buffer[x_ptr+i] *= scale_f;
+        buffer[y_ptr+i] *= scale_f;
+      }
+    }
+    
+    // Advance pointers
+    x_ptr += ncols;
+    y_ptr += ncols;
+  }
+}
+
+// Use Bluestein algorithm for npot FFTs
+// Scratch memory required:  2 * ncols + 4 * bits.nextPow2(2*ncols + 1)
+function fftBluestein(dir, nrows, ncols, buffer, x_ptr, y_ptr, scratch_ptr) {
+  dir |= 0;
+  nrows |= 0;
+  ncols |= 0;
+  x_ptr |= 0;
+  y_ptr |= 0;
+  scratch_ptr |= 0;
+
+  // Initialize tables
+  var m = twiddle.nextPow2(2 * ncols + 1)
+    , cos_ptr = scratch_ptr
+    , sin_ptr = cos_ptr + ncols
+    , xs_ptr  = sin_ptr + ncols
+    , ys_ptr  = xs_ptr  + m
+    , cft_ptr = ys_ptr  + m
+    , sft_ptr = cft_ptr + m
+    , w = -dir * Math.PI / ncols
+    , row, a, b, c, d, k1, k2, k3
+    , i;
+  for(i=0; i<ncols; ++i) {
+    a = w * ((i * i) % (ncols * 2));
+    c = Math.cos(a);
+    d = Math.sin(a);
+    buffer[cft_ptr+(m-i)] = buffer[cft_ptr+i] = buffer[cos_ptr+i] = c;
+    buffer[sft_ptr+(m-i)] = buffer[sft_ptr+i] = buffer[sin_ptr+i] = d;
+  }
+  for(i=ncols; i<=m-ncols; ++i) {
+    buffer[cft_ptr+i] = 0.0;
+  }
+  for(i=ncols; i<=m-ncols; ++i) {
+    buffer[sft_ptr+i] = 0.0;
+  }
+
+  fftRadix2(1, 1, m, buffer, cft_ptr, sft_ptr);
+  
+  //Compute scale factor
+  if(dir < 0) {
+    w = 1.0 / ncols;
+  } else {
+    w = 1.0;
+  }
+  
+  //Handle direction
+  for(row=0; row<nrows; ++row) {
+  
+    // Copy row into scratch memory, multiply weights
+    for(i=0; i<ncols; ++i) {
+      a = buffer[x_ptr+i];
+      b = buffer[y_ptr+i];
+      c = buffer[cos_ptr+i];
+      d = -buffer[sin_ptr+i];
+      k1 = c * (a + b);
+      k2 = a * (d - c);
+      k3 = b * (c + d);
+      buffer[xs_ptr+i] = k1 - k3;
+      buffer[ys_ptr+i] = k1 + k2;
+    }
+    //Zero out the rest
+    for(i=ncols; i<m; ++i) {
+      buffer[xs_ptr+i] = 0.0;
+    }
+    for(i=ncols; i<m; ++i) {
+      buffer[ys_ptr+i] = 0.0;
+    }
+    
+    // FFT buffer
+    fftRadix2(1, 1, m, buffer, xs_ptr, ys_ptr);
+    
+    // Apply multiplier
+    for(i=0; i<m; ++i) {
+      a = buffer[xs_ptr+i];
+      b = buffer[ys_ptr+i];
+      c = buffer[cft_ptr+i];
+      d = buffer[sft_ptr+i];
+      k1 = c * (a + b);
+      k2 = a * (d - c);
+      k3 = b * (c + d);
+      buffer[xs_ptr+i] = k1 - k3;
+      buffer[ys_ptr+i] = k1 + k2;
+    }
+    
+    // Inverse FFT buffer
+    fftRadix2(-1, 1, m, buffer, xs_ptr, ys_ptr);
+    
+    // Copy result back into x/y
+    for(i=0; i<ncols; ++i) {
+      a = buffer[xs_ptr+i];
+      b = buffer[ys_ptr+i];
+      c = buffer[cos_ptr+i];
+      d = -buffer[sin_ptr+i];
+      k1 = c * (a + b);
+      k2 = a * (d - c);
+      k3 = b * (c + d);
+      buffer[x_ptr+i] = w * (k1 - k3);
+      buffer[y_ptr+i] = w * (k1 + k2);
+    }
+    
+    x_ptr += ncols;
+    y_ptr += ncols;
+  }
+}
+
+fftMatrix.scratchMemory = scratchMemory_1;
+
+function ndfft(dir, x, y) {
+  var shape = x.shape
+    , d = shape.length
+    , size = 1
+    , stride = new Array(d)
+    , pad = 0
+    , i, j;
+  for(i=d-1; i>=0; --i) {
+    stride[i] = size;
+    size *= shape[i];
+    pad = Math.max(pad, fftMatrix.scratchMemory(shape[i]));
+    if(x.shape[i] !== y.shape[i]) {
+      throw new Error('Shape mismatch, real and imaginary arrays must have same size')
+    }
+  }
+  var buf_size = 4 * size + pad;
+  var buffer;
+  if( x.dtype === 'array' ||
+      x.dtype === 'float64' ||
+      x.dtype === 'custom' ) {
+    buffer = pool.mallocDouble(buf_size);
+  } else {
+    buffer = pool.mallocFloat(buf_size);
+  }
+  var x1 = ndarray(buffer, shape.slice(0), stride, 0)
+    , y1 = ndarray(buffer, shape.slice(0), stride.slice(0), size)
+    , x2 = ndarray(buffer, shape.slice(0), stride.slice(0), 2*size)
+    , y2 = ndarray(buffer, shape.slice(0), stride.slice(0), 3*size)
+    , tmp, n, s1, s2
+    , scratch_ptr = 4 * size;
+  
+  //Copy into x1/y1
+  ndarrayOps.assign(x1, x);
+  ndarrayOps.assign(y1, y);
+  
+  for(i=d-1; i>=0; --i) {
+    fftMatrix(dir, size/shape[i], shape[i], buffer, x1.offset, y1.offset, scratch_ptr);
+    if(i === 0) {
+      break
+    }
+    
+    //Compute new stride for x2/y2
+    n = 1;
+    s1 = x2.stride;
+    s2 = y2.stride;
+    for(j=i-1; j<d; ++j) {
+      s2[j] = s1[j] = n;
+      n *= shape[j];
+    }
+    for(j=i-2; j>=0; --j) {
+      s2[j] = s1[j] = n;
+      n *= shape[j];
+    }
+    
+    //Transpose
+    ndarrayOps.assign(x2, x1);
+    ndarrayOps.assign(y2, y1);
+    
+    //Swap buffers
+    tmp = x1;
+    x1 = x2;
+    x2 = tmp;
+    tmp = y1;
+    y1 = y2;
+    y2 = tmp;
+  }
+  
+  //Copy result back into x
+  ndarrayOps.assign(x, x1);
+  ndarrayOps.assign(y, y1);
+  
+  pool.free(buffer);
+}
+
+var fft = ndfft;
+
+const DIRECTIONS = {
+  'FORWARD': 1,
+  'INVERSE': -1,
+};
+
+class BaseFourierSignalFilter extends Filter {
+  constructor(direction) {
+    super();
+    this.direction = direction;
+    if (DIRECTIONS[this.direction] === undefined) {
+      throw new Error(`${this.direction} is not a valid fourier transform direction. Please try one of: ${Object.keys(DIRECTIONS)}`);
+    }
+    this.addInputValidator(0, Signal1D);
+  }
+  _run() {
+    if( ! this.hasValidInput()){
+      console.warn("A filter of type BaseFourierSignalFilter requires 1 input of Signal1D.");
+      return;
+    }
+    const inputSignal = this._getInput(0);
+    const length = inputSignal.getMetadata('length');
+    const real = ndarray(inputSignal.clone().getData(), [length]);
+    const img = ndarray(inputSignal.hollowClone().getData(), [length]);
+    this.setMetadata('direction', this.direction);
+
+    fft(DIRECTIONS[this.direction], real, img);
+    this._output[0] = new Signal1D();
+    this._output[0].setData(real.data);
+    this._output[1] = new Signal1D();
+    this._output[1].setData(img.data);
+  }
+}
+
+class ForwardFourierSignalFilter extends BaseFourierSignalFilter {
+  constructor() {
+    super('FORWARD');
+  }
+}
+
+class InverseFourerSignalFilter extends BaseFourierSignalFilter {
+  constructor() {
+    super('INVERSE');
+  }
+}
 
 /*
 * Author   Jonathan Lurie - http://me.jonahanlurie.fr
@@ -20850,7 +23368,7 @@ class SpectralScaleImageFilter extends ImageToImageFilter {
 
 var bundle = createCommonjsModule(function (module, exports) {
 (function (global, factory) {
-  module.exports = factory();
+	module.exports = factory();
 }(commonjsGlobal, (function () { 'use strict';
 
 /*!
@@ -21821,31 +24339,16 @@ TokenStream.prototype.parseError = function (msg) {
   throw new Error('parse error [' + (this.line + 1) + ':' + (this.column + 1) + ']: ' + msg);
 };
 
-var unaryInstructionCache = {};
 function unaryInstruction(value) {
-  var inst = unaryInstructionCache[value];
-  if (!inst) {
-    inst = unaryInstructionCache[value] = new Instruction(IOP1, value);
-  }
-  return inst;
+  return new Instruction(IOP1, value);
 }
 
-var binaryInstructionCache = {};
 function binaryInstruction(value) {
-  var inst = binaryInstructionCache[value];
-  if (!inst) {
-    inst = binaryInstructionCache[value] = new Instruction(IOP2, value);
-  }
-  return inst;
+  return new Instruction(IOP2, value);
 }
 
-var ternaryInstructionCache = {};
 function ternaryInstruction(value) {
-  var inst = ternaryInstructionCache[value];
-  if (!inst) {
-    inst = ternaryInstructionCache[value] = new Instruction(IOP3, value);
-  }
-  return inst;
+  return new Instruction(IOP3, value);
 }
 
 function ParserState(parser, tokenStream) {
@@ -24850,6 +27353,7 @@ class Image3DToMosaicFilter extends Filter{
 
 exports.PixpipeObject = PixpipeObject;
 exports.Filter = Filter;
+exports.Signal1D = Signal1D;
 exports.Image2D = Image2D;
 exports.Image3D = Image3D;
 exports.ImageToImageFilter = ImageToImageFilter;
@@ -24870,6 +27374,8 @@ exports.MghDecoder = MghDecoder;
 exports.EegModDecoder = EegModDecoder;
 exports.PixBinEncoder = PixBinEncoder;
 exports.PixBinDecoder = PixBinDecoder;
+exports.ForwardFourierSignalFilter = ForwardFourierSignalFilter;
+exports.InverseFourerSignalFilter = InverseFourerSignalFilter;
 exports.ForEachPixelImageFilter = ForEachPixelImageFilter;
 exports.SpectralScaleImageFilter = SpectralScaleImageFilter;
 exports.ImageBlendExpressionFilter = ImageBlendExpressionFilter;
