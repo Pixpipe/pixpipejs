@@ -5,6 +5,7 @@
 // core classes
 export { PixpipeObject } from './core/PixpipeObject.js';
 export { Filter } from './core/Filter.js';
+export { Signal1D } from './core/Signal1D.js'
 export { Image2D } from './core/Image2D.js';
 export { Image3D } from './core/Image3D.js';
 export { ImageToImageFilter } from './core/ImageToImageFilter.js';
@@ -30,7 +31,8 @@ export { EegModDecoder } from './decoder/EegModDecoder.js';
 export { PixBinEncoder } from './decoder/PixBinEncoder.js';
 export { PixBinDecoder } from './decoder/PixBinDecoder.js';
 
-// filters - processing of Images2D
+// filters - processing of Images2D and Signal1D
+export { ForwardFourierSignalFilter, InverseFourerSignalFilter } from './filter/FourierSignalFilters.js';
 export { ForEachPixelImageFilter } from './filter/ForEachPixelImageFilter.js';
 export { SpectralScaleImageFilter } from './filter/SpectralScaleImageFilter.js';
 export { ImageBlendExpressionFilter } from './filter/ImageBlendExpressionFilter.js';
