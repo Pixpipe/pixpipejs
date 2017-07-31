@@ -1,6 +1,6 @@
 <html>
 <head>
-  <title>Convert an Image2D to Pixp File</title>
+  <title>Convert an Image2D to PixBin File</title>
 
   <script src="../dist/pixpipe.js"></script>
   <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700,900" rel="stylesheet">
@@ -13,7 +13,7 @@
   <ul>
     <li>opening a local image file, using <code>pixpipe.FileImageReader</code></li>
     <li>converting it into a <code>pixpipe.Image2D</code> object</li>
-    <li>Feed a <code>pixpipe.PixpEncoder</code> with the image to build a Pixp file stream </li>
+    <li>Feed a <code>pixpipe.PixBinEncoder</code> with the image to build a Pixp file stream </li>
     <li>download the pixp file with a button</li>
   </ul>
 
@@ -37,7 +37,7 @@
   window.onload = function() {
 
     var fileInput = document.getElementById('fileInput');
-    encoder = new pixpipe.PixpEncoder();
+    encoder = new pixpipe.PixBinEncoder();
     var filename = null;
 
     // create a filter to write the image into a canvas
@@ -56,11 +56,14 @@
       imageToCanvasFilter.addInput( image );
       // actually copy the data from the Image2D into the inner HTML5 canvas
       imageToCanvasFilter.update();
-            
+      
+      
       document.getElementById('fileInfo').innerHTML = "Converting " + filename + " ...";
-
+      
+      
+      
       // set the output filename
-      encoder.setMetadata("filename", filename.split('.')[0] + '.pixp'); // optional, default: untitled.pixp
+      encoder.setMetadata("filename", filename.split('.')[0] + '.pixb');
       encoder.addInput( image );
 
       // Creates the gzip blob

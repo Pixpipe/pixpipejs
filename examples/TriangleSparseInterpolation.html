@@ -1,0 +1,93 @@
+<html>
+<head>
+  <title>Triangulation</title>
+
+  <script src="../dist/pixpipe.js"></script>
+
+  <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700,900" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+
+</head>
+<body>
+  <h1><a href="https://github.com/jonathanlurie/pixpipejs"><span style="color: #ff91d7">Pixpipe</span><span style="color: #FFFFFF">js</span></a></h1>
+  <p>
+  This does the following :
+  <ul>
+    <li>creating a set of random (sparse) points with random values</li>
+    <li>Interpolate them using <code>pixpipe.TriangulationSparseInterpolationImageFilter</code></li>
+    <li>displaying the output image with a <code>pixpipe.CanvasImageWriter</code></li>
+  </ul>
+
+  </p>
+
+  <div id="myDiv"></div>
+
+  <script>
+  
+  var outWidth = 200;
+  var outHeight = 200;
+
+  var triSparseInterp = new pixpipe.TriangulationSparseInterpolationImageFilter()
+
+  triSparseInterp.setMetadata( "outputSize", {width: outWidth, height: outHeight})
+  triSparseInterp.setMetadata( "strength", 2 );
+  // create random points, with random values
+  
+  
+  var randomPoints = new Array( 20 );
+  for(var i=0; i<randomPoints.length; i++){
+    randomPoints[i] = {
+      x: Math.ceil( Math.random() * outWidth ),
+      y: Math.ceil( Math.random() * outHeight ),
+      value: Math.ceil( Math.random() * 255 ),
+    }
+  }
+  triSparseInterp.addInput( randomPoints )
+  
+  
+  /*
+  triSparseInterp.addInput( [
+    {x: 10 , y: 10, value: 10},
+    {x: 190 , y: 190, value: 10},
+    {x: 10 , y: 190, value: 100},
+    {x: 190 , y: 10, value: 100},
+  ] )
+  */
+  
+  /*
+  triSparseInterp.addInput( [
+    {x: 10 , y: 10, value: 10},
+    {x: 190 , y: 190, value: 100},
+  ] )
+  */
+  
+  /*
+  triSparseInterp.addInput( [
+    {x: 10 , y: 10, value: 125},
+    {x: 190 , y: 190, value: 0},
+    {x: 10 , y: 190, value: 0},
+    {x: 190 , y: 10, value: 50},
+    
+    {x: 100 , y: 100, value: 250},
+  ] )
+  */
+  
+  triSparseInterp.update();
+
+  // create an image
+  var myImage = triSparseInterp.getOutput();
+
+  console.log( myImage );
+
+  // create a filter to write the image into a canvas
+  var imageToCanvasFilter = new pixpipe.CanvasImageWriter( );
+  imageToCanvasFilter.setMetadata( "parentDivID", "myDiv" );
+  imageToCanvasFilter.addInput( myImage );
+  imageToCanvasFilter.update();
+
+
+
+  </script>
+
+</body>
+</html>
