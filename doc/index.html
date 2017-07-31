@@ -393,16 +393,6 @@
                   _loadUrl
                 </a>
               <a
-                href='#SpectralScaleImageFilter'
-                class='block bold h3 bg-pink-alpha'>
-                SpectralScaleImageFilter
-              </a>
-                <a
-                  href='#SpectralScaleImageFilter._run'
-                  class='regular block'>
-                  _run
-                </a>
-              <a
                 href='#FileImageReader'
                 class='block bold h3 bg-pink-alpha'>
                 FileImageReader
@@ -416,6 +406,16 @@
                   href='#FileImageReader.hasValidInput'
                   class='regular block'>
                   hasValidInput
+                </a>
+              <a
+                href='#SpectralScaleImageFilter'
+                class='block bold h3 bg-pink-alpha'>
+                SpectralScaleImageFilter
+              </a>
+                <a
+                  href='#SpectralScaleImageFilter._run'
+                  class='regular block'>
+                  _run
                 </a>
               <a
                 href='#MniVolume'
@@ -1013,6 +1013,21 @@
                   parseNifti1Header
                 </a>
               <a
+                href='#PixBinEncoder'
+                class='block bold h3 bg-pink-alpha'>
+                PixBinEncoder
+              </a>
+                <a
+                  href='#PixBinEncoder.download'
+                  class='regular block'>
+                  download
+                </a>
+                <a
+                  href='#PixBinEncoder.hasValidInput'
+                  class='regular block'>
+                  hasValidInput
+                </a>
+              <a
                 href='#PixpEncoder'
                 class='block bold h3 bg-pink-alpha'>
                 PixpEncoder
@@ -1058,6 +1073,11 @@
                   hasSameSizeInput
                 </a>
               <a
+                href='#IDWSparseInterpolationImageFilter'
+                class='block bold h3 bg-pink-alpha'>
+                IDWSparseInterpolationImageFilter
+              </a>
+              <a
                 href='#ignore_offsets'
                 class='block bold h3 bg-pink-alpha'>
                 ignore_offsets
@@ -1093,9 +1113,19 @@
                 MultiplyImageFilter
               </a>
               <a
+                href='#NearestNeighborSparseInterpolationImageFilter'
+                class='block bold h3 bg-pink-alpha'>
+                NearestNeighborSparseInterpolationImageFilter
+              </a>
+              <a
                 href='#NormalizeImageFilter'
                 class='block bold h3 bg-pink-alpha'>
                 NormalizeImageFilter
+              </a>
+              <a
+                href='#PixBinDecoder'
+                class='block bold h3 bg-pink-alpha'>
+                PixBinDecoder
               </a>
               <a
                 href='#PixpDecoder'
@@ -1136,6 +1166,11 @@
                 href='#TiffDecoder'
                 class='block bold h3 bg-pink-alpha'>
                 TiffDecoder
+              </a>
+              <a
+                href='#TriangulationSparseInterpolationImageFilter'
+                class='block bold h3 bg-pink-alpha'>
+                TriangulationSparseInterpolationImageFilter
               </a>
           </div>
         </div>
@@ -3516,42 +3551,6 @@ Perform a XMLHttpRequest with the given url and adds it to the output</p>
         </div>
 </section>
 </div><div class='py1'><section class='py2 clearfix'>
-  <h2 id='SpectralScaleImageFilter' class='mt0'>
-    SpectralScaleImageFilter<span class='gray'></span>
-  </h2>
-  <p>Multiply an image by the other, like a scaling function.
-The image requires two inputs named &quot;0&quot; and &quot;1&quot;.
-Simply use <code>addInput( myImg1, &quot;0&quot; )</code>
-and <code>addInput( myImg2, &quot;1&quot; )</code>. The input &quot;0&quot; can have 1 or more bands while
-the input &quot;1&quot; can have only one band since the same scale is apply to each band.</p>
-<p><strong>Usage</strong></p>
-<ul>
-<li><a href="../examples/forEachPixelGadient.html">examples/forEachPixelGadient.html</a></li>
-</ul>
-
-      <h4>Instance members</h4>
-        <div class='collapsible' id='SpectralScaleImageFilter._run'>
-          <a href='#SpectralScaleImageFilter._run'>
-            <code>
-              _run<span class='gray'></span>
-            </code>
-            <div class='force-inline'>
-              <p>Run the filter</p>
-
-            </div>
-          </a>
-          <div class='collapser border px2'>
-<section class='py2 clearfix'>
-  <h2 id='SpectralScaleImageFilter._run' class='mt0'>
-    _run<span class='gray'></span>
-  </h2>
-  <p>Run the filter</p>
-
-</section>
-          </div>
-        </div>
-</section>
-</div><div class='py1'><section class='py2 clearfix'>
   <h2 id='FileImageReader' class='mt0'>
     FileImageReader<span class='gray'></span>
   </h2>
@@ -3608,6 +3607,42 @@ file2ImgFilter.update();</pre>
     hasValidInput<span class='gray'></span>
   </h2>
   <p>Overload the default method because HTML5 File is not a Pixpipe type</p>
+
+</section>
+          </div>
+        </div>
+</section>
+</div><div class='py1'><section class='py2 clearfix'>
+  <h2 id='SpectralScaleImageFilter' class='mt0'>
+    SpectralScaleImageFilter<span class='gray'></span>
+  </h2>
+  <p>Multiply an image by the other, like a scaling function.
+The image requires two inputs named &quot;0&quot; and &quot;1&quot;.
+Simply use <code>addInput( myImg1, &quot;0&quot; )</code>
+and <code>addInput( myImg2, &quot;1&quot; )</code>. The input &quot;0&quot; can have 1 or more bands while
+the input &quot;1&quot; can have only one band since the same scale is apply to each band.</p>
+<p><strong>Usage</strong></p>
+<ul>
+<li><a href="../examples/forEachPixelGadient.html">examples/forEachPixelGadient.html</a></li>
+</ul>
+
+      <h4>Instance members</h4>
+        <div class='collapsible' id='SpectralScaleImageFilter._run'>
+          <a href='#SpectralScaleImageFilter._run'>
+            <code>
+              _run<span class='gray'></span>
+            </code>
+            <div class='force-inline'>
+              <p>Run the filter</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2'>
+<section class='py2 clearfix'>
+  <h2 id='SpectralScaleImageFilter._run' class='mt0'>
+    _run<span class='gray'></span>
+  </h2>
+  <p>Run the filter</p>
 
 </section>
           </div>
@@ -7412,6 +7447,68 @@ found in the standard NIfTI-1 library (nifti1_io.c).</p>
         </div>
 </section>
 </div><div class='py1'><section class='py2 clearfix'>
+  <h2 id='PixBinEncoder' class='mt0'>
+    PixBinEncoder<span class='gray'></span>
+  </h2>
+  <p>A PixBinEncoder instance takes an Image2D or Image3D as input with <code>addInput(...)</code>
+and encode it so that it can be saved as a *.pixp file.
+An output filename can be specified using <code>.setMetadata(&quot;filename&quot;, &quot;yourName.pixp&quot;);</code>,
+by default, the name is &quot;untitled.pixp&quot;.
+When <code>update()</code> is called, a gzip blog is prepared as output[0] and can then be downloaded
+when calling the method <code>.download()</code>. The gzip blob could also be sent over AJAX
+using a third party library.</p>
+<p><strong>Usage</strong></p>
+<ul>
+<li><a href="../examples/savePixpFile.html">examples/savePixpFile.html</a></li>
+</ul>
+
+      <h4>Instance members</h4>
+        <div class='collapsible' id='PixBinEncoder.download'>
+          <a href='#PixBinEncoder.download'>
+            <code>
+              download<span class='gray'></span>
+            </code>
+            <div class='force-inline'>
+              <p>Download the generated file</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2'>
+<section class='py2 clearfix'>
+  <h2 id='PixBinEncoder.download' class='mt0'>
+    download<span class='gray'></span>
+  </h2>
+  <p>Download the generated file</p>
+
+</section>
+          </div>
+        </div>
+        <div class='collapsible' id='PixBinEncoder.hasValidInput'>
+          <a href='#PixBinEncoder.hasValidInput'>
+            <code>
+              hasValidInput<span class='gray'></span>
+            </code>
+            <div class='force-inline'>
+              <p>[PRIVATE]
+overwrite the original from Filter
+Only accept Image2D and Image3D</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2'>
+<section class='py2 clearfix'>
+  <h2 id='PixBinEncoder.hasValidInput' class='mt0'>
+    hasValidInput<span class='gray'></span>
+  </h2>
+  <p>[PRIVATE]
+overwrite the original from Filter
+Only accept Image2D and Image3D</p>
+
+</section>
+          </div>
+        </div>
+</section>
+</div><div class='py1'><section class='py2 clearfix'>
   <h2 id='PixpEncoder' class='mt0'>
     PixpEncoder<span class='gray'></span>
   </h2>
@@ -7589,6 +7686,31 @@ This class does not overload the update() method.</p>
         </div>
 </section>
 </div><div class='py1'><section class='py2 clearfix'>
+  <h2 id='IDWSparseInterpolationImageFilter' class='mt0'>
+    IDWSparseInterpolationImageFilter<span class='gray'></span>
+  </h2>
+  <p>An instance of IDWSparseInterpolationImageFilter performs a 2D interpolation from
+a sparse dataset using the method of Inverse Distance Weighting.
+The original dataset is specified using the method <code>.addInput( points )</code>, where
+<code>points</code> is an <code>Array</code> of <code>{x: Number, y: Number, value: Number}</code>.
+This filter outputs an <code>Image2D</code> with interpolated values. The size of the output must be
+specified using the method <code>.setMetadata( &quot;outputSize&quot;, {width: Number, height: Number})</code>.</p>
+<p>The IDW algorithm can be tuned with a &quot;strength&quot;, which is essentially the value
+of exponent of the distances. Default is <code>2</code> but it is common the see a value
+of <code>1</code> or <code>3</code>. With higher values, the output will look like a cells pattern.
+The strength can be defined using the method <code>.setMetadata( &quot;strength&quot;, Number )</code></p>
+<p>Note 1: points can be outside the boundaries of the original image
+Note 2: interpolated values are floating point</p>
+<p>Note that only single-component images are outputed from this filter.
+Ressources:
+<a href="https://www.e-education.psu.edu/geog486/node/1877">https://www.e-education.psu.edu/geog486/node/1877</a></p>
+<p><strong>Usage</strong></p>
+<ul>
+<li><a href="../examples/nearestSparseInterpolation.html">examples/nearestSparseInterpolation.html</a></li>
+</ul>
+
+</section>
+</div><div class='py1'><section class='py2 clearfix'>
   <h2 id='ignore_offsets' class='mt0'>
     ignore_offsets<span class='gray'></span>
   </h2>
@@ -7704,6 +7826,24 @@ Equivalent to <code>SpectralScaleImageFilter</code>.</p>
 
 </section>
 </div><div class='py1'><section class='py2 clearfix'>
+  <h2 id='NearestNeighborSparseInterpolationImageFilter' class='mt0'>
+    NearestNeighborSparseInterpolationImageFilter<span class='gray'></span>
+  </h2>
+  <p>With a given set of points ( each being {x: Number, y: Number, value: Number} )
+An instance of NearestNeighborSparseInterpolationImageFilter creates an image where
+each value is the closest from the given point.</p>
+<p>The original points/measures must be given as an Array of Object using
+the method <code>.addInput([...])</code></p>
+<p>The output image size must be set using the method
+<code>.setMetadata( &quot;outputSize&quot;, {width: Number, height: Number})</code></p>
+<p>The given point can be outside the output image boundaries.</p>
+<p><strong>Usage</strong></p>
+<ul>
+<li><a href="../examples/nearestSparseInterpolation.html">examples/nearestSparseInterpolation.html</a></li>
+</ul>
+
+</section>
+</div><div class='py1'><section class='py2 clearfix'>
   <h2 id='NormalizeImageFilter' class='mt0'>
     NormalizeImageFilter<span class='gray'></span>
   </h2>
@@ -7715,6 +7855,19 @@ but an manual max value can be given to this filter using <code>.setMetadata(&qu
 <p><strong>Usage</strong></p>
 <ul>
 <li><a href="../examples/gradientHueWheelImage2D.html">examples/gradientHueWheelImage2D.html</a></li>
+</ul>
+
+</section>
+</div><div class='py1'><section class='py2 clearfix'>
+  <h2 id='PixBinDecoder' class='mt0'>
+    PixBinDecoder<span class='gray'></span>
+  </h2>
+  <p>A PixBinDecoder instance decodes a *.pixp file and output an Image2D or Image3D.
+The input, specified by <code>.addInput(...)</code> must be an ArrayBuffer
+(from an <code>UrlToArrayBufferFilter</code>, an <code>UrlToArrayBufferReader</code> or anothrer source ).</p>
+<p><strong>Usage</strong></p>
+<ul>
+<li><a href="../examples/pixpFileToImage2D.html">examples/pixpFileToImage2D.html</a></li>
 </ul>
 
 </section>
@@ -7878,6 +8031,29 @@ various bith depth and types (8bits, 32bits, etc.)</p>
 <p><strong>Usage</strong></p>
 <ul>
 <li><a href="../examples/fileToTiff.html">examples/savePixpFile.html</a></li>
+</ul>
+
+</section>
+</div><div class='py1'><section class='py2 clearfix'>
+  <h2 id='TriangulationSparseInterpolationImageFilter' class='mt0'>
+    TriangulationSparseInterpolationImageFilter<span class='gray'></span>
+  </h2>
+  <p>An instance of TriangulationSparseInterpolationImageFilter performs a triangulation
+of an original dataset followed by a barycentric 2D interpolation. It is used to
+perform a 2D linear interpolation of a sparse dataset.
+The original dataset is specified using the method <code>.addInput( points )</code>, where
+<code>points</code> is an <code>Array</code> of <code>{x: Number, y: Number, value: Number}</code>.
+The triangulation is the result of a Delaunay triangulation.
+This filter outputs an <code>Image2D</code> with interpolated values only within the boundaries
+of the convex hull created by the triangulation. The size of the output must be
+specified using the method <code>.setMetadata( &quot;outputSize&quot;, {width: Number, height: Number})</code>.</p>
+<p>Note 1: at least 3 unaligned points are required to perform a triangulation
+Note 2: points can be outside the boundaries of the original image
+Note 3: interpolated values are floating point</p>
+<p>Note that only single-component images are outputed from this filter.</p>
+<p><strong>Usage</strong></p>
+<ul>
+<li><a href="../examples/TriangleSparseInterpolation.html">examples/TriangleSparseInterpolation.html</a></li>
 </ul>
 
 </section>
