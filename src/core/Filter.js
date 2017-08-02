@@ -45,7 +45,7 @@ class Filter extends PixpipeObject {
     this._timer = {};
 
     this._isOutputReady = false;
-    
+
     this.setMetadata("time", true);
 
   }
@@ -247,7 +247,7 @@ class Filter extends PixpipeObject {
     var that = this;
     var inputCategories = Object.keys( this._inputValidator );
     var valid = true;
-    
+
     if(inputCategories.length == 0){
       valid = false;
       console.warn("No input validator was added. Filter cannot run. Use addInputValidator(...) to specify input types.");
@@ -255,7 +255,7 @@ class Filter extends PixpipeObject {
 
     inputCategories.forEach( function(key){
       var inputOfCategory = that._getInput( key );
-      
+
       if(inputOfCategory){
         if("isOfType" in inputOfCategory){
           valid = valid && inputOfCategory.isOfType( that._inputValidator[ key ] )
@@ -266,13 +266,13 @@ class Filter extends PixpipeObject {
             valid = false;
           }
         }
-          
+
       }
       // input simply not existing!
       else{
         valid = false;
       }
-    
+
     });
 
     if(!valid){
@@ -316,7 +316,7 @@ class Filter extends PixpipeObject {
   * @param {String} recordName - name of the record
   */
   addTimeRecord( recordName ){
-    this._timer[ recordName ] = performance.now();
+    this._timer[ recordName ] = 0;
   }
 
 
@@ -356,16 +356,16 @@ class Filter extends PixpipeObject {
   */
   triggerEvent( eventName /* any other arguments to follow */ ){
     var returnValue = null;
-    
+
     if(this.hasEvent(eventName)){
       if( arguments.length > 1 ){
-        
+
         // a-la-mano slicing argument array to comply with V8 JS engine optimization...
         var argToSend = [];
         for(var i=1; i<arguments.length; i++){
           argToSend.push( arguments[i] );
         }
-        
+
         returnValue = this._events[eventName].apply(this, argToSend )
       }else{
         returnValue = this._events[eventName].call(this);
@@ -373,7 +373,7 @@ class Filter extends PixpipeObject {
     }else{
       console.warn("The event " + eventName + " does not exist.");
     }
-    
+
     return returnValue;
   }
 
