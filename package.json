@@ -40,7 +40,8 @@
     "ndarray-fft": "^1.0.3",
     "pako": "^1.0.4",
     "qeegmodfile": "github:jonathanlurie/qeegmodfile",
-    "rollup-plugin-bundle-worker": "^0.1.0"
+    "rollup-plugin-bundle-worker": "^0.1.0",
+    "zeros": "^1.0.0"
   },
   "devDependencies": {
     "documentation": "^3.0.4",
