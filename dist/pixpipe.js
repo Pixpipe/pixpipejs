@@ -192,6 +192,8 @@ class Filter extends PixpipeObject {
 
     this._inputValidator = {};
 
+    this._allValidator = null;
+
     this._input = {
       //"0": []
     };
@@ -390,9 +392,17 @@ class Filter extends PixpipeObject {
   * @param {Type} InputType - the type of the expected input, like Image2D, Image3D, etc. without quotes
   */
   addInputValidator( category, InputType ){
-    if("TYPE" in InputType){
+    if ("TYPE" in InputType) {
+      if (category === 'ALL') {
+        this._allValidator = InputType.TYPE();
+        return;
+      }
       this._inputValidator[ category ] = InputType.TYPE();
-    }else{
+    } else {
+      if (category === 'ALL') {
+        this._allValidator = InputType;
+        return;
+      }
       this._inputValidator[ category ] = InputType;
     }
   }
@@ -405,23 +415,31 @@ class Filter extends PixpipeObject {
   */
   hasValidInput(){
     var that = this;
-    var inputCategories = Object.keys( this._inputValidator );
+    var inputCategories = this.getInputCategories();
     var valid = true;
-
-    if(inputCategories.length == 0){
+    if(inputCategories.length === 0){
       valid = false;
       console.warn("No input validator was added. Filter cannot run. Use addInputValidator(...) to specify input types.");
     }
-
     inputCategories.forEach( function(key){
       var inputOfCategory = that._getInput( key );
 
       if(inputOfCategory){
         if("isOfType" in inputOfCategory){
-          valid = valid && inputOfCategory.isOfType( that._inputValidator[ key ] );
+          if (that._inputValidator[ key ]) {
+            valid = valid && inputOfCategory.isOfType( that._inputValidator[ key ] );
+          }
+          if (that._allValidator) {
+            valid = valid && inputOfCategory.isOfType(that._allValidator);
+          }
         }else{
           try{
-            valid = valid && (inputOfCategory instanceof that._inputValidator[ key ] );
+            if (that._inputValidator[ key ]) {
+              valid = valid && (inputOfCategory instanceof that._inputValidator[ key ] );
+            }
+            if (that._allValidator) {
+              valid = valid && (inputOfCategory instanceof that._allValidator );
+            }
           }catch(e){
             valid = false;
           }
@@ -476,7 +494,7 @@ class Filter extends PixpipeObject {
   * @param {String} recordName - name of the record
   */
   addTimeRecord( recordName ){
-    this._timer[ recordName ] = 0;
+    this._timer[ recordName ] = performance.now();
   }
 
 
@@ -2749,19 +2767,19 @@ function chdir (dir) {
 function umask() { return 0; }
 
 // from https://github.com/kumavis/browser-process-hrtime/blob/master/index.js
-var performance = global$1.performance || {};
+var performance$1 = global$1.performance || {};
 var performanceNow =
-  performance.now        ||
-  performance.mozNow     ||
-  performance.msNow      ||
-  performance.oNow       ||
-  performance.webkitNow  ||
+  performance$1.now        ||
+  performance$1.mozNow     ||
+  performance$1.msNow      ||
+  performance$1.oNow       ||
+  performance$1.webkitNow  ||
   function(){ return (new Date()).getTime() };
 
 // generate timestamp or delta
 // see http://nodejs.org/api/process.html#process_process_hrtime
 function hrtime(previousTimestamp){
-  var clocktime = performanceNow.call(performance)*1e-3;
+  var clocktime = performanceNow.call(performance$1)*1e-3;
   var seconds = Math.floor(clocktime);
   var nanoseconds = Math.floor((clocktime%1)*1e9);
   if (previousTimestamp) {
@@ -21287,6 +21305,142 @@ var CACHED_CONSTRUCTORS = {
 
 var ndarray = wrappedNDArrayCtor;
 
+function dtypeToType(dtype) {
+  switch(dtype) {
+    case 'uint8':
+      return Uint8Array;
+    case 'uint16':
+      return Uint16Array;
+    case 'uint32':
+      return Uint32Array;
+    case 'int8':
+      return Int8Array;
+    case 'int16':
+      return Int16Array;
+    case 'int32':
+      return Int32Array;
+    case 'float':
+    case 'float32':
+      return Float32Array;
+    case 'double':
+    case 'float64':
+      return Float64Array;
+    case 'uint8_clamped':
+      return Uint8ClampedArray;
+    case 'generic':
+    case 'buffer':
+    case 'data':
+    case 'dataview':
+      return ArrayBuffer;
+    case 'array':
+      return Array;
+  }
+}
+
+var zeros = function zeros(shape, dtype) {
+  dtype = dtype || 'float64';
+  var sz = 1;
+  for(var i=0; i<shape.length; ++i) {
+    sz *= shape[i];
+  }
+  return ndarray(new (dtypeToType(dtype))(sz), shape);
+};
+
+class ComponentProjectionImage2DFilter extends Filter {
+  constructor() {
+    super();
+    this.addInputValidator(0, Image2D);
+  }
+  _run() {
+    if( ! this.hasValidInput()){
+      console.warn("A filter of type ComponentProjectionImage2DFilter requires 1 input of Image2D.");
+      return;
+    }
+    const inputSignal = this._getInput(0);
+    const width = inputSignal.getMetadata('width');
+    const height = inputSignal.getMetadata('height');
+    const ncpp = inputSignal.getMetadata('ncpp');
+    const offset = this.getMetadata('componentOffset');
+    const arr = ndarray(inputSignal.getData(), [width, height, ncpp]);
+    const projected = arr.pick(null, null, offset); // pick out the component as an ndarray
+    const projectedArray = zeros([width, height], arr.dtype);
+    for (let i = 0; i < width; i++) {
+      for (let j = 0; j < height; j++) {
+        projectedArray.set(i, j, projected.get(i, j));
+      }
+    }
+    const projectedImage = new Image2D();
+    projectedImage.setData(projectedArray.data, width, height, 1);
+    this._output[0] = projectedImage;
+  }
+  setComponentOffset(offset) {
+    this.setMetadata('componentOffset', offset);
+  }
+}
+
+function validateInputs(inputImages) {
+  const widths = inputImages.map(i => i.getMetadata('width'));
+  const widthsEqual = widths.reduce((eq, w) => eq && w === widths[0], true);
+  if (!widthsEqual) {
+    return false;
+  }
+  const heights = inputImages.map(i => i.getMetadata('height'));
+  const heightsEqual = heights.reduce((eq, h) => eq && h === heights[0], true);
+  if (!heightsEqual) {
+    return false;
+  }
+  const types = inputImages.map(i => i.getData().constructor);
+  const typesEqual = types.reduce((eq, t) => eq && t === types[0], true);
+  if (!typesEqual) {
+    return false;
+  }
+  return true;
+}
+
+class ComponentMergeImage2DFilter extends Filter {
+  constructor() {
+    super();
+    this.addInputValidator('ALL', Image2D);
+  }
+  _run() {
+    if(this.getNumberOfInputs() < 2) {
+      console.warn('A filter of type ComponentMergeImage2DFilter needs 2 or more inputs.');
+      return;
+    }
+    if( ! this.hasValidInput()){
+      console.warn("A filter of type ComponentMergeImage2DFilter requires inputs of Image2D.");
+      return;
+    }
+    const inputImages = this.getInputCategories().map(cat => this._getInput(cat));
+    if (!validateInputs(inputImages)) {
+      console.warn('A filter of type ComponentMergeImage2DFilter requires inputs to be the same dimensions and array type');
+      return;
+    }
+    const width = inputImages[0].getMetadata('width');
+    const height = inputImages[0].getMetadata('height');
+    const ncpps = inputImages.map(i => i.getMetadata('ncpp'));
+    const totalncpp = ncpps.reduce((x,y) => x + y);
+    const type = ndarray(inputImages[0].getData()).dtype;
+    const merged = zeros([width, height, totalncpp], type);
+
+    let ncppoffset = 0;
+    inputImages.forEach((image, index) => {
+      const ncpp = image.getMetadata('ncpp');
+      const img = ndarray(image.getData(), [width, height, ncpp]);
+      for (let i = 0; i < width; i++) {
+        for (let j = 0; j < height; j++) {
+          for (let k = 0; k < ncpp; k++) {
+            merged.set(i, j, ncppoffset + k, img.get(i, j, k));
+          }
+        }
+      }
+      ncppoffset += ncpp;
+    });
+    this._output[0] = new Image2D();
+    this._output[0].setData(merged.data, width, height, totalncpp);
+  }
+}
+
 function unique_pred(list, compare) {
   var ptr = 1
     , len = list.length
@@ -23139,21 +23293,26 @@ class BaseFourierSignalFilter extends Filter {
   constructor(direction) {
     super();
     this.direction = direction;
+    this.setMetadata('direction', this.direction);
     if (DIRECTIONS[this.direction] === undefined) {
       throw new Error(`${this.direction} is not a valid fourier transform direction. Please try one of: ${Object.keys(DIRECTIONS)}`);
     }
     this.addInputValidator(0, Signal1D);
+    this.addInputValidator(1, Signal1D);
   }
   _run() {
     if( ! this.hasValidInput()){
-      console.warn("A filter of type BaseFourierSignalFilter requires 1 input of Signal1D.");
+      console.warn("A filter of type BaseFourierSignalFilter requires 2 inputs of Signal1D.");
       return;
     }
-    const inputSignal = this._getInput(0);
-    const length = inputSignal.getMetadata('length');
-    const real = ndarray(inputSignal.clone().getData(), [length]);
-    const img = ndarray(inputSignal.hollowClone().getData(), [length]);
-    this.setMetadata('direction', this.direction);
+    const realSignal = this._getInput(0);
+    const imgSignal = this._getInput(1);
+    const length = realSignal.getMetadata('length');
+    if (length !== imgSignal.getMetadata('length')) {
+      console.warn('The imaginary and real components of the signal need to be of equal length.');
+    }
+    const real = ndarray(realSignal.clone().getData(), [length]);
+    const img = ndarray(imgSignal.clone().getData(), [length]);
 
     fft(DIRECTIONS[this.direction], real, img);
     this._output[0] = new Signal1D();
@@ -23169,7 +23328,7 @@ class ForwardFourierSignalFilter extends BaseFourierSignalFilter {
   }
 }
 
-class InverseFourerSignalFilter extends BaseFourierSignalFilter {
+class InverseFourierSignalFilter extends BaseFourierSignalFilter {
   constructor() {
     super('INVERSE');
   }
@@ -27374,8 +27533,10 @@ exports.MghDecoder = MghDecoder;
 exports.EegModDecoder = EegModDecoder;
 exports.PixBinEncoder = PixBinEncoder;
 exports.PixBinDecoder = PixBinDecoder;
+exports.ComponentProjectionImage2DFilter = ComponentProjectionImage2DFilter;
+exports.ComponentMergeImage2DFilter = ComponentMergeImage2DFilter;
 exports.ForwardFourierSignalFilter = ForwardFourierSignalFilter;
-exports.InverseFourerSignalFilter = InverseFourerSignalFilter;
+exports.InverseFourierSignalFilter = InverseFourierSignalFilter;
 exports.ForEachPixelImageFilter = ForEachPixelImageFilter;
 exports.SpectralScaleImageFilter = SpectralScaleImageFilter;
 exports.ImageBlendExpressionFilter = ImageBlendExpressionFilter;
