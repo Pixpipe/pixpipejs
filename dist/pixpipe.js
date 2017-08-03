@@ -26487,6 +26487,17 @@ class TriangulationSparseInterpolationImageFilter extends Filter {
   
 } /* END of class TriangulationSparseInterpolationImageFilter */
 
+/**
+* An instance of CropImageFilter is used to crop an `Image2D`. This filter accepts
+* a single input, using `.addInput( myImage )`, then, it requires a top left point
+* that must be set with `.setMetadata( "x", Number)` and `.setMetadata( "y", Number)`.
+* In addition, you must specify the width and heigth of the output using 
+* `.setMetadata( "w", Number)` and `.setMetadata( "h", Number)`.
+*
+* **Usage**
+* - [examples/cropImage2D.html](../examples/cropImage2D.html)
+*
+*/
 class CropImageFilter extends ImageToImageFilter {
   constructor(){
     super();
@@ -26525,13 +26536,11 @@ class CropImageFilter extends ImageToImageFilter {
     
     var inputData = inputImage.getData();
     
-    
     var outputImage = new Image2D({ 
       width  : outW,
       height : outH,
       color  : new inputData.constructor( ncpp )
     });
-    
     
     for( var i=0; i<outW; i++){
       for( var j=0; j<outH; j++){
@@ -26542,32 +26551,6 @@ class CropImageFilter extends ImageToImageFilter {
         );
       }
     }
-    
-    /*
-    var outputImage = new Image2D();
-    
-    //var img = ndarray(outputImage.getData(), [inputWidth, inputHeight, ncpp])
-    var img = ndarray( inputData, [inputWidth, inputHeight, ncpp])
-    
-    //var cropped = img.lo(startX, startY).hi(outW, outH)
-    var cropped = img.lo(100, 0)//.hi(inputWidth, inputHeight)
-    //var out = zeros([cropped.shape[0], cropped.shape[1], cropped.shape[2]], cropped.type) 
- 
-    var out = ndarray( new inputData.constructor(cropped.shape[0] * cropped.shape[1] * cropped.shape[2]).fill(0), [cropped.shape[0], cropped.shape[1], cropped.shape[2]]) ;
-
-    
-    for( var i=0; i<cropped.shape[0]; i++){
-      for( var j=0; j<cropped.shape[1]; j++){
-        for( var k=0; k<cropped.shape[2]; k++){
-          out.set(i, j, k, cropped.get(i, j, k))
-          //console.log( cropped.get(i, j, k) );
-        }
-      }
-    }
-     
-    //outputImage.setData( out.data, outW, outH, ncpp );
-    outputImage.setData( out.data, cropped.shape[0], cropped.shape[1], cropped.shape[2] );
-    */
     
     this._output[ 0 ] = outputImage;
   }
