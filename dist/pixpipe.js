@@ -623,6 +623,12 @@ class PixpipeContainer extends PixpipeObject {
 
 } /* END of class PixpipeContainer */
 
+/*
+ * Author   Armin Taheri - https://github.com/ArminTaheri
+ * License  MIT
+ * Link     https://github.com/Pixpipe/pixpipejs
+ * Lab      MCIN - Montreal Neurological Institute
+ */
 class Signal1D extends PixpipeContainer {
   constructor() {
     super();
@@ -2219,12 +2225,14 @@ class LineString extends PixpipeContainer {
 
 /**
 * CanvasImageWriter is a filter to output an instance of Image into a
-* HTML5 canvas element.
-* The metadata "parentDivID" has to be set using `setMetadata("parentDivID", "whatever")`
-* The metadata "alpha", if true, enable transparency. Default: false.
-* If the input Image2D has values not in [0, 255], you can remap/stretch using
-* setMetadata("min", xxx ) default: 0
-* setMetadata("max", xxx ) default: 255
+* HTML5 canvas element.  
+* The metadata "parentDivID" has to be set using `setMetadata("parentDivID", "whatever")`  
+* The metadata "alpha", if true, enable transparency. Default: false.  
+* If the input Image2D has values not in [0, 255], you can remap/stretch using  
+* setMetadata("min", xxx ) default: 0  
+* setMetadata("max", xxx ) default: 255  
+* We can also use `setMetadata("reset", false)` so that we can add another canvas
+* with a new image at update.  
 *
 * **Usage**
 * - [examples/imageToCanvasFilter.html](../examples/imageToCanvasFilter.html)
@@ -21346,6 +21354,13 @@ var zeros = function zeros(shape, dtype) {
   return ndarray(new (dtypeToType(dtype))(sz), shape);
 };
 
+/*
+ * Author   Armin Taheri - https://github.com/ArminTaheri
+ * License  MIT
+ * Link     https://github.com/Pixpipe/pixpipejs
+ * Lab      MCIN - Montreal Neurological Institute
+ */
+ 
 class ComponentProjectionImage2DFilter extends Filter {
   constructor() {
     super();
@@ -21377,6 +21392,13 @@ class ComponentProjectionImage2DFilter extends Filter {
     this.setMetadata('componentOffset', offset);
   }
 }
+
+/*
+ * Author   Armin Taheri - https://github.com/ArminTaheri
+ * License  MIT
+ * Link     https://github.com/Pixpipe/pixpipejs
+ * Lab      MCIN - Montreal Neurological Institute
+ */
 
 function validateInputs(inputImages) {
   const widths = inputImages.map(i => i.getMetadata('width'));
@@ -23284,6 +23306,12 @@ function ndfft(dir, x, y) {
 
 var fft = ndfft;
 
+/*
+ * Author   Armin Taheri - https://github.com/ArminTaheri
+ * License  MIT
+ * Link     https://github.com/Pixpipe/pixpipejs
+ * Lab      MCIN - Montreal Neurological Institute
+ */
 const DIRECTIONS = {
   'FORWARD': 1,
   'INVERSE': -1,
@@ -26644,6 +26672,77 @@ class TriangulationSparseInterpolationImageFilter extends Filter {
   
 } /* END of class TriangulationSparseInterpolationImageFilter */
 
+/**
+* An instance of CropImageFilter is used to crop an `Image2D`. This filter accepts
+* a single input, using `.addInput( myImage )`, then, it requires a top left point
+* that must be set with `.setMetadata( "x", Number)` and `.setMetadata( "y", Number)`.
+* In addition, you must specify the width and heigth of the output using 
+* `.setMetadata( "w", Number)` and `.setMetadata( "h", Number)`.
+*
+* **Usage**
+* - [examples/cropImage2D.html](../examples/cropImage2D.html)
+*
+*/
+class CropImageFilter extends ImageToImageFilter {
+  constructor(){
+    super();
+    this.addInputValidator(0, Image2D);
+    
+    this.setMetadata( "x", 0 );
+    this.setMetadata( "y", 0 );
+    this.setMetadata( "w", 0 );
+    this.setMetadata( "h", 0 );
+  }
+  
+  
+  _run(){
+    if( ! this.hasValidInput()){
+      console.warn("A filter of type CropImageFilter requires 1 input of category '0' (Image2D)");
+      return;
+    }
+    
+    var startX = Math.round( this.getMetadata( "x" ) );
+    var startY = Math.round(this.getMetadata( "y" ) );
+    var outW = Math.round(this.getMetadata( "w" ) );
+    var outH = Math.round(this.getMetadata( "h" ) );
+    var endX = startX + outW;
+    var endY = startY + outH;
+    
+    var inputImage = this._getInput( 0 );
+    var inputWidth = inputImage.getWidth();
+    var inputHeight = inputImage.getHeight();
+    var ncpp = inputImage.getNcpp();
+    
+    if( startX < 0 || startY < 0 || startX >= inputWidth || startY >= inputHeight ||
+        endX < 0 || endY < 0 || endX >= inputWidth || endY >= inputHeight){
+      console.warn("The query area is out of bound");
+      return;
+    }
+    
+    var inputData = inputImage.getData();
+    
+    var outputImage = new Image2D({ 
+      width  : outW,
+      height : outH,
+      color  : new inputData.constructor( ncpp )
+    });
+    
+    for( var i=0; i<outW; i++){
+      for( var j=0; j<outH; j++){
+        var inputColor = inputImage.getPixel({ x: i+startX, y: j+startY});
+        outputImage.setPixel(
+          {x: i, y: j},
+          inputColor
+        );
+      }
+    }
+    
+    this._output[ 0 ] = outputImage;
+  }
+  
+  
+} /* END of class CropImageFilter */
+
 /*
 * Author   Jonathan Lurie - http://me.jonahanlurie.fr
 * License  MIT
@@ -27554,6 +27653,7 @@ exports.TerrainRgbToElevationImageFilter = TerrainRgbToElevationImageFilter;
 exports.NearestNeighborSparseInterpolationImageFilter = NearestNeighborSparseInterpolationImageFilter;
 exports.IDWSparseInterpolationImageFilter = IDWSparseInterpolationImageFilter;
 exports.TriangulationSparseInterpolationImageFilter = TriangulationSparseInterpolationImageFilter;
+exports.CropImageFilter = CropImageFilter;
 exports.AngleToHueWheelHelper = AngleToHueWheelHelper;
 exports.LineStringPrinterOnImage2DHelper = LineStringPrinterOnImage2DHelper;
 exports.Colormap = Colormap;
