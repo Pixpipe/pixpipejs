@@ -476,7 +476,7 @@ class Filter extends PixpipeObject {
   * @param {String} recordName - name of the record
   */
   addTimeRecord( recordName ){
-    this._timer[ recordName ] = 0;
+    this._timer[ recordName ] = performance.now();
   }
 
 
@@ -2201,12 +2201,14 @@ class LineString extends PixpipeContainer {
 
 /**
 * CanvasImageWriter is a filter to output an instance of Image into a
-* HTML5 canvas element.
-* The metadata "parentDivID" has to be set using `setMetadata("parentDivID", "whatever")`
-* The metadata "alpha", if true, enable transparency. Default: false.
-* If the input Image2D has values not in [0, 255], you can remap/stretch using
-* setMetadata("min", xxx ) default: 0
-* setMetadata("max", xxx ) default: 255
+* HTML5 canvas element.  
+* The metadata "parentDivID" has to be set using `setMetadata("parentDivID", "whatever")`  
+* The metadata "alpha", if true, enable transparency. Default: false.  
+* If the input Image2D has values not in [0, 255], you can remap/stretch using  
+* setMetadata("min", xxx ) default: 0  
+* setMetadata("max", xxx ) default: 255  
+* We can also use `setMetadata("reset", false)` so that we can add another canvas
+* with a new image at update.  
 *
 * **Usage**
 * - [examples/imageToCanvasFilter.html](../examples/imageToCanvasFilter.html)
@@ -2749,19 +2751,19 @@ function chdir (dir) {
 function umask() { return 0; }
 
 // from https://github.com/kumavis/browser-process-hrtime/blob/master/index.js
-var performance = global$1.performance || {};
+var performance$1 = global$1.performance || {};
 var performanceNow =
-  performance.now        ||
-  performance.mozNow     ||
-  performance.msNow      ||
-  performance.oNow       ||
-  performance.webkitNow  ||
+  performance$1.now        ||
+  performance$1.mozNow     ||
+  performance$1.msNow      ||
+  performance$1.oNow       ||
+  performance$1.webkitNow  ||
   function(){ return (new Date()).getTime() };
 
 // generate timestamp or delta
 // see http://nodejs.org/api/process.html#process_process_hrtime
 function hrtime(previousTimestamp){
-  var clocktime = performanceNow.call(performance)*1e-3;
+  var clocktime = performanceNow.call(performance$1)*1e-3;
   var seconds = Math.floor(clocktime);
   var nanoseconds = Math.floor((clocktime%1)*1e9);
   if (previousTimestamp) {
@@ -26485,6 +26487,94 @@ class TriangulationSparseInterpolationImageFilter extends Filter {
   
 } /* END of class TriangulationSparseInterpolationImageFilter */
 
+class CropImageFilter extends ImageToImageFilter {
+  constructor(){
+    super();
+    this.addInputValidator(0, Image2D);
+    
+    this.setMetadata( "x", 0 );
+    this.setMetadata( "y", 0 );
+    this.setMetadata( "w", 0 );
+    this.setMetadata( "h", 0 );
+  }
+  
+  
+  _run(){
+    if( ! this.hasValidInput()){
+      console.warn("A filter of type CropImageFilter requires 1 input of category '0' (Image2D)");
+      return;
+    }
+    
+    var startX = Math.round( this.getMetadata( "x" ) );
+    var startY = Math.round(this.getMetadata( "y" ) );
+    var outW = Math.round(this.getMetadata( "w" ) );
+    var outH = Math.round(this.getMetadata( "h" ) );
+    var endX = startX + outW;
+    var endY = startY + outH;
+    
+    var inputImage = this._getInput( 0 );
+    var inputWidth = inputImage.getWidth();
+    var inputHeight = inputImage.getHeight();
+    var ncpp = inputImage.getNcpp();
+    
+    if( startX < 0 || startY < 0 || startX >= inputWidth || startY >= inputHeight ||
+        endX < 0 || endY < 0 || endX >= inputWidth || endY >= inputHeight){
+      console.warn("The query area is out of bound");
+      return;
+    }
+    
+    var inputData = inputImage.getData();
+    
+    
+    var outputImage = new Image2D({ 
+      width  : outW,
+      height : outH,
+      color  : new inputData.constructor( ncpp )
+    });
+    
+    
+    for( var i=0; i<outW; i++){
+      for( var j=0; j<outH; j++){
+        var inputColor = inputImage.getPixel({ x: i+startX, y: j+startY});
+        outputImage.setPixel(
+          {x: i, y: j},
+          inputColor
+        );
+      }
+    }
+    
+    /*
+    var outputImage = new Image2D();
+    
+    //var img = ndarray(outputImage.getData(), [inputWidth, inputHeight, ncpp])
+    var img = ndarray( inputData, [inputWidth, inputHeight, ncpp])
+    
+    //var cropped = img.lo(startX, startY).hi(outW, outH)
+    var cropped = img.lo(100, 0)//.hi(inputWidth, inputHeight)
+    //var out = zeros([cropped.shape[0], cropped.shape[1], cropped.shape[2]], cropped.type) 
+ 
+    var out = ndarray( new inputData.constructor(cropped.shape[0] * cropped.shape[1] * cropped.shape[2]).fill(0), [cropped.shape[0], cropped.shape[1], cropped.shape[2]]) ;
+
+    
+    for( var i=0; i<cropped.shape[0]; i++){
+      for( var j=0; j<cropped.shape[1]; j++){
+        for( var k=0; k<cropped.shape[2]; k++){
+          out.set(i, j, k, cropped.get(i, j, k))
+          //console.log( cropped.get(i, j, k) );
+        }
+      }
+    }
+     
+    //outputImage.setData( out.data, outW, outH, ncpp );
+    outputImage.setData( out.data, cropped.shape[0], cropped.shape[1], cropped.shape[2] );
+    */
+    
+    this._output[ 0 ] = outputImage;
+  }
+  
+  
+} /* END of class CropImageFilter */
+
 /*
 * Author   Jonathan Lurie - http://me.jonahanlurie.fr
 * License  MIT
@@ -27393,6 +27483,7 @@ exports.TerrainRgbToElevationImageFilter = TerrainRgbToElevationImageFilter;
 exports.NearestNeighborSparseInterpolationImageFilter = NearestNeighborSparseInterpolationImageFilter;
 exports.IDWSparseInterpolationImageFilter = IDWSparseInterpolationImageFilter;
 exports.TriangulationSparseInterpolationImageFilter = TriangulationSparseInterpolationImageFilter;
+exports.CropImageFilter = CropImageFilter;
 exports.AngleToHueWheelHelper = AngleToHueWheelHelper;
 exports.LineStringPrinterOnImage2DHelper = LineStringPrinterOnImage2DHelper;
 exports.Colormap = Colormap;
