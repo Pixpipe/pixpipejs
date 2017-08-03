@@ -51,7 +51,7 @@ export { NearestNeighborSparseInterpolationImageFilter } from './filter/NearestN
 export { IDWSparseInterpolationImageFilter } from './filter/IDWSparseInterpolationImageFilter.js';
 export { TriangulationSparseInterpolationImageFilter } from './filter/TriangulationSparseInterpolationImageFilter.js';
 export { CropImageFilter } from './filter/CropImageFilter.js';
-
+export { SimplifyLineStringFilter } from './filter/SimplifyLineStringFilter.js';
 
 // helpers
 export { AngleToHueWheelHelper } from './helper/AngleToHueWheelHelper.js';
