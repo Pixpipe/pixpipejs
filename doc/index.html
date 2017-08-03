@@ -1013,20 +1013,10 @@
                   parseNifti1Header
                 </a>
               <a
-                href='#PixBinEncoder'
+                href='#CropImageFilter'
                 class='block bold h3 bg-pink-alpha'>
-                PixBinEncoder
+                CropImageFilter
               </a>
-                <a
-                  href='#PixBinEncoder.download'
-                  class='regular block'>
-                  download
-                </a>
-                <a
-                  href='#PixBinEncoder.hasValidInput'
-                  class='regular block'>
-                  hasValidInput
-                </a>
               <a
                 href='#PixpEncoder'
                 class='block bold h3 bg-pink-alpha'>
@@ -1039,6 +1029,21 @@
                 </a>
                 <a
                   href='#PixpEncoder.hasValidInput'
+                  class='regular block'>
+                  hasValidInput
+                </a>
+              <a
+                href='#PixBinEncoder'
+                class='block bold h3 bg-pink-alpha'>
+                PixBinEncoder
+              </a>
+                <a
+                  href='#PixBinEncoder.download'
+                  class='regular block'>
+                  download
+                </a>
+                <a
+                  href='#PixBinEncoder.hasValidInput'
                   class='regular block'>
                   hasValidInput
                 </a>
@@ -3221,12 +3226,14 @@ values of the image will be looked-up (or computed if not defined).</p>
     CanvasImageWriter<span class='gray'></span>
   </h2>
   <p>CanvasImageWriter is a filter to output an instance of Image into a
-HTML5 canvas element.
-The metadata &quot;parentDivID&quot; has to be set using <code>setMetadata(&quot;parentDivID&quot;, &quot;whatever&quot;)</code>
-The metadata &quot;alpha&quot;, if true, enable transparency. Default: false.
-If the input Image2D has values not in [0, 255], you can remap/stretch using
-setMetadata(&quot;min&quot;, xxx ) default: 0
-setMetadata(&quot;max&quot;, xxx ) default: 255</p>
+HTML5 canvas element.<br>
+The metadata &quot;parentDivID&quot; has to be set using <code>setMetadata(&quot;parentDivID&quot;, &quot;whatever&quot;)</code><br>
+The metadata &quot;alpha&quot;, if true, enable transparency. Default: false.<br>
+If the input Image2D has values not in [0, 255], you can remap/stretch using<br>
+setMetadata(&quot;min&quot;, xxx ) default: 0<br>
+setMetadata(&quot;max&quot;, xxx ) default: 255<br>
+We can also use <code>setMetadata(&quot;reset&quot;, false)</code> so that we can add another canvas
+with a new image at update.</p>
 <p><strong>Usage</strong></p>
 <ul>
 <li><a href="../examples/imageToCanvasFilter.html">examples/imageToCanvasFilter.html</a></li>
@@ -7447,66 +7454,19 @@ found in the standard NIfTI-1 library (nifti1_io.c).</p>
         </div>
 </section>
 </div><div class='py1'><section class='py2 clearfix'>
-  <h2 id='PixBinEncoder' class='mt0'>
-    PixBinEncoder<span class='gray'></span>
+  <h2 id='CropImageFilter' class='mt0'>
+    CropImageFilter<span class='gray'></span>
   </h2>
-  <p>A PixBinEncoder instance takes an Image2D or Image3D as input with <code>addInput(...)</code>
-and encode it so that it can be saved as a *.pixp file.
-An output filename can be specified using <code>.setMetadata(&quot;filename&quot;, &quot;yourName.pixp&quot;);</code>,
-by default, the name is &quot;untitled.pixp&quot;.
-When <code>update()</code> is called, a gzip blog is prepared as output[0] and can then be downloaded
-when calling the method <code>.download()</code>. The gzip blob could also be sent over AJAX
-using a third party library.</p>
+  <p>An instance of CropImageFilter is used to crop an <code>Image2D</code>. This filter accepts
+a single input, using <code>.addInput( myImage )</code>, then, it requires a top left point
+that must be set with <code>.setMetadata( &quot;x&quot;, Number)</code> and <code>.setMetadata( &quot;y&quot;, Number)</code>.
+In addition, you must specify the width and heigth of the output using
+<code>.setMetadata( &quot;w&quot;, Number)</code> and <code>.setMetadata( &quot;h&quot;, Number)</code>.</p>
 <p><strong>Usage</strong></p>
 <ul>
-<li><a href="../examples/savePixpFile.html">examples/savePixpFile.html</a></li>
+<li><a href="../examples/cropImage2D.html">examples/cropImage2D.html</a></li>
 </ul>
 
-      <h4>Instance members</h4>
-        <div class='collapsible' id='PixBinEncoder.download'>
-          <a href='#PixBinEncoder.download'>
-            <code>
-              download<span class='gray'></span>
-            </code>
-            <div class='force-inline'>
-              <p>Download the generated file</p>
-
-            </div>
-          </a>
-          <div class='collapser border px2'>
-<section class='py2 clearfix'>
-  <h2 id='PixBinEncoder.download' class='mt0'>
-    download<span class='gray'></span>
-  </h2>
-  <p>Download the generated file</p>
-
-</section>
-          </div>
-        </div>
-        <div class='collapsible' id='PixBinEncoder.hasValidInput'>
-          <a href='#PixBinEncoder.hasValidInput'>
-            <code>
-              hasValidInput<span class='gray'></span>
-            </code>
-            <div class='force-inline'>
-              <p>[PRIVATE]
-overwrite the original from Filter
-Only accept Image2D and Image3D</p>
-
-            </div>
-          </a>
-          <div class='collapser border px2'>
-<section class='py2 clearfix'>
-  <h2 id='PixBinEncoder.hasValidInput' class='mt0'>
-    hasValidInput<span class='gray'></span>
-  </h2>
-  <p>[PRIVATE]
-overwrite the original from Filter
-Only accept Image2D and Image3D</p>
-
-</section>
-          </div>
-        </div>
 </section>
 </div><div class='py1'><section class='py2 clearfix'>
   <h2 id='PixpEncoder' class='mt0'>
@@ -7560,6 +7520,68 @@ Only accept Image2D and Image3D</p>
           <div class='collapser border px2'>
 <section class='py2 clearfix'>
   <h2 id='PixpEncoder.hasValidInput' class='mt0'>
+    hasValidInput<span class='gray'></span>
+  </h2>
+  <p>[PRIVATE]
+overwrite the original from Filter
+Only accept Image2D and Image3D</p>
+
+</section>
+          </div>
+        </div>
+</section>
+</div><div class='py1'><section class='py2 clearfix'>
+  <h2 id='PixBinEncoder' class='mt0'>
+    PixBinEncoder<span class='gray'></span>
+  </h2>
+  <p>A PixBinEncoder instance takes an Image2D or Image3D as input with <code>addInput(...)</code>
+and encode it so that it can be saved as a *.pixp file.
+An output filename can be specified using <code>.setMetadata(&quot;filename&quot;, &quot;yourName.pixp&quot;);</code>,
+by default, the name is &quot;untitled.pixp&quot;.
+When <code>update()</code> is called, a gzip blog is prepared as output[0] and can then be downloaded
+when calling the method <code>.download()</code>. The gzip blob could also be sent over AJAX
+using a third party library.</p>
+<p><strong>Usage</strong></p>
+<ul>
+<li><a href="../examples/savePixpFile.html">examples/savePixpFile.html</a></li>
+</ul>
+
+      <h4>Instance members</h4>
+        <div class='collapsible' id='PixBinEncoder.download'>
+          <a href='#PixBinEncoder.download'>
+            <code>
+              download<span class='gray'></span>
+            </code>
+            <div class='force-inline'>
+              <p>Download the generated file</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2'>
+<section class='py2 clearfix'>
+  <h2 id='PixBinEncoder.download' class='mt0'>
+    download<span class='gray'></span>
+  </h2>
+  <p>Download the generated file</p>
+
+</section>
+          </div>
+        </div>
+        <div class='collapsible' id='PixBinEncoder.hasValidInput'>
+          <a href='#PixBinEncoder.hasValidInput'>
+            <code>
+              hasValidInput<span class='gray'></span>
+            </code>
+            <div class='force-inline'>
+              <p>[PRIVATE]
+overwrite the original from Filter
+Only accept Image2D and Image3D</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2'>
+<section class='py2 clearfix'>
+  <h2 id='PixBinEncoder.hasValidInput' class='mt0'>
     hasValidInput<span class='gray'></span>
   </h2>
   <p>[PRIVATE]
