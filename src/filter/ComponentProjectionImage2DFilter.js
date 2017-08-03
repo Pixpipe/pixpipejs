@@ -4,7 +4,7 @@
  * Link     https://github.com/Pixpipe/pixpipejs
  * Lab      MCIN - Montreal Neurological Institute
  */
-
+ 
 import ndarray from 'ndarray';
 import zeros from 'zeros';
 import { Filter } from '../core/Filter';

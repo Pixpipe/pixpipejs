@@ -52,6 +52,8 @@ export { TerrainRgbToElevationImageFilter } from './filter/TerrainRgbToElevation
 export { NearestNeighborSparseInterpolationImageFilter } from './filter/NearestNeighborSparseInterpolationImageFilter.js';
 export { IDWSparseInterpolationImageFilter } from './filter/IDWSparseInterpolationImageFilter.js';
 export { TriangulationSparseInterpolationImageFilter } from './filter/TriangulationSparseInterpolationImageFilter.js';
+export { CropImageFilter } from './filter/CropImageFilter.js';
+
 
 // helpers
 export { AngleToHueWheelHelper } from './helper/AngleToHueWheelHelper.js';
