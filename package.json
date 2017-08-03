@@ -41,6 +41,7 @@
     "pako": "^1.0.4",
     "qeegmodfile": "github:jonathanlurie/qeegmodfile",
     "rollup-plugin-bundle-worker": "^0.1.0",
+    "simplify-js": "^1.2.1",
     "zeros": "^1.0.0"
   },
   "devDependencies": {

@@ -2031,6 +2031,15 @@ class LineString extends PixpipeContainer {
   
   
   /**
+  * Get the number of dimensions
+  * @return {Number} the nod
+  */
+  getNod(){
+    return this.getMetadata("nod");
+  }
+  
+  
+  /**
   * Get the internal image data (pointer)
   * @return {Array} the original data, dont mess up with this one.
   * in case of doubt, use  getDataCopy()
@@ -26487,6 +26496,13 @@ class TriangulationSparseInterpolationImageFilter extends Filter {
   
 } /* END of class TriangulationSparseInterpolationImageFilter */
 
+/*
+* Author   Jonathan Lurie - http://me.jonahanlurie.fr
+* License  MIT
+* Link      https://github.com/jonathanlurie/pixpipejs
+* Lab       MCIN - Montreal Neurological Institute
+*/
+
 /**
 * An instance of CropImageFilter is used to crop an `Image2D`. This filter accepts
 * a single input, using `.addInput( myImage )`, then, it requires a top left point
@@ -26557,6 +26573,201 @@ class CropImageFilter extends ImageToImageFilter {
   
   
 } /* END of class CropImageFilter */
+
+var simplify = createCommonjsModule(function (module) {
+/*
+ (c) 2013, Vladimir Agafonkin
+ Simplify.js, a high-performance JS polyline simplification library
+ mourner.github.io/simplify-js
+*/
+
+(function () { 'use strict';
+
+// to suit your point format, run search/replace for '.x' and '.y';
+// for 3D version, see 3d branch (configurability would draw significant performance overhead)
+
+// square distance between 2 points
+function getSqDist(p1, p2) {
+
+    var dx = p1.x - p2.x,
+        dy = p1.y - p2.y;
+
+    return dx * dx + dy * dy;
+}
+
+// square distance from a point to a segment
+function getSqSegDist(p, p1, p2) {
+
+    var x = p1.x,
+        y = p1.y,
+        dx = p2.x - x,
+        dy = p2.y - y;
+
+    if (dx !== 0 || dy !== 0) {
+
+        var t = ((p.x - x) * dx + (p.y - y) * dy) / (dx * dx + dy * dy);
+
+        if (t > 1) {
+            x = p2.x;
+            y = p2.y;
+
+        } else if (t > 0) {
+            x += dx * t;
+            y += dy * t;
+        }
+    }
+
+    dx = p.x - x;
+    dy = p.y - y;
+
+    return dx * dx + dy * dy;
+}
+// rest of the code doesn't care about point format
+
+// basic distance-based simplification
+function simplifyRadialDist(points, sqTolerance) {
+
+    var prevPoint = points[0],
+        newPoints = [prevPoint],
+        point;
+
+    for (var i = 1, len = points.length; i < len; i++) {
+        point = points[i];
+
+        if (getSqDist(point, prevPoint) > sqTolerance) {
+            newPoints.push(point);
+            prevPoint = point;
+        }
+    }
+
+    if (prevPoint !== point) newPoints.push(point);
+
+    return newPoints;
+}
+
+// simplification using optimized Douglas-Peucker algorithm with recursion elimination
+function simplifyDouglasPeucker(points, sqTolerance) {
+
+    var len = points.length,
+        MarkerArray = typeof Uint8Array !== 'undefined' ? Uint8Array : Array,
+        markers = new MarkerArray(len),
+        first = 0,
+        last = len - 1,
+        stack = [],
+        newPoints = [],
+        i, maxSqDist, sqDist, index;
+
+    markers[first] = markers[last] = 1;
+
+    while (last) {
+
+        maxSqDist = 0;
+
+        for (i = first + 1; i < last; i++) {
+            sqDist = getSqSegDist(points[i], points[first], points[last]);
+
+            if (sqDist > maxSqDist) {
+                index = i;
+                maxSqDist = sqDist;
+            }
+        }
+
+        if (maxSqDist > sqTolerance) {
+            markers[index] = 1;
+            stack.push(first, index, index, last);
+        }
+
+        last = stack.pop();
+        first = stack.pop();
+    }
+
+    for (i = 0; i < len; i++) {
+        if (markers[i]) newPoints.push(points[i]);
+    }
+
+    return newPoints;
+}
+
+// both algorithms combined for awesome performance
+function simplify(points, tolerance, highestQuality) {
+
+    var sqTolerance = tolerance !== undefined ? tolerance * tolerance : 1;
+
+    points = highestQuality ? points : simplifyRadialDist(points, sqTolerance);
+    points = simplifyDouglasPeucker(points, sqTolerance);
+
+    return points;
+}
+
+// export as AMD module / Node module / browser or worker variable
+if (typeof undefined === 'function' && undefined.amd) undefined(function() { return simplify; });
+else module.exports = simplify;
+
+})();
+});
+
+/*
+* Author   Jonathan Lurie - http://me.jonahanlurie.fr
+* License  MIT
+* Link     https://github.com/jonathanlurie/pixpipejs
+* Lab      MCIN - Montreal Neurological Institute
+*/
+
+/**
+*
+*/
+class SimplifyLineStringFilter extends Filter {
+  
+  constructor(){
+    super();
+    this.addInputValidator(0, LineString);
+    this.setMetadata( "tolerance", 0.1 );
+  }
+  
+  
+  _run(){
+    
+    if( ! this.hasValidInput()){
+      console.warn("A filter of type SimplifyLineStringFilter requires 1 input of category '0' (LineString)");
+      return;
+    }
+    
+    var inputString = this._getInput( 0 );
+    var nod = inputString.getNod();
+    var inputPoints = inputString.getData();
+    var tolerance = this.getMetadata( "tolerance" );
+    
+    if( nod != 2){
+      console.warn("SimplifyLineStringFilter is only for 2D LineStrings.");
+      return;
+    }
+    
+    // points need to be group in an array of {x: Number, y: Number}
+    var groupedStringData = new Array( inputPoints.length / 2 );
+    
+    for(var i=0; i<groupedStringData.length; i++){
+      groupedStringData[ i ] = {x: inputPoints[i*2], y: inputPoints[i*2 + 1]};
+    }
+    
+    // simplifying the linestring
+    var simplified = simplify(groupedStringData, tolerance, true);
+    
+    // putting back the data as a big array
+    var linearStringData = new Array( simplified.length * 2 );
+    
+    for(var i=0; i<simplified.length-1; i++){
+      linearStringData[i*2] = simplified[i].x;
+      linearStringData[i*2 + 1] = simplified[i+1].y;
+    }
+    
+    var outputLineString = new LineString();
+    outputLineString.setData( linearStringData, nod );
+    outputLineString.copyMetadataFrom( inputString );
+    
+    this._output[0] = outputLineString;
+  }
+  
+} /* END of class SimplifyLineStringFilter */
 
 /*
 * Author   Jonathan Lurie - http://me.jonahanlurie.fr
@@ -27467,6 +27678,7 @@ exports.NearestNeighborSparseInterpolationImageFilter = NearestNeighborSparseInt
 exports.IDWSparseInterpolationImageFilter = IDWSparseInterpolationImageFilter;
 exports.TriangulationSparseInterpolationImageFilter = TriangulationSparseInterpolationImageFilter;
 exports.CropImageFilter = CropImageFilter;
+exports.SimplifyLineStringFilter = SimplifyLineStringFilter;
 exports.AngleToHueWheelHelper = AngleToHueWheelHelper;
 exports.LineStringPrinterOnImage2DHelper = LineStringPrinterOnImage2DHelper;
 exports.Colormap = Colormap;
