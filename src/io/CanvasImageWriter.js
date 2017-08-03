@@ -10,12 +10,14 @@ import { Filter } from '../core/Filter.js';
 
 /**
 * CanvasImageWriter is a filter to output an instance of Image into a
-* HTML5 canvas element.
-* The metadata "parentDivID" has to be set using `setMetadata("parentDivID", "whatever")`
-* The metadata "alpha", if true, enable transparency. Default: false.
-* If the input Image2D has values not in [0, 255], you can remap/stretch using
-* setMetadata("min", xxx ) default: 0
-* setMetadata("max", xxx ) default: 255
+* HTML5 canvas element.  
+* The metadata "parentDivID" has to be set using `setMetadata("parentDivID", "whatever")`  
+* The metadata "alpha", if true, enable transparency. Default: false.  
+* If the input Image2D has values not in [0, 255], you can remap/stretch using  
+* setMetadata("min", xxx ) default: 0  
+* setMetadata("max", xxx ) default: 255  
+* We can also use `setMetadata("reset", false)` so that we can add another canvas
+* with a new image at update.  
 *
 * **Usage**
 * - [examples/imageToCanvasFilter.html](../examples/imageToCanvasFilter.html)

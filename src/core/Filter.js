@@ -316,7 +316,7 @@ class Filter extends PixpipeObject {
   * @param {String} recordName - name of the record
   */
   addTimeRecord( recordName ){
-    this._timer[ recordName ] = 0;
+    this._timer[ recordName ] = performance.now();
   }
 
 
