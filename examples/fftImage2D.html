@@ -1,0 +1,85 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+  <title>FileToArrayBufferReader to ArrayBuffer</title>
+
+  <script src="../dist/pixpipe.js"></script>
+  <script src="js/ndarray.js"></script>
+  <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700,900" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .canvas-wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+  </style>
+</head>
+<body>
+  <h1><a href="https://github.com/pixpipe/pixpipejs"><span style="color: #ff91d7">Pixpipe</span><span style="color: #FFFFFF">js</span></a></h1>
+  <p>
+  This does the following :
+  <ul>
+    <li>Display the image of the function <code>f(x,y) = sin(x + y) + sin(3*x + y)</code> wrapped in <code>pixpipe.Image2D</code></li>
+    <li>Display the real component of the fourier transform output from <code>pixpipe.ForwardFourierImageFilter</code></li>
+    <li>Display the imaginary component of the fourier transform output from <code>pixpipe.ForwardFourierImageFilter</code></li>
+    <li>Display the real component of the inverse fourier transform output from <code>pixpipe.InverseFourierImageFilter</code></li>
+  </ul>
+  </p>
+  <div class="canvas-wrapper">
+    <div id="container1"></div>
+    <div id="container2"></div>
+    <div id="container3"></div>
+    <div id="container4"></div>
+  </div>
+  <script>
+    var imageInputreal = ndarray(new Float32Array(200 * 200).fill(0), [200, 200]);
+    for (var x = 0; x < 200; x++) {
+      for (var y = 0; y < 200; y++) {
+        var tx = (x - 100);
+        var ty = (y - 100);
+        imageInputreal.set(x,y, Math.sin(x + y) + Math.sin(3 * x + y));
+      }
+    }
+    var image2DInputreal = new pixpipe.Image2D();
+    image2DInputreal.setData(imageInputreal.data, 200, 200, 1);
+    var image2DInputimg = image2DInputreal.hollowClone();
+    var writer1 = new pixpipe.CanvasImageWriter();
+    writer1.setMetadata('parentDivID', 'container1');
+    writer1.setMetadata('min', 0);
+    writer1.setMetadata('max', 1);
+    writer1.addInput(image2DInputreal);
+    writer1.update();
+
+    var fftImage2d = new pixpipe.ForwardFourierImageFilter();
+    fftImage2d.addInput(image2DInputreal, 0);
+    fftImage2d.addInput(image2DInputimg, 1);
+    fftImage2d.update();
+    var fftImagereal = fftImage2d.getOutput(0);
+    var fftImageimg = fftImage2d.getOutput(1);
+    var writer2 = new pixpipe.CanvasImageWriter();
+    writer2.setMetadata('parentDivID', 'container2');
+    writer2.addInput(fftImagereal);
+    writer2.update();
+
+    var writer3 = new pixpipe.CanvasImageWriter();
+    writer3.setMetadata('parentDivID', 'container3');
+    writer3.addInput(fftImageimg);
+    writer3.update();
+
+    var ifftImage2d = new pixpipe.InverseFourierImageFilter();
+    ifftImage2d.addInput(fftImagereal, 0);
+    ifftImage2d.addInput(fftImageimg, 1);
+    ifftImage2d.update();
+
+    var writer4 = new pixpipe.CanvasImageWriter();
+    writer4.setMetadata('parentDivID', 'container4');
+    writer4.setMetadata('min', 0);
+    writer4.setMetadata('max', 1);
+    writer4.addInput(ifftImage2d.getOutput(0));
+    writer4.update();
+  </script>
+
+</body>
+</html>

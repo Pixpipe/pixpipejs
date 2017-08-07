@@ -192,6 +192,8 @@ class Filter extends PixpipeObject {
 
     this._inputValidator = {};
 
+    this._allValidator = null;
+
     this._input = {
       //"0": []
     };
@@ -390,9 +392,17 @@ class Filter extends PixpipeObject {
   * @param {Type} InputType - the type of the expected input, like Image2D, Image3D, etc. without quotes
   */
   addInputValidator( category, InputType ){
-    if("TYPE" in InputType){
+    if ("TYPE" in InputType) {
+      if (category === 'ALL') {
+        this._allValidator = InputType.TYPE();
+        return;
+      }
       this._inputValidator[ category ] = InputType.TYPE();
-    }else{
+    } else {
+      if (category === 'ALL') {
+        this._allValidator = InputType;
+        return;
+      }
       this._inputValidator[ category ] = InputType;
     }
   }
@@ -405,23 +415,31 @@ class Filter extends PixpipeObject {
   */
   hasValidInput(){
     var that = this;
-    var inputCategories = Object.keys( this._inputValidator );
+    var inputCategories = this.getInputCategories();
     var valid = true;
-
-    if(inputCategories.length == 0){
+    if(inputCategories.length === 0){
       valid = false;
       console.warn("No input validator was added. Filter cannot run. Use addInputValidator(...) to specify input types.");
     }
-
     inputCategories.forEach( function(key){
       var inputOfCategory = that._getInput( key );
 
       if(inputOfCategory){
         if("isOfType" in inputOfCategory){
-          valid = valid && inputOfCategory.isOfType( that._inputValidator[ key ] );
+          if (that._inputValidator[ key ]) {
+            valid = valid && inputOfCategory.isOfType( that._inputValidator[ key ] );
+          }
+          if (that._allValidator) {
+            valid = valid && inputOfCategory.isOfType(that._allValidator);
+          }
         }else{
           try{
-            valid = valid && (inputOfCategory instanceof that._inputValidator[ key ] );
+            if (that._inputValidator[ key ]) {
+              valid = valid && (inputOfCategory instanceof that._inputValidator[ key ] );
+            }
+            if (that._allValidator) {
+              valid = valid && (inputOfCategory instanceof that._allValidator );
+            }
           }catch(e){
             valid = false;
           }
@@ -605,6 +623,12 @@ class PixpipeContainer extends PixpipeObject {
 
 } /* END of class PixpipeContainer */
 
+/*
+ * Author   Armin Taheri - https://github.com/ArminTaheri
+ * License  MIT
+ * Link     https://github.com/Pixpipe/pixpipejs
+ * Lab      MCIN - Montreal Neurological Institute
+ */
 class Signal1D extends PixpipeContainer {
   constructor() {
     super();
@@ -731,19 +755,19 @@ class Image2D extends PixpipeContainer{
   /**
   * Get an empty copy of an image. Like a clone but the array of data is filled
   * with zeros and no metadata.
-  * @return {Image2D} 
+  * @return {Image2D}
   */
   hollowClone(){
     var cpImg = new Image2D();
     var ncpp = this.getMetadata("ncpp");
     var width = this.getMetadata("width");
     var height = this.getMetadata("height");
-    
+
     cpImg.setData( new Float32Array(width*height*ncpp).fill(0), width, height, ncpp);
     return cpImg;
   }
-  
-  
+
+
   /**
   * Create a clone of this image that ensure data are encoded in a Float32Array.
   * @return {Image2D} the F32 clone
@@ -753,7 +777,7 @@ class Image2D extends PixpipeContainer{
     var ncpp = this.getMetadata("ncpp");
     var width = this.getMetadata("width");
     var height = this.getMetadata("height");
-    
+
     cpImg.setData( new Float32Array(this._data), width, height, ncpp);
     cpImg.copyMetadataFrom( this );
     return cpImg;
@@ -818,7 +842,7 @@ class Image2D extends PixpipeContainer{
             this._data[ pos1D + i] = color[i];
           }
         }
-      }else 
+      }else
       // we gave a RGB color instead of a RGBA, it's ok...
       if(color.length == 3 && ncpp == 4){
         var pos1D = this.get1dIndexFrom2dPosition( position );
@@ -856,14 +880,14 @@ class Image2D extends PixpipeContainer{
       var color = null;
       var pos1D = this.get1dIndexFrom2dPosition( position );
 
-      // 
+      //
       if(ncpp == 1){
         color = [this._data[pos1D]];
       }else{
         pos1D *= ncpp;
         color = this._data.slice(pos1D, pos1D + ncpp);
       }
-      
+
       return color;
 
     }else{
@@ -899,7 +923,7 @@ class Image2D extends PixpipeContainer{
     return this._metadata.ncpp;
   }
 
-  
+
   /**
   * Alias to getComponentsPerPixel. Return the number of components per pixel.
   * @return {Number} ncpp
@@ -1035,20 +1059,20 @@ class Image2D extends PixpipeContainer{
     }
     return this.getMetadata("avg");
   }
-  
-  
+
+
   /**
   * Tells if a given point is inside or outside the image
   * @param {Object} pos - position like {x: Number, y: Number}
   * @return {Boolean} true for inside, false for outside
   */
   isInside( pos ){
-    return ( 
+    return (
       pos.x >= 0 && pos.x < this._metadata.width &&
       pos.y >= 0 && pos.y < this._metadata.height
     )
   }
-  
+
   /**
   * Sample the color along a segment
   * @param {Object} posFrom - starting position of type {x: Number, y: Number}
@@ -1075,48 +1099,48 @@ class Image2D extends PixpipeContainer{
     // both position must be inside the image
     if( !this.isInside(posFrom) || !this.isInside(posTo) )
       return null;
-      
+
     var dx = posTo.x - posFrom.x;
     var dy = posTo.y - posFrom.y;
     var euclidianDistance = Math.sqrt( Math.pow(dx , 2) + Math.pow(dy , 2) );
     var numberOfSamples = Math.floor( euclidianDistance + 1 );
-    
+
     // we want to sample every unit distance along the segment
     var stepX = dx / euclidianDistance;
     var stepY = dy / euclidianDistance;
-    
+
     var ncpp = this._metadata.ncpp;
     var positions = new Array(numberOfSamples).fill(0);
     var colors = new Array(ncpp).fill(0);
     var labels = new Array(numberOfSamples).fill(0);
-    
+
     // creating empty arrays for colors
     for(var c=0; c<ncpp; c++){
       colors[c] = new Array(numberOfSamples).fill(0) ;
     }
-    
+
     // walk along the segment, from posFrom to posTo
     for(var i=0; i<numberOfSamples; i++){
       var currentPos = {x: Math.round(posFrom.x + i*stepX) , y: Math.round(posFrom.y + i*stepY) };
       positions[i] = currentPos;
       labels[i] = "(" + currentPos.x + ", " + currentPos.y + ")";
-      
+
       var pixValue = this.getPixel( currentPos );
-      
+
       // each channel is dispatched in its array
       for(var c=0; c<ncpp; c++){
         colors[c][i] = pixValue[c];
       }
     }
-    
+
     return {
       positions: positions,
       labels: labels,
       colors: colors
     }
   } /* END of method getLineSample */
-  
-  
+
+
 
 } /* END of class Image2D */
 
@@ -23055,8 +23079,7 @@ UPNG.decode = function(buff)
 	{
 		var len = bin.readUint(data, offset);  offset += 4;
 		
-		if( isNaN(len) )
-			throw "Invalid PNG format. Unable to decode";
+		if	( isNaN(len) ) { throw "Invalid PNG format. Unable to decode"; }
 		
 		var type = bin.readASCII(data, offset, 4);  offset += 4;
 		//log(offset, len, type);
@@ -23296,7 +23319,6 @@ class PngDecoder extends Filter {
   constructor() {
     super();
     this.addInputValidator(0, ArrayBuffer);
-    
   }
   
   _run(){
@@ -23307,21 +23329,13 @@ class PngDecoder extends Filter {
       return;
     }
     
-    
     try{
       var pngData = UPNG.decode( inputBuffer );
       var ncpp = Math.round(pngData.data.length / (pngData.width*pngData.height) );
       var outputImage = new Image2D();
-      
       var croppedArray = new pngData.data.constructor( pngData.data.buffer, 0, pngData.width * pngData.height * ncpp);
-      
-      //var croppedArray = pngData.data.slice(0, pngData.width * pngData.height * ncpp)
-      
-      
       outputImage.setData(croppedArray, pngData.width, pngData.height, ncpp);
       this._output[ 0 ] = outputImage;
-      
-      console.log( pngData );
     }catch(e){
       console.warn(e);
       //console.warn("This is not a PNG file, unable to decode this file.");
@@ -23693,6 +23707,156 @@ var CACHED_CONSTRUCTORS = {
 }
 
 var ndarray = wrappedNDArrayCtor;
+
+function dtypeToType(dtype) {
+  switch(dtype) {
+    case 'uint8':
+      return Uint8Array;
+    case 'uint16':
+      return Uint16Array;
+    case 'uint32':
+      return Uint32Array;
+    case 'int8':
+      return Int8Array;
+    case 'int16':
+      return Int16Array;
+    case 'int32':
+      return Int32Array;
+    case 'float':
+    case 'float32':
+      return Float32Array;
+    case 'double':
+    case 'float64':
+      return Float64Array;
+    case 'uint8_clamped':
+      return Uint8ClampedArray;
+    case 'generic':
+    case 'buffer':
+    case 'data':
+    case 'dataview':
+      return ArrayBuffer;
+    case 'array':
+      return Array;
+  }
+}
+
+var zeros = function zeros(shape, dtype) {
+  dtype = dtype || 'float64';
+  var sz = 1;
+  for(var i=0; i<shape.length; ++i) {
+    sz *= shape[i];
+  }
+  return ndarray(new (dtypeToType(dtype))(sz), shape);
+};
+
+/*
+ * Author   Armin Taheri - https://github.com/ArminTaheri
+ * License  MIT
+ * Link     https://github.com/Pixpipe/pixpipejs
+ * Lab      MCIN - Montreal Neurological Institute
+ */
+ 
+class ComponentProjectionImage2DFilter extends Filter {
+  constructor() {
+    super();
+    this.addInputValidator(0, Image2D);
+  }
+  _run() {
+    if( ! this.hasValidInput()){
+      console.warn("A filter of type ComponentProjectionImage2DFilter requires 1 input of Image2D.");
+      return;
+    }
+    const inputSignal = this._getInput(0);
+    const width = inputSignal.getMetadata('width');
+    const height = inputSignal.getMetadata('height');
+    const ncpp = inputSignal.getMetadata('ncpp');
+    const offset = this.getMetadata('componentOffset');
+    const arr = ndarray(inputSignal.getData(), [width, height, ncpp]);
+    const projected = arr.pick(null, null, offset); // pick out the component as an ndarray
+    const projectedArray = zeros([width, height], arr.dtype);
+    for (let i = 0; i < width; i++) {
+      for (let j = 0; j < height; j++) {
+        projectedArray.set(i, j, projected.get(i, j));
+      }
+    }
+    const projectedImage = new Image2D();
+    projectedImage.setData(projectedArray.data, width, height, 1);
+    this._output[0] = projectedImage;
+  }
+  setComponentOffset(offset) {
+    this.setMetadata('componentOffset', offset);
+  }
+}
+
+/*
+ * Author   Armin Taheri - https://github.com/ArminTaheri
+ * License  MIT
+ * Link     https://github.com/Pixpipe/pixpipejs
+ * Lab      MCIN - Montreal Neurological Institute
+ */
+
+function validateInputs(inputImages) {
+  const widths = inputImages.map(i => i.getMetadata('width'));
+  const widthsEqual = widths.reduce((eq, w) => eq && w === widths[0], true);
+  if (!widthsEqual) {
+    return false;
+  }
+  const heights = inputImages.map(i => i.getMetadata('height'));
+  const heightsEqual = heights.reduce((eq, h) => eq && h === heights[0], true);
+  if (!heightsEqual) {
+    return false;
+  }
+  const types = inputImages.map(i => i.getData().constructor);
+  const typesEqual = types.reduce((eq, t) => eq && t === types[0], true);
+  if (!typesEqual) {
+    return false;
+  }
+  return true;
+}
+
+class ComponentMergeImage2DFilter extends Filter {
+  constructor() {
+    super();
+    this.addInputValidator('ALL', Image2D);
+  }
+  _run() {
+    if(this.getNumberOfInputs() < 2) {
+      console.warn('A filter of type ComponentMergeImage2DFilter needs 2 or more inputs.');
+      return;
+    }
+    if( ! this.hasValidInput()){
+      console.warn("A filter of type ComponentMergeImage2DFilter requires inputs of Image2D.");
+      return;
+    }
+    const inputImages = this.getInputCategories().map(cat => this._getInput(cat));
+    if (!validateInputs(inputImages)) {
+      console.warn('A filter of type ComponentMergeImage2DFilter requires inputs to be the same dimensions and array type');
+      return;
+    }
+    const width = inputImages[0].getMetadata('width');
+    const height = inputImages[0].getMetadata('height');
+    const ncpps = inputImages.map(i => i.getMetadata('ncpp'));
+    const totalncpp = ncpps.reduce((x,y) => x + y);
+    const type = ndarray(inputImages[0].getData()).dtype;
+    const merged = zeros([width, height, totalncpp], type);
+
+    let ncppoffset = 0;
+    inputImages.forEach((image, index) => {
+      const ncpp = image.getMetadata('ncpp');
+      const img = ndarray(image.getData(), [width, height, ncpp]);
+      for (let i = 0; i < width; i++) {
+        for (let j = 0; j < height; j++) {
+          for (let k = 0; k < ncpp; k++) {
+            merged.set(i, j, ncppoffset + k, img.get(i, j, k));
+          }
+        }
+      }
+      ncppoffset += ncpp;
+    });
+    this._output[0] = new Image2D();
+    this._output[0].setData(merged.data, width, height, totalncpp);
+  }
+}
 
 function unique_pred(list, compare) {
   var ptr = 1
@@ -25537,6 +25701,12 @@ function ndfft(dir, x, y) {
 
 var fft = ndfft;
 
+/*
+ * Author   Armin Taheri - https://github.com/ArminTaheri
+ * License  MIT
+ * Link     https://github.com/Pixpipe/pixpipejs
+ * Lab      MCIN - Montreal Neurological Institute
+ */
 const DIRECTIONS = {
   'FORWARD': 1,
   'INVERSE': -1,
@@ -25546,21 +25716,26 @@ class BaseFourierSignalFilter extends Filter {
   constructor(direction) {
     super();
     this.direction = direction;
+    this.setMetadata('direction', this.direction);
     if (DIRECTIONS[this.direction] === undefined) {
       throw new Error(`${this.direction} is not a valid fourier transform direction. Please try one of: ${Object.keys(DIRECTIONS)}`);
     }
     this.addInputValidator(0, Signal1D);
+    this.addInputValidator(1, Signal1D);
   }
   _run() {
     if( ! this.hasValidInput()){
-      console.warn("A filter of type BaseFourierSignalFilter requires 1 input of Signal1D.");
+      console.warn("A filter of type BaseFourierSignalFilter requires 2 inputs of Signal1D.");
       return;
     }
-    const inputSignal = this._getInput(0);
-    const length = inputSignal.getMetadata('length');
-    const real = ndarray(inputSignal.clone().getData(), [length]);
-    const img = ndarray(inputSignal.hollowClone().getData(), [length]);
-    this.setMetadata('direction', this.direction);
+    const realSignal = this._getInput(0);
+    const imgSignal = this._getInput(1);
+    const length = realSignal.getMetadata('length');
+    if (length !== imgSignal.getMetadata('length')) {
+      console.warn('The imaginary and real components of the signal need to be of equal length.');
+    }
+    const real = ndarray(realSignal.clone().getData(), [length]);
+    const img = ndarray(imgSignal.clone().getData(), [length]);
 
     fft(DIRECTIONS[this.direction], real, img);
     this._output[0] = new Signal1D();
@@ -25576,7 +25751,72 @@ class ForwardFourierSignalFilter extends BaseFourierSignalFilter {
   }
 }
 
-class InverseFourerSignalFilter extends BaseFourierSignalFilter {
+class InverseFourierSignalFilter extends BaseFourierSignalFilter {
+  constructor() {
+    super('INVERSE');
+  }
+}
+
+/*
+ * Author   Armin Taheri - https://github.com/ArminTaheri
+ * License  MIT
+ * Link     https://github.com/Pixpipe/pixpipejs
+ * Lab      MCIN - Montreal Neurological Institute
+ */
+const DIRECTIONS$1 = {
+  'FORWARD': 1,
+  'INVERSE': -1,
+};
+
+class BaseFourierImageFilter extends Filter {
+  constructor(direction) {
+    super();
+    this.direction = direction;
+    if (DIRECTIONS$1[this.direction] === undefined) {
+      throw new Error(`${this.direction} is not a valid fourier transform direction. Please try one of: ${Object.keys(DIRECTIONS$1)}`);
+    }
+    this.addInputValidator(0, Image2D);
+    this.addInputValidator(1, Image2D);
+  }
+  _run() {
+    if( ! this.hasValidInput()){
+      console.warn("A filter of type BaseFourierSignalFilter requires 2 inputs of Signal1D.");
+      return;
+    }
+    const inputImagereal = this._getInput(0);
+    const inputImageimg = this._getInput(1);
+    const ncpp = inputImagereal.getMetadata('ncpp');
+    if (ncpp > 1) {
+      console.warn('Please make sure the input images are made of exactly 1 channel.');
+      return;
+    }
+
+    const width = inputImagereal.getMetadata('width');
+    const height =inputImagereal.getMetadata('height');
+    if (width !== inputImageimg.getMetadata('width') || height !== inputImageimg.getMetadata('height')) {
+      console.warn('Please make sure the real and imaginary input images are the same dimensions');
+    }
+    const real = ndarray(inputImagereal.clone().getData(), [width, height]);
+    const img = ndarray(inputImageimg.clone().getData(), [width, height]);
+    this.setMetadata('direction', this.direction);
+
+    fft(DIRECTIONS$1[this.direction], real, img);
+    this._output[0] = new Image2D();
+    this._output[0].setData(real.data, width, height, 1);
+    this._output[0].setMetadata('ncpp', 1);
+    this._output[1] = new Image2D();
+    this._output[1].setData(img.data, width, height, 1);
+    this._output[1].setMetadata('ncpp', 1);
+  }
+}
+
+class ForwardFourierImageFilter extends BaseFourierImageFilter {
+  constructor() {
+    super('FORWARD');
+  }
+}
+
+class InverseFourierImageFilter extends BaseFourierImageFilter {
   constructor() {
     super('INVERSE');
   }
@@ -30056,8 +30296,12 @@ exports.PixBinEncoder = PixBinEncoder;
 exports.PixBinDecoder = PixBinDecoder;
 exports.JpegDecoder = JpegDecoder;
 exports.PngDecoder = PngDecoder;
+exports.ComponentProjectionImage2DFilter = ComponentProjectionImage2DFilter;
+exports.ComponentMergeImage2DFilter = ComponentMergeImage2DFilter;
 exports.ForwardFourierSignalFilter = ForwardFourierSignalFilter;
-exports.InverseFourerSignalFilter = InverseFourerSignalFilter;
+exports.InverseFourierSignalFilter = InverseFourierSignalFilter;
+exports.ForwardFourierImageFilter = ForwardFourierImageFilter;
+exports.InverseFourierImageFilter = InverseFourierImageFilter;
 exports.ForEachPixelImageFilter = ForEachPixelImageFilter;
 exports.SpectralScaleImageFilter = SpectralScaleImageFilter;
 exports.ImageBlendExpressionFilter = ImageBlendExpressionFilter;
