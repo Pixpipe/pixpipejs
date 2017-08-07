@@ -30,6 +30,9 @@ export { MghDecoder } from './decoder/MghDecoder.js';
 export { EegModDecoder } from './decoder/EegModDecoder.js';
 export { PixBinEncoder } from './decoder/PixBinEncoder.js';
 export { PixBinDecoder } from './decoder/PixBinDecoder.js';
+export { JpegDecoder } from './decoder/JpegDecoder.js';
+export { PngDecoder } from './decoder/PngDecoder.js';
+
 
 // filters - processing of Images2D and Signal1D
 export { ForwardFourierSignalFilter, InverseFourerSignalFilter } from './filter/FourierSignalFilters.js';

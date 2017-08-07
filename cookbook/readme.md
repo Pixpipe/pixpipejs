@@ -62,6 +62,8 @@ Sometimes, it's just not worth reinventing the wheel. Here are the libraries Pix
 - [js-md5](https://github.com/emn178/js-md5), to generate a unique checksum for each loaded files
 - [geotiff](https://github.com/constantinius/geotiff.js) to decode Tiff and BigTiff images
 - [delaunay](https://github.com/ironwallaby/delaunay) Delaunay triangulation
+- [jpeg-js](https://github.com/eugeneware/jpeg-js) a pure JS jpeg decoder
+- [UPNG.js](https://github.com/photopea/UPNG.js) a pure JS png decoder
 
 
 # Sample data
@@ -184,7 +186,10 @@ Here, we will learn what is an `Image2D`, how to display it in a canvas using `C
 - [Create an Image2D from a local file and display it](http://pixpipe.github.io/pixpipejs/examples/fileToImage2D.html) | [source](https://github.com/Pixpipe/pixpipejs/tree/master/examples/fileToImage2D.html)
 - [Open a Tiff and make it an Image2D](http://pixpipe.github.io/pixpipejs/examples/fileToTiff.html) | [source](https://github.com/Pixpipe/pixpipejs/tree/master/examples/fileToTiff.html)
 - [Sample pixel along a line](http://pixpipe.github.io/pixpipejs/examples/SegmentSampleImage2D.html) | [source](https://github.com/Pixpipe/pixpipejs/tree/master/examples/SegmentSampleImage2D.html)
-- - [Create a colormap and display it](http://pixpipe.github.io/pixpipejs/examples/colormap.html) | [source](https://github.com/Pixpipe/pixpipejs/tree/master/examples/colormap.html)
+- [Create a colormap and display it](http://pixpipe.github.io/pixpipejs/examples/colormap.html) | [source](https://github.com/Pixpipe/pixpipejs/tree/master/examples/colormap.html)
+- [Decode a JPEG image in pure Javascript](http://pixpipe.github.io/pixpipejs/examples/fileToJpeg.html) | [source](https://github.com/Pixpipe/pixpipejs/tree/master/examples/fileToJpeg.html)
+- [Decode a JPEG image in pure Javascript](http://pixpipe.github.io/pixpipejs/examples/fileToJpeg.html) | [source](https://github.com/Pixpipe/pixpipejs/tree/master/examples/fileToJpeg.html)
+- [Decode a PNG image in pure Javascript](http://pixpipe.github.io/pixpipejs/examples/fileToPng.html) | [source](https://github.com/Pixpipe/pixpipejs/tree/master/examples/fileToPng.html)
 
 
 ## Simple filters for Image2D
