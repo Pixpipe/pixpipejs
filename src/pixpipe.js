@@ -35,6 +35,7 @@ export { PixBinDecoder } from './decoder/PixBinDecoder.js';
 export { ComponentProjectionImage2DFilter } from './filter/ComponentProjectionImage2DFilter';
 export { ComponentMergeImage2DFilter } from './filter/ComponentMergeImage2DFilter';
 export { ForwardFourierSignalFilter, InverseFourierSignalFilter } from './filter/FourierSignalFilters.js';
+export { ForwardFourierImageFilter, InverseFourierImageFilter } from './filter/FourierImageFilters.js';
 export { ForEachPixelImageFilter } from './filter/ForEachPixelImageFilter.js';
 export { SpectralScaleImageFilter } from './filter/SpectralScaleImageFilter.js';
 export { ImageBlendExpressionFilter } from './filter/ImageBlendExpressionFilter.js';

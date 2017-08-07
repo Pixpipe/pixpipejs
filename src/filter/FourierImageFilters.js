@@ -9,7 +9,7 @@ import zeros from 'zeros';
 import ft from 'ndarray-fft';
 
 import { Filter } from '../core/Filter';
-import { Image2D } from '../core/Signal1D';
+import { Image2D } from '../core/Image2D';
 
 const DIRECTIONS = {
   'FORWARD': 1,
@@ -33,7 +33,7 @@ class BaseFourierImageFilter extends Filter {
     }
     const inputImagereal = this._getInput(0);
     const inputImageimg = this._getInput(1);
-    const ncpp = inputImage.getMetadata('ncpp');
+    const ncpp = inputImagereal.getMetadata('ncpp');
     if (ncpp > 1) {
       console.warn('Please make sure the input images are made of exactly 1 channel.');
       return;
@@ -49,22 +49,22 @@ class BaseFourierImageFilter extends Filter {
     this.setMetadata('direction', this.direction);
 
     ft(DIRECTIONS[this.direction], real, img);
-    this._output[0] = new Image2D({width, height});
-    this._output[0].setData(real.data);
+    this._output[0] = new Image2D();
+    this._output[0].setData(real.data, width, height, 1);
     this._output[0].setMetadata('ncpp', 1);
-    this._output[1] = new Image2D({width, height});
-    this._output[1].setData(img.data);
+    this._output[1] = new Image2D();
+    this._output[1].setData(img.data, width, height, 1);
     this._output[1].setMetadata('ncpp', 1);
   }
 }
 
-class ForwardFourierImageFilter extends BaseFourierSignalFilter {
+class ForwardFourierImageFilter extends BaseFourierImageFilter {
   constructor() {
     super('FORWARD');
   }
 }
 
-class InverseFourierImageFilter extends BaseFourierSignalFilter {
+class InverseFourierImageFilter extends BaseFourierImageFilter {
   constructor() {
     super('INVERSE');
   }
