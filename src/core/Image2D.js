@@ -85,19 +85,19 @@ class Image2D extends PixpipeContainer{
   /**
   * Get an empty copy of an image. Like a clone but the array of data is filled
   * with zeros and no metadata.
-  * @return {Image2D} 
+  * @return {Image2D}
   */
   hollowClone(){
     var cpImg = new Image2D();
     var ncpp = this.getMetadata("ncpp");
     var width = this.getMetadata("width");
     var height = this.getMetadata("height");
-    
+
     cpImg.setData( new Float32Array(width*height*ncpp).fill(0), width, height, ncpp);
     return cpImg;
   }
-  
-  
+
+
   /**
   * Create a clone of this image that ensure data are encoded in a Float32Array.
   * @return {Image2D} the F32 clone
@@ -107,7 +107,7 @@ class Image2D extends PixpipeContainer{
     var ncpp = this.getMetadata("ncpp");
     var width = this.getMetadata("width");
     var height = this.getMetadata("height");
-    
+
     cpImg.setData( new Float32Array(this._data), width, height, ncpp);
     cpImg.copyMetadataFrom( this );
     return cpImg;
@@ -172,7 +172,7 @@ class Image2D extends PixpipeContainer{
             this._data[ pos1D + i] = color[i];
           }
         }
-      }else 
+      }else
       // we gave a RGB color instead of a RGBA, it's ok...
       if(color.length == 3 && ncpp == 4){
         var pos1D = this.get1dIndexFrom2dPosition( position );
@@ -210,14 +210,14 @@ class Image2D extends PixpipeContainer{
       var color = null;
       var pos1D = this.get1dIndexFrom2dPosition( position );
 
-      // 
+      //
       if(ncpp == 1){
         color = [this._data[pos1D]];
       }else{
         pos1D *= ncpp;
         color = this._data.slice(pos1D, pos1D + ncpp);
       }
-      
+
       return color;
 
     }else{
@@ -253,7 +253,7 @@ class Image2D extends PixpipeContainer{
     return this._metadata.ncpp;
   }
 
-  
+
   /**
   * Alias to getComponentsPerPixel. Return the number of components per pixel.
   * @return {Number} ncpp
@@ -389,20 +389,20 @@ class Image2D extends PixpipeContainer{
     }
     return this.getMetadata("avg");
   }
-  
-  
+
+
   /**
   * Tells if a given point is inside or outside the image
   * @param {Object} pos - position like {x: Number, y: Number}
   * @return {Boolean} true for inside, false for outside
   */
   isInside( pos ){
-    return ( 
+    return (
       pos.x >= 0 && pos.x < this._metadata.width &&
       pos.y >= 0 && pos.y < this._metadata.height
     )
   }
-  
+
   /**
   * Sample the color along a segment
   * @param {Object} posFrom - starting position of type {x: Number, y: Number}
@@ -429,48 +429,48 @@ class Image2D extends PixpipeContainer{
     // both position must be inside the image
     if( !this.isInside(posFrom) || !this.isInside(posTo) )
       return null;
-      
+
     var dx = posTo.x - posFrom.x;
     var dy = posTo.y - posFrom.y;
     var euclidianDistance = Math.sqrt( Math.pow(dx , 2) + Math.pow(dy , 2) );
     var numberOfSamples = Math.floor( euclidianDistance + 1 );
-    
+
     // we want to sample every unit distance along the segment
     var stepX = dx / euclidianDistance;
     var stepY = dy / euclidianDistance;
-    
+
     var ncpp = this._metadata.ncpp;
     var positions = new Array(numberOfSamples).fill(0);
     var colors = new Array(ncpp).fill(0);
     var labels = new Array(numberOfSamples).fill(0);
-    
+
     // creating empty arrays for colors
     for(var c=0; c<ncpp; c++){
       colors[c] = new Array(numberOfSamples).fill(0) ;
     }
-    
+
     // walk along the segment, from posFrom to posTo
     for(var i=0; i<numberOfSamples; i++){
       var currentPos = {x: Math.round(posFrom.x + i*stepX) , y: Math.round(posFrom.y + i*stepY) };
       positions[i] = currentPos;
       labels[i] = "(" + currentPos.x + ", " + currentPos.y + ")";
-      
+
       var pixValue = this.getPixel( currentPos );
-      
+
       // each channel is dispatched in its array
       for(var c=0; c<ncpp; c++){
         colors[c][i] = pixValue[c];
       }
     }
-    
+
     return {
       positions: positions,
       labels: labels,
       colors: colors
     }
   } /* END of method getLineSample */
-  
-  
+
+
 
 } /* END of class Image2D */
 

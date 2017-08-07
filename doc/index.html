@@ -483,6 +483,11 @@
                   getDataCopy
                 </a>
                 <a
+                  href='#LineString.getNod'
+                  class='regular block'>
+                  getNod
+                </a>
+                <a
                   href='#LineString.getNumberOfPoints'
                   class='regular block'>
                   getNumberOfPoints
@@ -1018,21 +1023,6 @@
                 CropImageFilter
               </a>
               <a
-                href='#PixpEncoder'
-                class='block bold h3 bg-pink-alpha'>
-                PixpEncoder
-              </a>
-                <a
-                  href='#PixpEncoder.download'
-                  class='regular block'>
-                  download
-                </a>
-                <a
-                  href='#PixpEncoder.hasValidInput'
-                  class='regular block'>
-                  hasValidInput
-                </a>
-              <a
                 href='#PixBinEncoder'
                 class='block bold h3 bg-pink-alpha'>
                 PixBinEncoder
@@ -1044,6 +1034,21 @@
                 </a>
                 <a
                   href='#PixBinEncoder.hasValidInput'
+                  class='regular block'>
+                  hasValidInput
+                </a>
+              <a
+                href='#PixpEncoder'
+                class='block bold h3 bg-pink-alpha'>
+                PixpEncoder
+              </a>
+                <a
+                  href='#PixpEncoder.download'
+                  class='regular block'>
+                  download
+                </a>
+                <a
+                  href='#PixpEncoder.hasValidInput'
                   class='regular block'>
                   hasValidInput
                 </a>
@@ -1108,6 +1113,11 @@
                 ImageDerivativeFilter
               </a>
               <a
+                href='#JpegDecoder'
+                class='block bold h3 bg-pink-alpha'>
+                JpegDecoder
+              </a>
+              <a
                 href='#MghDecoder'
                 class='block bold h3 bg-pink-alpha'>
                 MghDecoder
@@ -1153,9 +1163,19 @@
                   setRawMetadata
                 </a>
               <a
+                href='#PngDecoder'
+                class='block bold h3 bg-pink-alpha'>
+                PngDecoder
+              </a>
+              <a
                 href='#SimpleThresholdFilter'
                 class='block bold h3 bg-pink-alpha'>
                 SimpleThresholdFilter
+              </a>
+              <a
+                href='#SimplifyLineStringFilter'
+                class='block bold h3 bg-pink-alpha'>
+                SimplifyLineStringFilter
               </a>
               <a
                 href='#SpatialConvolutionFilter'
@@ -4004,6 +4024,33 @@ in case of doubt, use  getDataCopy()</p>
       :
       <div class='force-inline'>
         <p>a deep copy of the data</p>
+
+      </div>
+</section>
+          </div>
+        </div>
+        <div class='collapsible' id='LineString.getNod'>
+          <a href='#LineString.getNod'>
+            <code>
+              getNod<span class='gray'></span>
+            </code>
+            <div class='force-inline'>
+              <p>Get the number of dimensions</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2'>
+<section class='py2 clearfix'>
+  <h2 id='LineString.getNod' class='mt0'>
+    getNod<span class='gray'></span>
+  </h2>
+  <p>Get the number of dimensions</p>
+
+      <h4>Returns</h4>
+      <code><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">Number</a></code></code>
+      :
+      <div class='force-inline'>
+        <p>the nod</p>
 
       </div>
 </section>
@@ -7469,68 +7516,6 @@ In addition, you must specify the width and heigth of the output using
 
 </section>
 </div><div class='py1'><section class='py2 clearfix'>
-  <h2 id='PixpEncoder' class='mt0'>
-    PixpEncoder<span class='gray'></span>
-  </h2>
-  <p>A PixpEncoder instance takes an Image2D or Image3D as input with <code>addInput(...)</code>
-and encode it so that it can be saved as a *.pixp file.
-An output filename can be specified using <code>.setMetadata(&quot;filename&quot;, &quot;yourName.pixp&quot;);</code>,
-by default, the name is &quot;untitled.pixp&quot;.
-When <code>update()</code> is called, a gzip blog is prepared as output[0] and can then be downloaded
-when calling the method <code>.download()</code>. The gzip blob could also be sent over AJAX
-using a third party library.</p>
-<p><strong>Usage</strong></p>
-<ul>
-<li><a href="../examples/savePixpFile.html">examples/savePixpFile.html</a></li>
-</ul>
-
-      <h4>Instance members</h4>
-        <div class='collapsible' id='PixpEncoder.download'>
-          <a href='#PixpEncoder.download'>
-            <code>
-              download<span class='gray'></span>
-            </code>
-            <div class='force-inline'>
-              <p>Download the generated file</p>
-
-            </div>
-          </a>
-          <div class='collapser border px2'>
-<section class='py2 clearfix'>
-  <h2 id='PixpEncoder.download' class='mt0'>
-    download<span class='gray'></span>
-  </h2>
-  <p>Download the generated file</p>
-
-</section>
-          </div>
-        </div>
-        <div class='collapsible' id='PixpEncoder.hasValidInput'>
-          <a href='#PixpEncoder.hasValidInput'>
-            <code>
-              hasValidInput<span class='gray'></span>
-            </code>
-            <div class='force-inline'>
-              <p>[PRIVATE]
-overwrite the original from Filter
-Only accept Image2D and Image3D</p>
-
-            </div>
-          </a>
-          <div class='collapser border px2'>
-<section class='py2 clearfix'>
-  <h2 id='PixpEncoder.hasValidInput' class='mt0'>
-    hasValidInput<span class='gray'></span>
-  </h2>
-  <p>[PRIVATE]
-overwrite the original from Filter
-Only accept Image2D and Image3D</p>
-
-</section>
-          </div>
-        </div>
-</section>
-</div><div class='py1'><section class='py2 clearfix'>
   <h2 id='PixBinEncoder' class='mt0'>
     PixBinEncoder<span class='gray'></span>
   </h2>
@@ -7582,6 +7567,68 @@ Only accept Image2D and Image3D</p>
           <div class='collapser border px2'>
 <section class='py2 clearfix'>
   <h2 id='PixBinEncoder.hasValidInput' class='mt0'>
+    hasValidInput<span class='gray'></span>
+  </h2>
+  <p>[PRIVATE]
+overwrite the original from Filter
+Only accept Image2D and Image3D</p>
+
+</section>
+          </div>
+        </div>
+</section>
+</div><div class='py1'><section class='py2 clearfix'>
+  <h2 id='PixpEncoder' class='mt0'>
+    PixpEncoder<span class='gray'></span>
+  </h2>
+  <p>A PixpEncoder instance takes an Image2D or Image3D as input with <code>addInput(...)</code>
+and encode it so that it can be saved as a *.pixp file.
+An output filename can be specified using <code>.setMetadata(&quot;filename&quot;, &quot;yourName.pixp&quot;);</code>,
+by default, the name is &quot;untitled.pixp&quot;.
+When <code>update()</code> is called, a gzip blog is prepared as output[0] and can then be downloaded
+when calling the method <code>.download()</code>. The gzip blob could also be sent over AJAX
+using a third party library.</p>
+<p><strong>Usage</strong></p>
+<ul>
+<li><a href="../examples/savePixpFile.html">examples/savePixpFile.html</a></li>
+</ul>
+
+      <h4>Instance members</h4>
+        <div class='collapsible' id='PixpEncoder.download'>
+          <a href='#PixpEncoder.download'>
+            <code>
+              download<span class='gray'></span>
+            </code>
+            <div class='force-inline'>
+              <p>Download the generated file</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2'>
+<section class='py2 clearfix'>
+  <h2 id='PixpEncoder.download' class='mt0'>
+    download<span class='gray'></span>
+  </h2>
+  <p>Download the generated file</p>
+
+</section>
+          </div>
+        </div>
+        <div class='collapsible' id='PixpEncoder.hasValidInput'>
+          <a href='#PixpEncoder.hasValidInput'>
+            <code>
+              hasValidInput<span class='gray'></span>
+            </code>
+            <div class='force-inline'>
+              <p>[PRIVATE]
+overwrite the original from Filter
+Only accept Image2D and Image3D</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2'>
+<section class='py2 clearfix'>
+  <h2 id='PixpEncoder.hasValidInput' class='mt0'>
     hasValidInput<span class='gray'></span>
   </h2>
   <p>[PRIVATE]
@@ -7822,6 +7869,19 @@ h = [1, -1]</p>
 
 </section>
 </div><div class='py1'><section class='py2 clearfix'>
+  <h2 id='JpegDecoder' class='mt0'>
+    JpegDecoder<span class='gray'></span>
+  </h2>
+  <p>An instance of JpegDecoder will decode a JPEG image in native Javascript and
+output an Image2D. This is of course slower than using <code>io/FileImageReader.js</code>
+but this is compatible with Node and not rely on HTML5 Canvas.</p>
+<p><strong>Usage</strong></p>
+<ul>
+<li><a href="../examples/fileToJpeg.html">examples/fileToJpeg.html</a></li>
+</ul>
+
+</section>
+</div><div class='py1'><section class='py2 clearfix'>
   <h2 id='MghDecoder' class='mt0'>
     MghDecoder<span class='gray'></span>
   </h2>
@@ -7977,6 +8037,19 @@ Should not be used as-is.</p>
         </div>
 </section>
 </div><div class='py1'><section class='py2 clearfix'>
+  <h2 id='PngDecoder' class='mt0'>
+    PngDecoder<span class='gray'></span>
+  </h2>
+  <p>An instance of PngDecoder will decode a PNG image in native Javascript and
+output an Image2D. This is of course slower than using <code>io/FileImageReader.js</code>
+but this is compatible with Node and not rely on HTML5 Canvas.</p>
+<p><strong>Usage</strong></p>
+<ul>
+<li><a href="../examples/fileToPng.html">examples/fileToPng.html</a></li>
+</ul>
+
+</section>
+</div><div class='py1'><section class='py2 clearfix'>
   <h2 id='SimpleThresholdFilter' class='mt0'>
     SimpleThresholdFilter<span class='gray'></span>
   </h2>
@@ -7992,6 +8065,12 @@ RGBA image, you can decide of preserving the alpha channel or not, using
 <li><a href="../examples/imageThresholding.html">examples/imageThresholding.html</a></li>
 </ul>
 
+</section>
+</div><div class='py1'><section class='py2 clearfix'>
+  <h2 id='SimplifyLineStringFilter' class='mt0'>
+    SimplifyLineStringFilter<span class='gray'></span>
+  </h2>
+  
 </section>
 </div><div class='py1'><section class='py2 clearfix'>
   <h2 id='SpatialConvolutionFilter' class='mt0'>
@@ -8052,7 +8131,7 @@ various bith depth and types (8bits, 32bits, etc.)</p>
 <p>Info: Tiff 6.0 specification <a href="http://www.npes.org/pdf/TIFF-v6.pdf">http://www.npes.org/pdf/TIFF-v6.pdf</a></p>
 <p><strong>Usage</strong></p>
 <ul>
-<li><a href="../examples/fileToTiff.html">examples/savePixpFile.html</a></li>
+<li><a href="../examples/fileToTiff.html">examples/fileToTiff.html</a></li>
 </ul>
 
 </section>

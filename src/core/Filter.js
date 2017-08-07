@@ -32,6 +32,8 @@ class Filter extends PixpipeObject {
 
     this._inputValidator = {};
 
+    this._allValidator = null;
+
     this._input = {
       //"0": []
     };
@@ -230,9 +232,17 @@ class Filter extends PixpipeObject {
   * @param {Type} InputType - the type of the expected input, like Image2D, Image3D, etc. without quotes
   */
   addInputValidator( category, InputType ){
-    if("TYPE" in InputType){
+    if ("TYPE" in InputType) {
+      if (category === 'ALL') {
+        this._allValidator = InputType.TYPE();
+        return;
+      }
       this._inputValidator[ category ] = InputType.TYPE();
-    }else{
+    } else {
+      if (category === 'ALL') {
+        this._allValidator = InputType;
+        return;
+      }
       this._inputValidator[ category ] = InputType;
     }
   }
@@ -245,23 +255,31 @@ class Filter extends PixpipeObject {
   */
   hasValidInput(){
     var that = this;
-    var inputCategories = Object.keys( this._inputValidator );
+    var inputCategories = this.getInputCategories();
     var valid = true;
-
-    if(inputCategories.length == 0){
+    if(inputCategories.length === 0){
       valid = false;
       console.warn("No input validator was added. Filter cannot run. Use addInputValidator(...) to specify input types.");
     }
-
     inputCategories.forEach( function(key){
       var inputOfCategory = that._getInput( key );
 
       if(inputOfCategory){
         if("isOfType" in inputOfCategory){
-          valid = valid && inputOfCategory.isOfType( that._inputValidator[ key ] )
+          if (that._inputValidator[ key ]) {
+            valid = valid && inputOfCategory.isOfType( that._inputValidator[ key ] );
+          }
+          if (that._allValidator) {
+            valid = valid && inputOfCategory.isOfType(that._allValidator);
+          }
         }else{
           try{
-            valid = valid && (inputOfCategory instanceof that._inputValidator[ key ] );
+            if (that._inputValidator[ key ]) {
+              valid = valid && (inputOfCategory instanceof that._inputValidator[ key ] );
+            }
+            if (that._allValidator) {
+              valid = valid && (inputOfCategory instanceof that._allValidator );
+            }
           }catch(e){
             valid = false;
           }
