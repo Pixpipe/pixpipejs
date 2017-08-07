@@ -755,19 +755,19 @@ class Image2D extends PixpipeContainer{
   /**
   * Get an empty copy of an image. Like a clone but the array of data is filled
   * with zeros and no metadata.
-  * @return {Image2D} 
+  * @return {Image2D}
   */
   hollowClone(){
     var cpImg = new Image2D();
     var ncpp = this.getMetadata("ncpp");
     var width = this.getMetadata("width");
     var height = this.getMetadata("height");
-    
+
     cpImg.setData( new Float32Array(width*height*ncpp).fill(0), width, height, ncpp);
     return cpImg;
   }
-  
-  
+
+
   /**
   * Create a clone of this image that ensure data are encoded in a Float32Array.
   * @return {Image2D} the F32 clone
@@ -777,7 +777,7 @@ class Image2D extends PixpipeContainer{
     var ncpp = this.getMetadata("ncpp");
     var width = this.getMetadata("width");
     var height = this.getMetadata("height");
-    
+
     cpImg.setData( new Float32Array(this._data), width, height, ncpp);
     cpImg.copyMetadataFrom( this );
     return cpImg;
@@ -842,7 +842,7 @@ class Image2D extends PixpipeContainer{
             this._data[ pos1D + i] = color[i];
           }
         }
-      }else 
+      }else
       // we gave a RGB color instead of a RGBA, it's ok...
       if(color.length == 3 && ncpp == 4){
         var pos1D = this.get1dIndexFrom2dPosition( position );
@@ -880,14 +880,14 @@ class Image2D extends PixpipeContainer{
       var color = null;
       var pos1D = this.get1dIndexFrom2dPosition( position );
 
-      // 
+      //
       if(ncpp == 1){
         color = [this._data[pos1D]];
       }else{
         pos1D *= ncpp;
         color = this._data.slice(pos1D, pos1D + ncpp);
       }
-      
+
       return color;
 
     }else{
@@ -923,7 +923,7 @@ class Image2D extends PixpipeContainer{
     return this._metadata.ncpp;
   }
 
-  
+
   /**
   * Alias to getComponentsPerPixel. Return the number of components per pixel.
   * @return {Number} ncpp
@@ -1059,20 +1059,20 @@ class Image2D extends PixpipeContainer{
     }
     return this.getMetadata("avg");
   }
-  
-  
+
+
   /**
   * Tells if a given point is inside or outside the image
   * @param {Object} pos - position like {x: Number, y: Number}
   * @return {Boolean} true for inside, false for outside
   */
   isInside( pos ){
-    return ( 
+    return (
       pos.x >= 0 && pos.x < this._metadata.width &&
       pos.y >= 0 && pos.y < this._metadata.height
     )
   }
-  
+
   /**
   * Sample the color along a segment
   * @param {Object} posFrom - starting position of type {x: Number, y: Number}
@@ -1099,48 +1099,48 @@ class Image2D extends PixpipeContainer{
     // both position must be inside the image
     if( !this.isInside(posFrom) || !this.isInside(posTo) )
       return null;
-      
+
     var dx = posTo.x - posFrom.x;
     var dy = posTo.y - posFrom.y;
     var euclidianDistance = Math.sqrt( Math.pow(dx , 2) + Math.pow(dy , 2) );
     var numberOfSamples = Math.floor( euclidianDistance + 1 );
-    
+
     // we want to sample every unit distance along the segment
     var stepX = dx / euclidianDistance;
     var stepY = dy / euclidianDistance;
-    
+
     var ncpp = this._metadata.ncpp;
     var positions = new Array(numberOfSamples).fill(0);
     var colors = new Array(ncpp).fill(0);
     var labels = new Array(numberOfSamples).fill(0);
-    
+
     // creating empty arrays for colors
     for(var c=0; c<ncpp; c++){
       colors[c] = new Array(numberOfSamples).fill(0) ;
     }
-    
+
     // walk along the segment, from posFrom to posTo
     for(var i=0; i<numberOfSamples; i++){
       var currentPos = {x: Math.round(posFrom.x + i*stepX) , y: Math.round(posFrom.y + i*stepY) };
       positions[i] = currentPos;
       labels[i] = "(" + currentPos.x + ", " + currentPos.y + ")";
-      
+
       var pixValue = this.getPixel( currentPos );
-      
+
       // each channel is dispatched in its array
       for(var c=0; c<ncpp; c++){
         colors[c][i] = pixValue[c];
       }
     }
-    
+
     return {
       positions: positions,
       labels: labels,
       colors: colors
     }
   } /* END of method getLineSample */
-  
-  
+
+
 
 } /* END of class Image2D */
 
@@ -23363,6 +23363,71 @@ class InverseFourierSignalFilter extends BaseFourierSignalFilter {
 }
 
 /*
+ * Author   Armin Taheri - https://github.com/ArminTaheri
+ * License  MIT
+ * Link     https://github.com/Pixpipe/pixpipejs
+ * Lab      MCIN - Montreal Neurological Institute
+ */
+const DIRECTIONS$1 = {
+  'FORWARD': 1,
+  'INVERSE': -1,
+};
+
+class BaseFourierImageFilter extends Filter {
+  constructor(direction) {
+    super();
+    this.direction = direction;
+    if (DIRECTIONS$1[this.direction] === undefined) {
+      throw new Error(`${this.direction} is not a valid fourier transform direction. Please try one of: ${Object.keys(DIRECTIONS$1)}`);
+    }
+    this.addInputValidator(0, Image2D);
+    this.addInputValidator(1, Image2D);
+  }
+  _run() {
+    if( ! this.hasValidInput()){
+      console.warn("A filter of type BaseFourierSignalFilter requires 2 inputs of Signal1D.");
+      return;
+    }
+    const inputImagereal = this._getInput(0);
+    const inputImageimg = this._getInput(1);
+    const ncpp = inputImagereal.getMetadata('ncpp');
+    if (ncpp > 1) {
+      console.warn('Please make sure the input images are made of exactly 1 channel.');
+      return;
+    }
+
+    const width = inputImagereal.getMetadata('width');
+    const height =inputImagereal.getMetadata('height');
+    if (width !== inputImageimg.getMetadata('width') || height !== inputImageimg.getMetadata('height')) {
+      console.warn('Please make sure the real and imaginary input images are the same dimensions');
+    }
+    const real = ndarray(inputImagereal.clone().getData(), [width, height]);
+    const img = ndarray(inputImageimg.clone().getData(), [width, height]);
+    this.setMetadata('direction', this.direction);
+
+    fft(DIRECTIONS$1[this.direction], real, img);
+    this._output[0] = new Image2D();
+    this._output[0].setData(real.data, width, height, 1);
+    this._output[0].setMetadata('ncpp', 1);
+    this._output[1] = new Image2D();
+    this._output[1].setData(img.data, width, height, 1);
+    this._output[1].setMetadata('ncpp', 1);
+  }
+}
+
+class ForwardFourierImageFilter extends BaseFourierImageFilter {
+  constructor() {
+    super('FORWARD');
+  }
+}
+
+class InverseFourierImageFilter extends BaseFourierImageFilter {
+  constructor() {
+    super('INVERSE');
+  }
+}
+
+/*
 * Author   Jonathan Lurie - http://me.jonahanlurie.fr
 * License  MIT
 * Link      https://github.com/jonathanlurie/pixpipejs
@@ -27636,6 +27701,8 @@ exports.ComponentProjectionImage2DFilter = ComponentProjectionImage2DFilter;
 exports.ComponentMergeImage2DFilter = ComponentMergeImage2DFilter;
 exports.ForwardFourierSignalFilter = ForwardFourierSignalFilter;
 exports.InverseFourierSignalFilter = InverseFourierSignalFilter;
+exports.ForwardFourierImageFilter = ForwardFourierImageFilter;
+exports.InverseFourierImageFilter = InverseFourierImageFilter;
 exports.ForEachPixelImageFilter = ForEachPixelImageFilter;
 exports.SpectralScaleImageFilter = SpectralScaleImageFilter;
 exports.ImageBlendExpressionFilter = ImageBlendExpressionFilter;
