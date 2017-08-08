@@ -82,6 +82,15 @@ class LineString extends PixpipeContainer {
   
   
   /**
+  * Get the number of dimensions
+  * @return {Number} the nod
+  */
+  getNod(){
+    return this.getMetadata("nod");
+  }
+  
+  
+  /**
   * Get the internal image data (pointer)
   * @return {Array} the original data, dont mess up with this one.
   * in case of doubt, use  getDataCopy()
