@@ -4,7 +4,7 @@
  * Link     https://github.com/Pixpipe/pixpipejs
  * Lab      MCIN - Montreal Neurological Institute
  */
- 
+
 import ndarray from 'ndarray';
 import zeros from 'zeros';
 import { Filter } from '../core/Filter';
@@ -40,11 +40,7 @@ class ComponentProjectionImage2DFilter extends Filter {
     projectedImage.setData(projectedArray.data, width, height, 1);
     this._output[0] = projectedImage;
   }
-  
-  
-  setComponentOffset(offset) {
-    this.setMetadata('componentOffset', offset);
-  }
+
 }
 
 export { ComponentProjectionImage2DFilter };

@@ -363,6 +363,16 @@
                   getCanvas
                 </a>
               <a
+                href='#PngDecoder'
+                class='block bold h3 bg-pink-alpha'>
+                PngDecoder
+              </a>
+                <a
+                  href='#PngDecoder._isPng'
+                  class='regular block'>
+                  _isPng
+                </a>
+              <a
                 href='#UrlImageReader'
                 class='block bold h3 bg-pink-alpha'>
                 UrlImageReader
@@ -918,6 +928,11 @@
                   getData
                 </a>
                 <a
+                  href='#Image2D.getDataAsFloat32Array'
+                  class='regular block'>
+                  getDataAsFloat32Array
+                </a>
+                <a
                   href='#Image2D.getDataAsUInt8Array'
                   class='regular block'>
                   getDataAsUInt8Array
@@ -1023,21 +1038,6 @@
                 CropImageFilter
               </a>
               <a
-                href='#PixBinEncoder'
-                class='block bold h3 bg-pink-alpha'>
-                PixBinEncoder
-              </a>
-                <a
-                  href='#PixBinEncoder.download'
-                  class='regular block'>
-                  download
-                </a>
-                <a
-                  href='#PixBinEncoder.hasValidInput'
-                  class='regular block'>
-                  hasValidInput
-                </a>
-              <a
                 href='#PixpEncoder'
                 class='block bold h3 bg-pink-alpha'>
                 PixpEncoder
@@ -1049,6 +1049,21 @@
                 </a>
                 <a
                   href='#PixpEncoder.hasValidInput'
+                  class='regular block'>
+                  hasValidInput
+                </a>
+              <a
+                href='#PixBinEncoder'
+                class='block bold h3 bg-pink-alpha'>
+                PixBinEncoder
+              </a>
+                <a
+                  href='#PixBinEncoder.download'
+                  class='regular block'>
+                  download
+                </a>
+                <a
+                  href='#PixBinEncoder.hasValidInput'
                   class='regular block'>
                   hasValidInput
                 </a>
@@ -1162,11 +1177,6 @@
                   class='regular block'>
                   setRawMetadata
                 </a>
-              <a
-                href='#PngDecoder'
-                class='block bold h3 bg-pink-alpha'>
-                PngDecoder
-              </a>
               <a
                 href='#SimpleThresholdFilter'
                 class='block bold h3 bg-pink-alpha'>
@@ -3400,6 +3410,57 @@ remap the intensity between getMetadata(&quot;min&quot;) and getMetadata(&quot;m
       :
       <div class='force-inline'>
         <p>canvas</p>
+
+      </div>
+</section>
+          </div>
+        </div>
+</section>
+</div><div class='py1'><section class='py2 clearfix'>
+  <h2 id='PngDecoder' class='mt0'>
+    PngDecoder<span class='gray'></span>
+  </h2>
+  <p>An instance of PngDecoder will decode a PNG image in native Javascript and
+output an Image2D. This is of course slower than using <code>io/FileImageReader.js</code>
+but this is compatible with Node and not rely on HTML5 Canvas.</p>
+<p><strong>Usage</strong></p>
+<ul>
+<li><a href="../examples/fileToPng.html">examples/fileToPng.html</a></li>
+</ul>
+
+      <h4>Instance members</h4>
+        <div class='collapsible' id='PngDecoder._isPng'>
+          <a href='#PngDecoder._isPng'>
+            <code>
+              _isPng<span class='gray'>(buffer)</span>
+            </code>
+            <div class='force-inline'>
+              <p>Checks if the input buffer is of a png file</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2'>
+<section class='py2 clearfix'>
+  <h2 id='PngDecoder._isPng' class='mt0'>
+    _isPng<span class='gray'>(buffer)</span>
+  </h2>
+  <p>Checks if the input buffer is of a png file</p>
+
+    <h4>Parameters</h4>
+    <ul class='suppress-p-margin'>
+        <li><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/ArrayBuffer">ArrayBuffer</a></code> <strong>buffer</strong>
+          :
+          <div class='force-inline'>
+            <p>an array buffer inside which a PNG could be hiding!</p>
+
+          </div>
+        </li>
+    </ul>
+      <h4>Returns</h4>
+      <code><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean">Boolean</a></code></code>
+      :
+      <div class='force-inline'>
+        <p>true if the buffer is a valid PNG buffer, false if not</p>
 
       </div>
 </section>
@@ -6850,6 +6911,33 @@ in case of doubt, use  getDataCopy()</p>
 </section>
           </div>
         </div>
+        <div class='collapsible' id='Image2D.getDataAsFloat32Array'>
+          <a href='#Image2D.getDataAsFloat32Array'>
+            <code>
+              getDataAsFloat32Array<span class='gray'></span>
+            </code>
+            <div class='force-inline'>
+              <p>Get a copy of the data but forced as Float 32 (no scaling is done)</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2'>
+<section class='py2 clearfix'>
+  <h2 id='Image2D.getDataAsFloat32Array' class='mt0'>
+    getDataAsFloat32Array<span class='gray'></span>
+  </h2>
+  <p>Get a copy of the data but forced as Float 32 (no scaling is done)</p>
+
+      <h4>Returns</h4>
+      <code><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Float32Array">Float32Array</a></code></code>
+      :
+      <div class='force-inline'>
+        <p>the casted array</p>
+
+      </div>
+</section>
+          </div>
+        </div>
         <div class='collapsible' id='Image2D.getDataAsUInt8Array'>
           <a href='#Image2D.getDataAsUInt8Array'>
             <code>
@@ -7516,68 +7604,6 @@ In addition, you must specify the width and heigth of the output using
 
 </section>
 </div><div class='py1'><section class='py2 clearfix'>
-  <h2 id='PixBinEncoder' class='mt0'>
-    PixBinEncoder<span class='gray'></span>
-  </h2>
-  <p>A PixBinEncoder instance takes an Image2D or Image3D as input with <code>addInput(...)</code>
-and encode it so that it can be saved as a *.pixp file.
-An output filename can be specified using <code>.setMetadata(&quot;filename&quot;, &quot;yourName.pixp&quot;);</code>,
-by default, the name is &quot;untitled.pixp&quot;.
-When <code>update()</code> is called, a gzip blog is prepared as output[0] and can then be downloaded
-when calling the method <code>.download()</code>. The gzip blob could also be sent over AJAX
-using a third party library.</p>
-<p><strong>Usage</strong></p>
-<ul>
-<li><a href="../examples/savePixpFile.html">examples/savePixpFile.html</a></li>
-</ul>
-
-      <h4>Instance members</h4>
-        <div class='collapsible' id='PixBinEncoder.download'>
-          <a href='#PixBinEncoder.download'>
-            <code>
-              download<span class='gray'></span>
-            </code>
-            <div class='force-inline'>
-              <p>Download the generated file</p>
-
-            </div>
-          </a>
-          <div class='collapser border px2'>
-<section class='py2 clearfix'>
-  <h2 id='PixBinEncoder.download' class='mt0'>
-    download<span class='gray'></span>
-  </h2>
-  <p>Download the generated file</p>
-
-</section>
-          </div>
-        </div>
-        <div class='collapsible' id='PixBinEncoder.hasValidInput'>
-          <a href='#PixBinEncoder.hasValidInput'>
-            <code>
-              hasValidInput<span class='gray'></span>
-            </code>
-            <div class='force-inline'>
-              <p>[PRIVATE]
-overwrite the original from Filter
-Only accept Image2D and Image3D</p>
-
-            </div>
-          </a>
-          <div class='collapser border px2'>
-<section class='py2 clearfix'>
-  <h2 id='PixBinEncoder.hasValidInput' class='mt0'>
-    hasValidInput<span class='gray'></span>
-  </h2>
-  <p>[PRIVATE]
-overwrite the original from Filter
-Only accept Image2D and Image3D</p>
-
-</section>
-          </div>
-        </div>
-</section>
-</div><div class='py1'><section class='py2 clearfix'>
   <h2 id='PixpEncoder' class='mt0'>
     PixpEncoder<span class='gray'></span>
   </h2>
@@ -7629,6 +7655,68 @@ Only accept Image2D and Image3D</p>
           <div class='collapser border px2'>
 <section class='py2 clearfix'>
   <h2 id='PixpEncoder.hasValidInput' class='mt0'>
+    hasValidInput<span class='gray'></span>
+  </h2>
+  <p>[PRIVATE]
+overwrite the original from Filter
+Only accept Image2D and Image3D</p>
+
+</section>
+          </div>
+        </div>
+</section>
+</div><div class='py1'><section class='py2 clearfix'>
+  <h2 id='PixBinEncoder' class='mt0'>
+    PixBinEncoder<span class='gray'></span>
+  </h2>
+  <p>A PixBinEncoder instance takes an Image2D or Image3D as input with <code>addInput(...)</code>
+and encode it so that it can be saved as a *.pixp file.
+An output filename can be specified using <code>.setMetadata(&quot;filename&quot;, &quot;yourName.pixp&quot;);</code>,
+by default, the name is &quot;untitled.pixp&quot;.
+When <code>update()</code> is called, a gzip blog is prepared as output[0] and can then be downloaded
+when calling the method <code>.download()</code>. The gzip blob could also be sent over AJAX
+using a third party library.</p>
+<p><strong>Usage</strong></p>
+<ul>
+<li><a href="../examples/savePixpFile.html">examples/savePixpFile.html</a></li>
+</ul>
+
+      <h4>Instance members</h4>
+        <div class='collapsible' id='PixBinEncoder.download'>
+          <a href='#PixBinEncoder.download'>
+            <code>
+              download<span class='gray'></span>
+            </code>
+            <div class='force-inline'>
+              <p>Download the generated file</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2'>
+<section class='py2 clearfix'>
+  <h2 id='PixBinEncoder.download' class='mt0'>
+    download<span class='gray'></span>
+  </h2>
+  <p>Download the generated file</p>
+
+</section>
+          </div>
+        </div>
+        <div class='collapsible' id='PixBinEncoder.hasValidInput'>
+          <a href='#PixBinEncoder.hasValidInput'>
+            <code>
+              hasValidInput<span class='gray'></span>
+            </code>
+            <div class='force-inline'>
+              <p>[PRIVATE]
+overwrite the original from Filter
+Only accept Image2D and Image3D</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2'>
+<section class='py2 clearfix'>
+  <h2 id='PixBinEncoder.hasValidInput' class='mt0'>
     hasValidInput<span class='gray'></span>
   </h2>
   <p>[PRIVATE]
@@ -8035,19 +8123,6 @@ Should not be used as-is.</p>
 </section>
           </div>
         </div>
-</section>
-</div><div class='py1'><section class='py2 clearfix'>
-  <h2 id='PngDecoder' class='mt0'>
-    PngDecoder<span class='gray'></span>
-  </h2>
-  <p>An instance of PngDecoder will decode a PNG image in native Javascript and
-output an Image2D. This is of course slower than using <code>io/FileImageReader.js</code>
-but this is compatible with Node and not rely on HTML5 Canvas.</p>
-<p><strong>Usage</strong></p>
-<ul>
-<li><a href="../examples/fileToPng.html">examples/fileToPng.html</a></li>
-</ul>
-
 </section>
 </div><div class='py1'><section class='py2 clearfix'>
   <h2 id='SimpleThresholdFilter' class='mt0'>

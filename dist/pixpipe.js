@@ -23095,9 +23095,6 @@ UPNG.decode = function(buff)
 	while(true)
 	{
 		var len = bin.readUint(data, offset);  offset += 4;
-		
-		if	( isNaN(len) ) { throw "Invalid PNG format. Unable to decode"; }
-		
 		var type = bin.readASCII(data, offset, 4);  offset += 4;
 		//log(offset, len, type);
 
@@ -23351,20 +23348,9 @@ class PngDecoder extends Filter {
       return;
     }
     
-    /*
-    try{
-      var pngData = upng.decode( inputBuffer );
-      var rgbaImg = upng.toRGBA8( pngData )
-      var outputImage = new Image2D();
-      outputImage.setData(rgbaImg, pngData.width, pngData.height, 4);
-      this._output[ 0 ] = outputImage;
-    }catch(e){
-      console.warn(e);
-    }
-    
-    return;
-    */
-    
+    // The decode method uses Pako to uncompress the data. Pako outputs a larger array
+    // than the expected size, so we have to cut it - It seems a bit cumbersome or being
+    // kindof manual work, but it's 2x faster than using upng.toRGBA8()
     try{
       var pngData = UPNG.decode( inputBuffer );
       var ncpp = Math.round(pngData.data.length / (pngData.width*pngData.height) );
@@ -23811,7 +23797,7 @@ var zeros = function zeros(shape, dtype) {
  * Link     https://github.com/Pixpipe/pixpipejs
  * Lab      MCIN - Montreal Neurological Institute
  */
- 
+
 class ComponentProjectionImage2DFilter extends Filter {
   constructor() {
     super();
@@ -23842,11 +23828,7 @@ class ComponentProjectionImage2DFilter extends Filter {
     projectedImage.setData(projectedArray.data, width, height, 1);
     this._output[0] = projectedImage;
   }
-  
-  
-  setComponentOffset(offset) {
-    this.setMetadata('componentOffset', offset);
-  }
+
 }
 
 /*
