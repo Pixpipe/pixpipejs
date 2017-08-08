@@ -37,11 +37,13 @@ class JpegDecoder extends Filter {
       var jpegData = jpeg.decode( inputBuffer );
       var ncpp = jpegData.data.length / (jpegData.width*jpegData.height);
       var outputImage = new Image2D();
-      outputImage.setData(jpegData.data, jpegData.width, jpegData.height, ncpp);
+      var pixelData = new Uint8Array( jpegData.data.buffer );
+      
+      outputImage.setData( pixelData, jpegData.width, jpegData.height, ncpp);
       this._output[ 0 ] = outputImage;
     }catch(e){
       //console.warn(e);
-      console.warn("This is not a JPEG file, unable to decode this file.");
+      //console.warn("This is not a JPEG file, unable to decode this file.");
     }
   }
 } /* JpegDecoder */

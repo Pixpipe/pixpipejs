@@ -12,7 +12,7 @@
   This does the following :
   <ul>
     <li>open a local Jpeg file, using <code>pixpipe.FileToArrayBufferReader</code></li>
-    <li>redirect the file buffer into a <code>pixpipe.JpegDecoder</code> to extract tiff dataset and metadata</li>
+    <li>redirect the file buffer into a <code>pixpipe.JpegDecoder</code> to extract jpeg dataset and metadata</li>
     <li>get the output as a generic <code>pixpipe.Image2D</code> object</li>
     <li>display the image using <code>pixpipe.CanvasImageWriter</code></li>
   </ul>
@@ -77,7 +77,7 @@
 
       // Perform the reading + conversion ibto ArrayBuffer
       file2Buff.update();
-		});
+    });
 
   }
   </script>

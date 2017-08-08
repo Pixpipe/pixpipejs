@@ -974,6 +974,21 @@ class Image2D extends PixpipeContainer{
     return uintData;
   }
 
+
+  /**
+  * Get a copy of the data but forced as Float 32 (no scaling is done)
+  * @return {Float32Array} the casted array
+  */
+  getDataAsFloat32Array(){
+    if(! this._data){
+      console.warn("No data, cannot make a copy of it.");
+      return;
+    }
+    
+    return new Float32Array( this._data );
+  }
+
+
   /**
   * Compute the (x, y) position from a position in a 1D array.
   * This has nothing to do with the number of components per pixel.
@@ -22743,11 +22758,13 @@ class JpegDecoder extends Filter {
       var jpegData = index$2.decode( inputBuffer );
       var ncpp = jpegData.data.length / (jpegData.width*jpegData.height);
       var outputImage = new Image2D();
-      outputImage.setData(jpegData.data, jpegData.width, jpegData.height, ncpp);
+      var pixelData = new Uint8Array( jpegData.data.buffer );
+      
+      outputImage.setData( pixelData, jpegData.width, jpegData.height, ncpp);
       this._output[ 0 ] = outputImage;
     }catch(e){
       //console.warn(e);
-      console.warn("This is not a JPEG file, unable to decode this file.");
+      //console.warn("This is not a JPEG file, unable to decode this file.");
     }
   }
 } /* JpegDecoder */
@@ -23329,6 +23346,25 @@ class PngDecoder extends Filter {
       return;
     }
     
+    if( !this._isPng( inputBuffer ) ){
+      console.warn("This is not a PNG file, unable to decode this file.");
+      return;
+    }
+    
+    /*
+    try{
+      var pngData = upng.decode( inputBuffer );
+      var rgbaImg = upng.toRGBA8( pngData )
+      var outputImage = new Image2D();
+      outputImage.setData(rgbaImg, pngData.width, pngData.height, 4);
+      this._output[ 0 ] = outputImage;
+    }catch(e){
+      console.warn(e);
+    }
+    
+    return;
+    */
+    
     try{
       var pngData = UPNG.decode( inputBuffer );
       var ncpp = Math.round(pngData.data.length / (pngData.width*pngData.height) );
@@ -23338,9 +23374,29 @@ class PngDecoder extends Filter {
       this._output[ 0 ] = outputImage;
     }catch(e){
       console.warn(e);
-      //console.warn("This is not a PNG file, unable to decode this file.");
     }
+    
   }
+  
+  
+  /**
+  * Checks if the input buffer is of a png file
+  * @param {ArrayBuffer} buffer - an array buffer inside which a PNG could be hiding!
+  * @return {Boolean} true if the buffer is a valid PNG buffer, false if not
+  */
+  _isPng( buffer ){
+    var first8Bytes = new Uint8Array( buffer, 0, 8);
+    var validSequence = new Uint8Array( [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
+    
+    for(var i=0; i<first8Bytes.length; i++){
+      if(first8Bytes[i] != validSequence[i])
+        return false;
+    }
+    
+    return true;
+  }
+  
+  
 } /* PngDecoder */
 
 function iota(n) {
@@ -23760,7 +23816,10 @@ class ComponentProjectionImage2DFilter extends Filter {
   constructor() {
     super();
     this.addInputValidator(0, Image2D);
+    this.setMetadata('componentOffset', 0);
   }
+  
+  
   _run() {
     if( ! this.hasValidInput()){
       console.warn("A filter of type ComponentProjectionImage2DFilter requires 1 input of Image2D.");
@@ -23783,6 +23842,8 @@ class ComponentProjectionImage2DFilter extends Filter {
     projectedImage.setData(projectedArray.data, width, height, 1);
     this._output[0] = projectedImage;
   }
+  
+  
   setComponentOffset(offset) {
     this.setMetadata('componentOffset', offset);
   }
@@ -25796,8 +25857,8 @@ class BaseFourierImageFilter extends Filter {
     if (width !== inputImageimg.getMetadata('width') || height !== inputImageimg.getMetadata('height')) {
       console.warn('Please make sure the real and imaginary input images are the same dimensions');
     }
-    const real = ndarray(inputImagereal.clone().getData(), [width, height]);
-    const img = ndarray(inputImageimg.clone().getData(), [width, height]);
+    const real = ndarray(inputImagereal.getDataAsFloat32Array(), [width, height]);
+    const img = ndarray(inputImageimg.getDataAsFloat32Array(), [width, height]);
     this.setMetadata('direction', this.direction);
 
     fft(DIRECTIONS$1[this.direction], real, img);

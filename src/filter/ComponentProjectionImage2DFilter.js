@@ -14,7 +14,10 @@ class ComponentProjectionImage2DFilter extends Filter {
   constructor() {
     super();
     this.addInputValidator(0, Image2D);
+    this.setMetadata('componentOffset', 0);
   }
+  
+  
   _run() {
     if( ! this.hasValidInput()){
       console.warn("A filter of type ComponentProjectionImage2DFilter requires 1 input of Image2D.");
@@ -37,6 +40,8 @@ class ComponentProjectionImage2DFilter extends Filter {
     projectedImage.setData(projectedArray.data, width, height, 1);
     this._output[0] = projectedImage;
   }
+  
+  
   setComponentOffset(offset) {
     this.setMetadata('componentOffset', offset);
   }
