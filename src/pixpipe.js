@@ -30,6 +30,9 @@ export { MghDecoder } from './decoder/MghDecoder.js';
 export { EegModDecoder } from './decoder/EegModDecoder.js';
 export { PixBinEncoder } from './decoder/PixBinEncoder.js';
 export { PixBinDecoder } from './decoder/PixBinDecoder.js';
+export { JpegDecoder } from './decoder/JpegDecoder.js';
+export { PngDecoder } from './decoder/PngDecoder.js';
+
 
 // filters - processing of Images2D and Signal1D
 export { ComponentProjectionImage2DFilter } from './filter/ComponentProjectionImage2DFilter';
@@ -54,7 +57,7 @@ export { NearestNeighborSparseInterpolationImageFilter } from './filter/NearestN
 export { IDWSparseInterpolationImageFilter } from './filter/IDWSparseInterpolationImageFilter.js';
 export { TriangulationSparseInterpolationImageFilter } from './filter/TriangulationSparseInterpolationImageFilter.js';
 export { CropImageFilter } from './filter/CropImageFilter.js';
-
+export { SimplifyLineStringFilter } from './filter/SimplifyLineStringFilter.js';
 
 // helpers
 export { AngleToHueWheelHelper } from './helper/AngleToHueWheelHelper.js';

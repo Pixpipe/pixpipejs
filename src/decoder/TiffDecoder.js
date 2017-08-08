@@ -20,7 +20,7 @@ import { Image2D } from '../core/Image2D.js';
 * Info: Tiff 6.0 specification http://www.npes.org/pdf/TIFF-v6.pdf
 *
 * **Usage**
-* - [examples/savePixpFile.html](../examples/fileToTiff.html)
+* - [examples/fileToTiff.html](../examples/fileToTiff.html)
 *
 */
 class TiffDecoder extends Filter {

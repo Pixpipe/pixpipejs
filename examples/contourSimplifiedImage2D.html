@@ -1,6 +1,6 @@
 <html>
 <head>
-  <title>Contour of Image2D</title>
+  <title>Simplify contour</title>
 
   <script src="../dist/pixpipe.js"></script>
 
@@ -15,6 +15,7 @@
   <ul>
     <li>opening a distant image file with AJAX request, using <code>pixpipe.UrlImageReader</code></li>
     <li>Computing the closest internal polygon from a seed with <code>pixpipe.ContourHolesImage2DFilter</code></li>
+    <li>Simplifiying the contour using <code>pixpipe.SimplifyLineStringFilter</code> to get only a small list of points</li>
     <li>Printing the polygons on top of a copy of the input image with <code>pixpipe.LineStringPrinterOnImage2DHelper</code></li>
     <li>Displaying it in a canvas using <code>pixpipe.CanvasImageWriter</code></li>
   </ul>
@@ -48,9 +49,14 @@
     var contours = contourDetector.getOutput();
     console.log(contours);
     
+    var lineStringSimplifier = new pixpipe.SimplifyLineStringFilter();
+    lineStringSimplifier.addInput( contours );
+    lineStringSimplifier.update();
+    
+    
     var printer = new pixpipe.LineStringPrinterOnImage2DHelper();
     printer.addInput(loadedImage);
-    printer.addLineString(contours, [255, 0, 0]);
+    printer.addLineString(lineStringSimplifier.getOutput(), [255, 0, 0]);
     printer.update();
     
     // use the output of the UrlImageReader as the input for CanvasImageWriter
