@@ -47,7 +47,7 @@
 
       var project = new pixpipe.ComponentProjectionImage2DFilter();
       project.addInput(original);
-      project.setComponentOffset(0);
+      project.setMetadata('componentOffset', 0);
       project.update();
       var red = project.getOutput();
       var redMerger = new pixpipe.ComponentMergeImage2DFilter();
@@ -62,7 +62,7 @@
       writer2.update();
 
       project.addInput(original);
-      project.setComponentOffset(1);
+      project.setMetadata('componentOffset', 1);
       project.update();
       var green = project.getOutput();
       var greenMerger = new pixpipe.ComponentMergeImage2DFilter();
@@ -77,7 +77,7 @@
       writer3.update();
 
       project.addInput(original);
-      project.setComponentOffset(2);
+      project.setMetadata('componentOffset', 2);
       project.update();
       var blue = project.getOutput();
       var blueMerger = new pixpipe.ComponentMergeImage2DFilter();
