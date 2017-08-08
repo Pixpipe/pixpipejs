@@ -32,7 +32,7 @@ export { PixBinEncoder } from './decoder/PixBinEncoder.js';
 export { PixBinDecoder } from './decoder/PixBinDecoder.js';
 export { JpegDecoder } from './decoder/JpegDecoder.js';
 export { PngDecoder } from './decoder/PngDecoder.js';
-
+export { Image2DGenericDecoder } from './decoder/Image2DGenericDecoder.js';
 
 // filters - processing of Images2D and Signal1D
 export { ComponentProjectionImage2DFilter } from './filter/ComponentProjectionImage2DFilter';
