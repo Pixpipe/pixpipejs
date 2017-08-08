@@ -14,11 +14,14 @@ export default {
   sourceMap: true,
   dest: config.moduleBuildDir + '/' + config.moduleName + '.js',
   plugins: [
-    nodeResolve(),
+    nodeResolve({
+      /*preferBuiltins: false*/
+    }),
     commonjs(),
     //bundleWorker(),
-    builtins(),
     globals(),
+    builtins(),
+    
     
 
   ]

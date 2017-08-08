@@ -304,6 +304,21 @@ class Image2D extends PixpipeContainer{
     return uintData;
   }
 
+
+  /**
+  * Get a copy of the data but forced as Float 32 (no scaling is done)
+  * @return {Float32Array} the casted array
+  */
+  getDataAsFloat32Array(){
+    if(! this._data){
+      console.warn("No data, cannot make a copy of it.");
+      return;
+    }
+    
+    return new Float32Array( this._data );
+  }
+
+
   /**
   * Compute the (x, y) position from a position in a 1D array.
   * This has nothing to do with the number of components per pixel.

@@ -1,9 +1,12 @@
-import ndarray from 'ndarray';
-import zeros from 'zeros';
+/*
+* Author   Jonathan Lurie - http://me.jonahanlurie.fr
+* License  MIT
+* Link      https://github.com/jonathanlurie/pixpipejs
+* Lab       MCIN - Montreal Neurological Institute
+*/
 
 import { Image2D } from '../core/Image2D.js';
 import { ImageToImageFilter } from '../core/ImageToImageFilter.js';
-
 
 /**
 * An instance of CropImageFilter is used to crop an `Image2D`. This filter accepts

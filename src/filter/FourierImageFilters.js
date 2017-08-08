@@ -44,8 +44,8 @@ class BaseFourierImageFilter extends Filter {
     if (width !== inputImageimg.getMetadata('width') || height !== inputImageimg.getMetadata('height')) {
       console.warn('Please make sure the real and imaginary input images are the same dimensions');
     }
-    const real = ndarray(inputImagereal.clone().getData(), [width, height]);
-    const img = ndarray(inputImageimg.clone().getData(), [width, height]);
+    const real = ndarray(inputImagereal.getDataAsFloat32Array(), [width, height]);
+    const img = ndarray(inputImageimg.getDataAsFloat32Array(), [width, height]);
     this.setMetadata('direction', this.direction);
 
     ft(DIRECTIONS[this.direction], real, img);
