@@ -29393,7 +29393,12 @@ else module.exports = simplify;
 */
 
 /**
+* An instance of SimplifyLineStringFilter takes a LineString and simplifies upon
+* a given tolerance distance (in pixel, possibly being sub-pixel).
+* This filter outputs another LineString with a fewer amount of points.
 *
+* **Usage**
+* - [examples/contourSimplifiedImage2D.html](../examples/contourSimplifiedImage2D.html)
 */
 class SimplifyLineStringFilter extends Filter {
   
