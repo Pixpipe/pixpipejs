@@ -69,12 +69,12 @@ Sometimes, it's just not worth reinventing the wheel. Here are the libraries Pix
 
 
 # Core architecture
-Pixpipe is strongly *object oriented* and relies a lot on inheritance. As said in the `readme`, it was inspired by *ITK* for its genericity because it makes the pipeline scalable and modular.  
-Everything you can find in `src/core` is the **core**. Easy. Let's see how it looks like:  
+Pixpipe is strongly *object oriented* and relies a lot on inheritance. As said in the `readme`, it was inspired by *ITK* for its genericity because it makes the pipeline scalable and modular.
+Everything you can find in `src/core` is the **core**. Easy. Let's see what it looks like:
 
 [![Pixpipe core](images/pixpipeCore.png)](images/pixpipeCore.png)
 
-As you can see, the core elements can be described like that: **containers** on one side and **processors** on the other.
+As you can see, the core elements can be described like this: **containers** on one side and **processors** on the other.
 
 
 ## Core elements in detail
@@ -186,7 +186,8 @@ Here, we will learn what is an `Image2D`, how to display it in a canvas using `C
 - [Sample pixel along a line](http://pixpipe.github.io/pixpipejs/examples/SegmentSampleImage2D.html) | [source](https://github.com/Pixpipe/pixpipejs/tree/master/examples/SegmentSampleImage2D.html)
 - - [Create a colormap and display it](http://pixpipe.github.io/pixpipejs/examples/colormap.html) | [source](https://github.com/Pixpipe/pixpipejs/tree/master/examples/colormap.html)
 
-
+## Signal filters for Signal1D
+- [Compute the 1D fourier transform or inverse transform on a signal](https://github.com/Pixpipe/pixpipejs/tree/master/examples/fftSignal1D.html) | [source](https://github.com/Pixpipe/pixpipejs/tree/master/examples/fftSignal1D.html)
 ## Simple filters for Image2D
 See a `Filter` as a *box* that takes one or more input and produces one or more output. If some parameters are needed to make the filter work properly, this must happen using `setMetadata()`. To ask the filter to do its job, just call `update()`.  
 A `Filter` should **NEVER** modify the input data.
@@ -205,6 +206,8 @@ A `Filter` should **NEVER** modify the input data.
 - [Compute the gradient direction and magnitude of an image](http://pixpipe.github.io/pixpipejs/examples/gradientImage2D.html) | [source](https://github.com/Pixpipe/pixpipejs/tree/master/examples/gradientImage2D.html)
 - [Compute all gradient info](http://pixpipe.github.io/pixpipejs/examples/gradientHueWheelImage2D.html) | [source](https://github.com/Pixpipe/pixpipejs/tree/master/examples/gradientHueWheelImage2D.html)
 - [Compute elevation map from Mapbox TerrainRGB format](http://pixpipe.github.io/pixpipejs/examples/terrainRgbToElevation.html) | [source](https://github.com/Pixpipe/pixpipejs/tree/master/examples/terrainRgbToElevation.html)
+- [Compute the 2D fourier transform or inverse transform on a single channel image](https://github.com/Pixpipe/pixpipejs/tree/master/examples/fftImage2D.html) | [source](https://github.com/Pixpipe/pixpipejs/tree/master/examples/fftImage2D.html)
+- [Extract single channels of an image or merge the channels of multiple images](https://github.com/Pixpipe/pixpipejs/tree/master/examples/imageProjectMerge.html) | [source](https://github.com/Pixpipe/pixpipejs/tree/master/examples/imageProjectMerge.html)
 
 ## Playing with 3D medical dataset
 - [Open a local Minc2 file, extract 3 orthogonal slices and display in canvas](http://pixpipe.github.io/pixpipejs/examples/fileToMinc2.html) | [source](https://github.com/Pixpipe/pixpipejs/tree/master/examples/fileToMinc2.html)
