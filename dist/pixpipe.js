@@ -21360,11 +21360,12 @@ var zeros = function zeros(shape, dtype) {
  * Link     https://github.com/Pixpipe/pixpipejs
  * Lab      MCIN - Montreal Neurological Institute
  */
- 
+
 class ComponentProjectionImage2DFilter extends Filter {
   constructor() {
     super();
     this.addInputValidator(0, Image2D);
+    this.setMetadata('componentOffset', 0);
   }
   _run() {
     if( ! this.hasValidInput()){
@@ -21387,9 +21388,6 @@ class ComponentProjectionImage2DFilter extends Filter {
     const projectedImage = new Image2D();
     projectedImage.setData(projectedArray.data, width, height, 1);
     this._output[0] = projectedImage;
-  }
-  setComponentOffset(offset) {
-    this.setMetadata('componentOffset', offset);
   }
 }
 
