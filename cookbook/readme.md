@@ -227,6 +227,7 @@ A `Filter` should **NEVER** modify the input data.
 - [Detect contours (of a segmented Image2D) as a LineString](http://pixpipe.github.io/pixpipejs/examples/contourImage2D.html) | [source](https://github.com/Pixpipe/pixpipejs/tree/master/examples/contourImage2D.html)
 - [Detect contours and internal polygons](http://pixpipe.github.io/pixpipejs/examples/contourHolesImage2D.html) | [source](https://github.com/Pixpipe/pixpipejs/tree/master/examples/contourHolesImage2D.html)
 - [Flood fill an Image2D](http://pixpipe.github.io/pixpipejs/examples/floodFillImage2D.html) | [source](https://github.com/Pixpipe/pixpipejs/tree/master/examples/floodFillImage2D.html)
+- [Simplifying a LineString](http://pixpipe.github.io/pixpipejs/examples/contourSimplifiedImage2D.html) | [source](https://github.com/Pixpipe/pixpipejs/tree/master/examples/contourSimplifiedImage2D.html)
 
 ## Interpolation
 - [2D sparse dataset inverse distance weighting](http://pixpipe.github.io/pixpipejs/examples/IDWSparseInterpolation.html) | [source](https://github.com/Pixpipe/pixpipejs/tree/master/examples/IDWSparseInterpolation.html)
