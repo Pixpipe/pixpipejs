@@ -43,7 +43,7 @@
     "qeegmodfile": "github:jonathanlurie/qeegmodfile",
     "rollup-plugin-bundle-worker": "^0.1.0",
     "simplify-js": "^1.2.1",
-    "upng-js": "github:jonathanlurie/UPNG.js",
+    "upng-js": "^1.0.0",
     "zeros": "^1.0.0"
   },
   "devDependencies": {

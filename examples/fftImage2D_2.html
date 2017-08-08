@@ -1,0 +1,130 @@
+<html>
+<head>
+  <title>FFT of Jpeg</title>
+
+  <script src="../dist/pixpipe.js"></script>
+  <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700,900" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <h1><a href="https://github.com/jonathanlurie/pixpipejs"><span style="color: #ff91d7">Pixpipe</span><span style="color: #FFFFFF">js</span></a></h1>
+  <p>
+  This does the following :
+  <ul>
+    <li>open a local Jpeg file, using <code>pixpipe.FileToArrayBufferReader</code></li>
+    <li>redirect the file buffer into a <code>pixpipe.JpegDecoder</code></li>
+    <li>Display the real component of the fourier transform output from <code>pixpipe.ForwardFourierImageFilter</code></li>
+    <li>Display the imaginary component of the fourier transform output from <code>pixpipe.ForwardFourierImageFilter</code></li>
+    <li>Display the real component of the inverse fourier transform output from <code>pixpipe.InverseFourierImageFilter</code></li>
+  </ul>
+
+  </p>
+
+  <div>
+		Select an file:
+		<input type="file" id="fileInput">
+    <br>
+    <span id="fileInfo"></span>
+	</div>
+
+  <div id="myDiv"></div>
+
+  <script>
+  window.onload = function() {
+
+    var fileInput = document.getElementById('fileInput');
+
+    // The filter to read image from URL
+    var file2Buff = new pixpipe.FileToArrayBufferReader();
+    
+    var imageToCanvasFilter = new pixpipe.CanvasImageWriter( );
+    imageToCanvasFilter.setMetadata( "parentDivID", "myDiv" );
+    imageToCanvasFilter.setMetadata( "reset", false );
+
+    // the image is loaded...
+    // here, this = url2ImgFilter
+    file2Buff.on("ready", function(){
+
+      var filenames = this.getMetadata("filenames");
+
+      var buff = this.getOutput();
+
+      var jpegDecoder = new pixpipe.JpegDecoder();
+      jpegDecoder.addInput( buff );
+      jpegDecoder.update();
+
+      if( jpegDecoder.getNumberOfOutputs() ){
+        var img = jpegDecoder.getOutput();
+        
+        imageToCanvasFilter.addInput( img );
+        imageToCanvasFilter.update();
+        
+        var channelDecomposer = new pixpipe.ComponentProjectionImage2DFilter();
+        channelDecomposer.addInput( img )
+        channelDecomposer.setMetadata( "componentOffset", 0 );
+        channelDecomposer.update();
+        var monoImage = channelDecomposer.getOutput();
+        
+        // create a filter to write the image into a canvas
+        imageToCanvasFilter.addInput( monoImage );
+        imageToCanvasFilter.update();
+        
+        var fftImage2d = new pixpipe.ForwardFourierImageFilter();
+        fftImage2d.addInput(monoImage, 0);
+        fftImage2d.addInput(monoImage.hollowClone(), 1);
+        fftImage2d.update();
+        var fftImagereal = fftImage2d.getOutput(0);
+        var fftImageimg = fftImage2d.getOutput(1);
+        fftImagereal.computeSimpleStat();
+        fftImageimg.computeSimpleStat();
+        
+        imageToCanvasFilter.addInput( fftImagereal );
+        imageToCanvasFilter.setMetadata('min', fftImagereal.getMin() / 500);
+        imageToCanvasFilter.setMetadata('max', fftImagereal.getMax() / 500);
+        imageToCanvasFilter.update();
+        
+        imageToCanvasFilter.addInput( fftImageimg );
+        imageToCanvasFilter.setMetadata('min', fftImageimg.getMin() / 500);
+        imageToCanvasFilter.setMetadata('max', fftImageimg.getMax() / 500);
+        imageToCanvasFilter.update();
+        
+        
+        var ifftImage2d = new pixpipe.InverseFourierImageFilter();
+        ifftImage2d.addInput(fftImagereal, 0);
+        ifftImage2d.addInput(fftImageimg, 1);
+        ifftImage2d.update();
+        
+        var fourierForwardAndInverse = ifftImage2d.getOutput();
+        fourierForwardAndInverse.computeSimpleStat();
+        imageToCanvasFilter.addInput( fourierForwardAndInverse );
+        imageToCanvasFilter.setMetadata('min', 0);
+        imageToCanvasFilter.setMetadata('max', 255);
+        imageToCanvasFilter.update();
+      }
+      
+
+    });
+
+
+    // event listener of the file input
+    fileInput.addEventListener('change', function(e) {
+      var files = e.target.files;
+      var filenames = {};
+
+      for(var i=0; i<files.length; i++){
+        // set the input, an HTML5 File object and a category (ID)
+        file2Buff.addInput(files[i], i);
+        filenames[i] = files[i].name ;
+      }
+
+      file2Buff.setMetadata("filenames", filenames);
+
+      // Perform the reading + conversion ibto ArrayBuffer
+      file2Buff.update();
+    });
+
+  }
+  </script>
+
+</body>
+</html>
