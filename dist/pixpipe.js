@@ -12492,6 +12492,143 @@ class UrlToArrayBufferReader extends Filter {
 
 } /* END of class UrlToArrayBufferReader */
 
+/**
+* The CodecUtils class gather some static methods that can be useful while
+* encodeing/decoding data.
+* CodecUtils does not have a constructor, don't try to instanciate it.
+*/
+class CodecUtils {
+
+
+  /**
+  * Get whether or not the platform is using little endian.
+  * @return {Boolen } true if the platform is little endian, false if big endian
+  */
+  static isPlatformLittleEndian() {
+    var a = new Uint32Array([0x12345678]);
+    var b = new Uint8Array(a.buffer, a.byteOffset, a.byteLength);
+    return (b[0] != 0x12);
+  }
+
+
+  /**
+  * convert an ArrayBuffer into a unicode string (2 bytes for each char)
+  * @param {ArrayBuffer} buf - input ArrayBuffer
+  * @return {String} a string compatible with Unicode characters
+  */
+  static arrayBufferToString16( buf ) {
+    return String.fromCharCode.apply(null, new Uint16Array(buf));
+  }
+
+
+  /**
+  * convert a unicode string into an ArrayBuffer
+  * Note that the str is a regular string but it will be encoded with
+  * 2 bytes per char instead of 1 ( ASCII uses 1 byte/char )
+  * @param {String} str - string to encode
+  * @return {ArrayBuffer} the output ArrayBuffer
+  */
+  static string16ToArrayBuffer( str ) {
+    var buf = new ArrayBuffer(str.length*2); // 2 bytes for each char
+    var bufView = new Uint16Array(buf);
+    for (var i=0, strLen=str.length; i < strLen; i++) {
+      bufView[i] = str.charCodeAt(i);
+    }
+    return buf;
+  }
+
+
+  /**
+  * Convert an ArrayBuffer into a ASCII string (1 byte for each char)
+  * @param {ArrayBuffer} buf - buffer to convert into ASCII string
+  * @return {String} the output string
+  */
+  static arrayBufferToString8( buf ) {
+    return String.fromCharCode.apply(null, new Uint8Array(buf));
+  }
+
+
+  /**
+  * Convert a ASCII string into an ArrayBuffer.
+  * Note that the str is a regular string, it will be encoded with 1 byte per char
+  * @param {String} str - string to encode
+  * @return {ArrayBuffer}
+  */
+  static string8ToArrayBuffer( str ) {
+    var buf = new ArrayBuffer(str.length);
+    var bufView = new Uint8Array(buf);
+    for (var i=0, strLen=str.length; i < strLen; i++) {
+      bufView[i] = str.charCodeAt(i);
+    }
+    return buf;
+  }
+
+  
+  /**
+  * Serializes a JS object into an ArrayBuffer.
+  * This is using a unicode JSON intermediate step.
+  * @param {Object} obj - an object that does not have cyclic structure
+  * @return {ArrayBuffer} the serialized output
+  */
+  static objectToArrayBuffer( obj ){
+    var buff = null;
+    
+    try{
+      var strObj = JSON.stringify( obj );
+      buff = CodecUtils.string16ToArrayBuffer(strObj);
+    }catch(e){
+      console.warn(e);
+    }
+    
+    return buff;
+  }
+  
+  
+  /**
+  * Convert an ArrayBuffer into a JS Object. This uses an intermediate unicode JSON string.
+  * Of course, this buffer has to come from a serialized object.
+  * @param {ArrayBuffer} buff - the ArrayBuffer that hides some object
+  * @return {Object} the deserialized object
+  */
+  static ArrayBufferToObject( buff ){
+    var obj = null;
+    
+    try{
+      var strObj = CodecUtils.arrayBufferToString16( buff );
+      obj = JSON.parse( strObj );
+    }catch(e){
+      console.warn(e);
+    }
+    
+    return obj;
+  }
+
+
+  /**
+  * Merge some typed array of various types and output a new ArrayBuffer.
+  * @param {TypedArray} arrayOfArrays - a typed array
+  * @return {ArrayBuffer} the larger merged buffer
+  */
+  static mergeTypedArray( arrayOfArrays ){
+    var totalByteSize = 0;
+    
+    for(var i=0; i<arrayOfArrays.length; i++){
+      totalByteSize += arrayOfArrays[i].byteLength;
+    }
+    
+    var concatArray = new Uint8Array( totalByteSize );
+    
+    var offset = 0;
+    for(var i=0; i<arrayOfArrays.length; i++){
+      concatArray.set( new Uint8Array(arrayOfArrays[i].buffer), offset);
+      offset += arrayOfArrays[i].byteLength;
+    }
+    
+    return concatArray.buffer;
+  }
+
+} /* END of class CodecUtils */
+
 /*
 * Author    Jonathan Lurie - http://me.jonahanlurie.fr
 *           Robert D. Vincent
@@ -20904,23 +21041,50 @@ class PixBinEncoder extends Filter {
   }
 
 
-  /**
-  * [PRIVATE]
-  * overwrite the original from Filter
-  * Only accept Image2D and Image3D
-  */
-  hasValidInput(){
-    var input = this._getInput();
-    return input && ( input.isOfType(Image2D.TYPE()) || input.isOfType(Image3D.TYPE()) );
-  }
-
 
   _run(){
+    var today = new Date();
+    this._rejectCyclingObjects();
 
-    if(! this.hasValidInput() ){
-      console.warn("PixBinEncoder can only encode Image2D and Image3D.");
-      return;
-    }
+    // this object is the JSON description at the begining of a PixBin
+    var pixBinIndex = {
+      date: today.toISOString(),
+      createdWith: "pixpipejs",
+      description: this.getMetadata( "description" ),
+      userObject: this.getMetadata( "userObject" ),
+      pixblocksInfo: []
+    };
+    
+    // array of binary blocks (each are Uint8Array or ArrayBuffer)
+    var pixBlocks = [];
+    
+    // just a convenient shortcut
+    var pixblocksInfo = pixBinIndex.pixblocksInfo;
+    
+    var growingPixBlockOffset = 0;
+
+    this._forEachInput(function( category, input ){
+      
+      var pixBlock = this._getPixBlock( input );
+      
+      if( !pixBlock ){
+        console.warn("The PixBlock corresponding to input category " + category + " could not be created, and thus will not be added to the PixBin container.");
+        return;
+      }
+      
+      // adding an entry to the PixBin index
+      var pixBinIndexEntry = {
+        type: input.constructor.name,
+        description: input.getMetadata( "description" ),
+        offset: growingPixBlockOffset
+      };
+      
+      growingPixBlockOffset += pixBlock.buffer.byteLength;
+      
+      pixblocksInfo.push( pixBinIndexEntry );
+    });
+
+    return;
 
     var input = this._getInput();
 
@@ -20975,6 +21139,7 @@ class PixBinEncoder extends Filter {
       console.warn("No output computed yet.");
     }
   }
+
 
 } /* END of class PixBinEncoder */
 
@@ -23454,6 +23619,174 @@ class Image2DGenericDecoder extends Filter {
   
   
 } /* END of class Image2DGenericDecoder */
+
+/*
+* Author    Jonathan Lurie - http://me.jonahanlurie.fr
+*
+* License   MIT
+* Link      https://github.com/jonathanlurie/pixpipejs
+* Lab       MCIN - Montreal Neurological Institute
+*/
+
+//import { Image2D } from '../core/PixpipeContainer.js';
+
+class PixBlockEncoder extends Filter {
+  
+  constructor(){
+    super();
+  }
+  
+  
+  _run(){
+    var input = this._getInput();
+    
+    if( !input ){
+      console.warn("An input must be given to the PixBlockEncoder.");
+      return;
+    }
+    
+    // only an object that inherit from PixpipeContainer can be converted as a block
+    if( !(input instanceof PixpipeContainer) ){
+      console.warn("The input of PixBinEncoder must be an instance of PixpipeContainer.");
+      return;
+    }
+    
+    var data = input.getData();
+    
+    // contain the same as input._data, but concatenated if _data contains multiple subset
+    // This is an ArrayBuffer
+    var dataBuffer = null;
+    var byteStreamInfo = [];
+    var usingDataSubsets = false;
+    
+    // the _data object is an array containing multiple TypedArrays (eg. meshes)
+    if( Array.isArray(data) ){
+      usingDataSubsets = true;
+      
+      // collect bytestream info for each subset of data
+      for(var i=0; i<data.length; i++){
+        byteStreamInfo.push( this._getByteStreamInfo(data[i]) );
+      }
+    }
+    // the _data object is a single TypedArray (eg. Image2D)
+    else{
+      dataBuffer = data.buffer;
+      byteStreamInfo.push( this._getByteStreamInfo(data) );
+    }
+    
+    
+    // 
+    var pixBlockMeta = {
+      byteStreamInfo : byteStreamInfo,
+      pixpipeType    : input.constructor.name,
+      containerMeta  : input.getMetadataCopy()
+    };
+    
+    // converting the pixBlockMeta obj into a buffer
+    var pixBlockMetaBuff = CodecUtils.objectToArrayBuffer( pixBlockMeta );
+    
+    // this list will then be trandformed into a single buffer
+    var allBuffers = [
+      new Uint8Array( [ + CodecUtils.isPlatformLittleEndian() ] ), // endianess
+      new Uint32Array( [pixBlockMetaBuff.byteLength] ), // size of the following buff (pixBlockMetaBuff)
+      pixBlockMetaBuff, // the buff of metadada
+    ];
+    
+    // adding the actual data buffer to the list
+    if( usingDataSubsets ){
+      for(var i=0; i<data.length; i++){
+        allBuffers.push( data[i].buffer ); 
+      }
+    }else{
+      allBuffers.push( data.buffer );
+    }
+
+    console.log( allBuffers );
+
+    this._output[ 0 ] = CodecUtils.mergeTypedArray( allBuffers );
+  }
+  
+  
+  /**
+  * Get some info about a byte stream info (TypedArray)
+  * @param {TypedArray} typedArray - one of the typed array
+  * @return {Object} in form of {type: String, signed: Boolean, bytesPerElements: Number, byteLength: Number, length: Number}
+  */
+  _getByteStreamInfo( typedArray ){
+    var type = null;
+    var signed = false;
+    
+    if( typedArray instanceof Int8Array ){
+      type = "int";
+      signed = false;
+    }else if( typedArray instanceof Uint8Array ){
+      type = "int";
+      signed = true;
+    }else if( typedArray instanceof Uint8ClampedArray ){
+      type = "int";
+      signed = true;
+    }else if( typedArray instanceof Int16Array ){
+      type = "int";
+      signed = false;
+    }else if( typedArray instanceof Uint16Array ){
+      type = "int";
+      signed = true;
+    }else if( typedArray instanceof Int32Array ){
+      type = "int";
+      signed = false;
+    }else if( typedArray instanceof Uint32Array ){
+      type = "int";
+      signed = true;
+    }else if( typedArray instanceof Float32Array ){
+      type = "float";
+      signed = false;
+    }else if( typedArray instanceof Float64Array ){
+      type = "float";
+      signed = false;
+    }
+    
+    return {
+      type: type,
+      signed: signed,
+      bytesPerElements: typedArray.BYTES_PER_ELEMENT,
+      byteLength: typedArray.byteLength,
+      length: typedArray.length
+    }
+  }
+  
+  
+} /* END of class PixBlockEncoder */
+
+/*
+* Author    Jonathan Lurie - http://me.jonahanlurie.fr
+*
+* License   MIT
+* Link      https://github.com/jonathanlurie/pixpipejs
+* Lab       MCIN - Montreal Neurological Institute
+*/
+
+class PixBlockDecoder extends Filter {
+  constructor(){
+    super();
+    this.addInputValidator(0, ArrayBuffer);
+  }
+  
+  _run(){
+    if(! this.hasValidInput() ){
+      console.warn("PixBinDecoder can only decode ArrayBuffer.");
+      return;
+    }
+    
+    var input = this._getInput();
+    var view = new DataView( input );
+    var isLtlt = view.getUint8( 0 );
+    
+    var isLittleEndian = new Uint8Array( input , 0, 1 )[0];
+    var metadataBufferLength = new Uint32Array( input , 1, 1 )[0];
+  }
+  
+  
+} /* END of class PixBlockDecoder */
 
 function iota(n) {
   var result = new Array(n);
@@ -30402,6 +30735,7 @@ exports.UrlImageReader = UrlImageReader;
 exports.FileImageReader = FileImageReader;
 exports.FileToArrayBufferReader = FileToArrayBufferReader;
 exports.UrlToArrayBufferReader = UrlToArrayBufferReader;
+exports.CodecUtils = CodecUtils;
 exports.Minc2Decoder = Minc2Decoder;
 exports.NiftiDecoder = NiftiDecoder;
 exports.PixpEncoder = PixpEncoder;
@@ -30415,6 +30749,8 @@ exports.PixBinDecoder = PixBinDecoder;
 exports.JpegDecoder = JpegDecoder;
 exports.PngDecoder = PngDecoder;
 exports.Image2DGenericDecoder = Image2DGenericDecoder;
+exports.PixBlockEncoder = PixBlockEncoder;
+exports.PixBlockDecoder = PixBlockDecoder;
 exports.ComponentProjectionImage2DFilter = ComponentProjectionImage2DFilter;
 exports.ComponentMergeImage2DFilter = ComponentMergeImage2DFilter;
 exports.ForwardFourierSignalFilter = ForwardFourierSignalFilter;

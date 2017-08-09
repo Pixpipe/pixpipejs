@@ -35,23 +35,50 @@ class PixBinEncoder extends Filter {
   }
 
 
-  /**
-  * [PRIVATE]
-  * overwrite the original from Filter
-  * Only accept Image2D and Image3D
-  */
-  hasValidInput(){
-    var input = this._getInput();
-    return input && ( input.isOfType(Image2D.TYPE()) || input.isOfType(Image3D.TYPE()) );
-  }
-
 
   _run(){
+    var today = new Date();
+    this._rejectCyclingObjects();
 
-    if(! this.hasValidInput() ){
-      console.warn("PixBinEncoder can only encode Image2D and Image3D.");
-      return;
+    // this object is the JSON description at the begining of a PixBin
+    var pixBinIndex = {
+      date: today.toISOString(),
+      createdWith: "pixpipejs",
+      description: this.getMetadata( "description" ),
+      userObject: this.getMetadata( "userObject" ),
+      pixblocksInfo: []
     }
+    
+    // array of binary blocks (each are Uint8Array or ArrayBuffer)
+    var pixBlocks = []
+    
+    // just a convenient shortcut
+    var pixblocksInfo = pixBinIndex.pixblocksInfo;
+    
+    var growingPixBlockOffset = 0;
+
+    this._forEachInput(function( category, input ){
+      
+      var pixBlock = this._getPixBlock( input );
+      
+      if( !pixBlock ){
+        console.warn("The PixBlock corresponding to input category " + category + " could not be created, and thus will not be added to the PixBin container.");
+        return;
+      }
+      
+      // adding an entry to the PixBin index
+      var pixBinIndexEntry = {
+        type: input.constructor.name,
+        description: input.getMetadata( "description" ),
+        offset: growingPixBlockOffset
+      };
+      
+      growingPixBlockOffset += pixBlock.buffer.byteLength;
+      
+      pixblocksInfo.push( pixBinIndexEntry )
+    });
+
+    return;
 
     var input = this._getInput();
 
@@ -106,6 +133,7 @@ class PixBinEncoder extends Filter {
       console.warn("No output computed yet.");
     }
   }
+
 
 } /* END of class PixBinEncoder */
 
