@@ -1,7 +1,5 @@
 'use strict'
 
-//import mathjs from 'mathjs';
-
 // core classes
 export { PixpipeObject } from './core/PixpipeObject.js';
 export { Filter } from './core/Filter.js';
@@ -20,6 +18,7 @@ export { FileToArrayBufferReader } from './io/FileToArrayBufferReader.js';
 export { UrlToArrayBufferReader } from './io/UrlToArrayBufferReader.js';
 
 // decoders
+export { CodecUtils } from './decoder/CodecUtils.js';
 export { Minc2Decoder } from './decoder/Minc2Decoder.js';
 export { NiftiDecoder } from './decoder/NiftiDecoder.js';
 export { PixpEncoder } from './decoder/PixpEncoder.js';
@@ -33,6 +32,8 @@ export { PixBinDecoder } from './decoder/PixBinDecoder.js';
 export { JpegDecoder } from './decoder/JpegDecoder.js';
 export { PngDecoder } from './decoder/PngDecoder.js';
 export { Image2DGenericDecoder } from './decoder/Image2DGenericDecoder.js';
+export { PixBlockEncoder } from './decoder/PixBlockEncoder.js';
+export { PixBlockDecoder } from './decoder/PixBlockDecoder.js';
 
 // filters - processing of Images2D and Signal1D
 export { ComponentProjectionImage2DFilter } from './filter/ComponentProjectionImage2DFilter';
