@@ -53,9 +53,12 @@
         
         // encoding...
         var blockEncoder = new pixpipe.PixBlockEncoder();
+        blockEncoder.setMetadata( "compress", true );
         blockEncoder.addInput( img );
         blockEncoder.update();
         var encodedBlock = blockEncoder.getOutput();
+        
+        console.log( "pixBlock byte length: " + encodedBlock.byteLength );
         
         // decoding...
         var blockDecoder = new pixpipe.PixBlockDecoder();
