@@ -12603,29 +12603,119 @@ class CodecUtils {
     return obj;
   }
 
+  
+  /**
+  * Get if wether of not the arg is a typed array
+  * @param {Object} obj - possibly a typed array, or maybe not
+  * @return {Boolean} true if obj is a typed array
+  */
+  static isTypedArray( obj ){
+    return ( obj instanceof Int8Array         ||
+             obj instanceof Uint8Array        ||
+             obj instanceof Uint8ClampedArray ||
+             obj instanceof Int16Array        ||
+             obj instanceof Uint16Array       ||
+             obj instanceof Int32Array        ||
+             obj instanceof Uint32Array       ||
+             obj instanceof Float32Array      ||
+             obj instanceof Float64Array )
+  }
+
 
   /**
-  * Merge some typed array of various types and output a new ArrayBuffer.
-  * @param {TypedArray} arrayOfArrays - a typed array
+  * Merge some ArrayBuffes in a single one
+  * @param {Array} arrayOfBuffers - some ArrayBuffers
   * @return {ArrayBuffer} the larger merged buffer
   */
-  static mergeTypedArray( arrayOfArrays ){
+  static mergeBuffers( arrayOfBuffers ){
     var totalByteSize = 0;
     
-    for(var i=0; i<arrayOfArrays.length; i++){
-      totalByteSize += arrayOfArrays[i].byteLength;
+    for(var i=0; i<arrayOfBuffers.length; i++){
+      totalByteSize += arrayOfBuffers[i].byteLength;
     }
     
     var concatArray = new Uint8Array( totalByteSize );
     
     var offset = 0;
-    for(var i=0; i<arrayOfArrays.length; i++){
-      concatArray.set( new Uint8Array(arrayOfArrays[i].buffer), offset);
-      offset += arrayOfArrays[i].byteLength;
+    for(var i=0; i<arrayOfBuffers.length; i++){
+      concatArray.set( new Uint8Array(arrayOfBuffers[i]), offset);
+      offset += arrayOfBuffers[i].byteLength;
     }
     
     return concatArray.buffer;
   }
+
+
+  /**
+  * In a browser, the global object is `window` while in Node, it's `GLOBAL`.
+  * This method return the one that is relevant to the execution context.
+  * @return {Object} the global object
+  */
+  static getGlobalObject(){
+    var constructorHost = null;
+    
+    try{
+      constructorHost = window; // in a web browser
+    }catch( e ){
+      try{
+        constructorHost = GLOBAL; // in node
+      }catch( e ){
+        console.warn( "You are not in a Javascript environment?? Weird." );
+        return null;
+      }
+    }
+    return constructorHost;
+  }
+
+
+  /**
+  * Extract a typed array from an arbitrary buffer, with an arbitrary offset
+  * @param {ArrayBuffer} buffer - the buffer from which we extract data
+  * @param {Number} byteOffset - offset from the begining of buffer
+  * @param {Function} arrayType - function object, actually the constructor of the output array 
+  * @param {Number} numberOfElements - nb of elem we want to fetch from the buffer
+  * @return {TypedArray} output of type given by arg arrayType - this is a copy, not a view
+  */
+  static extractTypedArray( buffer, byteOffset, arrayType, numberOfElements ){
+    if( !buffer ){
+      console.warn("Input Buffer is null.");
+      return null;
+    }
+    
+    if(! (buffer instanceof ArrayBuffer) ){
+      console.warn("Buffer must be of type ArrayBuffer");
+      return null;
+    }
+    
+    if(numberOfElements <= 0){
+      console.warn("The number of elements to fetch must be greater than 0");
+      return null;
+    }
+    
+    if(byteOffset < 0){
+      console.warn("The byte offset must be possitive or 0");
+      return null;
+    }
+    
+    if( byteOffset >= buffer.byteLength ){
+      console.warn("The offset cannot be larger than the size of the buffer.");
+      return null;
+    }
+    
+    if( arrayType instanceof Function && !("BYTES_PER_ELEMENT" in arrayType)){
+      console.warn("ArrayType must be a typed array constructor function.");
+      return null;
+    }
+    
+    if( arrayType.BYTES_PER_ELEMENT * numberOfElements + byteOffset > buffer.byteLength ){
+      console.warn("The requested number of elements is too large for this buffer");
+      return;
+    }
+    
+    var slicedBuff = buffer.slice(byteOffset, byteOffset + numberOfElements*arrayType.BYTES_PER_ELEMENT);
+    return new arrayType( slicedBuff )
+  }
+  
 
 } /* END of class CodecUtils */
 
@@ -23673,6 +23763,8 @@ class PixBlockEncoder extends Filter {
       dataBuffer = data.buffer;
       byteStreamInfo.push( this._getByteStreamInfo(data) );
     }
+    // TODO: if it's not an array and not a TypedArray, it could be an object
+    
     
     
     // 
@@ -23687,8 +23779,8 @@ class PixBlockEncoder extends Filter {
     
     // this list will then be trandformed into a single buffer
     var allBuffers = [
-      new Uint8Array( [ + CodecUtils.isPlatformLittleEndian() ] ), // endianess
-      new Uint32Array( [pixBlockMetaBuff.byteLength] ), // size of the following buff (pixBlockMetaBuff)
+      new Uint8Array( [ + CodecUtils.isPlatformLittleEndian() ] ).buffer, // endianess
+      new Uint32Array( [pixBlockMetaBuff.byteLength] ).buffer, // size of the following buff (pixBlockMetaBuff)
       pixBlockMetaBuff, // the buff of metadada
     ];
     
@@ -23703,7 +23795,7 @@ class PixBlockEncoder extends Filter {
 
     console.log( allBuffers );
 
-    this._output[ 0 ] = CodecUtils.mergeTypedArray( allBuffers );
+    this._output[ 0 ] = CodecUtils.mergeBuffers( allBuffers );
   }
   
   
@@ -23777,12 +23869,71 @@ class PixBlockDecoder extends Filter {
       return;
     }
     
+    
     var input = this._getInput();
     var view = new DataView( input );
     var isLtlt = view.getUint8( 0 );
+    var readingByteOffset = 0;
     
-    var isLittleEndian = new Uint8Array( input , 0, 1 )[0];
-    var metadataBufferLength = new Uint32Array( input , 1, 1 )[0];
+    // get the endianess used to encode the file
+    var isLittleEndian = view.getUint8(0);
+    readingByteOffset += 1;
+    
+    // get the length of the string buffer (unicode json) that follows
+    var metadataBufferByteLength = view.getUint32(1, readingByteOffset);
+    readingByteOffset += 4;
+    
+    // get the string buffer
+    var strBuffer = input.slice( readingByteOffset, readingByteOffset + metadataBufferByteLength );
+    var metadataObj = CodecUtils.ArrayBufferToObject( strBuffer );
+    console.log( metadataObj );
+    readingByteOffset += metadataBufferByteLength;
+    
+    // the data streams are the byte streams when they are converted back to actual typedArrays/Objects
+    var dataStreams = [];
+    
+    for(var i=0; i<metadataObj.byteStreamInfo.length; i++){
+      var dataStream = CodecUtils.extractTypedArray(
+        input,
+        readingByteOffset,
+        this._getArrayTypeFromByteStreamInfo(metadataObj.byteStreamInfo[i]),
+        metadataObj.byteStreamInfo[i].length
+      );
+      
+      dataStreams.push( dataStream );
+      readingByteOffset += metadataObj.byteStreamInfo[i].byteLength;
+    }
+    
+    // If data is a single typed array (= not composed of a subset)
+    // we get rid of the useless wrapping array
+    if( dataStreams.length == 1){
+      dataStreams = dataStreams[0];
+    }
+    
+    var output = new pixpipe[ metadataObj.pixpipeType ];
+    output.setRawData( dataStreams );
+    output.setRawMetadata( metadataObj.containerMeta );
+    this._output[0] = output;
+  }
+  
+  
+  /**
+  * Get the array type based on byte stream info.
+  * The returned object can be used as a constructor
+  * @return {Function} constructor of a typed array
+  */
+  _getArrayTypeFromByteStreamInfo( bsi ){
+    var arrayType = null;
+    
+    if( bsi.type === "int" ){
+      arrayType = bsi.signed ? "Uint" : "Int";
+    }else{
+      arrayType = "Float";
+    }
+    
+    arrayType += bsi.bytesPerElements*8 + "Array";
+    var globalObject = CodecUtils.getGlobalObject();
+    return ( globalObject[ arrayType ] )
   }
   
   
