@@ -23718,12 +23718,29 @@ class Image2DGenericDecoder extends Filter {
 * Lab       MCIN - Montreal Neurological Institute
 */
 
-//import { Image2D } from '../core/PixpipeContainer.js';
 
+/**
+* A PixBlockEncoder instance is a Filter that takes a PixpipeContainer as input,
+* which is the base type for Image2D/Image3D and any other data container used in Pixpipe.
+* Then, the update function serializes the data structure (data + metadata) into
+* a binary buffer that can be send to a PixBinEncoder (or directly to write a file).  
+* 
+* Data can be compressed unsing Pako. To enable this feature, specify
+* `.setMetadata("compress", true)` on this filter.  
+* Please note that metadata are not compressed, only data are.
+* Also, compression has some side effects: 
+* - data from within a block is no longer streamable
+* - the datablock is smaller
+* - the metadata header is still accessible 
+*
+* **Usage**
+* - [examples/Image2DToPixblock.html](../examples/Image2DToPixblock.html)
+*/
 class PixBlockEncoder extends Filter {
   
   constructor(){
     super();
+    this.setMetadata( "compress", false );
   }
   
   
@@ -23741,33 +23758,49 @@ class PixBlockEncoder extends Filter {
       return;
     }
     
+    var compress = this.getMetadata( "compress" );
     var data = input.getData();
+    var compressedData = null;
     
-    // contain the same as input._data, but concatenated if _data contains multiple subset
-    // This is an ArrayBuffer
-    var dataBuffer = null;
     var byteStreamInfo = [];
     var usingDataSubsets = false;
     
     // the _data object is an array containing multiple TypedArrays (eg. meshes)
     if( Array.isArray(data) ){
       usingDataSubsets = true;
+      compressedData = [];
       
       // collect bytestream info for each subset of data
       for(var i=0; i<data.length; i++){
-        byteStreamInfo.push( this._getByteStreamInfo(data[i]) );
+        var byteStreamInfoSubset = this._getByteStreamInfo(data[i]);
+        
+        if(compress){
+          var compressedDataSubset = index$1.deflate( data[i] );
+          byteStreamInfoSubset.compressedByteLength = compressedDataSubset.byteLength;
+          compressedData.push( compressedDataSubset );
+        }
+        
+        byteStreamInfo.push( byteStreamInfoSubset );
       }
     }
     // the _data object is a single TypedArray (eg. Image2D)
     else{
-      dataBuffer = data.buffer;
-      byteStreamInfo.push( this._getByteStreamInfo(data) );
+      var byteStreamInfoSubset = this._getByteStreamInfo(data);
+      
+      if(compress){
+        compressedData = index$1.deflate( data.buffer );
+        byteStreamInfoSubset.compressedByteLength = compressedData.byteLength;
+      }
+      
+      byteStreamInfo.push( byteStreamInfoSubset );
     }
     // TODO: if it's not an array and not a TypedArray, it could be an object
     
+    // from now, if compression is enabled, what we call data is compressed data
+    if(compress){
+      data = compressedData;
+    }
     
-    
-    // 
     var pixBlockMeta = {
       byteStreamInfo : byteStreamInfo,
       pixpipeType    : input.constructor.name,
@@ -23787,13 +23820,11 @@ class PixBlockEncoder extends Filter {
     // adding the actual data buffer to the list
     if( usingDataSubsets ){
       for(var i=0; i<data.length; i++){
-        allBuffers.push( data[i].buffer ); 
+          allBuffers.push( data[i].buffer ); 
       }
     }else{
       allBuffers.push( data.buffer );
     }
-
-    console.log( allBuffers );
 
     this._output[ 0 ] = CodecUtils.mergeBuffers( allBuffers );
   }
@@ -23842,7 +23873,8 @@ class PixBlockEncoder extends Filter {
       signed: signed,
       bytesPerElements: typedArray.BYTES_PER_ELEMENT,
       byteLength: typedArray.byteLength,
-      length: typedArray.length
+      length: typedArray.length,
+      compressedByteLength: null
     }
   }
   
@@ -23857,6 +23889,18 @@ class PixBlockEncoder extends Filter {
 * Lab       MCIN - Montreal Neurological Institute
 */
 
+/**
+* A PixBlockDecoder instance is a Filter that takes an ArrayBuffer that is the result
+* of a PixBlock compression. This filter ouputs an object of a type inherited from
+* PixpipeContainer (Image2D/Image3D/etc.)  
+* If the data within the block was compressed, it will automatically be decompressed.
+* If the data object was composed of several subset (eg. mesh), the subset will be
+* retrieved in the same order as the where in the original data
+* (no matter if compressed or not).
+*
+* **Usage**
+* - [examples/Image2DToPixblock.html](../examples/Image2DToPixblock.html)
+*/
 class PixBlockDecoder extends Filter {
   constructor(){
     super();
@@ -23868,7 +23912,6 @@ class PixBlockDecoder extends Filter {
       console.warn("PixBinDecoder can only decode ArrayBuffer.");
       return;
     }
-    
     
     var input = this._getInput();
     var view = new DataView( input );
@@ -23893,15 +23936,37 @@ class PixBlockDecoder extends Filter {
     var dataStreams = [];
     
     for(var i=0; i<metadataObj.byteStreamInfo.length; i++){
-      var dataStream = CodecUtils.extractTypedArray(
-        input,
-        readingByteOffset,
-        this._getArrayTypeFromByteStreamInfo(metadataObj.byteStreamInfo[i]),
-        metadataObj.byteStreamInfo[i].length
-      );
+      // act as a flag: if not null, it means data were compressed
+      var compressedByteLength = metadataObj.byteStreamInfo[i].compressedByteLength;
       
-      dataStreams.push( dataStream );
-      readingByteOffset += metadataObj.byteStreamInfo[i].byteLength;
+      // meaning, the stream is compresed
+      if( compressedByteLength ){
+        // fetch the compresed dataStream
+        var compressedByteStream = new Uint8Array( input, readingByteOffset, compressedByteLength );
+        
+        // inflate the dataStream
+        var inflatedByteStream = index$1.inflate( compressedByteStream );
+        
+        // create a typed array out of the inflated buffer
+        var typedArrayConstructor = this._getArrayTypeFromByteStreamInfo(metadataObj.byteStreamInfo[i]);
+        var dataStream = new typedArrayConstructor( inflatedByteStream );
+        
+        dataStreams.push( dataStream );
+        readingByteOffset += compressedByteLength;
+        
+      }
+      // the stream were NOT compressed
+      else{
+        var dataStream = CodecUtils.extractTypedArray(
+          input,
+          readingByteOffset,
+          this._getArrayTypeFromByteStreamInfo(metadataObj.byteStreamInfo[i]),
+          metadataObj.byteStreamInfo[i].length
+        );
+        
+        dataStreams.push( dataStream );
+        readingByteOffset += metadataObj.byteStreamInfo[i].byteLength;
+      }
     }
     
     // If data is a single typed array (= not composed of a subset)
