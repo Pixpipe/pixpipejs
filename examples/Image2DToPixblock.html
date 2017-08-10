@@ -62,14 +62,14 @@
         blockDecoder.addInput( encodedBlock )
         blockDecoder.update();
         
+        var decodedImage = blockDecoder.getOutput();
         
-        /*
         // create a filter to write the image into a canvas
         var imageToCanvasFilter = new pixpipe.CanvasImageWriter( );
         imageToCanvasFilter.setMetadata( "parentDivID", "myDiv" );
-        imageToCanvasFilter.addInput( img );
+        imageToCanvasFilter.addInput( decodedImage );
         imageToCanvasFilter.update();
-        */
+        
       }else{
         alert("This file format is not compatible. Only Tiff, PNG and JPEG.")
       }

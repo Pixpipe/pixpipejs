@@ -109,29 +109,119 @@ class CodecUtils {
     return obj;
   }
 
+  
+  /**
+  * Get if wether of not the arg is a typed array
+  * @param {Object} obj - possibly a typed array, or maybe not
+  * @return {Boolean} true if obj is a typed array
+  */
+  static isTypedArray( obj ){
+    return ( obj instanceof Int8Array         ||
+             obj instanceof Uint8Array        ||
+             obj instanceof Uint8ClampedArray ||
+             obj instanceof Int16Array        ||
+             obj instanceof Uint16Array       ||
+             obj instanceof Int32Array        ||
+             obj instanceof Uint32Array       ||
+             obj instanceof Float32Array      ||
+             obj instanceof Float64Array )
+  }
+
 
   /**
-  * Merge some typed array of various types and output a new ArrayBuffer.
-  * @param {TypedArray} arrayOfArrays - a typed array
+  * Merge some ArrayBuffes in a single one
+  * @param {Array} arrayOfBuffers - some ArrayBuffers
   * @return {ArrayBuffer} the larger merged buffer
   */
-  static mergeTypedArray( arrayOfArrays ){
+  static mergeBuffers( arrayOfBuffers ){
     var totalByteSize = 0;
     
-    for(var i=0; i<arrayOfArrays.length; i++){
-      totalByteSize += arrayOfArrays[i].byteLength;
+    for(var i=0; i<arrayOfBuffers.length; i++){
+      totalByteSize += arrayOfBuffers[i].byteLength;
     }
     
     var concatArray = new Uint8Array( totalByteSize );
     
     var offset = 0
-    for(var i=0; i<arrayOfArrays.length; i++){
-      concatArray.set( new Uint8Array(arrayOfArrays[i].buffer), offset);
-      offset += arrayOfArrays[i].byteLength
+    for(var i=0; i<arrayOfBuffers.length; i++){
+      concatArray.set( new Uint8Array(arrayOfBuffers[i]), offset);
+      offset += arrayOfBuffers[i].byteLength
     }
     
     return concatArray.buffer;
   }
+
+
+  /**
+  * In a browser, the global object is `window` while in Node, it's `GLOBAL`.
+  * This method return the one that is relevant to the execution context.
+  * @return {Object} the global object
+  */
+  static getGlobalObject(){
+    var constructorHost = null;
+    
+    try{
+      constructorHost = window; // in a web browser
+    }catch( e ){
+      try{
+        constructorHost = GLOBAL; // in node
+      }catch( e ){
+        console.warn( "You are not in a Javascript environment?? Weird." );
+        return null;
+      }
+    }
+    return constructorHost;
+  }
+
+
+  /**
+  * Extract a typed array from an arbitrary buffer, with an arbitrary offset
+  * @param {ArrayBuffer} buffer - the buffer from which we extract data
+  * @param {Number} byteOffset - offset from the begining of buffer
+  * @param {Function} arrayType - function object, actually the constructor of the output array 
+  * @param {Number} numberOfElements - nb of elem we want to fetch from the buffer
+  * @return {TypedArray} output of type given by arg arrayType - this is a copy, not a view
+  */
+  static extractTypedArray( buffer, byteOffset, arrayType, numberOfElements ){
+    if( !buffer ){
+      console.warn("Input Buffer is null.");
+      return null;
+    }
+    
+    if(! (buffer instanceof ArrayBuffer) ){
+      console.warn("Buffer must be of type ArrayBuffer");
+      return null;
+    }
+    
+    if(numberOfElements <= 0){
+      console.warn("The number of elements to fetch must be greater than 0");
+      return null;
+    }
+    
+    if(byteOffset < 0){
+      console.warn("The byte offset must be possitive or 0");
+      return null;
+    }
+    
+    if( byteOffset >= buffer.byteLength ){
+      console.warn("The offset cannot be larger than the size of the buffer.");
+      return null;
+    }
+    
+    if( arrayType instanceof Function && !("BYTES_PER_ELEMENT" in arrayType)){
+      console.warn("ArrayType must be a typed array constructor function.");
+      return null;
+    }
+    
+    if( arrayType.BYTES_PER_ELEMENT * numberOfElements + byteOffset > buffer.byteLength ){
+      console.warn("The requested number of elements is too large for this buffer");
+      return;
+    }
+    
+    var slicedBuff = buffer.slice(byteOffset, byteOffset + numberOfElements*arrayType.BYTES_PER_ELEMENT)
+    return new arrayType( slicedBuff )
+  }
+  
 
 } /* END of class CodecUtils */
 

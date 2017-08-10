@@ -56,6 +56,8 @@ class PixBlockEncoder extends Filter {
       dataBuffer = data.buffer;
       byteStreamInfo.push( this._getByteStreamInfo(data) )
     }
+    // TODO: if it's not an array and not a TypedArray, it could be an object
+    
     
     
     // 
@@ -70,8 +72,8 @@ class PixBlockEncoder extends Filter {
     
     // this list will then be trandformed into a single buffer
     var allBuffers = [
-      new Uint8Array( [ + CodecUtils.isPlatformLittleEndian() ] ), // endianess
-      new Uint32Array( [pixBlockMetaBuff.byteLength] ), // size of the following buff (pixBlockMetaBuff)
+      new Uint8Array( [ + CodecUtils.isPlatformLittleEndian() ] ).buffer, // endianess
+      new Uint32Array( [pixBlockMetaBuff.byteLength] ).buffer, // size of the following buff (pixBlockMetaBuff)
       pixBlockMetaBuff, // the buff of metadada
     ]
     
@@ -86,7 +88,7 @@ class PixBlockEncoder extends Filter {
 
     console.log( allBuffers );
 
-    this._output[ 0 ] = CodecUtils.mergeTypedArray( allBuffers );
+    this._output[ 0 ] = CodecUtils.mergeBuffers( allBuffers );
   }
   
   
