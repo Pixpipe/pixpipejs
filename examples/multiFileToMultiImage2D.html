@@ -1,6 +1,6 @@
 <html>
 <head>
-  <title>file to Image2D</title>
+  <title>Multiple Image2D</title>
 
   <script src="../dist/pixpipe.js"></script>
   <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700,900" rel="stylesheet">
@@ -11,7 +11,7 @@
   <p>
   This does the following :
   <ul>
-    <li>open a local Jpeg file, using <code>pixpipe.FileToArrayBufferReader</code></li>
+    <li>opening a local image file, using <code>pixpipe.FileToArrayBufferReader</code></li>
     <li>redirect the file buffer into a <code>pixpipe.Image2DGenericDecoder</code></li>
     <li>get the output as a generic <code>pixpipe.Image2D</code> object</li>
     <li>display the image using <code>pixpipe.CanvasImageWriter</code></li>
@@ -20,11 +20,11 @@
   </p>
 
   <div>
-		Select an file:
-		<input type="file" id="fileInput">
+    Select an file:
+    <input type="file" id="fileInput" multiple="multiple">
     <br>
-    <span id="fileInfo"></span>
-	</div>
+    <span id="fileInfo"></span>  
+  </div>
 
   <div id="myDiv"></div>
 
@@ -32,6 +32,12 @@
   window.onload = function() {
 
     var fileInput = document.getElementById('fileInput');
+    
+    var imageToCanvasFilter = new pixpipe.CanvasImageWriter( );
+    imageToCanvasFilter.setMetadata( "parentDivID", "myDiv" );
+    imageToCanvasFilter.setMetadata( "reset", false );
+    
+    var pixBinEncoder = new pixpipe.PixBinEncoder();
 
     // The filter to read image from URL
     var file2Buff = new pixpipe.FileToArrayBufferReader();
@@ -42,24 +48,18 @@
 
       var filenames = this.getMetadata("filenames");
 
-      var buff = this.getOutput();
-
-      var decoder = new pixpipe.Image2DGenericDecoder();
-      decoder.addInput( buff );
-      decoder.update();
-
-      if( decoder.getNumberOfOutputs() ){
-        var img = decoder.getOutput();
+      file2Buff.forEachOutput( function( category, buffer){
         
-        // create a filter to write the image into a canvas
-        var imageToCanvasFilter = new pixpipe.CanvasImageWriter( );
-        imageToCanvasFilter.setMetadata( "parentDivID", "myDiv" );
-        imageToCanvasFilter.addInput( img );
-        imageToCanvasFilter.update();
-      }else{
-        alert("This file format is not compatible. Only Tiff, PNG and JPEG.")
-      }
-      
+        var decoder = new pixpipe.Image2DGenericDecoder();
+        decoder.addInput( buffer );
+        decoder.update();
+
+        if( decoder.getNumberOfOutputs() ){
+          imageToCanvasFilter.addInput( decoder.getOutput() );
+          imageToCanvasFilter.update();
+        }
+        
+      })
 
     });
 
@@ -79,7 +79,7 @@
 
       // Perform the reading + conversion ibto ArrayBuffer
       file2Buff.update();
-    });
+		});
 
   }
   </script>

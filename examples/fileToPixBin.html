@@ -53,42 +53,55 @@
       var buff = this.getOutput();
 
       var pixBinDecoder = new pixpipe.PixBinDecoder();
+      //pixBinDecoder.setMetadata("verifyChecksum", true);
       pixBinDecoder.addInput( buff );
       pixBinDecoder.update();
 
-      var pixpContent = pixBinDecoder.getOutput();
 
-      if(pixpContent && pixpContent.isOfType(pixpipe.Image3D.TYPE()) ){ // this pixp is a Image3D
+
+      pixBinDecoder.forEachOutput(function(category, output){
+        console.log( output );
         
-        // replace the default min max values of [0, 255]
-        imageToCanvasFilter.setMetadata("min", pixpContent.getMetadata("voxel_min"));
-        imageToCanvasFilter.setMetadata("max", pixpContent.getMetadata("voxel_max"));
-
-        // middle slice along x
-        imageToCanvasFilter.addInput(
-          pixpContent.getSlice("xspace", Math.floor(pixpContent.getMetadata("xspace").space_length / 2) )
-        );
-        imageToCanvasFilter.update();
-
-        // middle slice along y
-        imageToCanvasFilter.addInput(
-          pixpContent.getSlice("yspace", Math.floor(pixpContent.getMetadata("yspace").space_length / 2))
-        );
-        imageToCanvasFilter.update();
-
-        // middle slice along z
-        imageToCanvasFilter.addInput(
-          pixpContent.getSlice("zspace", Math.floor(pixpContent.getMetadata("zspace").space_length / 2))
-        );
-        imageToCanvasFilter.update();
-
-      }else if(pixpContent && pixpContent.isOfType(pixpipe.Image2D.TYPE()) ){ // this pixp is a Image2D
-        imageToCanvasFilter.addInput( pixpContent );
-        imageToCanvasFilter.update();
+        if( category === "meta" ){
+          return;
+        }
         
-      }else{
-        console.warn("Non-existant output for PixBinDecoder.");
-      }
+
+
+        if(output && output.isOfType(pixpipe.Image3D.TYPE()) ){ 
+          
+          // replace the default min max values of [0, 255]
+          imageToCanvasFilter.setMetadata("min", output.getMetadata("voxel_min"));
+          imageToCanvasFilter.setMetadata("max", output.getMetadata("voxel_max"));
+
+          // middle slice along x
+          imageToCanvasFilter.addInput(
+            output.getSlice("xspace", Math.floor(output.getMetadata("xspace").space_length / 2) )
+          );
+          imageToCanvasFilter.update();
+
+          // middle slice along y
+          imageToCanvasFilter.addInput(
+            output.getSlice("yspace", Math.floor(output.getMetadata("yspace").space_length / 2))
+          );
+          imageToCanvasFilter.update();
+
+          // middle slice along z
+          imageToCanvasFilter.addInput(
+            output.getSlice("zspace", Math.floor(output.getMetadata("zspace").space_length / 2))
+          );
+          imageToCanvasFilter.update();
+
+        }else if(output && output.isOfType(pixpipe.Image2D.TYPE()) ){ // this pixp is a Image2D
+          imageToCanvasFilter.addInput( output );
+          imageToCanvasFilter.update();
+          
+        }else{
+          console.warn("Non-existant output for PixBinDecoder.");
+        }
+    
+      })
+      
     });
 
 

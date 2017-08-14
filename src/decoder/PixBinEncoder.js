@@ -7,12 +7,10 @@
 */
 
 import pako from 'pako';
-import FileSaver from 'file-saver';
-//import JSZip from "jszip";
+import md5 from 'js-md5';
 import { Filter } from '../core/Filter.js';
-import { Image2D } from '../core/Image2D.js';
-import { Image3D } from '../core/Image3D.js';
-
+import { CodecUtils } from './CodecUtils.js';
+import { PixBlockEncoder } from './PixBlockEncoder.js';
 
 /**
 * A PixBinEncoder instance takes an Image2D or Image3D as input with `addInput(...)`
@@ -31,14 +29,17 @@ class PixBinEncoder extends Filter {
     super();
     this.setMetadata("filename", "untitled.pixb");
     this.setMetadata("extension", "pixb");
+    this.setMetadata("compress", true)
 
   }
 
 
 
   _run(){
+    var that = this;
     var today = new Date();
-    this._rejectCyclingObjects();
+    var isLittleEndian = CodecUtils.isPlatformLittleEndian();
+    var blockEncoder = new PixBlockEncoder();
 
     // this object is the JSON description at the begining of a PixBin
     var pixBinIndex = {
@@ -54,70 +55,59 @@ class PixBinEncoder extends Filter {
     
     // just a convenient shortcut
     var pixblocksInfo = pixBinIndex.pixblocksInfo;
-    
-    var growingPixBlockOffset = 0;
+
 
     this._forEachInput(function( category, input ){
+      blockEncoder.addInput( input, 0 );
+      blockEncoder.setMetadata( "compress", that.getMetadata("compress") );
+      blockEncoder.update();
+      var encodedBlock = blockEncoder.getOutput();
       
-      var pixBlock = this._getPixBlock( input );
-      
-      if( !pixBlock ){
-        console.warn("The PixBlock corresponding to input category " + category + " could not be created, and thus will not be added to the PixBin container.");
+      if( !encodedBlock ){
+        console.warn("The input of category " + category + " could not be encoded as a PixBlock.");
         return;
       }
       
       // adding an entry to the PixBin index
       var pixBinIndexEntry = {
-        type: input.constructor.name,
-        description: input.getMetadata( "description" ),
-        offset: growingPixBlockOffset
+        type        : input.constructor.name,
+        description : input.getMetadata( "description" ),
+        byteLength  : encodedBlock.byteLength,
+        checksum    : md5( encodedBlock ),
       };
       
-      growingPixBlockOffset += pixBlock.buffer.byteLength;
-      
       pixblocksInfo.push( pixBinIndexEntry )
+      pixBlocks.push( encodedBlock )
     });
 
-    return;
 
-    var input = this._getInput();
-
-    var pixBinMetadata = {
-      dataType: input.getData().constructor.name, // typed array type
-      pixpipeType: input.constructor.name, // most likely "Image2D", "Image3D", "MniVolume", "LineString", etc.
-      metadata: input.getMetadataCopy(),  // Image2D/Image3D._metadata
+    if( !pixBlocks.length ){
+      console.warn("No input was compatible for PixBlock encoding.");
     }
 
-    // this is a typed array
-    var data = input.getData();
+    // Building the header ArrayBuffer of the file. It contains:
+    // - A ASCII string "pixpipe". 7 x Uint8 of charcodes (7 bytes)
+    // - A flag for encoding endianess, 0: big, 1: little. 1 x Uint8 (1 byte)
+    // - The byte length of the PixBin meta binary object. 1 x Uint32 (4 bytes)
     
-    var metadataJsonString = JSON.stringify( pixBinMetadata );
-    var metadataByteArray = new Uint8Array( metadataJsonString.length );
+    // encoding the meta object into an ArrayBuffer
+    var pixBinIndexBinaryString = CodecUtils.objectToArrayBuffer(pixBinIndex);
     
-    // converting the json string into a byte stream
-    for(var i = 0; i < metadataJsonString.length; ++i)
-      metadataByteArray[i] = metadataJsonString.charCodeAt(i);
-
-    // creating the buffer
-    var metadataBuffer = new ArrayBuffer( 4 + metadataByteArray.length );
-
-    // the data view is used to write into the buffer
-    var view = new DataView( metadataBuffer );
+    var fixedHeader = new ArrayBuffer( 12 );
+    var fixedHeaderView = new DataView( fixedHeader );
+    var message = "pixpipe";
+    CodecUtils.setString8InBuffer( message, fixedHeader );
+    fixedHeaderView.setUint8( message.length, (+isLittleEndian))
+    fixedHeaderView.setUint32( message.length + 1, pixBinIndexBinaryString.byteLength, isLittleEndian );
     
-    var offsetFromHere = 0;
+    console.log( pixBinIndex );
     
-    // write the size of the metadata string
-    view.setUint32(offsetFromHere, metadataByteArray.length );
     
-    // write the metadata themselves
-    offsetFromHere += 4;
-    for(var i=0; i<metadataByteArray.length; i++){
-      view.setUint8(offsetFromHere, metadataByteArray[i] );
-      offsetFromHere++;
-    }
-
-    // making a blob to be saved
-    this._output[0] = new Blob([metadataBuffer, data], {type: 'application/octet-binary'} );
+    var allBuffers = [fixedHeader, pixBinIndexBinaryString].concat( pixBlocks )
+    this.addTimeRecord("beforeMerge");
+    this._output[0] = CodecUtils.mergeBuffers( allBuffers )
+    this.addTimeRecord("afterMerge");
+    this.getTime("beforeMerge", "afterMerge", true);
   }
 
 

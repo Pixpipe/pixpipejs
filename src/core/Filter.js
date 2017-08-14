@@ -306,6 +306,11 @@ class Filter extends PixpipeObject {
   * Launch the process.
   */
   update(){
+    // flush any existing output previously computed. Usefull when a filter is ran more than once.
+    // If no output is created the second time, the output from the previous time cannot be used instead
+    // (leading the user to think the second run created an output while it's actually the one from the first run) 
+    this._output = {};
+    
     if( this._metadata.time ){
       this.addTimeRecord("begin");
       this._run();
@@ -421,6 +426,12 @@ class Filter extends PixpipeObject {
   }
 
 
+  /**
+  * Remove all the inputs given so far.
+  */
+  clearAllInputs(){
+    this._input = {};
+  }
 
 } /* END class Filter */
 
