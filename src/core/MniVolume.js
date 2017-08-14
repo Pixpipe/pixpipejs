@@ -150,7 +150,7 @@ class MniVolume extends Image3D{
     // adding some fields to metadata header
     this._finishHeader()
 
-    console.log(this._metadata);
+    console.log(this);
   }
 
 

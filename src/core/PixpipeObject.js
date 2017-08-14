@@ -153,6 +153,21 @@ class PixpipeObject {
     return optionsObject[ key ] || defaultValue;
   }
 
+
+  /**
+  * Verifies if the metadata object contain a cyclic object.
+  * @return {Boolean} true if metadata is cyclic, false if not
+  */
+  isMetadataCyclic(){
+    try{
+      JSON.stringify( this._metadata )
+    }catch(e){
+      return true;
+    }
+    
+    return false;
+  }
+
 }
 
 export { PixpipeObject }

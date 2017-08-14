@@ -72,7 +72,7 @@ class PixBlockDecoder extends Filter {
         
         // create a typed array out of the inflated buffer
         var typedArrayConstructor = this._getArrayTypeFromByteStreamInfo(metadataObj.byteStreamInfo[i]);
-        var dataStream = new typedArrayConstructor( inflatedByteStream );
+        var dataStream = new typedArrayConstructor( inflatedByteStream.buffer );
         
         dataStreams.push( dataStream )
         readingByteOffset += compressedByteLength;

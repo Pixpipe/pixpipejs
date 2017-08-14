@@ -43,7 +43,7 @@ class Image2DGenericDecoder extends Filter {
       JpegDecoder,
       PngDecoder,
       PixpDecoder,
-      PixBinDecoder
+      //PixBinDecoder
     ];
   }
   

@@ -37,7 +37,7 @@ class CodecUtils {
   static string16ToArrayBuffer( str ) {
     var buf = new ArrayBuffer(str.length*2); // 2 bytes for each char
     var bufView = new Uint16Array(buf);
-    for (var i=0, strLen=str.length; i < strLen; i++) {
+    for (var i=0; i < str.length; i++) {
       bufView[i] = str.charCodeAt(i);
     }
     return buf;
@@ -63,10 +63,67 @@ class CodecUtils {
   static string8ToArrayBuffer( str ) {
     var buf = new ArrayBuffer(str.length);
     var bufView = new Uint8Array(buf);
-    for (var i=0, strLen=str.length; i < strLen; i++) {
+    for (var i=0; i < str.length; i++) {
       bufView[i] = str.charCodeAt(i);
     }
     return buf;
+  }
+
+  
+  /**
+  * Write a ASCII string into a buffer
+  * @param {String} str - a string that contains only ASCII characters
+  * @param {ArrayBuffer} buffer - the buffer where to write the string
+  * @param {Number} byteOffset - the offset to apply, in number of bytes
+  */
+  static setString8InBuffer( str, buffer, byteOffset = 0 ){
+    if( byteOffset < 0){
+      console.warn("The byte offset cannot be negative.");
+      return;
+    }
+    
+    if( !buffer || !(buffer instanceof ArrayBuffer)){
+      console.warn("The buffer must be a valid ArrayBuffer.");
+      return;
+    }
+    
+    if( (str.length + byteOffset) > buffer.byteLength ){
+      console.warn("The string is too long to be writen in this buffer.");
+      return;
+    }
+    
+    var bufView = new Uint8Array(buffer);
+    
+    for (var i=0; i < str.length; i++) {
+      bufView[i + byteOffset] = str.charCodeAt(i);
+    }
+  }
+
+
+  /**
+  * Extract an ASCII string from an ArrayBuffer
+  * @param {ArrayBuffer} buffer - the buffer
+  * @param {Number} strLength - number of chars in the string we want
+  * @param {Number} byteOffset - the offset in number of bytes
+  * @return {String} the string, or null in case of error
+  */
+  static getString8FromBuffer( buffer, strLength, byteOffset=0 ){
+    if( byteOffset < 0){
+      console.warn("The byte offset cannot be negative.");
+      return null;
+    }
+    
+    if( !buffer || !(buffer instanceof ArrayBuffer)){
+      console.warn("The buffer must be a valid ArrayBuffer.");
+      return null;
+    }
+    
+    if( (strLength + byteOffset) > buffer.byteLength ){
+      console.warn("The string is too long to be writen in this buffer.");
+      return null;
+    }
+    
+    return String.fromCharCode.apply(null, new Uint8Array(buffer, byteOffset, strLength));
   }
 
   

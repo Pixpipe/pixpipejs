@@ -16,6 +16,7 @@ export { UrlImageReader } from './io/UrlImageReader.js';
 export { FileImageReader } from './io/FileImageReader.js';
 export { FileToArrayBufferReader } from './io/FileToArrayBufferReader.js';
 export { UrlToArrayBufferReader } from './io/UrlToArrayBufferReader.js';
+export { BrowserDownloadBuffer } from './io/BrowserDownloadBuffer.js';
 
 // decoders
 export { CodecUtils } from './decoder/CodecUtils.js';

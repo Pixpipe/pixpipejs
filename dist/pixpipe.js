@@ -159,6 +159,21 @@ class PixpipeObject {
     return optionsObject[ key ] || defaultValue;
   }
 
+
+  /**
+  * Verifies if the metadata object contain a cyclic object.
+  * @return {Boolean} true if metadata is cyclic, false if not
+  */
+  isMetadataCyclic(){
+    try{
+      JSON.stringify( this._metadata );
+    }catch(e){
+      return true;
+    }
+    
+    return false;
+  }
+
 }
 
 /*
@@ -466,6 +481,11 @@ class Filter extends PixpipeObject {
   * Launch the process.
   */
   update(){
+    // flush any existing output previously computed. Usefull when a filter is ran more than once.
+    // If no output is created the second time, the output from the previous time cannot be used instead
+    // (leading the user to think the second run created an output while it's actually the one from the first run) 
+    this._output = {};
+    
     if( this._metadata.time ){
       this.addTimeRecord("begin");
       this._run();
@@ -581,6 +601,12 @@ class Filter extends PixpipeObject {
   }
 
 
+  /**
+  * Remove all the inputs given so far.
+  */
+  clearAllInputs(){
+    this._input = {};
+  }
 
 } /* END class Filter */
 
@@ -1930,7 +1956,7 @@ class MniVolume extends Image3D{
     // adding some fields to metadata header
     this._finishHeader();
 
-    console.log(this._metadata);
+    console.log(this);
   }
 
 
@@ -12492,6 +12518,231 @@ class UrlToArrayBufferReader extends Filter {
 
 } /* END of class UrlToArrayBufferReader */
 
+var FileSaver$1 = createCommonjsModule(function (module) {
+/* FileSaver.js
+ * A saveAs() FileSaver implementation.
+ * 1.3.2
+ * 2016-06-16 18:25:19
+ *
+ * By Eli Grey, http://eligrey.com
+ * License: MIT
+ *   See https://github.com/eligrey/FileSaver.js/blob/master/LICENSE.md
+ */
+
+/*global self */
+/*jslint bitwise: true, indent: 4, laxbreak: true, laxcomma: true, smarttabs: true, plusplus: true */
+
+/*! @source http://purl.eligrey.com/github/FileSaver.js/blob/master/FileSaver.js */
+
+var saveAs = saveAs || (function(view) {
+	"use strict";
+	// IE <10 is explicitly unsupported
+	if (typeof view === "undefined" || typeof navigator !== "undefined" && /MSIE [1-9]\./.test(navigator.userAgent)) {
+		return;
+	}
+	var
+		  doc = view.document
+		  // only get URL when necessary in case Blob.js hasn't overridden it yet
+		, get_URL = function() {
+			return view.URL || view.webkitURL || view;
+		}
+		, save_link = doc.createElementNS("http://www.w3.org/1999/xhtml", "a")
+		, can_use_save_link = "download" in save_link
+		, click = function(node) {
+			var event = new MouseEvent("click");
+			node.dispatchEvent(event);
+		}
+		, is_safari = /constructor/i.test(view.HTMLElement) || view.safari
+		, is_chrome_ios =/CriOS\/[\d]+/.test(navigator.userAgent)
+		, throw_outside = function(ex) {
+			(view.setImmediate || view.setTimeout)(function() {
+				throw ex;
+			}, 0);
+		}
+		, force_saveable_type = "application/octet-stream"
+		// the Blob API is fundamentally broken as there is no "downloadfinished" event to subscribe to
+		, arbitrary_revoke_timeout = 1000 * 40 // in ms
+		, revoke = function(file) {
+			var revoker = function() {
+				if (typeof file === "string") { // file is an object URL
+					get_URL().revokeObjectURL(file);
+				} else { // file is a File
+					file.remove();
+				}
+			};
+			setTimeout(revoker, arbitrary_revoke_timeout);
+		}
+		, dispatch = function(filesaver, event_types, event) {
+			event_types = [].concat(event_types);
+			var i = event_types.length;
+			while (i--) {
+				var listener = filesaver["on" + event_types[i]];
+				if (typeof listener === "function") {
+					try {
+						listener.call(filesaver, event || filesaver);
+					} catch (ex) {
+						throw_outside(ex);
+					}
+				}
+			}
+		}
+		, auto_bom = function(blob) {
+			// prepend BOM for UTF-8 XML and text/* types (including HTML)
+			// note: your browser will automatically convert UTF-16 U+FEFF to EF BB BF
+			if (/^\s*(?:text\/\S*|application\/xml|\S*\/\S*\+xml)\s*;.*charset\s*=\s*utf-8/i.test(blob.type)) {
+				return new Blob([String.fromCharCode(0xFEFF), blob], {type: blob.type});
+			}
+			return blob;
+		}
+		, FileSaver = function(blob, name, no_auto_bom) {
+			if (!no_auto_bom) {
+				blob = auto_bom(blob);
+			}
+			// First try a.download, then web filesystem, then object URLs
+			var
+				  filesaver = this
+				, type = blob.type
+				, force = type === force_saveable_type
+				, object_url
+				, dispatch_all = function() {
+					dispatch(filesaver, "writestart progress write writeend".split(" "));
+				}
+				// on any filesys errors revert to saving with object URLs
+				, fs_error = function() {
+					if ((is_chrome_ios || (force && is_safari)) && view.FileReader) {
+						// Safari doesn't allow downloading of blob urls
+						var reader = new FileReader();
+						reader.onloadend = function() {
+							var url = is_chrome_ios ? reader.result : reader.result.replace(/^data:[^;]*;/, 'data:attachment/file;');
+							var popup = view.open(url, '_blank');
+							if(!popup) view.location.href = url;
+							url=undefined; // release reference before dispatching
+							filesaver.readyState = filesaver.DONE;
+							dispatch_all();
+						};
+						reader.readAsDataURL(blob);
+						filesaver.readyState = filesaver.INIT;
+						return;
+					}
+					// don't create more object URLs than needed
+					if (!object_url) {
+						object_url = get_URL().createObjectURL(blob);
+					}
+					if (force) {
+						view.location.href = object_url;
+					} else {
+						var opened = view.open(object_url, "_blank");
+						if (!opened) {
+							// Apple does not allow window.open, see https://developer.apple.com/library/safari/documentation/Tools/Conceptual/SafariExtensionGuide/WorkingwithWindowsandTabs/WorkingwithWindowsandTabs.html
+							view.location.href = object_url;
+						}
+					}
+					filesaver.readyState = filesaver.DONE;
+					dispatch_all();
+					revoke(object_url);
+				};
+			filesaver.readyState = filesaver.INIT;
+
+			if (can_use_save_link) {
+				object_url = get_URL().createObjectURL(blob);
+				setTimeout(function() {
+					save_link.href = object_url;
+					save_link.download = name;
+					click(save_link);
+					dispatch_all();
+					revoke(object_url);
+					filesaver.readyState = filesaver.DONE;
+				});
+				return;
+			}
+
+			fs_error();
+		}
+		, FS_proto = FileSaver.prototype
+		, saveAs = function(blob, name, no_auto_bom) {
+			return new FileSaver(blob, name || blob.name || "download", no_auto_bom);
+		};
+	// IE 10+ (native saveAs)
+	if (typeof navigator !== "undefined" && navigator.msSaveOrOpenBlob) {
+		return function(blob, name, no_auto_bom) {
+			name = name || blob.name || "download";
+
+			if (!no_auto_bom) {
+				blob = auto_bom(blob);
+			}
+			return navigator.msSaveOrOpenBlob(blob, name);
+		};
+	}
+
+	FS_proto.abort = function(){};
+	FS_proto.readyState = FS_proto.INIT = 0;
+	FS_proto.WRITING = 1;
+	FS_proto.DONE = 2;
+
+	FS_proto.error =
+	FS_proto.onwritestart =
+	FS_proto.onprogress =
+	FS_proto.onwrite =
+	FS_proto.onabort =
+	FS_proto.onerror =
+	FS_proto.onwriteend =
+		null;
+
+	return saveAs;
+}(
+	   typeof self !== "undefined" && self
+	|| typeof window !== "undefined" && window
+	|| commonjsGlobal.content
+));
+// `self` is undefined in Firefox for Android content script context
+// while `this` is nsIContentFrameMessageManager
+// with an attribute `content` that corresponds to the window
+
+if ('object' !== "undefined" && module.exports) {
+  module.exports.saveAs = saveAs;
+} else if ((typeof undefined !== "undefined" && undefined !== null) && (undefined.amd !== null)) {
+  undefined("FileSaver.js", function() {
+    return saveAs;
+  });
+}
+});
+
+/**
+* An instance of BrowserDownloadBuffer takes an ArrayBuffer as input and triggers
+* a download when `update()` is called. This is for **browser only**!  
+* A filename must be specified using `.setMetadata( "filename", "myFile.ext" )`.
+*
+*/
+class BrowserDownloadBuffer extends Filter {
+  constructor(){
+    super();
+    this.addInputValidator(0, ArrayBuffer);
+    this.setMetadata( "filename", null );
+  }
+  
+  
+  _run(){
+    if(! this.hasValidInput() ){
+      console.warn("BrowserDownloadBuffer uses only ArrayBuffer.");
+      return;
+    }
+    
+    var filename = this.getMetadata( "filename" );
+    
+    if( !filename ){
+      console.warn("A filename must be specified. Use the method `.setMetadata('filename', 'theFile.ext')` on this filter.");
+      return;
+    }
+    
+    // making a blob
+    var blob = new Blob( [this._getInput()], {type: 'application/octet-binary'} );
+    
+    // triggers the download of the file
+    FileSaver$1.saveAs( blob, filename);
+  }
+  
+} /* END of class BrowserDownloadBuffer */
+
 /**
 * The CodecUtils class gather some static methods that can be useful while
 * encodeing/decoding data.
@@ -12531,7 +12782,7 @@ class CodecUtils {
   static string16ToArrayBuffer( str ) {
     var buf = new ArrayBuffer(str.length*2); // 2 bytes for each char
     var bufView = new Uint16Array(buf);
-    for (var i=0, strLen=str.length; i < strLen; i++) {
+    for (var i=0; i < str.length; i++) {
       bufView[i] = str.charCodeAt(i);
     }
     return buf;
@@ -12557,10 +12808,67 @@ class CodecUtils {
   static string8ToArrayBuffer( str ) {
     var buf = new ArrayBuffer(str.length);
     var bufView = new Uint8Array(buf);
-    for (var i=0, strLen=str.length; i < strLen; i++) {
+    for (var i=0; i < str.length; i++) {
       bufView[i] = str.charCodeAt(i);
     }
     return buf;
+  }
+
+  
+  /**
+  * Write a ASCII string into a buffer
+  * @param {String} str - a string that contains only ASCII characters
+  * @param {ArrayBuffer} buffer - the buffer where to write the string
+  * @param {Number} byteOffset - the offset to apply, in number of bytes
+  */
+  static setString8InBuffer( str, buffer, byteOffset = 0 ){
+    if( byteOffset < 0){
+      console.warn("The byte offset cannot be negative.");
+      return;
+    }
+    
+    if( !buffer || !(buffer instanceof ArrayBuffer)){
+      console.warn("The buffer must be a valid ArrayBuffer.");
+      return;
+    }
+    
+    if( (str.length + byteOffset) > buffer.byteLength ){
+      console.warn("The string is too long to be writen in this buffer.");
+      return;
+    }
+    
+    var bufView = new Uint8Array(buffer);
+    
+    for (var i=0; i < str.length; i++) {
+      bufView[i + byteOffset] = str.charCodeAt(i);
+    }
+  }
+
+
+  /**
+  * Extract an ASCII string from an ArrayBuffer
+  * @param {ArrayBuffer} buffer - the buffer
+  * @param {Number} strLength - number of chars in the string we want
+  * @param {Number} byteOffset - the offset in number of bytes
+  * @return {String} the string, or null in case of error
+  */
+  static getString8FromBuffer( buffer, strLength, byteOffset=0 ){
+    if( byteOffset < 0){
+      console.warn("The byte offset cannot be negative.");
+      return null;
+    }
+    
+    if( !buffer || !(buffer instanceof ArrayBuffer)){
+      console.warn("The buffer must be a valid ArrayBuffer.");
+      return null;
+    }
+    
+    if( (strLength + byteOffset) > buffer.byteLength ){
+      console.warn("The string is too long to be writen in this buffer.");
+      return null;
+    }
+    
+    return String.fromCharCode.apply(null, new Uint8Array(buffer, byteOffset, strLength));
   }
 
   
@@ -15875,11 +16183,20 @@ class NiftiDecoder extends Filter {
       return;
     }
 
-    var header = this.parseNifti1Header( inputBuffer );
+    var header = null;
+    try{
+      header = this.parseNifti1Header( inputBuffer );
+    }catch(e){
+      //console.warn( e );
+    }
+    
 
     // abort if header not valid
-    if(!header)
+    if(!header){
+      console.warn("This file is not a NIfTI file.");
       return;
+    }
+      
 
     var dataArray = this.createNifti1Data(header, inputBuffer);
 
@@ -15893,195 +16210,6 @@ class NiftiDecoder extends Filter {
 
 
 } /* END class NiftiDecoder */
-
-var FileSaver = createCommonjsModule(function (module) {
-/* FileSaver.js
- * A saveAs() FileSaver implementation.
- * 1.3.2
- * 2016-06-16 18:25:19
- *
- * By Eli Grey, http://eligrey.com
- * License: MIT
- *   See https://github.com/eligrey/FileSaver.js/blob/master/LICENSE.md
- */
-
-/*global self */
-/*jslint bitwise: true, indent: 4, laxbreak: true, laxcomma: true, smarttabs: true, plusplus: true */
-
-/*! @source http://purl.eligrey.com/github/FileSaver.js/blob/master/FileSaver.js */
-
-var saveAs = saveAs || (function(view) {
-	"use strict";
-	// IE <10 is explicitly unsupported
-	if (typeof view === "undefined" || typeof navigator !== "undefined" && /MSIE [1-9]\./.test(navigator.userAgent)) {
-		return;
-	}
-	var
-		  doc = view.document
-		  // only get URL when necessary in case Blob.js hasn't overridden it yet
-		, get_URL = function() {
-			return view.URL || view.webkitURL || view;
-		}
-		, save_link = doc.createElementNS("http://www.w3.org/1999/xhtml", "a")
-		, can_use_save_link = "download" in save_link
-		, click = function(node) {
-			var event = new MouseEvent("click");
-			node.dispatchEvent(event);
-		}
-		, is_safari = /constructor/i.test(view.HTMLElement) || view.safari
-		, is_chrome_ios =/CriOS\/[\d]+/.test(navigator.userAgent)
-		, throw_outside = function(ex) {
-			(view.setImmediate || view.setTimeout)(function() {
-				throw ex;
-			}, 0);
-		}
-		, force_saveable_type = "application/octet-stream"
-		// the Blob API is fundamentally broken as there is no "downloadfinished" event to subscribe to
-		, arbitrary_revoke_timeout = 1000 * 40 // in ms
-		, revoke = function(file) {
-			var revoker = function() {
-				if (typeof file === "string") { // file is an object URL
-					get_URL().revokeObjectURL(file);
-				} else { // file is a File
-					file.remove();
-				}
-			};
-			setTimeout(revoker, arbitrary_revoke_timeout);
-		}
-		, dispatch = function(filesaver, event_types, event) {
-			event_types = [].concat(event_types);
-			var i = event_types.length;
-			while (i--) {
-				var listener = filesaver["on" + event_types[i]];
-				if (typeof listener === "function") {
-					try {
-						listener.call(filesaver, event || filesaver);
-					} catch (ex) {
-						throw_outside(ex);
-					}
-				}
-			}
-		}
-		, auto_bom = function(blob) {
-			// prepend BOM for UTF-8 XML and text/* types (including HTML)
-			// note: your browser will automatically convert UTF-16 U+FEFF to EF BB BF
-			if (/^\s*(?:text\/\S*|application\/xml|\S*\/\S*\+xml)\s*;.*charset\s*=\s*utf-8/i.test(blob.type)) {
-				return new Blob([String.fromCharCode(0xFEFF), blob], {type: blob.type});
-			}
-			return blob;
-		}
-		, FileSaver = function(blob, name, no_auto_bom) {
-			if (!no_auto_bom) {
-				blob = auto_bom(blob);
-			}
-			// First try a.download, then web filesystem, then object URLs
-			var
-				  filesaver = this
-				, type = blob.type
-				, force = type === force_saveable_type
-				, object_url
-				, dispatch_all = function() {
-					dispatch(filesaver, "writestart progress write writeend".split(" "));
-				}
-				// on any filesys errors revert to saving with object URLs
-				, fs_error = function() {
-					if ((is_chrome_ios || (force && is_safari)) && view.FileReader) {
-						// Safari doesn't allow downloading of blob urls
-						var reader = new FileReader();
-						reader.onloadend = function() {
-							var url = is_chrome_ios ? reader.result : reader.result.replace(/^data:[^;]*;/, 'data:attachment/file;');
-							var popup = view.open(url, '_blank');
-							if(!popup) view.location.href = url;
-							url=undefined; // release reference before dispatching
-							filesaver.readyState = filesaver.DONE;
-							dispatch_all();
-						};
-						reader.readAsDataURL(blob);
-						filesaver.readyState = filesaver.INIT;
-						return;
-					}
-					// don't create more object URLs than needed
-					if (!object_url) {
-						object_url = get_URL().createObjectURL(blob);
-					}
-					if (force) {
-						view.location.href = object_url;
-					} else {
-						var opened = view.open(object_url, "_blank");
-						if (!opened) {
-							// Apple does not allow window.open, see https://developer.apple.com/library/safari/documentation/Tools/Conceptual/SafariExtensionGuide/WorkingwithWindowsandTabs/WorkingwithWindowsandTabs.html
-							view.location.href = object_url;
-						}
-					}
-					filesaver.readyState = filesaver.DONE;
-					dispatch_all();
-					revoke(object_url);
-				};
-			filesaver.readyState = filesaver.INIT;
-
-			if (can_use_save_link) {
-				object_url = get_URL().createObjectURL(blob);
-				setTimeout(function() {
-					save_link.href = object_url;
-					save_link.download = name;
-					click(save_link);
-					dispatch_all();
-					revoke(object_url);
-					filesaver.readyState = filesaver.DONE;
-				});
-				return;
-			}
-
-			fs_error();
-		}
-		, FS_proto = FileSaver.prototype
-		, saveAs = function(blob, name, no_auto_bom) {
-			return new FileSaver(blob, name || blob.name || "download", no_auto_bom);
-		};
-	// IE 10+ (native saveAs)
-	if (typeof navigator !== "undefined" && navigator.msSaveOrOpenBlob) {
-		return function(blob, name, no_auto_bom) {
-			name = name || blob.name || "download";
-
-			if (!no_auto_bom) {
-				blob = auto_bom(blob);
-			}
-			return navigator.msSaveOrOpenBlob(blob, name);
-		};
-	}
-
-	FS_proto.abort = function(){};
-	FS_proto.readyState = FS_proto.INIT = 0;
-	FS_proto.WRITING = 1;
-	FS_proto.DONE = 2;
-
-	FS_proto.error =
-	FS_proto.onwritestart =
-	FS_proto.onprogress =
-	FS_proto.onwrite =
-	FS_proto.onabort =
-	FS_proto.onerror =
-	FS_proto.onwriteend =
-		null;
-
-	return saveAs;
-}(
-	   typeof self !== "undefined" && self
-	|| typeof window !== "undefined" && window
-	|| commonjsGlobal.content
-));
-// `self` is undefined in Firefox for Android content script context
-// while `this` is nsIContentFrameMessageManager
-// with an attribute `content` that corresponds to the window
-
-if ('object' !== "undefined" && module.exports) {
-  module.exports.saveAs = saveAs;
-} else if ((typeof undefined !== "undefined" && undefined !== null) && (undefined.amd !== null)) {
-  undefined("FileSaver.js", function() {
-    return saveAs;
-  });
-}
-});
 
 /*
 * Author    Jonathan Lurie - http://me.jonahanlurie.fr
@@ -16166,7 +16294,7 @@ class PixpEncoder extends Filter {
     var output = this.getOutput();
 
     if(output){
-      FileSaver.saveAs( this.getOutput(), this.getMetadata("filename"));
+      FileSaver$1.saveAs( this.getOutput(), this.getMetadata("filename"));
     }else{
       console.warn("No output computed yet.");
     }
@@ -16570,11 +16698,21 @@ class MghDecoder extends Filter {
       return;
     }
 
-    var header = this._parseMGHHeader( inputBuffer );
+    var header = null;
+    
+    try{
+      header = this._parseMGHHeader( inputBuffer );
+    }catch(e){
+      //console.warn( e );
+    }
+    
 
     // abort if header not valid
-    if(!header)
+    if(!header){
+      console.log("The input file is not a MGH file.");
       return;
+    }
+      
 
 
     var dataArray = this._createMGHData(header, inputBuffer);
@@ -16600,6 +16738,178 @@ class MghDecoder extends Filter {
 * Lab       MCIN - Montreal Neurological Institute
 */
 
+
+/**
+* A PixBlockEncoder instance is a Filter that takes a PixpipeContainer as input,
+* which is the base type for Image2D/Image3D and any other data container used in Pixpipe.
+* Then, the update function serializes the data structure (data + metadata) into
+* a binary buffer that can be send to a PixBinEncoder (or directly to write a file).  
+* 
+* Data can be compressed unsing Pako. To enable this feature, specify
+* `.setMetadata("compress", true)` on this filter.  
+* Please note that metadata are not compressed, only data are.
+* Also, compression has some side effects: 
+* - data from within a block is no longer streamable
+* - the datablock is smaller
+* - the metadata header is still accessible 
+*
+* **Usage**
+* - [examples/Image2DToPixblock.html](../examples/Image2DToPixblock.html)
+*/
+class PixBlockEncoder extends Filter {
+  
+  constructor(){
+    super();
+    this.setMetadata( "compress", false );
+  }
+  
+  
+  _run(){
+    var input = this._getInput();
+    
+    if( !input ){
+      console.warn("An input must be given to the PixBlockEncoder.");
+      return;
+    }
+    
+    // only an object that inherit from PixpipeContainer can be converted as a block
+    if( !(input instanceof PixpipeContainer) ){
+      console.warn("The input of PixBinEncoder must be an instance of PixpipeContainer.");
+      return;
+    }
+    
+    var compress = this.getMetadata( "compress" );
+    var data = input.getData();
+    var compressedData = null;
+    
+    var byteStreamInfo = [];
+    var usingDataSubsets = false;
+    
+    // the _data object is an array containing multiple TypedArrays (eg. meshes)
+    if( Array.isArray(data) ){
+      usingDataSubsets = true;
+      compressedData = [];
+      
+      // collect bytestream info for each subset of data
+      for(var i=0; i<data.length; i++){
+        var byteStreamInfoSubset = this._getByteStreamInfo(data[i]);
+        
+        if(compress){
+          var compressedDataSubset = index$1.deflate( data[i] );
+          byteStreamInfoSubset.compressedByteLength = compressedDataSubset.byteLength;
+          compressedData.push( compressedDataSubset );
+        }
+        
+        byteStreamInfo.push( byteStreamInfoSubset );
+      }
+    }
+    // the _data object is a single TypedArray (eg. Image2D)
+    else{
+      var byteStreamInfoSubset = this._getByteStreamInfo(data);
+      
+      if(compress){
+        compressedData = index$1.deflate( data.buffer );
+        byteStreamInfoSubset.compressedByteLength = compressedData.byteLength;
+      }
+      
+      byteStreamInfo.push( byteStreamInfoSubset );
+    }
+    // TODO: if it's not an array and not a TypedArray, it could be an object
+    
+    // from now, if compression is enabled, what we call data is compressed data
+    if(compress){
+      data = compressedData;
+    }
+    
+    var pixBlockMeta = {
+      byteStreamInfo : byteStreamInfo,
+      pixpipeType    : input.constructor.name,
+      containerMeta  : input.getMetadataCopy()
+    };
+    
+    // converting the pixBlockMeta obj into a buffer
+    var pixBlockMetaBuff = CodecUtils.objectToArrayBuffer( pixBlockMeta );
+    
+    // this list will then be trandformed into a single buffer
+    var allBuffers = [
+      new Uint8Array( [ + CodecUtils.isPlatformLittleEndian() ] ).buffer, // endianess
+      new Uint32Array( [pixBlockMetaBuff.byteLength] ).buffer, // size of the following buff (pixBlockMetaBuff)
+      pixBlockMetaBuff, // the buff of metadada
+    ];
+    
+    // adding the actual data buffer to the list
+    if( usingDataSubsets ){
+      for(var i=0; i<data.length; i++){
+          allBuffers.push( data[i].buffer ); 
+      }
+    }else{
+      allBuffers.push( data.buffer );
+    }
+
+    this._output[ 0 ] = CodecUtils.mergeBuffers( allBuffers );
+  }
+  
+  
+  /**
+  * Get some info about a byte stream info (TypedArray)
+  * @param {TypedArray} typedArray - one of the typed array
+  * @return {Object} in form of {type: String, signed: Boolean, bytesPerElements: Number, byteLength: Number, length: Number}
+  */
+  _getByteStreamInfo( typedArray ){
+    var type = null;
+    var signed = false;
+    
+    if( typedArray instanceof Int8Array ){
+      type = "int";
+      signed = false;
+    }else if( typedArray instanceof Uint8Array ){
+      type = "int";
+      signed = true;
+    }else if( typedArray instanceof Uint8ClampedArray ){
+      type = "int";
+      signed = true;
+    }else if( typedArray instanceof Int16Array ){
+      type = "int";
+      signed = false;
+    }else if( typedArray instanceof Uint16Array ){
+      type = "int";
+      signed = true;
+    }else if( typedArray instanceof Int32Array ){
+      type = "int";
+      signed = false;
+    }else if( typedArray instanceof Uint32Array ){
+      type = "int";
+      signed = true;
+    }else if( typedArray instanceof Float32Array ){
+      type = "float";
+      signed = false;
+    }else if( typedArray instanceof Float64Array ){
+      type = "float";
+      signed = false;
+    }
+    
+    return {
+      type: type,
+      signed: signed,
+      bytesPerElements: typedArray.BYTES_PER_ELEMENT,
+      byteLength: typedArray.byteLength,
+      length: typedArray.length,
+      compressedByteLength: null
+    }
+  }
+  
+  
+} /* END of class PixBlockEncoder */
+
+/*
+* Author    Jonathan Lurie - http://me.jonahanlurie.fr
+*
+* License   MIT
+* Link      https://github.com/jonathanlurie/pixpipejs
+* Lab       MCIN - Montreal Neurological Institute
+*/
+
+
 /**
 * A PixBinDecoder instance decodes a *.pixp file and output an Image2D or Image3D.
 * The input, specified by `.addInput(...)` must be an ArrayBuffer
@@ -16612,6 +16922,7 @@ class PixBinDecoder extends Filter {
   constructor(){
     super();
     this.addInputValidator(0, ArrayBuffer);
+    this.setMetadata("verifyChecksum", false);
   }
 
 
@@ -16621,60 +16932,61 @@ class PixBinDecoder extends Filter {
       console.warn("PixBinDecoder can only decode ArrayBuffer.");
       return;
     }
-
+    
+    
+    var verifyChecksum = this.getMetadata("verifyChecksum");
     var input = this._getInput();
     var inputByteLength = input.byteLength;
 
-    // the view to decode the buffer
-    var view = new DataView( input );
-    var offsetFromHere = 0;
-    
-    // fetch the extendedMetadata string length
-    var extendedMetadataStringLength = view.getUint32( offsetFromHere );
-    offsetFromHere += 4;
-    
-    // getting extendedMetadata
-    var extendedMetadataBytes = new Uint8Array(input, offsetFromHere, extendedMetadataStringLength);
-    var extendedMetadata = JSON.parse( String.fromCharCode( ...extendedMetadataBytes ) );
-    offsetFromHere += extendedMetadataStringLength;
-    
-    // getting the data
-    var constructorHost = null;
-    
-    try{
-      constructorHost = window; // in a web browser
-    }catch( e ){
-      try{
-        constructorHost = GLOBAL; // in node
-      }catch( e ){
-        console.warn( "You are not in a Javascript environment?? Weird." );
-        return;
-      }
-    }
-    
-    if(! constructorHost[ extendedMetadata.dataType ]){
-      console.warn( "Data array from pixb file is unknown: " + extendedMetadata.dataType );
+    if( inputByteLength < 12 ){
+      console.warn("This buffer does not match a PixBin file.");
       return;
     }
-    
-    /*
-      There is a known issues in JS that a TypedArray cannot be created starting at a non-multiple-of-2 start offset 
-      if the type of data within this array is supposed to take more than one byte (ie. Uint16, Float32, etc.).
-      The error is stated like that (in Chrome):
-      "Uncaught RangeError: start offset of Uint16Array should be a multiple of 2"
-      When it comes to Float32, Chrome wants an offset that is multiple of 4, and so on.
-      
-      The workaround is to slice the buffer to take only the data part of it (basically to remove what is before)
-      so that this new array starts with an offset 0, no matter what was before.
-    */
-    
-    var data = new constructorHost[ extendedMetadata.dataType ]( input.slice( offsetFromHere ) );
-    
-    var output = new pixpipe[ extendedMetadata.pixpipeType ];
-    output.setRawData( data );
-    output.setRawMetadata( extendedMetadata.metadata );
 
-    this._output[0] = output;
+    // the view to decode the buffer
+    var view = new DataView( input );
+
+    var entryStringLength = 7;
+    var movingByteOffset = 0;
+    
+    // this should be "pixpipe"
+    var entryString = CodecUtils.getString8FromBuffer(input, entryStringLength );
+    movingByteOffset = entryStringLength;
+    var isLittleEndian = view.getUint8(movingByteOffset);
+    movingByteOffset += 1;
+    var pixBinIndexBinaryStringByteLength = view.getUint32( movingByteOffset, isLittleEndian );
+    movingByteOffset += 4;
+    var pixBinIndexObj = CodecUtils.ArrayBufferToObject( input.slice(movingByteOffset, movingByteOffset + pixBinIndexBinaryStringByteLength));
+    movingByteOffset += pixBinIndexBinaryStringByteLength;
+    
+    console.log( pixBinIndexObj );
+    
+    var blockDecoder = new pixpipe.PixBlockDecoder();
+    var outputCounter = 0;
+    this._output["meta"] = pixBinIndexObj;
+    
+    for(var i=0; i<pixBinIndexObj.pixblocksInfo.length; i++){
+      var blockInfo = pixBinIndexObj.pixblocksInfo[i];
+      var pixBlock = input.slice(movingByteOffset, movingByteOffset + blockInfo.byteLength);
+      movingByteOffset += blockInfo.byteLength;
+      
+      if( verifyChecksum && md5( pixBlock ) !== blockInfo.checksum){
+        console.warn("Modality " + (i+1) + "/" + pixBinIndexObj.pixblocksInfo.length + " (" + blockInfo.type + ") could not comply to checksum validation." );
+        continue;
+      }
+      
+      blockDecoder.addInput( pixBlock );
+      blockDecoder.update();
+      var decodedBlock = blockDecoder.getOutput();
+      
+      if( decodedBlock ){
+        this._output[outputCounter] = decodedBlock;
+        outputCounter ++;
+      }
+        
+      
+    }
+    
   }
 
 
@@ -16712,7 +17024,7 @@ class Image3DGenericDecoder extends Filter {
       NiftiDecoder,
       MghDecoder,
       PixpDecoder,
-      PixBinDecoder
+      //PixBinDecoder
     ];
   }
   
@@ -21109,7 +21421,6 @@ class EegModDecoder extends Filter {
 * Lab       MCIN - Montreal Neurological Institute
 */
 
-//import JSZip from "jszip";
 /**
 * A PixBinEncoder instance takes an Image2D or Image3D as input with `addInput(...)`
 * and encode it so that it can be saved as a *.pixp file.
@@ -21127,14 +21438,17 @@ class PixBinEncoder extends Filter {
     super();
     this.setMetadata("filename", "untitled.pixb");
     this.setMetadata("extension", "pixb");
+    this.setMetadata("compress", true);
 
   }
 
 
 
   _run(){
+    var that = this;
     var today = new Date();
-    this._rejectCyclingObjects();
+    var isLittleEndian = CodecUtils.isPlatformLittleEndian();
+    var blockEncoder = new PixBlockEncoder();
 
     // this object is the JSON description at the begining of a PixBin
     var pixBinIndex = {
@@ -21150,70 +21464,59 @@ class PixBinEncoder extends Filter {
     
     // just a convenient shortcut
     var pixblocksInfo = pixBinIndex.pixblocksInfo;
-    
-    var growingPixBlockOffset = 0;
+
 
     this._forEachInput(function( category, input ){
+      blockEncoder.addInput( input, 0 );
+      blockEncoder.setMetadata( "compress", that.getMetadata("compress") );
+      blockEncoder.update();
+      var encodedBlock = blockEncoder.getOutput();
       
-      var pixBlock = this._getPixBlock( input );
-      
-      if( !pixBlock ){
-        console.warn("The PixBlock corresponding to input category " + category + " could not be created, and thus will not be added to the PixBin container.");
+      if( !encodedBlock ){
+        console.warn("The input of category " + category + " could not be encoded as a PixBlock.");
         return;
       }
       
       // adding an entry to the PixBin index
       var pixBinIndexEntry = {
-        type: input.constructor.name,
-        description: input.getMetadata( "description" ),
-        offset: growingPixBlockOffset
+        type        : input.constructor.name,
+        description : input.getMetadata( "description" ),
+        byteLength  : encodedBlock.byteLength,
+        checksum    : md5( encodedBlock ),
       };
       
-      growingPixBlockOffset += pixBlock.buffer.byteLength;
-      
       pixblocksInfo.push( pixBinIndexEntry );
+      pixBlocks.push( encodedBlock );
     });
 
-    return;
 
-    var input = this._getInput();
-
-    var pixBinMetadata = {
-      dataType: input.getData().constructor.name, // typed array type
-      pixpipeType: input.constructor.name, // most likely "Image2D", "Image3D", "MniVolume", "LineString", etc.
-      metadata: input.getMetadataCopy(),  // Image2D/Image3D._metadata
-    };
-
-    // this is a typed array
-    var data = input.getData();
-    
-    var metadataJsonString = JSON.stringify( pixBinMetadata );
-    var metadataByteArray = new Uint8Array( metadataJsonString.length );
-    
-    // converting the json string into a byte stream
-    for(var i = 0; i < metadataJsonString.length; ++i)
-      metadataByteArray[i] = metadataJsonString.charCodeAt(i);
-
-    // creating the buffer
-    var metadataBuffer = new ArrayBuffer( 4 + metadataByteArray.length );
-
-    // the data view is used to write into the buffer
-    var view = new DataView( metadataBuffer );
-    
-    var offsetFromHere = 0;
-    
-    // write the size of the metadata string
-    view.setUint32(offsetFromHere, metadataByteArray.length );
-    
-    // write the metadata themselves
-    offsetFromHere += 4;
-    for(var i=0; i<metadataByteArray.length; i++){
-      view.setUint8(offsetFromHere, metadataByteArray[i] );
-      offsetFromHere++;
+    if( !pixBlocks.length ){
+      console.warn("No input was compatible for PixBlock encoding.");
     }
 
-    // making a blob to be saved
-    this._output[0] = new Blob([metadataBuffer, data], {type: 'application/octet-binary'} );
+    // Building the header ArrayBuffer of the file. It contains:
+    // - A ASCII string "pixpipe". 7 x Uint8 of charcodes (7 bytes)
+    // - A flag for encoding endianess, 0: big, 1: little. 1 x Uint8 (1 byte)
+    // - The byte length of the PixBin meta binary object. 1 x Uint32 (4 bytes)
+    
+    // encoding the meta object into an ArrayBuffer
+    var pixBinIndexBinaryString = CodecUtils.objectToArrayBuffer(pixBinIndex);
+    
+    var fixedHeader = new ArrayBuffer( 12 );
+    var fixedHeaderView = new DataView( fixedHeader );
+    var message = "pixpipe";
+    CodecUtils.setString8InBuffer( message, fixedHeader );
+    fixedHeaderView.setUint8( message.length, (+isLittleEndian));
+    fixedHeaderView.setUint32( message.length + 1, pixBinIndexBinaryString.byteLength, isLittleEndian );
+    
+    console.log( pixBinIndex );
+    
+    
+    var allBuffers = [fixedHeader, pixBinIndexBinaryString].concat( pixBlocks );
+    this.addTimeRecord("beforeMerge");
+    this._output[0] = CodecUtils.mergeBuffers( allBuffers );
+    this.addTimeRecord("afterMerge");
+    this.getTime("beforeMerge", "afterMerge", true);
   }
 
 
@@ -23679,7 +23982,7 @@ class Image2DGenericDecoder extends Filter {
       JpegDecoder,
       PngDecoder,
       PixpDecoder,
-      PixBinDecoder
+      //PixBinDecoder
     ];
   }
   
@@ -23709,177 +24012,6 @@ class Image2DGenericDecoder extends Filter {
   
   
 } /* END of class Image2DGenericDecoder */
-
-/*
-* Author    Jonathan Lurie - http://me.jonahanlurie.fr
-*
-* License   MIT
-* Link      https://github.com/jonathanlurie/pixpipejs
-* Lab       MCIN - Montreal Neurological Institute
-*/
-
-
-/**
-* A PixBlockEncoder instance is a Filter that takes a PixpipeContainer as input,
-* which is the base type for Image2D/Image3D and any other data container used in Pixpipe.
-* Then, the update function serializes the data structure (data + metadata) into
-* a binary buffer that can be send to a PixBinEncoder (or directly to write a file).  
-* 
-* Data can be compressed unsing Pako. To enable this feature, specify
-* `.setMetadata("compress", true)` on this filter.  
-* Please note that metadata are not compressed, only data are.
-* Also, compression has some side effects: 
-* - data from within a block is no longer streamable
-* - the datablock is smaller
-* - the metadata header is still accessible 
-*
-* **Usage**
-* - [examples/Image2DToPixblock.html](../examples/Image2DToPixblock.html)
-*/
-class PixBlockEncoder extends Filter {
-  
-  constructor(){
-    super();
-    this.setMetadata( "compress", false );
-  }
-  
-  
-  _run(){
-    var input = this._getInput();
-    
-    if( !input ){
-      console.warn("An input must be given to the PixBlockEncoder.");
-      return;
-    }
-    
-    // only an object that inherit from PixpipeContainer can be converted as a block
-    if( !(input instanceof PixpipeContainer) ){
-      console.warn("The input of PixBinEncoder must be an instance of PixpipeContainer.");
-      return;
-    }
-    
-    var compress = this.getMetadata( "compress" );
-    var data = input.getData();
-    var compressedData = null;
-    
-    var byteStreamInfo = [];
-    var usingDataSubsets = false;
-    
-    // the _data object is an array containing multiple TypedArrays (eg. meshes)
-    if( Array.isArray(data) ){
-      usingDataSubsets = true;
-      compressedData = [];
-      
-      // collect bytestream info for each subset of data
-      for(var i=0; i<data.length; i++){
-        var byteStreamInfoSubset = this._getByteStreamInfo(data[i]);
-        
-        if(compress){
-          var compressedDataSubset = index$1.deflate( data[i] );
-          byteStreamInfoSubset.compressedByteLength = compressedDataSubset.byteLength;
-          compressedData.push( compressedDataSubset );
-        }
-        
-        byteStreamInfo.push( byteStreamInfoSubset );
-      }
-    }
-    // the _data object is a single TypedArray (eg. Image2D)
-    else{
-      var byteStreamInfoSubset = this._getByteStreamInfo(data);
-      
-      if(compress){
-        compressedData = index$1.deflate( data.buffer );
-        byteStreamInfoSubset.compressedByteLength = compressedData.byteLength;
-      }
-      
-      byteStreamInfo.push( byteStreamInfoSubset );
-    }
-    // TODO: if it's not an array and not a TypedArray, it could be an object
-    
-    // from now, if compression is enabled, what we call data is compressed data
-    if(compress){
-      data = compressedData;
-    }
-    
-    var pixBlockMeta = {
-      byteStreamInfo : byteStreamInfo,
-      pixpipeType    : input.constructor.name,
-      containerMeta  : input.getMetadataCopy()
-    };
-    
-    // converting the pixBlockMeta obj into a buffer
-    var pixBlockMetaBuff = CodecUtils.objectToArrayBuffer( pixBlockMeta );
-    
-    // this list will then be trandformed into a single buffer
-    var allBuffers = [
-      new Uint8Array( [ + CodecUtils.isPlatformLittleEndian() ] ).buffer, // endianess
-      new Uint32Array( [pixBlockMetaBuff.byteLength] ).buffer, // size of the following buff (pixBlockMetaBuff)
-      pixBlockMetaBuff, // the buff of metadada
-    ];
-    
-    // adding the actual data buffer to the list
-    if( usingDataSubsets ){
-      for(var i=0; i<data.length; i++){
-          allBuffers.push( data[i].buffer ); 
-      }
-    }else{
-      allBuffers.push( data.buffer );
-    }
-
-    this._output[ 0 ] = CodecUtils.mergeBuffers( allBuffers );
-  }
-  
-  
-  /**
-  * Get some info about a byte stream info (TypedArray)
-  * @param {TypedArray} typedArray - one of the typed array
-  * @return {Object} in form of {type: String, signed: Boolean, bytesPerElements: Number, byteLength: Number, length: Number}
-  */
-  _getByteStreamInfo( typedArray ){
-    var type = null;
-    var signed = false;
-    
-    if( typedArray instanceof Int8Array ){
-      type = "int";
-      signed = false;
-    }else if( typedArray instanceof Uint8Array ){
-      type = "int";
-      signed = true;
-    }else if( typedArray instanceof Uint8ClampedArray ){
-      type = "int";
-      signed = true;
-    }else if( typedArray instanceof Int16Array ){
-      type = "int";
-      signed = false;
-    }else if( typedArray instanceof Uint16Array ){
-      type = "int";
-      signed = true;
-    }else if( typedArray instanceof Int32Array ){
-      type = "int";
-      signed = false;
-    }else if( typedArray instanceof Uint32Array ){
-      type = "int";
-      signed = true;
-    }else if( typedArray instanceof Float32Array ){
-      type = "float";
-      signed = false;
-    }else if( typedArray instanceof Float64Array ){
-      type = "float";
-      signed = false;
-    }
-    
-    return {
-      type: type,
-      signed: signed,
-      bytesPerElements: typedArray.BYTES_PER_ELEMENT,
-      byteLength: typedArray.byteLength,
-      length: typedArray.length,
-      compressedByteLength: null
-    }
-  }
-  
-  
-} /* END of class PixBlockEncoder */
 
 /*
 * Author    Jonathan Lurie - http://me.jonahanlurie.fr
@@ -23949,7 +24081,7 @@ class PixBlockDecoder extends Filter {
         
         // create a typed array out of the inflated buffer
         var typedArrayConstructor = this._getArrayTypeFromByteStreamInfo(metadataObj.byteStreamInfo[i]);
-        var dataStream = new typedArrayConstructor( inflatedByteStream );
+        var dataStream = new typedArrayConstructor( inflatedByteStream.buffer );
         
         dataStreams.push( dataStream );
         readingByteOffset += compressedByteLength;
@@ -30951,6 +31083,7 @@ exports.UrlImageReader = UrlImageReader;
 exports.FileImageReader = FileImageReader;
 exports.FileToArrayBufferReader = FileToArrayBufferReader;
 exports.UrlToArrayBufferReader = UrlToArrayBufferReader;
+exports.BrowserDownloadBuffer = BrowserDownloadBuffer;
 exports.CodecUtils = CodecUtils;
 exports.Minc2Decoder = Minc2Decoder;
 exports.NiftiDecoder = NiftiDecoder;

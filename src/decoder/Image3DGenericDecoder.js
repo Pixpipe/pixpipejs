@@ -40,7 +40,7 @@ class Image3DGenericDecoder extends Filter {
       NiftiDecoder,
       MghDecoder,
       PixpDecoder,
-      PixBinDecoder
+      //PixBinDecoder
     ];
   }
   

@@ -1,0 +1,136 @@
+<html>
+<head>
+  <title>Encode to PixBin</title>
+
+  <script src="../dist/pixpipe.js"></script>
+  <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700,900" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <h1><a href="https://github.com/jonathanlurie/pixpipejs"><span style="color: #ff91d7">Pixpipe</span><span style="color: #FFFFFF">js</span></a></h1>
+  <p>
+  This example shows that we can open files of different formats and modality and group them within a single <code>PixBin</code> file.<br>
+  This does the following :
+  <ul>
+    <li>opening a local file, using <code>pixpipe.FileToArrayBufferReader</code>of type PNG/Jpeg/Tiff/NIfTI/Minc2/MGH</li>
+    <!--<li>redirect the file buffers into a <code>pixpipe.Image2DGenericDecoder</code></li>
+    <li>get the outputs as generic <code>pixpipe.PixContainer</code> objects</li>
+    <li>display the image using <code>pixpipe.CanvasImageWriter</code></li>-->
+  </ul>
+
+  </p>
+
+  <div>
+    Add some files <input type="file" id="fileInput" multiple="multiple">
+    <br>
+    Start the encoding <input type="submit" onclick="encode()">
+    <br>
+    <span id="fileInfo"></span>  
+  </div>
+
+  <div id="myDiv"></div>
+
+  <script>
+  var pixBinEncoder = null;
+  var inputCounter = 0;
+  
+  window.onload = function() {
+
+    var fileInput = document.getElementById('fileInput');
+    
+    pixBinEncoder = new pixpipe.PixBinEncoder();
+    pixBinEncoder.setMetadata("compress", false);
+    
+
+    // The filter to read image from URL
+    var file2Buff = new pixpipe.FileToArrayBufferReader();
+
+    // the image is loaded...
+    // here, this = url2ImgFilter
+    file2Buff.on("ready", function(){
+
+      var filenames = this.getMetadata("filenames");
+
+      file2Buff.forEachOutput( function( category, buffer){
+        
+        // attempt to decode the buffer as an Image2D
+        var decoder2D = new pixpipe.Image2DGenericDecoder();
+        decoder2D.addInput( buffer );
+        decoder2D.update();
+
+        var successDecodingType = false;
+
+        if( decoder2D.getNumberOfOutputs() ){
+          pixBinEncoder.addInput( decoder2D.getOutput(), inputCounter );
+          inputCounter ++;
+          successDecodingType = true;
+        }
+        // attempt to decode the buffer as an Image3D
+        else{
+          var decoder3D = new pixpipe.Image3DGenericDecoder();
+          decoder3D.addInput( buffer );
+          decoder3D.update();
+          
+          if( decoder3D.getNumberOfOutputs() ){
+            pixBinEncoder.addInput( decoder3D.getOutput(), inputCounter );
+            inputCounter ++;
+            successDecodingType = true;
+          }
+          
+        }
+        
+        if( successDecodingType ){
+          document.getElementById('fileInfo').innerHTML += "OK: " + filenames[category] + "<br>";
+        }else{
+          document.getElementById('fileInfo').innerHTML += "ERROR: " + filenames[category] + " (format not recognized)" + "<br>";
+        }
+          
+        
+      });
+
+    });
+
+
+    // event listener of the file input
+    fileInput.addEventListener('change', function(e) {
+      var files = e.target.files;
+
+      for(var i=0; i<files.length; i++){
+        // set the input, an HTML5 File object and a category (ID)
+        file2Buff.addInput(files[i], i);
+      }
+
+
+      // Perform the reading + conversion ibto ArrayBuffer
+      file2Buff.update();
+		});
+
+  }
+  
+  
+  function encode(){
+    if( !pixBinEncoder ){
+      alert( "Page not ready ")
+    }
+    
+    pixBinEncoder.update();
+    
+    // to make sure we dont reuse the old ones if we want to generate a new file
+    pixBinEncoder.clearAllInputs();
+    inputCounter = 0;
+    
+    if( pixBinEncoder.getNumberOfOutputs() ){
+      // triggers the download
+      var downloader = new pixpipe.BrowserDownloadBuffer();
+      downloader.addInput( pixBinEncoder.getOutput() );
+      downloader.setMetadata( "filename", "myBin.pixb" );
+      downloader.update();
+    }else{
+      alert("No PixBin file to be created")
+    }
+  }
+  
+  </script>
+
+</body>
+</html>

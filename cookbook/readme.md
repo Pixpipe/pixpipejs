@@ -191,6 +191,8 @@ Here, we will learn what is an `Image2D`, how to display it in a canvas using `C
 - [Decode a JPEG image in pure Javascript](http://pixpipe.github.io/pixpipejs/examples/fileToJpeg.html) | [source](https://github.com/Pixpipe/pixpipejs/tree/master/examples/fileToJpeg.html)
 - [Decode a PNG image in pure Javascript](http://pixpipe.github.io/pixpipejs/examples/fileToPng.html) | [source](https://github.com/Pixpipe/pixpipejs/tree/master/examples/fileToPng.html)
 - [Decode a PNG/TIFF/JPEG with a single generic filter](http://pixpipe.github.io/pixpipejs/examples/fileToGenericImage2D.html) | [source](https://github.com/Pixpipe/pixpipejs/tree/master/examples/fileToGenericImage2D.html)
+- [Decode a PNG/TIFF/JPEG with a single generic filter, open multiple images at once](http://pixpipe.github.io/pixpipejs/examples/multiFileToMultiImage2D.html) | [source](https://github.com/Pixpipe/pixpipejs/tree/master/examples/multiFileToMultiImage2D.html)
+
 
 ## Signal filters for Signal1D
 - [Compute the 1D fourier transform or inverse transform on a signal](https://github.com/Pixpipe/pixpipejs/tree/master/examples/fftSignal1D.html) | [source](https://github.com/Pixpipe/pixpipejs/tree/master/examples/fftSignal1D.html)
