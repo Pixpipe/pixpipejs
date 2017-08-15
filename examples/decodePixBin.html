@@ -1,6 +1,6 @@
 <html>
 <head>
-  <title>File to Pixp</title>
+  <title>Decode PixBin</title>
 
   <script src="../dist/pixpipe.js"></script>
   <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700,900" rel="stylesheet">
@@ -11,7 +11,7 @@
   <p>
   This does the following :
   <ul>
-    <li>open a local Pixp file, using <code>pixpipe.FileToArrayBufferReader</code></li>
+    <li>open a local PixBin (*.pixb) file, using <code>pixpipe.FileToArrayBufferReader</code></li>
     <li>redirect the file buffer into a <code>pixpipe.PixBinDecoder</code></li>
     <li>get the output as a generic <code>pixpipe.Image3D</code> object</li>
     <li><code>slice()</code> the volume 3 times, along 3 given axis to get 3 <code>pixpipe.Image2D</code> objects</li>
@@ -21,8 +21,10 @@
   </p>
 
   <div>
-		Select an file:
-		<input type="file" id="fileInput">
+    <br>
+    Validate with checksum <input id="enableChecksumValidation" type="checkbox"> (slightly slower)
+    <br>
+		Select a file:	<input type="file" id="fileInput">
     <br>
     <span id="fileInfo"></span>
 	</div>
@@ -42,7 +44,7 @@
     var imageToCanvasFilter = new pixpipe.CanvasImageWriter( );
     imageToCanvasFilter.setMetadata( "parentDivID", "myDiv" );
     imageToCanvasFilter.setMetadata("reset", false);  // to display multiple canvas in a single div
-    
+
     // the image is loaded...
     // here, this = url2ImgFilter
     file2Buff.on("ready", function(){
@@ -53,7 +55,7 @@
       var buff = this.getOutput();
 
       var pixBinDecoder = new pixpipe.PixBinDecoder();
-      //pixBinDecoder.setMetadata("verifyChecksum", true);
+      pixBinDecoder.setMetadata("verifyChecksum", document.getElementById("enableCompression").checked);
       pixBinDecoder.addInput( buff );
       pixBinDecoder.update();
 
@@ -61,15 +63,15 @@
 
       pixBinDecoder.forEachOutput(function(category, output){
         console.log( output );
-        
+
         if( category === "meta" ){
           return;
         }
-        
 
 
-        if(output && output.isOfType(pixpipe.Image3D.TYPE()) ){ 
-          
+
+        if(output && output.isOfType(pixpipe.Image3D.TYPE()) ){
+
           // replace the default min max values of [0, 255]
           imageToCanvasFilter.setMetadata("min", output.getMetadata("voxel_min"));
           imageToCanvasFilter.setMetadata("max", output.getMetadata("voxel_max"));
@@ -95,13 +97,13 @@
         }else if(output && output.isOfType(pixpipe.Image2D.TYPE()) ){ // this pixp is a Image2D
           imageToCanvasFilter.addInput( output );
           imageToCanvasFilter.update();
-          
+
         }else{
           console.warn("Non-existant output for PixBinDecoder.");
         }
-    
+
       })
-      
+
     });
 
 

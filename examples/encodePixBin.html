@@ -23,24 +23,26 @@
   <div>
     Add some files <input type="file" id="fileInput" multiple="multiple">
     <br>
+    Compress data <input id="enableCompression" type="checkbox">
+    <br>
     Start the encoding <input type="submit" onclick="encode()">
     <br>
-    <span id="fileInfo"></span>  
+    <br>
+    <span id="fileInfo"></span>
   </div>
 
   <div id="myDiv"></div>
 
   <script>
+  var fileInput = document.getElementById('fileInput');
   var pixBinEncoder = null;
   var inputCounter = 0;
-  
+
   window.onload = function() {
 
-    var fileInput = document.getElementById('fileInput');
-    
+
+
     pixBinEncoder = new pixpipe.PixBinEncoder();
-    pixBinEncoder.setMetadata("compress", false);
-    
 
     // The filter to read image from URL
     var file2Buff = new pixpipe.FileToArrayBufferReader();
@@ -52,7 +54,7 @@
       var filenames = this.getMetadata("filenames");
 
       file2Buff.forEachOutput( function( category, buffer){
-        
+
         // attempt to decode the buffer as an Image2D
         var decoder2D = new pixpipe.Image2DGenericDecoder();
         decoder2D.addInput( buffer );
@@ -70,22 +72,22 @@
           var decoder3D = new pixpipe.Image3DGenericDecoder();
           decoder3D.addInput( buffer );
           decoder3D.update();
-          
+
           if( decoder3D.getNumberOfOutputs() ){
             pixBinEncoder.addInput( decoder3D.getOutput(), inputCounter );
             inputCounter ++;
             successDecodingType = true;
           }
-          
+
         }
-        
+
         if( successDecodingType ){
           document.getElementById('fileInfo').innerHTML += "OK: " + filenames[category] + "<br>";
         }else{
           document.getElementById('fileInfo').innerHTML += "ERROR: " + filenames[category] + " (format not recognized)" + "<br>";
         }
-          
-        
+
+
       });
 
     });
@@ -106,19 +108,18 @@
 		});
 
   }
-  
-  
+
+
   function encode(){
     if( !pixBinEncoder ){
       alert( "Page not ready ")
     }
-    
+
+    pixBinEncoder.setMetadata("compress", document.getElementById("enableCompression").checked );
     pixBinEncoder.update();
-    
-    // to make sure we dont reuse the old ones if we want to generate a new file
-    pixBinEncoder.clearAllInputs();
-    inputCounter = 0;
-    
+
+    resetFileList();
+
     if( pixBinEncoder.getNumberOfOutputs() ){
       // triggers the download
       var downloader = new pixpipe.BrowserDownloadBuffer();
@@ -129,7 +130,16 @@
       alert("No PixBin file to be created")
     }
   }
-  
+
+
+  // to make sure we dont reuse the old ones if we want to generate a new file
+  function resetFileList(){
+    fileInput.value = '';
+    pixBinEncoder.clearAllInputs();
+    document.getElementById('fileInfo').innerHTML = "";
+    inputCounter = 0;
+  }
+
   </script>
 
 </body>
