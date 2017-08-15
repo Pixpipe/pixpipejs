@@ -34,6 +34,14 @@ class PixBinEncoder extends Filter {
   }
 
 
+  /**
+  * [static]
+  * the first sequence of bytes for a pixbin file is this ASCII string
+  */
+  static MAGIC_NUMBER(){
+    return "PIXPIPE_PIXBIN";
+  }
+
 
   _run(){
     var that = this;
@@ -49,10 +57,10 @@ class PixBinEncoder extends Filter {
       userObject: this.getMetadata( "userObject" ),
       pixblocksInfo: []
     }
-    
+
     // array of binary blocks (each are Uint8Array or ArrayBuffer)
     var pixBlocks = []
-    
+
     // just a convenient shortcut
     var pixblocksInfo = pixBinIndex.pixblocksInfo;
 
@@ -62,12 +70,12 @@ class PixBinEncoder extends Filter {
       blockEncoder.setMetadata( "compress", that.getMetadata("compress") );
       blockEncoder.update();
       var encodedBlock = blockEncoder.getOutput();
-      
+
       if( !encodedBlock ){
         console.warn("The input of category " + category + " could not be encoded as a PixBlock.");
         return;
       }
-      
+
       // adding an entry to the PixBin index
       var pixBinIndexEntry = {
         type        : input.constructor.name,
@@ -75,7 +83,7 @@ class PixBinEncoder extends Filter {
         byteLength  : encodedBlock.byteLength,
         checksum    : md5( encodedBlock ),
       };
-      
+
       pixblocksInfo.push( pixBinIndexEntry )
       pixBlocks.push( encodedBlock )
     });
@@ -89,20 +97,19 @@ class PixBinEncoder extends Filter {
     // - A ASCII string "pixpipe". 7 x Uint8 of charcodes (7 bytes)
     // - A flag for encoding endianess, 0: big, 1: little. 1 x Uint8 (1 byte)
     // - The byte length of the PixBin meta binary object. 1 x Uint32 (4 bytes)
-    
+
     // encoding the meta object into an ArrayBuffer
     var pixBinIndexBinaryString = CodecUtils.objectToArrayBuffer(pixBinIndex);
-    
-    var fixedHeader = new ArrayBuffer( 12 );
+    var magicNumber = PixBinEncoder.MAGIC_NUMBER();
+
+    // the +5 stands for 1 endiannes byte (Uint8) + 4 bytes (1xUint32) of header length
+    var fixedHeader = new ArrayBuffer( magicNumber.length + 5 );
     var fixedHeaderView = new DataView( fixedHeader );
-    var message = "pixpipe";
-    CodecUtils.setString8InBuffer( message, fixedHeader );
-    fixedHeaderView.setUint8( message.length, (+isLittleEndian))
-    fixedHeaderView.setUint32( message.length + 1, pixBinIndexBinaryString.byteLength, isLittleEndian );
-    
-    console.log( pixBinIndex );
-    
-    
+
+    CodecUtils.setString8InBuffer( magicNumber, fixedHeader );
+    fixedHeaderView.setUint8( magicNumber.length, (+isLittleEndian))
+    fixedHeaderView.setUint32( magicNumber.length + 1, pixBinIndexBinaryString.byteLength, isLittleEndian );
+
     var allBuffers = [fixedHeader, pixBinIndexBinaryString].concat( pixBlocks )
     this.addTimeRecord("beforeMerge");
     this._output[0] = CodecUtils.mergeBuffers( allBuffers )
