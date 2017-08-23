@@ -36,6 +36,14 @@ class PixBinEncoder extends Filter {
   }
 
 
+  /**
+  * [static]
+  * the first sequence of bytes for a pixbin file is this ASCII string
+  */
+  static MAGIC_NUMBER(){
+    return "PIXPIPE_PIXBIN";
+  }
+
 
   _run(){
     var that = this;
