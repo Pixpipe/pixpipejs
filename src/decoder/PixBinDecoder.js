@@ -11,6 +11,7 @@ import {PixBinDecoder as Decoder} from 'pixbincodec'
 import { Filter } from '../core/Filter.js';
 import { CoreTypes } from '../core/CoreTypes.js';
 
+
 /**
 * A PixBinDecoder instance decodes a *.pixp file and output an Image2D or Image3D.
 * The input, specified by `.addInput(...)` must be an ArrayBuffer
