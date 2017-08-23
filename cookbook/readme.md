@@ -15,6 +15,7 @@ This cookbook will help you to become familiar with the architecture of **Pixpip
   - [Image2D](#image2d)
   - [Image3D](#image3d)
   - [MniVolume](#mnivolume)
+  - [Signal1D](#signal1d)
   - [Filter](#filter)
   - [ImageToImageFilter](#imagetoimagefilter)
 - [Building Pixpipe](#building-pixpipe)
@@ -115,6 +116,10 @@ The equivalent of `Image2D` for 3d datasets. Unlike 2D datasets, 3D ones have a 
 *container*  
 This object is motivated by the medical dataset used internally in the [Montreal Neurological Institute](http://www.mcgill.ca/neuro/about): [NIfTI](https://nifti.nimh.nih.gov/), [Minc2](http://journal.frontiersin.org/article/10.3389/fninf.2016.00035/full) and [MGH/MGZ](https://surfer.nmr.mgh.harvard.edu/fswiki/FsTutorial/MghFormat). They are respectively created by `NiftiDecoder` and `Minc2Decoder`. Keep in mind `MniVolumes` are `Image3D` and uses the same methods.
 
+
+### Signal1D
+*container*
+Like `Image2D` stores a 2D signal, the `Signal1D` is intended to store single dimensional signals.
 
 ### Filter
 *processor interface*  
@@ -241,6 +246,8 @@ A `Filter` should **NEVER** modify the input data.
 - [Open a local  NIfTI/MINC/MGH file and display a mosaic of all the slices, with time series if any](http://pixpipe.github.io/pixpipejs/examples/Image3DToMosaic.html) | [source](https://github.com/Pixpipe/pixpipejs/tree/master/examples/Image3DToMosaic.html)
 - [Open  a local  NIfTI/MINC/MGH file, build a 3D texture and display volume with obliques, show a slider for time series if any](http://pixpipe.github.io/pixpipejs/examples/volume3DNavigatorTime.html) | [source](https://github.com/Pixpipe/pixpipejs/tree/master/examples/volume3DNavigatorTime.html)
 - [Open  a local  NIfTI/MINC/MGH file, build a 3D texture and display volume with obliques, show a slider for time series if any, and adjust contrast with a curve widget](http://pixpipe.github.io/pixpipejs/examples/volume3DNavigatorTimeCurve.html) | [source](https://github.com/Pixpipe/pixpipejs/tree/master/examples/volume3DNavigatorTimeCurve.html)
+- [Encode an Pixpipe object into a PixBin file](http://pixpipe.github.io/pixpipejs/examples/encodePixBin.html) | [source](https://github.com/Pixpipe/pixpipejs/tree/master/examples/encodePixBin.html)
+- [Decode a PixBin file into one or more Pixpipe data structures](http://pixpipe.github.io/pixpipejs/examples/decodePixBin.html) | [source](https://github.com/Pixpipe/pixpipejs/tree/master/examples/decodePixBin.html)
 
 # Create your own custom filter
 As mentioned earlier, a filter must take at least one input et retrieve at least one output, in between the method `.update()` must be called. The only exception to that are `io` filters which are opening or writing from/to a file or an HTML5 canvas.  
