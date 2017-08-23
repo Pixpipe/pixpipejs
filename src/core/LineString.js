@@ -1,10 +1,11 @@
 /*
 * Author   Jonathan Lurie - http://me.jonahanlurie.fr
 * License  MIT
-* Link      https://github.com/jonathanlurie/pixpipejs
+* Link      https://github.com/Pixpipe/pixpipejs
 * Lab       MCIN - Montreal Neurological Institute
 */
 
+import { CoreTypes } from './CoreTypes.js';
 import { PixpipeContainer } from './PixpipeContainer.js';
 
 
@@ -251,5 +252,8 @@ class LineString extends PixpipeContainer {
   
   
 } /* END of class LineString */
+
+// register this type as a CoreType
+CoreTypes.addCoreType( LineString );
 
 export { LineString };

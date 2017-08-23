@@ -2,15 +2,14 @@
 * Author    Jonathan Lurie - http://me.jonahanlurie.fr
 *
 * License   MIT
-* Link      https://github.com/jonathanlurie/pixpipejs
+* Link      https://github.com/Pixpipe/pixpipejs
 * Lab       MCIN - Montreal Neurological Institute
 */
 
-
-import md5 from 'js-md5';
+import { CodecUtils } from 'codecutils';
+import {PixBinDecoder as Decoder} from 'pixbincodec'
 import { Filter } from '../core/Filter.js';
-import { CodecUtils } from './CodecUtils.js';
-import { PixBlockEncoder } from './PixBlockEncoder.js';
+import { CoreTypes } from '../core/CoreTypes.js';
 
 /**
 * A PixBinDecoder instance decodes a *.pixp file and output an Image2D or Image3D.
@@ -24,71 +23,67 @@ class PixBinDecoder extends Filter {
   constructor(){
     super();
     this.addInputValidator(0, ArrayBuffer);
-    this.setMetadata("verifyChecksum", false);
+    this.setMetadata("blockVerification", false);
   }
 
 
   _run(){
-
     if(! this.hasValidInput() ){
       console.warn("PixBinDecoder can only decode ArrayBuffer.");
       return;
     }
-    
-    
-    var verifyChecksum = this.getMetadata("verifyChecksum");
+  
     var input = this._getInput();
-    var inputByteLength = input.byteLength;
-
-    if( inputByteLength < 12 ){
-      console.warn("This buffer does not match a PixBin file.");
+    var decoder = new Decoder();
+    decoder.enableBlockVerification( this.getMetadata("blockVerification") );
+    decoder.setInput( input );
+    
+    // dont go further is buffer is not valid
+    if( !decoder.isValid() ){
+      console.warn("The input buffer is invalid.");
       return;
     }
-
-    // the view to decode the buffer
-    var view = new DataView( input );
-
-    var entryStringLength = 7;
-    var movingByteOffset = 0;
     
-    // this should be "pixpipe"
-    var entryString = CodecUtils.getString8FromBuffer(input, entryStringLength )
-    movingByteOffset = entryStringLength;
-    var isLittleEndian = view.getUint8(movingByteOffset);
-    movingByteOffset += 1;
-    var pixBinIndexBinaryStringByteLength = view.getUint32( movingByteOffset, isLittleEndian );
-    movingByteOffset += 4;
-    var pixBinIndexObj = CodecUtils.ArrayBufferToObject( input.slice(movingByteOffset, movingByteOffset + pixBinIndexBinaryStringByteLength));
-    movingByteOffset += pixBinIndexBinaryStringByteLength;
-    
-    console.log( pixBinIndexObj );
-    
-    var blockDecoder = new pixpipe.PixBlockDecoder();
-    var outputCounter = 0;
-    this._output["meta"] = pixBinIndexObj;
-    
-    for(var i=0; i<pixBinIndexObj.pixblocksInfo.length; i++){
-      var blockInfo = pixBinIndexObj.pixblocksInfo[i];
-      var pixBlock = input.slice(movingByteOffset, movingByteOffset + blockInfo.byteLength);
-      movingByteOffset += blockInfo.byteLength;
-      
-      if( verifyChecksum && md5( pixBlock ) !== blockInfo.checksum){
-        console.warn("Modality " + (i+1) + "/" + pixBinIndexObj.pixblocksInfo.length + " (" + blockInfo.type + ") could not comply to checksum validation." );
-        continue;
-      }
-      
-      blockDecoder.addInput( pixBlock )
-      blockDecoder.update();
-      var decodedBlock = blockDecoder.getOutput();
-      
-      if( decodedBlock ){
-        this._output[outputCounter] = decodedBlock;
-        outputCounter ++;
-      }
-        
-      
+    var pixBinMetaObj = {
+      creationDate: decoder.getBinCreationDate(),
+      description: decoder.getBinDescription(),
+      userObject: decoder.getBinUserObject(),
+      numberOfBlocks: decoder.getNumberOfBlocks()
     }
     
+    // perform the decoding
+    var numberOfBlocks = decoder.getNumberOfBlocks();
+    
+    for(var i=0; i<numberOfBlocks; i++){
+      var blockType = decoder.getBlockType( i );
+      var block = decoder.fetchBlock( i )
+      var output = null;
+      var objectConstructor = CoreTypes.getCoreType( blockType );
+      
+      // the encoded object matches to a pixpipe type
+      if( objectConstructor ){
+        output = new objectConstructor();
+        output.setRawData( block._data );
+        output.setRawMetadata( block._metadata );
+      }
+      // Fallback on a not-pixpipe type
+      else{
+        var globalObject = CodecUtils.getGlobalObject();
+        if( blockType in globalObject ){
+          output = new globalObject[ blockType ]();
+          output._metadata = block._metadata;
+          output._data = block._data;
+        }
+        
+      }
+      
+      this._output[ i ] = output;
+    }
+    
+    // adding the metadata only if there are blocks
+    if( numberOfBlocks ){
+      this._output[ "PixBinMeta" ] = pixBinMetaObj;
+    }
   }
 
 

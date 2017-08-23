@@ -1,21 +1,20 @@
 <html>
 <head>
-  <title>File to Pixp</title>
+  <title>Decode PixBin</title>
 
   <script src="../dist/pixpipe.js"></script>
   <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700,900" rel="stylesheet">
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-  <h1><a href="https://github.com/jonathanlurie/pixpipejs"><span style="color: #ff91d7">Pixpipe</span><span style="color: #FFFFFF">js</span></a></h1>
+  <h1><a href="https://github.com/Pixpipe/pixpipejs"><span style="color: #ff91d7">Pixpipe</span><span style="color: #FFFFFF">js</span></a></h1>
   <p>
   This does the following :
   <ul>
-    <li>open a local Pixp file, using <code>pixpipe.FileToArrayBufferReader</code></li>
+    <li>open a local Pixb file, using <code>pixpipe.FileToArrayBufferReader</code></li>
     <li>redirect the file buffer into a <code>pixpipe.PixBinDecoder</code></li>
-    <li>get the output as a generic <code>pixpipe.Image3D</code> object</li>
-    <li><code>slice()</code> the volume 3 times, along 3 given axis to get 3 <code>pixpipe.Image2D</code> objects</li>
-    <li>display the images in separate canvas using a single instance of <code>pixpipe.CanvasImageWriter</code></li>
+    <li>get the outputs as a generic that a possibly <code>pixpipe.Image3D</code> or <code>pixpipe.Image2D</code> object</li>
+    <li>display outputs in separate canvas using a single instance of <code>pixpipe.CanvasImageWriter</code></li>
   </ul>
 
   </p>
@@ -24,7 +23,7 @@
 		Select an file:
 		<input type="file" id="fileInput">
     <br>
-    <span id="fileInfo"></span>
+    <div id="fileInfo"></div>
 	</div>
 
   <div id="myDiv"></div>
@@ -34,6 +33,7 @@
   window.onload = function() {
 
     var fileInput = document.getElementById('fileInput');
+    var fileInfo = document.getElementById('fileInfo')
 
     // The filter to read image from URL
     var file2Buff = new pixpipe.FileToArrayBufferReader();
@@ -57,18 +57,33 @@
       pixBinDecoder.addInput( buff );
       pixBinDecoder.update();
 
-
-
+      // deal with each output
       pixBinDecoder.forEachOutput(function(category, output){
+        // this output is special because it carries the PixBin metadata
+        if( category === "PixBinMeta" ){
+          fileInfo.innerHTML += "File creation data: " + output.creationDate + "<br>";
+          fileInfo.innerHTML += "Number of blocks (modality): " + output.numberOfBlocks + "<br>";
+          
+          if( output.description )
+            fileInfo.innerHTML += "File description: " + output.description + "<br>";
+            
+          if( output.userObject )
+            fileInfo.innerHTML += "User object: " + JSON.stringify( output.userObject ) + "<br>";
+        }
+        
         console.log( output );
         
         if( category === "meta" ){
           return;
         }
         
+        if( !output )
+          return;
+          
+        if( !("isOfType" in output) )
+          return;
 
-
-        if(output && output.isOfType(pixpipe.Image3D.TYPE()) ){ 
+        if( output.isOfType(pixpipe.Image3D.TYPE()) ){ 
           
           // replace the default min max values of [0, 255]
           imageToCanvasFilter.setMetadata("min", output.getMetadata("voxel_min"));
