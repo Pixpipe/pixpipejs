@@ -1,7 +1,7 @@
 /*
 * Author   Jonathan Lurie - http://me.jonahanlurie.fr
 * License  MIT
-* Link      https://github.com/jonathanlurie/pixpipejs
+* Link      https://github.com/Pixpipe/pixpipejs
 * Lab       MCIN - Montreal Neurological Institute
 */
 
@@ -151,6 +151,21 @@ class PixpipeObject {
       return defaultValue;
       
     return optionsObject[ key ] || defaultValue;
+  }
+
+
+  /**
+  * Verifies if the metadata object contain a cyclic object.
+  * @return {Boolean} true if metadata is cyclic, false if not
+  */
+  isMetadataCyclic(){
+    try{
+      JSON.stringify( this._metadata )
+    }catch(e){
+      return true;
+    }
+    
+    return false;
   }
 
 }

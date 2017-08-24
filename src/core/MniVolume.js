@@ -1,12 +1,12 @@
 /*
 * Author   Jonathan Lurie - http://me.jonahanlurie.fr
 * License  MIT
-* Link      https://github.com/jonathanlurie/pixpipejs
+* Link      https://github.com/Pixpipe/pixpipejs
 * Lab       MCIN - Montreal Neurological Institute
 */
 
+import { CoreTypes } from './CoreTypes.js';
 import { Image3D } from './Image3D.js';
-import { Image2D } from './Image2D.js';
 
 /**
 * MniVolume instance are like Image3D but include some brain things
@@ -150,7 +150,7 @@ class MniVolume extends Image3D{
     // adding some fields to metadata header
     this._finishHeader()
 
-    console.log(this._metadata);
+    console.log(this);
   }
 
 
@@ -208,5 +208,8 @@ class MniVolume extends Image3D{
 
 
 } /* END of class Image3D */
+
+// register this type as a CoreType
+CoreTypes.addCoreType( MniVolume );
 
 export { MniVolume }

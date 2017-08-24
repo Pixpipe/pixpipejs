@@ -1,6 +1,6 @@
 <html>
 <head>
-  <title>File to Jpeg</title>
+  <title>Multiple Image2D</title>
 
   <script src="../dist/pixpipe.js"></script>
   <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700,900" rel="stylesheet">
@@ -11,8 +11,8 @@
   <p>
   This does the following :
   <ul>
-    <li>open a local Png file, using <code>pixpipe.FileToArrayBufferReader</code></li>
-    <li>redirect the file buffer into a <code>pixpipe.PngDecoder</code> to extract tiff dataset and metadata</li>
+    <li>opening a local image file, using <code>pixpipe.FileToArrayBufferReader</code></li>
+    <li>redirect the file buffer into a <code>pixpipe.Image2DGenericDecoder</code></li>
     <li>get the output as a generic <code>pixpipe.Image2D</code> object</li>
     <li>display the image using <code>pixpipe.CanvasImageWriter</code></li>
   </ul>
@@ -20,11 +20,11 @@
   </p>
 
   <div>
-		Select an file:
-		<input type="file" id="fileInput">
+    Select an file:
+    <input type="file" id="fileInput" multiple="multiple">
     <br>
-    <span id="fileInfo"></span>
-	</div>
+    <span id="fileInfo"></span>  
+  </div>
 
   <div id="myDiv"></div>
 
@@ -32,6 +32,12 @@
   window.onload = function() {
 
     var fileInput = document.getElementById('fileInput');
+    
+    var imageToCanvasFilter = new pixpipe.CanvasImageWriter( );
+    imageToCanvasFilter.setMetadata( "parentDivID", "myDiv" );
+    imageToCanvasFilter.setMetadata( "reset", false );
+    
+    var pixBinEncoder = new pixpipe.PixBinEncoder();
 
     // The filter to read image from URL
     var file2Buff = new pixpipe.FileToArrayBufferReader();
@@ -42,22 +48,19 @@
 
       var filenames = this.getMetadata("filenames");
 
-      var buff = this.getOutput();
-
-      var pngDecoder = new pixpipe.PngDecoder();
-      pngDecoder.addInput( buff );
-      pngDecoder.update();
-
-      if( pngDecoder.getNumberOfOutputs() ){
-        var img = pngDecoder.getOutput();
+      file2Buff.forEachOutput( function( category, buffer){
         
-        // create a filter to write the image into a canvas
-        var imageToCanvasFilter = new pixpipe.CanvasImageWriter( );
-        imageToCanvasFilter.setMetadata( "parentDivID", "myDiv" );
-        imageToCanvasFilter.addInput( img );
-        imageToCanvasFilter.update();
-      }
-      
+        var decoder = new pixpipe.Image2DGenericDecoder();
+        decoder.addInput( buffer );
+        decoder.update();
+
+        if( decoder.getNumberOfOutputs() ){
+          imageToCanvasFilter.addInput( decoder.getOutput() );
+          imageToCanvasFilter.update();
+        }
+        
+      })
+
     });
 
 

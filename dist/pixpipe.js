@@ -7,7 +7,60 @@
 /*
 * Author   Jonathan Lurie - http://me.jonahanlurie.fr
 * License  MIT
-* Link      https://github.com/jonathanlurie/pixpipejs
+* Link     https://github.com/Pixpipe/pixpipejs
+* Lab      MCIN - Montreal Neurological Institute
+*/
+
+
+// The index types are stored in this sort-of-private/sort-of-static object.
+var coreTypes = {};
+
+/**
+* CoreTypes is bit of an exception in Pixpipejs because it does not inherit from
+* PixpipeObject and it contains only static methods. In a sens, it's comparable
+* to a singleton that stores all the core types constructors of Pixpipe so that
+* they can be retrived only by querying their name.
+* 
+* At the creation of a new type, the static method `.addCoreType()` should be
+* called right after the closing curly bracket of the class declaration.
+* This is if we want to reference this class as a core type.
+*/
+class CoreTypes {
+  
+  /**
+  * [STATIC]
+  * Adds a new type to the collection of core types. This is used when we want
+  * to retrieve a type and instanciate an object of this type using its constructor name.
+  * @param {Class} typeClass  - the class of the type
+  */
+  static addCoreType( typeClass ){
+    if( typeof typeClass === "function" ){
+      coreTypes[ typeClass.name ] = typeClass;
+    }
+  }
+  
+  
+  /**
+  * [STATIC]
+  * Return the constructor of the given type name. This is useful to instanciate 
+  * an object based on the name of its type (eg. in PixBinDecoder)
+  * @param {String} typeName - the name of the type eg. "Image2D"
+  * @return {Function} constructor for the given type
+  */
+  static getCoreType( typeName ){
+    if( typeName in coreTypes ){
+      return coreTypes[ typeName ]
+    }else{
+      return null;
+    }
+  }
+  
+}
+
+/*
+* Author   Jonathan Lurie - http://me.jonahanlurie.fr
+* License  MIT
+* Link      https://github.com/Pixpipe/pixpipejs
 * Lab       MCIN - Montreal Neurological Institute
 */
 
@@ -159,12 +212,27 @@ class PixpipeObject {
     return optionsObject[ key ] || defaultValue;
   }
 
+
+  /**
+  * Verifies if the metadata object contain a cyclic object.
+  * @return {Boolean} true if metadata is cyclic, false if not
+  */
+  isMetadataCyclic(){
+    try{
+      JSON.stringify( this._metadata );
+    }catch(e){
+      return true;
+    }
+    
+    return false;
+  }
+
 }
 
 /*
 * Author   Jonathan Lurie - http://me.jonahanlurie.fr
 * License  MIT
-* Link      https://github.com/jonathanlurie/pixpipejs
+* Link      https://github.com/Pixpipe/pixpipejs
 * Lab       MCIN - Montreal Neurological Institute
 */
 
@@ -466,6 +534,11 @@ class Filter extends PixpipeObject {
   * Launch the process.
   */
   update(){
+    // flush any existing output previously computed. Usefull when a filter is ran more than once.
+    // If no output is created the second time, the output from the previous time cannot be used instead
+    // (leading the user to think the second run created an output while it's actually the one from the first run) 
+    this._output = {};
+    
     if( this._metadata.time ){
       this.addTimeRecord("begin");
       this._run();
@@ -581,13 +654,19 @@ class Filter extends PixpipeObject {
   }
 
 
+  /**
+  * Remove all the inputs given so far.
+  */
+  clearAllInputs(){
+    this._input = {};
+  }
 
 } /* END class Filter */
 
 /*
 * Author   Jonathan Lurie - http://me.jonahanlurie.fr
 * License  MIT
-* Link      https://github.com/jonathanlurie/pixpipejs
+* Link      https://github.com/Pixpipe/pixpipejs
 * Lab       MCIN - Montreal Neurological Institute
 */
 
@@ -629,6 +708,7 @@ class PixpipeContainer extends PixpipeObject {
  * Link     https://github.com/Pixpipe/pixpipejs
  * Lab      MCIN - Montreal Neurological Institute
  */
+ 
 class Signal1D extends PixpipeContainer {
   constructor() {
     super();
@@ -670,10 +750,13 @@ class Signal1D extends PixpipeContainer {
   }
 }
 
+// register this type as a CoreType
+CoreTypes.addCoreType( Signal1D );
+
 /*
 * Author   Jonathan Lurie - http://me.jonahanlurie.fr
 * License  MIT
-* Link      https://github.com/jonathanlurie/pixpipejs
+* Link      https://github.com/Pixpipe/pixpipejs
 * Lab       MCIN - Montreal Neurological Institute
 */
 
@@ -1159,10 +1242,13 @@ class Image2D extends PixpipeContainer{
 
 } /* END of class Image2D */
 
+// register this type as a CoreType
+CoreTypes.addCoreType( Image2D );
+
 /*
 * Author   Jonathan Lurie - http://me.jonahanlurie.fr
 * License  MIT
-* Link      https://github.com/jonathanlurie/pixpipejs
+* Link      https://github.com/Pixpipe/pixpipejs
 * Lab       MCIN - Montreal Neurological Institute
 */
 
@@ -1702,10 +1788,13 @@ class Image3D extends PixpipeContainer{
 
 } /* END of class Image3D */
 
+// register this type as a CoreType
+CoreTypes.addCoreType( Image3D );
+
 /*
 * Author   Jonathan Lurie - http://me.jonahanlurie.fr
 * License  MIT
-* Link      https://github.com/jonathanlurie/pixpipejs
+* Link      https://github.com/Pixpipe/pixpipejs
 * Lab       MCIN - Montreal Neurological Institute
 */
 
@@ -1784,7 +1873,7 @@ class ImageToImageFilter extends Filter {
 /*
 * Author   Jonathan Lurie - http://me.jonahanlurie.fr
 * License  MIT
-* Link      https://github.com/jonathanlurie/pixpipejs
+* Link      https://github.com/Pixpipe/pixpipejs
 * Lab       MCIN - Montreal Neurological Institute
 */
 
@@ -1930,7 +2019,7 @@ class MniVolume extends Image3D{
     // adding some fields to metadata header
     this._finishHeader();
 
-    console.log(this._metadata);
+    console.log(this);
   }
 
 
@@ -1989,10 +2078,13 @@ class MniVolume extends Image3D{
 
 } /* END of class Image3D */
 
+// register this type as a CoreType
+CoreTypes.addCoreType( MniVolume );
+
 /*
 * Author   Jonathan Lurie - http://me.jonahanlurie.fr
 * License  MIT
-* Link      https://github.com/jonathanlurie/pixpipejs
+* Link      https://github.com/Pixpipe/pixpipejs
 * Lab       MCIN - Montreal Neurological Institute
 */
 
@@ -2240,10 +2332,13 @@ class LineString extends PixpipeContainer {
   
 } /* END of class LineString */
 
+// register this type as a CoreType
+CoreTypes.addCoreType( LineString );
+
 /*
 * Author   Jonathan Lurie - http://me.jonahanlurie.fr
 * License  MIT
-* Link      https://github.com/jonathanlurie/pixpipejs
+* Link      https://github.com/Pixpipe/pixpipejs
 * Lab       MCIN - Montreal Neurological Institute
 */
 
@@ -2444,7 +2539,7 @@ class CanvasImageWriter extends Filter{
 /*
 * Author   Jonathan Lurie - http://me.jonahanlurie.fr
 * License  MIT
-* Link      https://github.com/jonathanlurie/pixpipejs
+* Link      https://github.com/Pixpipe/pixpipejs
 * Lab       MCIN - Montreal Neurological Institute
 */
 
@@ -2540,7 +2635,7 @@ class UrlImageReader extends Filter {
 /*
 * Author   Jonathan Lurie - http://me.jonahanlurie.fr
 * License  MIT
-* Link      https://github.com/jonathanlurie/pixpipejs
+* Link      https://github.com/Pixpipe/pixpipejs
 * Lab       MCIN - Montreal Neurological Institute
 */
 
@@ -12278,7 +12373,7 @@ var index$1 = pako;
 /*
 * Author   Jonathan Lurie - http://me.jonahanlurie.fr
 * License  MIT
-* Link      https://github.com/jonathanlurie/pixpipejs
+* Link      https://github.com/Pixpipe/pixpipejs
 * Lab       MCIN - Montreal Neurological Institute
 */
 
@@ -12390,7 +12485,7 @@ class FileToArrayBufferReader extends Filter {
 /*
 * Author   Jonathan Lurie - http://me.jonahanlurie.fr
 * License  MIT
-* Link      https://github.com/jonathanlurie/pixpipejs
+* Link      https://github.com/Pixpipe/pixpipejs
 * Lab       MCIN - Montreal Neurological Institute
 */
 
@@ -12492,12 +12587,237 @@ class UrlToArrayBufferReader extends Filter {
 
 } /* END of class UrlToArrayBufferReader */
 
+var FileSaver = createCommonjsModule(function (module) {
+/* FileSaver.js
+ * A saveAs() FileSaver implementation.
+ * 1.3.2
+ * 2016-06-16 18:25:19
+ *
+ * By Eli Grey, http://eligrey.com
+ * License: MIT
+ *   See https://github.com/eligrey/FileSaver.js/blob/master/LICENSE.md
+ */
+
+/*global self */
+/*jslint bitwise: true, indent: 4, laxbreak: true, laxcomma: true, smarttabs: true, plusplus: true */
+
+/*! @source http://purl.eligrey.com/github/FileSaver.js/blob/master/FileSaver.js */
+
+var saveAs = saveAs || (function(view) {
+	"use strict";
+	// IE <10 is explicitly unsupported
+	if (typeof view === "undefined" || typeof navigator !== "undefined" && /MSIE [1-9]\./.test(navigator.userAgent)) {
+		return;
+	}
+	var
+		  doc = view.document
+		  // only get URL when necessary in case Blob.js hasn't overridden it yet
+		, get_URL = function() {
+			return view.URL || view.webkitURL || view;
+		}
+		, save_link = doc.createElementNS("http://www.w3.org/1999/xhtml", "a")
+		, can_use_save_link = "download" in save_link
+		, click = function(node) {
+			var event = new MouseEvent("click");
+			node.dispatchEvent(event);
+		}
+		, is_safari = /constructor/i.test(view.HTMLElement) || view.safari
+		, is_chrome_ios =/CriOS\/[\d]+/.test(navigator.userAgent)
+		, throw_outside = function(ex) {
+			(view.setImmediate || view.setTimeout)(function() {
+				throw ex;
+			}, 0);
+		}
+		, force_saveable_type = "application/octet-stream"
+		// the Blob API is fundamentally broken as there is no "downloadfinished" event to subscribe to
+		, arbitrary_revoke_timeout = 1000 * 40 // in ms
+		, revoke = function(file) {
+			var revoker = function() {
+				if (typeof file === "string") { // file is an object URL
+					get_URL().revokeObjectURL(file);
+				} else { // file is a File
+					file.remove();
+				}
+			};
+			setTimeout(revoker, arbitrary_revoke_timeout);
+		}
+		, dispatch = function(filesaver, event_types, event) {
+			event_types = [].concat(event_types);
+			var i = event_types.length;
+			while (i--) {
+				var listener = filesaver["on" + event_types[i]];
+				if (typeof listener === "function") {
+					try {
+						listener.call(filesaver, event || filesaver);
+					} catch (ex) {
+						throw_outside(ex);
+					}
+				}
+			}
+		}
+		, auto_bom = function(blob) {
+			// prepend BOM for UTF-8 XML and text/* types (including HTML)
+			// note: your browser will automatically convert UTF-16 U+FEFF to EF BB BF
+			if (/^\s*(?:text\/\S*|application\/xml|\S*\/\S*\+xml)\s*;.*charset\s*=\s*utf-8/i.test(blob.type)) {
+				return new Blob([String.fromCharCode(0xFEFF), blob], {type: blob.type});
+			}
+			return blob;
+		}
+		, FileSaver = function(blob, name, no_auto_bom) {
+			if (!no_auto_bom) {
+				blob = auto_bom(blob);
+			}
+			// First try a.download, then web filesystem, then object URLs
+			var
+				  filesaver = this
+				, type = blob.type
+				, force = type === force_saveable_type
+				, object_url
+				, dispatch_all = function() {
+					dispatch(filesaver, "writestart progress write writeend".split(" "));
+				}
+				// on any filesys errors revert to saving with object URLs
+				, fs_error = function() {
+					if ((is_chrome_ios || (force && is_safari)) && view.FileReader) {
+						// Safari doesn't allow downloading of blob urls
+						var reader = new FileReader();
+						reader.onloadend = function() {
+							var url = is_chrome_ios ? reader.result : reader.result.replace(/^data:[^;]*;/, 'data:attachment/file;');
+							var popup = view.open(url, '_blank');
+							if(!popup) view.location.href = url;
+							url=undefined; // release reference before dispatching
+							filesaver.readyState = filesaver.DONE;
+							dispatch_all();
+						};
+						reader.readAsDataURL(blob);
+						filesaver.readyState = filesaver.INIT;
+						return;
+					}
+					// don't create more object URLs than needed
+					if (!object_url) {
+						object_url = get_URL().createObjectURL(blob);
+					}
+					if (force) {
+						view.location.href = object_url;
+					} else {
+						var opened = view.open(object_url, "_blank");
+						if (!opened) {
+							// Apple does not allow window.open, see https://developer.apple.com/library/safari/documentation/Tools/Conceptual/SafariExtensionGuide/WorkingwithWindowsandTabs/WorkingwithWindowsandTabs.html
+							view.location.href = object_url;
+						}
+					}
+					filesaver.readyState = filesaver.DONE;
+					dispatch_all();
+					revoke(object_url);
+				};
+			filesaver.readyState = filesaver.INIT;
+
+			if (can_use_save_link) {
+				object_url = get_URL().createObjectURL(blob);
+				setTimeout(function() {
+					save_link.href = object_url;
+					save_link.download = name;
+					click(save_link);
+					dispatch_all();
+					revoke(object_url);
+					filesaver.readyState = filesaver.DONE;
+				});
+				return;
+			}
+
+			fs_error();
+		}
+		, FS_proto = FileSaver.prototype
+		, saveAs = function(blob, name, no_auto_bom) {
+			return new FileSaver(blob, name || blob.name || "download", no_auto_bom);
+		};
+	// IE 10+ (native saveAs)
+	if (typeof navigator !== "undefined" && navigator.msSaveOrOpenBlob) {
+		return function(blob, name, no_auto_bom) {
+			name = name || blob.name || "download";
+
+			if (!no_auto_bom) {
+				blob = auto_bom(blob);
+			}
+			return navigator.msSaveOrOpenBlob(blob, name);
+		};
+	}
+
+	FS_proto.abort = function(){};
+	FS_proto.readyState = FS_proto.INIT = 0;
+	FS_proto.WRITING = 1;
+	FS_proto.DONE = 2;
+
+	FS_proto.error =
+	FS_proto.onwritestart =
+	FS_proto.onprogress =
+	FS_proto.onwrite =
+	FS_proto.onabort =
+	FS_proto.onerror =
+	FS_proto.onwriteend =
+		null;
+
+	return saveAs;
+}(
+	   typeof self !== "undefined" && self
+	|| typeof window !== "undefined" && window
+	|| commonjsGlobal.content
+));
+// `self` is undefined in Firefox for Android content script context
+// while `this` is nsIContentFrameMessageManager
+// with an attribute `content` that corresponds to the window
+
+if ('object' !== "undefined" && module.exports) {
+  module.exports.saveAs = saveAs;
+} else if ((typeof undefined !== "undefined" && undefined !== null) && (undefined.amd !== null)) {
+  undefined("FileSaver.js", function() {
+    return saveAs;
+  });
+}
+});
+
+/**
+* An instance of BrowserDownloadBuffer takes an ArrayBuffer as input and triggers
+* a download when `update()` is called. This is for **browser only**!  
+* A filename must be specified using `.setMetadata( "filename", "myFile.ext" )`.
+*
+*/
+class BrowserDownloadBuffer extends Filter {
+  constructor(){
+    super();
+    this.addInputValidator(0, ArrayBuffer);
+    this.setMetadata( "filename", null );
+  }
+  
+  
+  _run(){
+    if(! this.hasValidInput() ){
+      console.warn("BrowserDownloadBuffer uses only ArrayBuffer.");
+      return;
+    }
+    
+    var filename = this.getMetadata( "filename" );
+    
+    if( !filename ){
+      console.warn("A filename must be specified. Use the method `.setMetadata('filename', 'theFile.ext')` on this filter.");
+      return;
+    }
+    
+    // making a blob
+    var blob = new Blob( [this._getInput()], {type: 'application/octet-binary'} );
+    
+    // triggers the download of the file
+    FileSaver.saveAs( blob, filename);
+  }
+  
+} /* END of class BrowserDownloadBuffer */
+
 /*
 * Author    Jonathan Lurie - http://me.jonahanlurie.fr
 *           Robert D. Vincent
 *
 * License   MIT
-* Link      https://github.com/jonathanlurie/pixpipejs
+* Link      https://github.com/Pixpipe/pixpipejs
 * Lab       MCIN - Montreal Neurological Institute
 */
 
@@ -15340,7 +15660,7 @@ class Minc2Decoder extends Filter{
 *           Robert D. Vincent
 *
 * License   MIT
-* Link      https://github.com/jonathanlurie/pixpipejs
+* Link      https://github.com/Pixpipe/pixpipejs
 * Lab       MCIN - Montreal Neurological Institute
 */
 
@@ -15648,11 +15968,20 @@ class NiftiDecoder extends Filter {
       return;
     }
 
-    var header = this.parseNifti1Header( inputBuffer );
+    var header = null;
+    try{
+      header = this.parseNifti1Header( inputBuffer );
+    }catch(e){
+      //console.warn( e );
+    }
+    
 
     // abort if header not valid
-    if(!header)
+    if(!header){
+      console.warn("This file is not a NIfTI file.");
       return;
+    }
+      
 
     var dataArray = this.createNifti1Data(header, inputBuffer);
 
@@ -15667,200 +15996,11 @@ class NiftiDecoder extends Filter {
 
 } /* END class NiftiDecoder */
 
-var FileSaver = createCommonjsModule(function (module) {
-/* FileSaver.js
- * A saveAs() FileSaver implementation.
- * 1.3.2
- * 2016-06-16 18:25:19
- *
- * By Eli Grey, http://eligrey.com
- * License: MIT
- *   See https://github.com/eligrey/FileSaver.js/blob/master/LICENSE.md
- */
-
-/*global self */
-/*jslint bitwise: true, indent: 4, laxbreak: true, laxcomma: true, smarttabs: true, plusplus: true */
-
-/*! @source http://purl.eligrey.com/github/FileSaver.js/blob/master/FileSaver.js */
-
-var saveAs = saveAs || (function(view) {
-	"use strict";
-	// IE <10 is explicitly unsupported
-	if (typeof view === "undefined" || typeof navigator !== "undefined" && /MSIE [1-9]\./.test(navigator.userAgent)) {
-		return;
-	}
-	var
-		  doc = view.document
-		  // only get URL when necessary in case Blob.js hasn't overridden it yet
-		, get_URL = function() {
-			return view.URL || view.webkitURL || view;
-		}
-		, save_link = doc.createElementNS("http://www.w3.org/1999/xhtml", "a")
-		, can_use_save_link = "download" in save_link
-		, click = function(node) {
-			var event = new MouseEvent("click");
-			node.dispatchEvent(event);
-		}
-		, is_safari = /constructor/i.test(view.HTMLElement) || view.safari
-		, is_chrome_ios =/CriOS\/[\d]+/.test(navigator.userAgent)
-		, throw_outside = function(ex) {
-			(view.setImmediate || view.setTimeout)(function() {
-				throw ex;
-			}, 0);
-		}
-		, force_saveable_type = "application/octet-stream"
-		// the Blob API is fundamentally broken as there is no "downloadfinished" event to subscribe to
-		, arbitrary_revoke_timeout = 1000 * 40 // in ms
-		, revoke = function(file) {
-			var revoker = function() {
-				if (typeof file === "string") { // file is an object URL
-					get_URL().revokeObjectURL(file);
-				} else { // file is a File
-					file.remove();
-				}
-			};
-			setTimeout(revoker, arbitrary_revoke_timeout);
-		}
-		, dispatch = function(filesaver, event_types, event) {
-			event_types = [].concat(event_types);
-			var i = event_types.length;
-			while (i--) {
-				var listener = filesaver["on" + event_types[i]];
-				if (typeof listener === "function") {
-					try {
-						listener.call(filesaver, event || filesaver);
-					} catch (ex) {
-						throw_outside(ex);
-					}
-				}
-			}
-		}
-		, auto_bom = function(blob) {
-			// prepend BOM for UTF-8 XML and text/* types (including HTML)
-			// note: your browser will automatically convert UTF-16 U+FEFF to EF BB BF
-			if (/^\s*(?:text\/\S*|application\/xml|\S*\/\S*\+xml)\s*;.*charset\s*=\s*utf-8/i.test(blob.type)) {
-				return new Blob([String.fromCharCode(0xFEFF), blob], {type: blob.type});
-			}
-			return blob;
-		}
-		, FileSaver = function(blob, name, no_auto_bom) {
-			if (!no_auto_bom) {
-				blob = auto_bom(blob);
-			}
-			// First try a.download, then web filesystem, then object URLs
-			var
-				  filesaver = this
-				, type = blob.type
-				, force = type === force_saveable_type
-				, object_url
-				, dispatch_all = function() {
-					dispatch(filesaver, "writestart progress write writeend".split(" "));
-				}
-				// on any filesys errors revert to saving with object URLs
-				, fs_error = function() {
-					if ((is_chrome_ios || (force && is_safari)) && view.FileReader) {
-						// Safari doesn't allow downloading of blob urls
-						var reader = new FileReader();
-						reader.onloadend = function() {
-							var url = is_chrome_ios ? reader.result : reader.result.replace(/^data:[^;]*;/, 'data:attachment/file;');
-							var popup = view.open(url, '_blank');
-							if(!popup) view.location.href = url;
-							url=undefined; // release reference before dispatching
-							filesaver.readyState = filesaver.DONE;
-							dispatch_all();
-						};
-						reader.readAsDataURL(blob);
-						filesaver.readyState = filesaver.INIT;
-						return;
-					}
-					// don't create more object URLs than needed
-					if (!object_url) {
-						object_url = get_URL().createObjectURL(blob);
-					}
-					if (force) {
-						view.location.href = object_url;
-					} else {
-						var opened = view.open(object_url, "_blank");
-						if (!opened) {
-							// Apple does not allow window.open, see https://developer.apple.com/library/safari/documentation/Tools/Conceptual/SafariExtensionGuide/WorkingwithWindowsandTabs/WorkingwithWindowsandTabs.html
-							view.location.href = object_url;
-						}
-					}
-					filesaver.readyState = filesaver.DONE;
-					dispatch_all();
-					revoke(object_url);
-				};
-			filesaver.readyState = filesaver.INIT;
-
-			if (can_use_save_link) {
-				object_url = get_URL().createObjectURL(blob);
-				setTimeout(function() {
-					save_link.href = object_url;
-					save_link.download = name;
-					click(save_link);
-					dispatch_all();
-					revoke(object_url);
-					filesaver.readyState = filesaver.DONE;
-				});
-				return;
-			}
-
-			fs_error();
-		}
-		, FS_proto = FileSaver.prototype
-		, saveAs = function(blob, name, no_auto_bom) {
-			return new FileSaver(blob, name || blob.name || "download", no_auto_bom);
-		};
-	// IE 10+ (native saveAs)
-	if (typeof navigator !== "undefined" && navigator.msSaveOrOpenBlob) {
-		return function(blob, name, no_auto_bom) {
-			name = name || blob.name || "download";
-
-			if (!no_auto_bom) {
-				blob = auto_bom(blob);
-			}
-			return navigator.msSaveOrOpenBlob(blob, name);
-		};
-	}
-
-	FS_proto.abort = function(){};
-	FS_proto.readyState = FS_proto.INIT = 0;
-	FS_proto.WRITING = 1;
-	FS_proto.DONE = 2;
-
-	FS_proto.error =
-	FS_proto.onwritestart =
-	FS_proto.onprogress =
-	FS_proto.onwrite =
-	FS_proto.onabort =
-	FS_proto.onerror =
-	FS_proto.onwriteend =
-		null;
-
-	return saveAs;
-}(
-	   typeof self !== "undefined" && self
-	|| typeof window !== "undefined" && window
-	|| commonjsGlobal.content
-));
-// `self` is undefined in Firefox for Android content script context
-// while `this` is nsIContentFrameMessageManager
-// with an attribute `content` that corresponds to the window
-
-if ('object' !== "undefined" && module.exports) {
-  module.exports.saveAs = saveAs;
-} else if ((typeof undefined !== "undefined" && undefined !== null) && (undefined.amd !== null)) {
-  undefined("FileSaver.js", function() {
-    return saveAs;
-  });
-}
-});
-
 /*
 * Author    Jonathan Lurie - http://me.jonahanlurie.fr
 *
 * License   MIT
-* Link      https://github.com/jonathanlurie/pixpipejs
+* Link      https://github.com/Pixpipe/pixpipejs
 * Lab       MCIN - Montreal Neurological Institute
 */
 
@@ -15951,7 +16091,7 @@ class PixpEncoder extends Filter {
 * Author    Jonathan Lurie - http://me.jonahanlurie.fr
 *
 * License   MIT
-* Link      https://github.com/jonathanlurie/pixpipejs
+* Link      https://github.com/Pixpipe/pixpipejs
 * Lab       MCIN - Montreal Neurological Institute
 */
 
@@ -16046,7 +16186,7 @@ class PixpDecoder extends Filter {
 *           Robert D. Vincent
 *
 * License   MIT
-* Link      https://github.com/jonathanlurie/pixpipejs
+* Link      https://github.com/Pixpipe/pixpipejs
 * Lab       MCIN - Montreal Neurological Institute
 */
 
@@ -16343,11 +16483,21 @@ class MghDecoder extends Filter {
       return;
     }
 
-    var header = this._parseMGHHeader( inputBuffer );
+    var header = null;
+    
+    try{
+      header = this._parseMGHHeader( inputBuffer );
+    }catch(e){
+      //console.warn( e );
+    }
+    
 
     // abort if header not valid
-    if(!header)
+    if(!header){
+      console.log("The input file is not a MGH file.");
       return;
+    }
+      
 
 
     var dataArray = this._createMGHData(header, inputBuffer);
@@ -16369,100 +16519,15 @@ class MghDecoder extends Filter {
 * Author    Jonathan Lurie - http://me.jonahanlurie.fr
 *
 * License   MIT
-* Link      https://github.com/jonathanlurie/pixpipejs
-* Lab       MCIN - Montreal Neurological Institute
-*/
-
-/**
-* A PixBinDecoder instance decodes a *.pixp file and output an Image2D or Image3D.
-* The input, specified by `.addInput(...)` must be an ArrayBuffer
-* (from an `UrlToArrayBufferFilter`, an `UrlToArrayBufferReader` or anothrer source ).
-*
-* **Usage**
-* - [examples/pixpFileToImage2D.html](../examples/pixpFileToImage2D.html)
-*/
-class PixBinDecoder extends Filter {
-  constructor(){
-    super();
-    this.addInputValidator(0, ArrayBuffer);
-  }
-
-
-  _run(){
-
-    if(! this.hasValidInput() ){
-      console.warn("PixBinDecoder can only decode ArrayBuffer.");
-      return;
-    }
-
-    var input = this._getInput();
-    var inputByteLength = input.byteLength;
-
-    // the view to decode the buffer
-    var view = new DataView( input );
-    var offsetFromHere = 0;
-    
-    // fetch the extendedMetadata string length
-    var extendedMetadataStringLength = view.getUint32( offsetFromHere );
-    offsetFromHere += 4;
-    
-    // getting extendedMetadata
-    var extendedMetadataBytes = new Uint8Array(input, offsetFromHere, extendedMetadataStringLength);
-    var extendedMetadata = JSON.parse( String.fromCharCode( ...extendedMetadataBytes ) );
-    offsetFromHere += extendedMetadataStringLength;
-    
-    // getting the data
-    var constructorHost = null;
-    
-    try{
-      constructorHost = window; // in a web browser
-    }catch( e ){
-      try{
-        constructorHost = GLOBAL; // in node
-      }catch( e ){
-        console.warn( "You are not in a Javascript environment?? Weird." );
-        return;
-      }
-    }
-    
-    if(! constructorHost[ extendedMetadata.dataType ]){
-      console.warn( "Data array from pixb file is unknown: " + extendedMetadata.dataType );
-      return;
-    }
-    
-    /*
-      There is a known issues in JS that a TypedArray cannot be created starting at a non-multiple-of-2 start offset 
-      if the type of data within this array is supposed to take more than one byte (ie. Uint16, Float32, etc.).
-      The error is stated like that (in Chrome):
-      "Uncaught RangeError: start offset of Uint16Array should be a multiple of 2"
-      When it comes to Float32, Chrome wants an offset that is multiple of 4, and so on.
-      
-      The workaround is to slice the buffer to take only the data part of it (basically to remove what is before)
-      so that this new array starts with an offset 0, no matter what was before.
-    */
-    
-    var data = new constructorHost[ extendedMetadata.dataType ]( input.slice( offsetFromHere ) );
-    
-    var output = new pixpipe[ extendedMetadata.pixpipeType ];
-    output.setRawData( data );
-    output.setRawMetadata( extendedMetadata.metadata );
-
-    this._output[0] = output;
-  }
-
-
-} /* END of class PixBinDecoder */
-
-/*
-* Author    Jonathan Lurie - http://me.jonahanlurie.fr
-*
-* License   MIT
-* Link      https://github.com/jonathanlurie/pixpipejs
+* Link      https://github.com/Pixpipe/pixpipejs
 * Lab       MCIN - Montreal Neurological Institute
 */
 
 
 // decoders
+//import { PixBinDecoder } from './PixBinDecoder.js';
+
+
 /**
 * An instance of Image3DGenericDecoder takes a ArrayBuffer 
 * as input 0 (`.addInput(myArrayBuffer)`) and output an Image3D.
@@ -16485,7 +16550,7 @@ class Image3DGenericDecoder extends Filter {
       NiftiDecoder,
       MghDecoder,
       PixpDecoder,
-      PixBinDecoder
+      //PixBinDecoder
     ];
   }
   
@@ -20512,7 +20577,7 @@ if (typeof window !== "undefined") {
 /*
 * Author   Jonathan Lurie - http://me.jonahanlurie.fr
 * License  MIT
-* Link      https://github.com/jonathanlurie/pixpipejs
+* Link      https://github.com/Pixpipe/pixpipejs
 * Lab       MCIN - Montreal Neurological Institute
 */
 
@@ -20874,6 +20939,753 @@ class EegModDecoder extends Filter {
 
 } /* END of class EegModDecoder */
 
+var index$2 = createCommonjsModule(function (module) {
+var traverse = module.exports = function (obj) {
+    return new Traverse(obj);
+};
+
+function Traverse (obj) {
+    this.value = obj;
+}
+
+Traverse.prototype.get = function (ps) {
+    var node = this.value;
+    for (var i = 0; i < ps.length; i ++) {
+        var key = ps[i];
+        if (!node || !hasOwnProperty.call(node, key)) {
+            node = undefined;
+            break;
+        }
+        node = node[key];
+    }
+    return node;
+};
+
+Traverse.prototype.has = function (ps) {
+    var node = this.value;
+    for (var i = 0; i < ps.length; i ++) {
+        var key = ps[i];
+        if (!node || !hasOwnProperty.call(node, key)) {
+            return false;
+        }
+        node = node[key];
+    }
+    return true;
+};
+
+Traverse.prototype.set = function (ps, value) {
+    var node = this.value;
+    for (var i = 0; i < ps.length - 1; i ++) {
+        var key = ps[i];
+        if (!hasOwnProperty.call(node, key)) node[key] = {};
+        node = node[key];
+    }
+    node[ps[i]] = value;
+    return value;
+};
+
+Traverse.prototype.map = function (cb) {
+    return walk(this.value, cb, true);
+};
+
+Traverse.prototype.forEach = function (cb) {
+    this.value = walk(this.value, cb, false);
+    return this.value;
+};
+
+Traverse.prototype.reduce = function (cb, init) {
+    var skip = arguments.length === 1;
+    var acc = skip ? this.value : init;
+    this.forEach(function (x) {
+        if (!this.isRoot || !skip) {
+            acc = cb.call(this, acc, x);
+        }
+    });
+    return acc;
+};
+
+Traverse.prototype.paths = function () {
+    var acc = [];
+    this.forEach(function (x) {
+        acc.push(this.path); 
+    });
+    return acc;
+};
+
+Traverse.prototype.nodes = function () {
+    var acc = [];
+    this.forEach(function (x) {
+        acc.push(this.node);
+    });
+    return acc;
+};
+
+Traverse.prototype.clone = function () {
+    var parents = [], nodes = [];
+    
+    return (function clone (src) {
+        for (var i = 0; i < parents.length; i++) {
+            if (parents[i] === src) {
+                return nodes[i];
+            }
+        }
+        
+        if (typeof src === 'object' && src !== null) {
+            var dst = copy(src);
+            
+            parents.push(src);
+            nodes.push(dst);
+            
+            forEach(objectKeys(src), function (key) {
+                dst[key] = clone(src[key]);
+            });
+            
+            parents.pop();
+            nodes.pop();
+            return dst;
+        }
+        else {
+            return src;
+        }
+    })(this.value);
+};
+
+function walk (root, cb, immutable) {
+    var path = [];
+    var parents = [];
+    var alive = true;
+    
+    return (function walker (node_) {
+        var node = immutable ? copy(node_) : node_;
+        var modifiers = {};
+        
+        var keepGoing = true;
+        
+        var state = {
+            node : node,
+            node_ : node_,
+            path : [].concat(path),
+            parent : parents[parents.length - 1],
+            parents : parents,
+            key : path.slice(-1)[0],
+            isRoot : path.length === 0,
+            level : path.length,
+            circular : null,
+            update : function (x, stopHere) {
+                if (!state.isRoot) {
+                    state.parent.node[state.key] = x;
+                }
+                state.node = x;
+                if (stopHere) keepGoing = false;
+            },
+            'delete' : function (stopHere) {
+                delete state.parent.node[state.key];
+                if (stopHere) keepGoing = false;
+            },
+            remove : function (stopHere) {
+                if (isArray(state.parent.node)) {
+                    state.parent.node.splice(state.key, 1);
+                }
+                else {
+                    delete state.parent.node[state.key];
+                }
+                if (stopHere) keepGoing = false;
+            },
+            keys : null,
+            before : function (f) { modifiers.before = f; },
+            after : function (f) { modifiers.after = f; },
+            pre : function (f) { modifiers.pre = f; },
+            post : function (f) { modifiers.post = f; },
+            stop : function () { alive = false; },
+            block : function () { keepGoing = false; }
+        };
+        
+        if (!alive) return state;
+        
+        function updateState() {
+            if (typeof state.node === 'object' && state.node !== null) {
+                if (!state.keys || state.node_ !== state.node) {
+                    state.keys = objectKeys(state.node);
+                }
+                
+                state.isLeaf = state.keys.length == 0;
+                
+                for (var i = 0; i < parents.length; i++) {
+                    if (parents[i].node_ === node_) {
+                        state.circular = parents[i];
+                        break;
+                    }
+                }
+            }
+            else {
+                state.isLeaf = true;
+                state.keys = null;
+            }
+            
+            state.notLeaf = !state.isLeaf;
+            state.notRoot = !state.isRoot;
+        }
+        
+        updateState();
+        
+        // use return values to update if defined
+        var ret = cb.call(state, state.node);
+        if (ret !== undefined && state.update) state.update(ret);
+        
+        if (modifiers.before) modifiers.before.call(state, state.node);
+        
+        if (!keepGoing) return state;
+        
+        if (typeof state.node == 'object'
+        && state.node !== null && !state.circular) {
+            parents.push(state);
+            
+            updateState();
+            
+            forEach(state.keys, function (key, i) {
+                path.push(key);
+                
+                if (modifiers.pre) modifiers.pre.call(state, state.node[key], key);
+                
+                var child = walker(state.node[key]);
+                if (immutable && hasOwnProperty.call(state.node, key)) {
+                    state.node[key] = child.node;
+                }
+                
+                child.isLast = i == state.keys.length - 1;
+                child.isFirst = i == 0;
+                
+                if (modifiers.post) modifiers.post.call(state, child);
+                
+                path.pop();
+            });
+            parents.pop();
+        }
+        
+        if (modifiers.after) modifiers.after.call(state, state.node);
+        
+        return state;
+    })(root).node;
+}
+
+function copy (src) {
+    if (typeof src === 'object' && src !== null) {
+        var dst;
+        
+        if (isArray(src)) {
+            dst = [];
+        }
+        else if (isDate(src)) {
+            dst = new Date(src.getTime ? src.getTime() : src);
+        }
+        else if (isRegExp(src)) {
+            dst = new RegExp(src);
+        }
+        else if (isError(src)) {
+            dst = { message: src.message };
+        }
+        else if (isBoolean(src)) {
+            dst = new Boolean(src);
+        }
+        else if (isNumber(src)) {
+            dst = new Number(src);
+        }
+        else if (isString(src)) {
+            dst = new String(src);
+        }
+        else if (Object.create && Object.getPrototypeOf) {
+            dst = Object.create(Object.getPrototypeOf(src));
+        }
+        else if (src.constructor === Object) {
+            dst = {};
+        }
+        else {
+            var proto =
+                (src.constructor && src.constructor.prototype)
+                || src.__proto__
+                || {};
+            var T = function () {};
+            T.prototype = proto;
+            dst = new T;
+        }
+        
+        forEach(objectKeys(src), function (key) {
+            dst[key] = src[key];
+        });
+        return dst;
+    }
+    else return src;
+}
+
+var objectKeys = Object.keys || function keys (obj) {
+    var res = [];
+    for (var key in obj) res.push(key);
+    return res;
+};
+
+function toS (obj) { return Object.prototype.toString.call(obj) }
+function isDate (obj) { return toS(obj) === '[object Date]' }
+function isRegExp (obj) { return toS(obj) === '[object RegExp]' }
+function isError (obj) { return toS(obj) === '[object Error]' }
+function isBoolean (obj) { return toS(obj) === '[object Boolean]' }
+function isNumber (obj) { return toS(obj) === '[object Number]' }
+function isString (obj) { return toS(obj) === '[object String]' }
+
+var isArray = Array.isArray || function isArray (xs) {
+    return Object.prototype.toString.call(xs) === '[object Array]';
+};
+
+var forEach = function (xs, fn) {
+    if (xs.forEach) return xs.forEach(fn)
+    else for (var i = 0; i < xs.length; i++) {
+        fn(xs[i], i, xs);
+    }
+};
+
+forEach(objectKeys(Traverse.prototype), function (key) {
+    traverse[key] = function (obj) {
+        var args = [].slice.call(arguments, 1);
+        var t = new Traverse(obj);
+        return t[key].apply(t, args);
+    };
+});
+
+var hasOwnProperty = Object.hasOwnProperty || function (obj, key) {
+    return key in obj;
+};
+});
+
+/**
+* The CodecUtils class gather some static methods that can be useful while
+* encodeing/decoding data.
+* CodecUtils does not have a constructor, don't try to instanciate it.
+*/
+class CodecUtils {
+
+
+  /**
+  * Get whether or not the platform is using little endian.
+  * @return {Boolen } true if the platform is little endian, false if big endian
+  */
+  static isPlatformLittleEndian() {
+    var a = new Uint32Array([0x12345678]);
+    var b = new Uint8Array(a.buffer, a.byteOffset, a.byteLength);
+    return (b[0] != 0x12);
+  }
+
+
+  /**
+  * convert an ArrayBuffer into a unicode string (2 bytes for each char)
+  * @param {ArrayBuffer} buf - input ArrayBuffer
+  * @return {String} a string compatible with Unicode characters
+  */
+  static arrayBufferToString16( buf ) {
+    return String.fromCharCode.apply(null, new Uint16Array(buf));
+  }
+
+
+  /**
+  * convert a unicode string into an ArrayBuffer
+  * Note that the str is a regular string but it will be encoded with
+  * 2 bytes per char instead of 1 ( ASCII uses 1 byte/char )
+  * @param {String} str - string to encode
+  * @return {ArrayBuffer} the output ArrayBuffer
+  */
+  static string16ToArrayBuffer( str ) {
+    var buf = new ArrayBuffer(str.length*2); // 2 bytes for each char
+    var bufView = new Uint16Array(buf);
+    for (var i=0; i < str.length; i++) {
+      bufView[i] = str.charCodeAt(i);
+    }
+    return buf;
+  }
+
+
+  /**
+  * Convert an ArrayBuffer into a ASCII string (1 byte for each char)
+  * @param {ArrayBuffer} buf - buffer to convert into ASCII string
+  * @return {String} the output string
+  */
+  static arrayBufferToString8( buf ) {
+    return String.fromCharCode.apply(null, new Uint8Array(buf));
+  }
+
+
+  /**
+  * Convert a ASCII string into an ArrayBuffer.
+  * Note that the str is a regular string, it will be encoded with 1 byte per char
+  * @param {String} str - string to encode
+  * @return {ArrayBuffer}
+  */
+  static string8ToArrayBuffer( str ) {
+    var buf = new ArrayBuffer(str.length);
+    var bufView = new Uint8Array(buf);
+    for (var i=0; i < str.length; i++) {
+      bufView[i] = str.charCodeAt(i);
+    }
+    return buf;
+  }
+
+
+  /**
+  * Write a ASCII string into a buffer
+  * @param {String} str - a string that contains only ASCII characters
+  * @param {ArrayBuffer} buffer - the buffer where to write the string
+  * @param {Number} byteOffset - the offset to apply, in number of bytes
+  */
+  static setString8InBuffer( str, buffer, byteOffset = 0 ){
+    if( byteOffset < 0){
+      console.warn("The byte offset cannot be negative.");
+      return;
+    }
+
+    if( !buffer || !(buffer instanceof ArrayBuffer)){
+      console.warn("The buffer must be a valid ArrayBuffer.");
+      return;
+    }
+
+    if( (str.length + byteOffset) > buffer.byteLength ){
+      console.warn("The string is too long to be writen in this buffer.");
+      return;
+    }
+
+    var bufView = new Uint8Array(buffer);
+
+    for (var i=0; i < str.length; i++) {
+      bufView[i + byteOffset] = str.charCodeAt(i);
+    }
+  }
+
+
+  /**
+  * Extract an ASCII string from an ArrayBuffer
+  * @param {ArrayBuffer} buffer - the buffer
+  * @param {Number} strLength - number of chars in the string we want
+  * @param {Number} byteOffset - the offset in number of bytes
+  * @return {String} the string, or null in case of error
+  */
+  static getString8FromBuffer( buffer, strLength, byteOffset=0 ){
+    if( byteOffset < 0){
+      console.warn("The byte offset cannot be negative.");
+      return null;
+    }
+
+    if( !buffer || !(buffer instanceof ArrayBuffer)){
+      console.warn("The buffer must be a valid ArrayBuffer.");
+      return null;
+    }
+
+    if( (strLength + byteOffset) > buffer.byteLength ){
+      console.warn("The string is too long to be writen in this buffer.");
+      return null;
+    }
+
+    return String.fromCharCode.apply(null, new Uint8Array(buffer, byteOffset, strLength));
+  }
+
+
+  /**
+  * Serializes a JS object into an ArrayBuffer.
+  * This is using a unicode JSON intermediate step.
+  * @param {Object} obj - an object that does not have cyclic structure
+  * @return {ArrayBuffer} the serialized output
+  */
+  static objectToArrayBuffer( obj ){
+    var buff = null;
+    var objCleanClone = CodecUtils.makeSerializeFriendly(obj);
+
+    try{
+      var strObj = JSON.stringify( objCleanClone );
+      buff = CodecUtils.string16ToArrayBuffer(strObj);
+    }catch(e){
+      console.warn(e);
+    }
+
+    return buff;
+  }
+
+
+  /**
+  * Convert an ArrayBuffer into a JS Object. This uses an intermediate unicode JSON string.
+  * Of course, this buffer has to come from a serialized object.
+  * @param {ArrayBuffer} buff - the ArrayBuffer that hides some object
+  * @return {Object} the deserialized object
+  */
+  static ArrayBufferToObject( buff ){
+    var obj = null;
+
+    try{
+      var strObj = CodecUtils.arrayBufferToString16( buff );
+      obj = JSON.parse( strObj );
+    }catch(e){
+      console.warn(e);
+    }
+
+    return obj;
+  }
+
+
+  /**
+  * Get if wether of not the arg is a typed array
+  * @param {Object} obj - possibly a typed array, or maybe not
+  * @return {Boolean} true if obj is a typed array
+  */
+  static isTypedArray( obj ){
+    return ( obj instanceof Int8Array         ||
+             obj instanceof Uint8Array        ||
+             obj instanceof Uint8ClampedArray ||
+             obj instanceof Int16Array        ||
+             obj instanceof Uint16Array       ||
+             obj instanceof Int32Array        ||
+             obj instanceof Uint32Array       ||
+             obj instanceof Float32Array      ||
+             obj instanceof Float64Array )
+  }
+
+
+  /**
+  * Merge some ArrayBuffes in a single one
+  * @param {Array} arrayOfBuffers - some ArrayBuffers
+  * @return {ArrayBuffer} the larger merged buffer
+  */
+  static mergeBuffers( arrayOfBuffers ){
+    var totalByteSize = 0;
+
+    for(var i=0; i<arrayOfBuffers.length; i++){
+      totalByteSize += arrayOfBuffers[i].byteLength;
+    }
+
+    var concatArray = new Uint8Array( totalByteSize );
+
+    var offset = 0;
+    for(var i=0; i<arrayOfBuffers.length; i++){
+      concatArray.set( new Uint8Array(arrayOfBuffers[i]), offset);
+      offset += arrayOfBuffers[i].byteLength;
+    }
+
+    return concatArray.buffer;
+  }
+
+
+  /**
+  * In a browser, the global object is `window` while in Node, it's `GLOBAL`.
+  * This method return the one that is relevant to the execution context.
+  * @return {Object} the global object
+  */
+  static getGlobalObject(){
+    var constructorHost = null;
+
+    try{
+      constructorHost = window; // in a web browser
+    }catch( e ){
+      try{
+        constructorHost = GLOBAL; // in node
+      }catch( e ){
+        console.warn( "You are not in a Javascript environment?? Weird." );
+        return null;
+      }
+    }
+    return constructorHost;
+  }
+
+
+  /**
+  * Extract a typed array from an arbitrary buffer, with an arbitrary offset
+  * @param {ArrayBuffer} buffer - the buffer from which we extract data
+  * @param {Number} byteOffset - offset from the begining of buffer
+  * @param {Function} arrayType - function object, actually the constructor of the output array
+  * @param {Number} numberOfElements - nb of elem we want to fetch from the buffer
+  * @return {TypedArray} output of type given by arg arrayType - this is a copy, not a view
+  */
+  static extractTypedArray( buffer, byteOffset, arrayType, numberOfElements ){
+    if( !buffer ){
+      console.warn("Input Buffer is null.");
+      return null;
+    }
+
+    if(! (buffer instanceof ArrayBuffer) ){
+      console.warn("Buffer must be of type ArrayBuffer");
+      return null;
+    }
+
+    if(numberOfElements <= 0){
+      console.warn("The number of elements to fetch must be greater than 0");
+      return null;
+    }
+
+    if(byteOffset < 0){
+      console.warn("The byte offset must be possitive or 0");
+      return null;
+    }
+
+    if( byteOffset >= buffer.byteLength ){
+      console.warn("The offset cannot be larger than the size of the buffer.");
+      return null;
+    }
+
+    if( arrayType instanceof Function && !("BYTES_PER_ELEMENT" in arrayType)){
+      console.warn("ArrayType must be a typed array constructor function.");
+      return null;
+    }
+
+    if( arrayType.BYTES_PER_ELEMENT * numberOfElements + byteOffset > buffer.byteLength ){
+      console.warn("The requested number of elements is too large for this buffer");
+      return;
+    }
+
+    var slicedBuff = buffer.slice(byteOffset, byteOffset + numberOfElements*arrayType.BYTES_PER_ELEMENT);
+    return new arrayType( slicedBuff )
+  }
+
+
+  /**
+  * Get some info about the given TypedArray
+  * @param {TypedArray} typedArray - one of the typed array
+  * @return {Object} in form of {type: String, signed: Boolean, bytesPerElements: Number, byteLength: Number, length: Number}
+  */
+  static getTypedArrayInfo( typedArray ){
+    var type = null;
+    var signed = false;
+
+    if( typedArray instanceof Int8Array ){
+      type = "int";
+      signed = false;
+    }else if( typedArray instanceof Uint8Array ){
+      type = "int";
+      signed = true;
+    }else if( typedArray instanceof Uint8ClampedArray ){
+      type = "int";
+      signed = true;
+    }else if( typedArray instanceof Int16Array ){
+      type = "int";
+      signed = false;
+    }else if( typedArray instanceof Uint16Array ){
+      type = "int";
+      signed = true;
+    }else if( typedArray instanceof Int32Array ){
+      type = "int";
+      signed = false;
+    }else if( typedArray instanceof Uint32Array ){
+      type = "int";
+      signed = true;
+    }else if( typedArray instanceof Float32Array ){
+      type = "float";
+      signed = false;
+    }else if( typedArray instanceof Float64Array ){
+      type = "float";
+      signed = false;
+    }
+
+    return {
+      type: type,
+      signed: signed,
+      bytesPerElements: typedArray.BYTES_PER_ELEMENT,
+      byteLength: typedArray.byteLength,
+      length: typedArray.length
+    }
+  }
+  
+  
+  /**
+  * Counts the number of typed array obj has as attributes
+  * @param {Object} obj - an Object
+  * @return {Number} the number of typed array
+  */
+  static howManyTypedArrayAttributes( obj ){
+    var typArrCounter = 0;
+    index$2(obj).forEach(function (x) {
+      typArrCounter += CodecUtils.isTypedArray(x);
+    });
+    return typArrCounter;
+  }
+
+
+  /**
+  * Check if the given object contains any circular reference.
+  * (Circular ref are non serilizable easily, we want to spot them)
+  * @param {Object} obj - An object to check
+  * @return {Boolean} true if obj contains circular refm false if not
+  */
+  static hasCircularReference( obj ){
+    var hasCircular = false;
+    index$2(obj).forEach(function (x) {
+      if (this.circular){
+        hasCircular = true;
+      }
+    });
+    return hasCircular;
+  }
+  
+  
+  /**
+  * Remove circular dependencies from an object and return a circularRef-free version
+  * of the object (does not change the original obj), of null if no circular ref was found
+  * @param {Object} obj - An object to check
+  * @return {Object} a circular-ref free object copy if any was found, or null if no circ was found
+  */
+  static removeCircularReference( obj ){
+    var hasCircular = false;
+    var noCircRefObj = index$2(obj).map(function (x) {
+      if (this.circular){
+        this.remove();
+        hasCircular = true;
+      }
+    });
+    return hasCircular ? noCircRefObj : null;
+  }
+  
+  
+  /**
+  * Clone the object and replace the typed array attributes by regular Arrays.
+  * @param {Object} obj - an object to alter
+  * @return {Object} the clone if ant typed array were changed, or null if was obj didnt contain any typed array.
+  */
+  static replaceTypedArrayAttributesByArrays( obj ){
+    var hasTypedArray = false;
+    
+    var noTypedArrClone = index$2(obj).map(function (x) {
+      if (CodecUtils.isTypedArray(x)){
+        // here, we cannot call .length directly because traverse.map already serialized
+        // typed arrays into regular objects
+        var origSize = Object.keys(x).length;
+        var untypedArray = new Array( origSize );
+        
+        for(var i=0; i<origSize; i++){
+          untypedArray[i] = x[i];
+        }
+        this.update( untypedArray );
+        hasTypedArray = true;
+      }
+    });
+    return hasTypedArray ? noTypedArrClone : null;
+  }
+  
+  
+  /**
+  * Creates a clone, does not alter the original object.
+  * Remove circular dependencies and replace typed arrays by regular arrays.
+  * Both will make the serialization possible and more reliable.
+  * @param {Object} obj - the object to make serialization friendly
+  * @return {Object} a clean clone, or null if nothing was done
+  */
+  static makeSerializeFriendly( obj ){
+    var newObj = obj;
+    var noCircular = CodecUtils.removeCircularReference(newObj);
+    
+    if( noCircular )
+      newObj = noCircular;
+      
+    var noTypedArr = CodecUtils.replaceTypedArrayAttributesByArrays(newObj);
+    
+    if( noTypedArr )
+      newObj = noTypedArr;
+      
+    return newObj;
+  }
+  
+
+} /* END of class CodecUtils */
+
 /*
 * Author    Jonathan Lurie - http://me.jonahanlurie.fr
 *
@@ -20882,7 +21694,1162 @@ class EegModDecoder extends Filter {
 * Lab       MCIN - Montreal Neurological Institute
 */
 
-//import JSZip from "jszip";
+
+// list of different kinds of data we accept as input
+const dataCases = {
+  invalid: null,  // the data is not compatible (Number, String)
+  typedArray: 1,  // the data is compatible, as a typed array
+  mixedArrays: 2, // the data is compatible, as an array of typed array
+  complexObject: 3 // a complex object is also compatible (can be a untyped array)
+};
+
+
+class PixBlockEncoder {
+
+  constructor(){
+    this._compress = false;
+    this.reset();
+  }
+
+
+  /**
+  * reset inputs and inputs
+  */
+  reset(){
+    this._input = null;
+    this._inputCase = null;
+    this._output = null;
+  }
+
+
+  /**
+  * Set a boolean to secify if data should be compressed or not
+  * @param {Boolean} b - true to compress, false to not compress
+  */
+  enableDataCompression( b ){
+    this._compress = b;
+  }
+
+
+  /**
+  * Specify an input to the encoder
+  * @param {Object} obj - an object candidate, containing a _data and _metadata attributes
+  */
+  setInput( obj ){
+    this._inputCase = PixBlockEncoder.isGoodCandidate( obj );
+    if(this._inputCase){
+      this._input = obj;
+    }
+  }
+
+
+  /**
+  * Get the output
+  * @return {Object} the output, or null
+  */
+  getOutput(){
+    return this._output;
+  }
+
+
+  /**
+  * Check if the given object is a good intput candidate
+  * @param {Object} obj - an object candidate, containing a _data and _metadata attributes
+  * @return {Boolean} true if good candidate, false if not
+  */
+  static isGoodCandidate( obj ){
+    if( !obj ){
+      console.warn("Input object cannot be null.");
+      return false;
+    }
+
+    if( !("_metadata" in obj)){
+      console.warn("Input object must contain a _metadata object.");
+      return false;
+    }
+
+    if( !("_data" in obj)){
+      console.warn("Input object must contain a _data object.");
+      return false;
+    }
+
+    var metadata = obj._metadata;
+    var data = obj._data;
+
+    // check: metadata should not contain cyclic structures
+    try{
+      JSON.stringify( metadata );
+    }catch(e){
+      console.warn("The metadata object contains cyclic structures. Cannot be used.");
+      return false;
+    }
+
+    var inputCase = PixBlockEncoder.determineDataCase( data );
+
+    // testing the case based on the kinf of data we want to input
+    if( inputCase === dataCases.invalid ){
+      console.warn("The input is invalid.");
+    }
+
+    return inputCase;
+  }
+
+
+  /**
+  * Launch the encoding of the block
+  */
+  run(){
+    var input = this._input;
+
+    if( !input || !this._inputCase ){
+      console.warn("An input must be given to the PixBlockEncoder.");
+      return;
+    }
+
+    var compress = this._compress;
+    var data = input._data;
+    var compressedData = null;
+
+    var byteStreamInfo = [];
+    var usingDataSubsets = false;
+
+    switch (this._inputCase) {
+
+      // The input is a typed array ********************************
+      case dataCases.typedArray:
+        {
+          //var byteStreamInfoSubset = CodecUtils.getTypedArrayInfo(data);
+          var byteStreamInfoSubset = this._getDataSubsetInfo(data);
+
+          // additional compression flag
+          byteStreamInfoSubset.compressedByteLength = null;
+
+          if(this._compress){
+            compressedData = index$1.deflate( data.buffer );
+            byteStreamInfoSubset.compressedByteLength = compressedData.byteLength;
+          }
+
+          byteStreamInfo.push( byteStreamInfoSubset );
+        }
+        break;
+
+
+      // The input is an Array of typed arrays *********************
+      case dataCases.mixedArrays:
+        {
+          usingDataSubsets = true;
+          compressedData = [];
+
+          // collect bytestream info for each subset of data
+          for(var i=0; i<data.length; i++){
+
+            var byteStreamInfoSubset = this._getDataSubsetInfo( data[i] );
+
+            // if not a typed array, this subset needs further modifications
+            if( !byteStreamInfoSubset.isTypedArray ){
+              data[i] = new Uint8Array( CodecUtils.objectToArrayBuffer( data[i] ) );
+              byteStreamInfoSubset.byteLength = data[i].byteLength;
+            }
+
+            if(this._compress){
+              var compressedDataSubset = index$1.deflate( data[i].buffer );
+              byteStreamInfoSubset.compressedByteLength = compressedDataSubset.byteLength;
+              compressedData.push( compressedDataSubset );
+            }
+
+            byteStreamInfo.push( byteStreamInfoSubset );
+          }
+        }
+        break;
+
+      // The input is an Array of typed arrays *********************
+      case dataCases.complexObject:
+        {
+          var byteStreamInfoSubset = this._getDataSubsetInfo( data );
+
+          // replace the original data object with this uncompressed serialized version.
+          // We wrap it into a Uint8Array so that we can call .buffer on it, just like all the others
+          data = new Uint8Array( CodecUtils.objectToArrayBuffer( data ) );
+          byteStreamInfoSubset.byteLength = data.byteLength;
+
+          if(this._compress){
+            compressedData = index$1.deflate( data );
+            byteStreamInfoSubset.compressedByteLength = compressedData.byteLength;
+          }
+
+          byteStreamInfo.push( byteStreamInfoSubset );
+        }
+        break;
+
+      default:
+        console.warn("A problem occured.");
+        return;
+    }
+
+    // from now, if compression is enabled, what we call data is compressed data
+    if(this._compress){
+      data = compressedData;
+    }
+
+    // the metadata are converted into a buffer
+    var metadataBuffer = CodecUtils.objectToArrayBuffer( input._metadata );
+
+    var pixBlockHeader = {
+      byteStreamInfo     : byteStreamInfo,
+      originalBlockType  : input.constructor.name,
+      metadataByteLength : metadataBuffer.byteLength
+    };
+
+    // converting the pixBlockHeader obj into a buffer
+    var pixBlockHeaderBuff = CodecUtils.objectToArrayBuffer( pixBlockHeader );
+
+    // this list will then be transformed into a single buffer
+    var allBuffers = [
+      // primer, part 1: endianess
+      new Uint8Array( [ + CodecUtils.isPlatformLittleEndian() ] ).buffer,
+      // primer, part 2: size of the header buff
+      new Uint32Array( [pixBlockHeaderBuff.byteLength] ).buffer,
+
+      // the header buff
+      pixBlockHeaderBuff,
+
+      // the metadata buffer
+      metadataBuffer
+    ];
+
+    // adding the actual data buffer to the list
+    if( usingDataSubsets ){
+      for(var i=0; i<data.length; i++){
+          allBuffers.push( data[i].buffer );
+      }
+    }else{
+      allBuffers.push( data.buffer );
+    }
+
+    this._output = CodecUtils.mergeBuffers( allBuffers );
+  }
+
+
+  /**
+  * [STATIC]
+  * Give in what case we fall when we want to use this data.
+  * Cases are described at the top
+  * @param {Whatever} data - a piec of data, object, array, typed array...
+  * @return {Number} the case
+  */
+  static determineDataCase( data ){
+    if( data instanceof Object ){
+      if( CodecUtils.isTypedArray( data ) )
+        return dataCases.typedArray;
+
+      /*
+      if( data instanceof Array )
+        if(data.every( function(element){ return CodecUtils.isTypedArray(element) }))
+          return dataCases.mixedArrays;
+      */
+
+      // TODO: change the name of this case, since we want to accept Arrays of whatever
+      if( data instanceof Array )
+        return dataCases.mixedArrays;
+
+      return dataCases.complexObject;
+    }else{
+      return dataCases.invalid;
+    }
+  }
+
+
+  /**
+  * [PRIVATE]
+  * Return some infomation about the data subset so that it's easier to parse later
+  * @param {Object} subset - can be a typedArray or a complex object
+  * @return {Object} reconstruction info about this subset
+  */
+  _getDataSubsetInfo( subset ){
+    var infoObj = null;
+
+    if( CodecUtils.isTypedArray(subset) ){
+      infoObj = CodecUtils.getTypedArrayInfo( subset );
+      infoObj.isTypedArray = true;
+    }else{
+      infoObj = {
+        type: subset.constructor.name,
+        compressedByteLength: null,
+        byteLength: null,
+        length: null,
+        isTypedArray: false
+      };
+    }
+
+    return infoObj;
+  }
+
+
+} /* END of class PixBlockEncoder */
+
+/*
+* Author    Jonathan Lurie - http://me.jonahanlurie.fr
+*
+* License   MIT
+* Link      https://github.com/jonathanlurie/pixpipejs
+* Lab       MCIN - Montreal Neurological Institute
+*/
+
+class PixBlockDecoder {
+  constructor(){
+    this.reset();
+  }
+
+
+  /**
+  * reset inputs and inputs
+  */
+  reset(){
+    this._input = null;
+    this._output = null;
+  }
+
+
+  /**
+  * Specify an input
+  * @param {ArrayBuffer} buff - the arraybuffer that contains some data to be deserialized
+  */
+  setInput( buff ){
+    // check input
+    if( !(buff instanceof ArrayBuffer) ){
+      console.warn("Input should be a valid ArrayBuffer");
+      return;
+    }
+    this._input = buff;
+  }
+
+
+  /**
+  * Get the output
+  * @return {Object} the output, or null
+  */
+  getOutput(){
+    return this._output;
+  }
+
+
+  /*
+  * Launch the decoding
+  */
+  run(){
+
+    var input = this._input;
+    var view = new DataView( input );
+    var isLtlt = view.getUint8( 0 );
+    var readingByteOffset = 0;
+
+    // primer, part 1
+    // get the endianess used to encode the file
+    var isLittleEndian = view.getUint8(0);
+    readingByteOffset += 1;
+
+    // primer, part 2
+    // get the length of the string buffer (unicode json) that follows
+    var pixBlockHeaderBufferByteLength = view.getUint32(1, readingByteOffset);
+    readingByteOffset += 4;
+
+    // get the string buffer
+    var pixBlockHeaderBuffer = input.slice( readingByteOffset, readingByteOffset + pixBlockHeaderBufferByteLength );
+    var pixBlockHeader = CodecUtils.ArrayBufferToObject( pixBlockHeaderBuffer );
+    readingByteOffset += pixBlockHeaderBufferByteLength;
+
+    // fetching the metadata
+    var metadataBuffer = input.slice( readingByteOffset, readingByteOffset + pixBlockHeader.metadataByteLength );
+    var metadataObject = CodecUtils.ArrayBufferToObject( metadataBuffer );
+    readingByteOffset += pixBlockHeader.metadataByteLength;
+
+    // the data streams are the byte streams when they are converted back to actual typedArrays/Objects
+    var dataStreams = [];
+
+    for(var i=0; i<pixBlockHeader.byteStreamInfo.length; i++){
+      // act as a flag: if not null, it means data were compressed
+      var compressedByteLength = pixBlockHeader.byteStreamInfo[i].compressedByteLength;
+
+      // create a typed array out of the inflated buffer
+      var dataStreamConstructor = this._getDataTypeFromByteStreamInfo(pixBlockHeader.byteStreamInfo[i]);
+
+      // know if it's a typed array or a complex object
+      var isTypedArray = pixBlockHeader.byteStreamInfo[i].isTypedArray;
+
+      // meaning, the stream is compresed
+      if( compressedByteLength ){
+        // fetch the compresed dataStream
+        var compressedByteStream = new Uint8Array( input, readingByteOffset, compressedByteLength );
+
+        // inflate the dataStream
+        var inflatedByteStream = index$1.inflate( compressedByteStream );
+
+        var dataStream = null;
+        /*
+        if( dataStreamConstructor === Object){
+          dataStream = CodecUtils.ArrayBufferToObject( inflatedByteStream.buffer  );
+        }else{
+          dataStream = new dataStreamConstructor( inflatedByteStream.buffer );
+        }
+        */
+
+        if( isTypedArray ){
+          dataStream = new dataStreamConstructor( inflatedByteStream.buffer );
+        }else{
+          dataStream = CodecUtils.ArrayBufferToObject( inflatedByteStream.buffer  );
+        }
+
+        dataStreams.push( dataStream );
+        readingByteOffset += compressedByteLength;
+
+      }
+      // the stream were NOT compressed
+      else{
+        var dataStream = null;
+        if( isTypedArray ){
+         dataStream = CodecUtils.extractTypedArray(
+           input,
+           readingByteOffset,
+           this._getDataTypeFromByteStreamInfo(pixBlockHeader.byteStreamInfo[i]),
+           pixBlockHeader.byteStreamInfo[i].length
+         );
+        }else{
+          var objectBuffer = CodecUtils.extractTypedArray(
+           input,
+           readingByteOffset,
+           Uint8Array,
+           pixBlockHeader.byteStreamInfo[i].byteLength
+          );
+          dataStream = CodecUtils.ArrayBufferToObject( objectBuffer.buffer );
+        }
+
+
+        dataStreams.push( dataStream );
+        readingByteOffset += pixBlockHeader.byteStreamInfo[i].byteLength;
+      }
+    }
+
+    // If data is a single typed array (= not composed of a subset)
+    // we get rid of the useless wrapping array
+    if( dataStreams.length == 1){
+      dataStreams = dataStreams[0];
+    }
+
+    this._output = {
+      originalBlockType: pixBlockHeader.originalBlockType,
+      _data: dataStreams,
+      _metadata: metadataObject
+    };
+  }
+
+
+  /**
+  * Get the array type based on byte stream info.
+  * The returned object can be used as a constructor
+  * @return {Function} constructor of a typed array
+  */
+  _getDataTypeFromByteStreamInfo( bsi ){
+    var dataType = "Object";
+    var globalObject = CodecUtils.getGlobalObject();
+
+    if( bsi.type === "int" ){
+      dataType = bsi.signed ? "Uint" : "Int";
+      dataType += bsi.bytesPerElements*8 + "Array";
+
+    }else if( bsi.type === "float" ){
+      dataType = "Float";
+      dataType += bsi.bytesPerElements*8 + "Array";
+      var globalObject = CodecUtils.getGlobalObject();
+
+    }
+
+    return ( globalObject[ dataType ] )
+  }
+
+
+} /* END of class PixBlockDecoder */
+
+var md5$2 = createCommonjsModule(function (module) {
+/**
+ * [js-md5]{@link https://github.com/emn178/js-md5}
+ *
+ * @namespace md5
+ * @version 0.6.0
+ * @author Chen, Yi-Cyuan [emn178@gmail.com]
+ * @copyright Chen, Yi-Cyuan 2014-2017
+ * @license MIT
+ */
+(function () {
+  'use strict';
+
+  var ERROR = 'input is invalid type';
+  var WINDOW = typeof window === 'object';
+  var root = WINDOW ? window : {};
+  if (root.JS_MD5_NO_WINDOW) {
+    WINDOW = false;
+  }
+  var WEB_WORKER = !WINDOW && typeof self === 'object';
+  var NODE_JS = !root.JS_MD5_NO_NODE_JS && typeof process === 'object' && process.versions && process.versions.node;
+  if (NODE_JS) {
+    root = commonjsGlobal;
+  } else if (WEB_WORKER) {
+    root = self;
+  }
+  var COMMON_JS = !root.JS_MD5_NO_COMMON_JS && 'object' === 'object' && module.exports;
+  var AMD = typeof undefined === 'function' && undefined.amd;
+  var ARRAY_BUFFER = !root.JS_MD5_NO_ARRAY_BUFFER && typeof ArrayBuffer !== 'undefined';
+  var HEX_CHARS = '0123456789abcdef'.split('');
+  var EXTRA = [128, 32768, 8388608, -2147483648];
+  var SHIFT = [0, 8, 16, 24];
+  var OUTPUT_TYPES = ['hex', 'array', 'digest', 'buffer', 'arrayBuffer', 'base64'];
+  var BASE64_ENCODE_CHAR = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'.split('');
+
+  var blocks = [], buffer8;
+  if (ARRAY_BUFFER) {
+    var buffer = new ArrayBuffer(68);
+    buffer8 = new Uint8Array(buffer);
+    blocks = new Uint32Array(buffer);
+  }
+
+  if (root.JS_MD5_NO_NODE_JS || !Array.isArray) {
+    Array.isArray = function (obj) {
+      return Object.prototype.toString.call(obj) === '[object Array]';
+    };
+  }
+
+  /**
+   * @method hex
+   * @memberof md5
+   * @description Output hash as hex string
+   * @param {String|Array|Uint8Array|ArrayBuffer} message message to hash
+   * @returns {String} Hex string
+   * @example
+   * md5.hex('The quick brown fox jumps over the lazy dog');
+   * // equal to
+   * md5('The quick brown fox jumps over the lazy dog');
+   */
+  /**
+   * @method digest
+   * @memberof md5
+   * @description Output hash as bytes array
+   * @param {String|Array|Uint8Array|ArrayBuffer} message message to hash
+   * @returns {Array} Bytes array
+   * @example
+   * md5.digest('The quick brown fox jumps over the lazy dog');
+   */
+  /**
+   * @method array
+   * @memberof md5
+   * @description Output hash as bytes array
+   * @param {String|Array|Uint8Array|ArrayBuffer} message message to hash
+   * @returns {Array} Bytes array
+   * @example
+   * md5.array('The quick brown fox jumps over the lazy dog');
+   */
+  /**
+   * @method arrayBuffer
+   * @memberof md5
+   * @description Output hash as ArrayBuffer
+   * @param {String|Array|Uint8Array|ArrayBuffer} message message to hash
+   * @returns {ArrayBuffer} ArrayBuffer
+   * @example
+   * md5.arrayBuffer('The quick brown fox jumps over the lazy dog');
+   */
+  /**
+   * @method buffer
+   * @deprecated This maybe confuse with Buffer in node.js. Please use arrayBuffer instead.
+   * @memberof md5
+   * @description Output hash as ArrayBuffer
+   * @param {String|Array|Uint8Array|ArrayBuffer} message message to hash
+   * @returns {ArrayBuffer} ArrayBuffer
+   * @example
+   * md5.buffer('The quick brown fox jumps over the lazy dog');
+   */
+  /**
+   * @method base64
+   * @memberof md5
+   * @description Output hash as base64 string
+   * @param {String|Array|Uint8Array|ArrayBuffer} message message to hash
+   * @returns {String} base64 string
+   * @example
+   * md5.base64('The quick brown fox jumps over the lazy dog');
+   */
+  var createOutputMethod = function (outputType) {
+    return function (message) {
+      return new Md5(true).update(message)[outputType]();
+    };
+  };
+
+  /**
+   * @method create
+   * @memberof md5
+   * @description Create Md5 object
+   * @returns {Md5} Md5 object.
+   * @example
+   * var hash = md5.create();
+   */
+  /**
+   * @method update
+   * @memberof md5
+   * @description Create and update Md5 object
+   * @param {String|Array|Uint8Array|ArrayBuffer} message message to hash
+   * @returns {Md5} Md5 object.
+   * @example
+   * var hash = md5.update('The quick brown fox jumps over the lazy dog');
+   * // equal to
+   * var hash = md5.create();
+   * hash.update('The quick brown fox jumps over the lazy dog');
+   */
+  var createMethod = function () {
+    var method = createOutputMethod('hex');
+    if (NODE_JS) {
+      method = nodeWrap(method);
+    }
+    method.create = function () {
+      return new Md5();
+    };
+    method.update = function (message) {
+      return method.create().update(message);
+    };
+    for (var i = 0; i < OUTPUT_TYPES.length; ++i) {
+      var type = OUTPUT_TYPES[i];
+      method[type] = createOutputMethod(type);
+    }
+    return method;
+  };
+
+  var nodeWrap = function (method) {
+    var crypto = eval("require('crypto')");
+    var Buffer = eval("require('buffer').Buffer");
+    var nodeMethod = function (message) {
+      if (typeof message === 'string') {
+        return crypto.createHash('md5').update(message, 'utf8').digest('hex');
+      } else {
+        if (message === null || message === undefined) {
+          throw ERROR;
+        } else if (message.constructor === ArrayBuffer) {
+          message = new Uint8Array(message);
+        }
+      }
+      if (Array.isArray(message) || ArrayBuffer.isView(message) ||
+        message.constructor === Buffer) {
+        return crypto.createHash('md5').update(new Buffer(message)).digest('hex');
+      } else {
+        return method(message);
+      }
+    };
+    return nodeMethod;
+  };
+
+  /**
+   * Md5 class
+   * @class Md5
+   * @description This is internal class.
+   * @see {@link md5.create}
+   */
+  function Md5(sharedMemory) {
+    if (sharedMemory) {
+      blocks[0] = blocks[16] = blocks[1] = blocks[2] = blocks[3] =
+      blocks[4] = blocks[5] = blocks[6] = blocks[7] =
+      blocks[8] = blocks[9] = blocks[10] = blocks[11] =
+      blocks[12] = blocks[13] = blocks[14] = blocks[15] = 0;
+      this.blocks = blocks;
+      this.buffer8 = buffer8;
+    } else {
+      if (ARRAY_BUFFER) {
+        var buffer = new ArrayBuffer(68);
+        this.buffer8 = new Uint8Array(buffer);
+        this.blocks = new Uint32Array(buffer);
+      } else {
+        this.blocks = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+      }
+    }
+    this.h0 = this.h1 = this.h2 = this.h3 = this.start = this.bytes = 0;
+    this.finalized = this.hashed = false;
+    this.first = true;
+  }
+
+  /**
+   * @method update
+   * @memberof Md5
+   * @instance
+   * @description Update hash
+   * @param {String|Array|Uint8Array|ArrayBuffer} message message to hash
+   * @returns {Md5} Md5 object.
+   * @see {@link md5.update}
+   */
+  Md5.prototype.update = function (message) {
+    if (this.finalized) {
+      return;
+    }
+    var notString = typeof(message) != 'string';
+    if (notString) {
+      if (message === null || message === undefined) {
+        throw ERROR;
+      } else if (message.constructor === root.ArrayBuffer) {
+        message = new Uint8Array(message);
+      }
+    }
+    var length = message.length;
+    if (notString) {
+      if (typeof length !== 'number' ||
+        !Array.isArray(message) && 
+        !(ARRAY_BUFFER && ArrayBuffer.isView(message))) {
+        throw ERROR;
+      }
+    }
+    var code, index = 0, i, blocks = this.blocks;
+    var buffer8 = this.buffer8;
+
+    while (index < length) {
+      if (this.hashed) {
+        this.hashed = false;
+        blocks[0] = blocks[16];
+        blocks[16] = blocks[1] = blocks[2] = blocks[3] =
+        blocks[4] = blocks[5] = blocks[6] = blocks[7] =
+        blocks[8] = blocks[9] = blocks[10] = blocks[11] =
+        blocks[12] = blocks[13] = blocks[14] = blocks[15] = 0;
+      }
+
+      if (notString) {
+        if (ARRAY_BUFFER) {
+          for (i = this.start; index < length && i < 64; ++index) {
+            buffer8[i++] = message[index];
+          }
+        } else {
+          for (i = this.start; index < length && i < 64; ++index) {
+            blocks[i >> 2] |= message[index] << SHIFT[i++ & 3];
+          }
+        }
+      } else {
+        if (ARRAY_BUFFER) {
+          for (i = this.start; index < length && i < 64; ++index) {
+            code = message.charCodeAt(index);
+            if (code < 0x80) {
+              buffer8[i++] = code;
+            } else if (code < 0x800) {
+              buffer8[i++] = 0xc0 | (code >> 6);
+              buffer8[i++] = 0x80 | (code & 0x3f);
+            } else if (code < 0xd800 || code >= 0xe000) {
+              buffer8[i++] = 0xe0 | (code >> 12);
+              buffer8[i++] = 0x80 | ((code >> 6) & 0x3f);
+              buffer8[i++] = 0x80 | (code & 0x3f);
+            } else {
+              code = 0x10000 + (((code & 0x3ff) << 10) | (message.charCodeAt(++index) & 0x3ff));
+              buffer8[i++] = 0xf0 | (code >> 18);
+              buffer8[i++] = 0x80 | ((code >> 12) & 0x3f);
+              buffer8[i++] = 0x80 | ((code >> 6) & 0x3f);
+              buffer8[i++] = 0x80 | (code & 0x3f);
+            }
+          }
+        } else {
+          for (i = this.start; index < length && i < 64; ++index) {
+            code = message.charCodeAt(index);
+            if (code < 0x80) {
+              blocks[i >> 2] |= code << SHIFT[i++ & 3];
+            } else if (code < 0x800) {
+              blocks[i >> 2] |= (0xc0 | (code >> 6)) << SHIFT[i++ & 3];
+              blocks[i >> 2] |= (0x80 | (code & 0x3f)) << SHIFT[i++ & 3];
+            } else if (code < 0xd800 || code >= 0xe000) {
+              blocks[i >> 2] |= (0xe0 | (code >> 12)) << SHIFT[i++ & 3];
+              blocks[i >> 2] |= (0x80 | ((code >> 6) & 0x3f)) << SHIFT[i++ & 3];
+              blocks[i >> 2] |= (0x80 | (code & 0x3f)) << SHIFT[i++ & 3];
+            } else {
+              code = 0x10000 + (((code & 0x3ff) << 10) | (message.charCodeAt(++index) & 0x3ff));
+              blocks[i >> 2] |= (0xf0 | (code >> 18)) << SHIFT[i++ & 3];
+              blocks[i >> 2] |= (0x80 | ((code >> 12) & 0x3f)) << SHIFT[i++ & 3];
+              blocks[i >> 2] |= (0x80 | ((code >> 6) & 0x3f)) << SHIFT[i++ & 3];
+              blocks[i >> 2] |= (0x80 | (code & 0x3f)) << SHIFT[i++ & 3];
+            }
+          }
+        }
+      }
+      this.lastByteIndex = i;
+      this.bytes += i - this.start;
+      if (i >= 64) {
+        this.start = i - 64;
+        this.hash();
+        this.hashed = true;
+      } else {
+        this.start = i;
+      }
+    }
+    return this;
+  };
+
+  Md5.prototype.finalize = function () {
+    if (this.finalized) {
+      return;
+    }
+    this.finalized = true;
+    var blocks = this.blocks, i = this.lastByteIndex;
+    blocks[i >> 2] |= EXTRA[i & 3];
+    if (i >= 56) {
+      if (!this.hashed) {
+        this.hash();
+      }
+      blocks[0] = blocks[16];
+      blocks[16] = blocks[1] = blocks[2] = blocks[3] =
+      blocks[4] = blocks[5] = blocks[6] = blocks[7] =
+      blocks[8] = blocks[9] = blocks[10] = blocks[11] =
+      blocks[12] = blocks[13] = blocks[14] = blocks[15] = 0;
+    }
+    blocks[14] = this.bytes << 3;
+    this.hash();
+  };
+
+  Md5.prototype.hash = function () {
+    var a, b, c, d, bc, da, blocks = this.blocks;
+
+    if (this.first) {
+      a = blocks[0] - 680876937;
+      a = (a << 7 | a >>> 25) - 271733879 << 0;
+      d = (-1732584194 ^ a & 2004318071) + blocks[1] - 117830708;
+      d = (d << 12 | d >>> 20) + a << 0;
+      c = (-271733879 ^ (d & (a ^ -271733879))) + blocks[2] - 1126478375;
+      c = (c << 17 | c >>> 15) + d << 0;
+      b = (a ^ (c & (d ^ a))) + blocks[3] - 1316259209;
+      b = (b << 22 | b >>> 10) + c << 0;
+    } else {
+      a = this.h0;
+      b = this.h1;
+      c = this.h2;
+      d = this.h3;
+      a += (d ^ (b & (c ^ d))) + blocks[0] - 680876936;
+      a = (a << 7 | a >>> 25) + b << 0;
+      d += (c ^ (a & (b ^ c))) + blocks[1] - 389564586;
+      d = (d << 12 | d >>> 20) + a << 0;
+      c += (b ^ (d & (a ^ b))) + blocks[2] + 606105819;
+      c = (c << 17 | c >>> 15) + d << 0;
+      b += (a ^ (c & (d ^ a))) + blocks[3] - 1044525330;
+      b = (b << 22 | b >>> 10) + c << 0;
+    }
+
+    a += (d ^ (b & (c ^ d))) + blocks[4] - 176418897;
+    a = (a << 7 | a >>> 25) + b << 0;
+    d += (c ^ (a & (b ^ c))) + blocks[5] + 1200080426;
+    d = (d << 12 | d >>> 20) + a << 0;
+    c += (b ^ (d & (a ^ b))) + blocks[6] - 1473231341;
+    c = (c << 17 | c >>> 15) + d << 0;
+    b += (a ^ (c & (d ^ a))) + blocks[7] - 45705983;
+    b = (b << 22 | b >>> 10) + c << 0;
+    a += (d ^ (b & (c ^ d))) + blocks[8] + 1770035416;
+    a = (a << 7 | a >>> 25) + b << 0;
+    d += (c ^ (a & (b ^ c))) + blocks[9] - 1958414417;
+    d = (d << 12 | d >>> 20) + a << 0;
+    c += (b ^ (d & (a ^ b))) + blocks[10] - 42063;
+    c = (c << 17 | c >>> 15) + d << 0;
+    b += (a ^ (c & (d ^ a))) + blocks[11] - 1990404162;
+    b = (b << 22 | b >>> 10) + c << 0;
+    a += (d ^ (b & (c ^ d))) + blocks[12] + 1804603682;
+    a = (a << 7 | a >>> 25) + b << 0;
+    d += (c ^ (a & (b ^ c))) + blocks[13] - 40341101;
+    d = (d << 12 | d >>> 20) + a << 0;
+    c += (b ^ (d & (a ^ b))) + blocks[14] - 1502002290;
+    c = (c << 17 | c >>> 15) + d << 0;
+    b += (a ^ (c & (d ^ a))) + blocks[15] + 1236535329;
+    b = (b << 22 | b >>> 10) + c << 0;
+    a += (c ^ (d & (b ^ c))) + blocks[1] - 165796510;
+    a = (a << 5 | a >>> 27) + b << 0;
+    d += (b ^ (c & (a ^ b))) + blocks[6] - 1069501632;
+    d = (d << 9 | d >>> 23) + a << 0;
+    c += (a ^ (b & (d ^ a))) + blocks[11] + 643717713;
+    c = (c << 14 | c >>> 18) + d << 0;
+    b += (d ^ (a & (c ^ d))) + blocks[0] - 373897302;
+    b = (b << 20 | b >>> 12) + c << 0;
+    a += (c ^ (d & (b ^ c))) + blocks[5] - 701558691;
+    a = (a << 5 | a >>> 27) + b << 0;
+    d += (b ^ (c & (a ^ b))) + blocks[10] + 38016083;
+    d = (d << 9 | d >>> 23) + a << 0;
+    c += (a ^ (b & (d ^ a))) + blocks[15] - 660478335;
+    c = (c << 14 | c >>> 18) + d << 0;
+    b += (d ^ (a & (c ^ d))) + blocks[4] - 405537848;
+    b = (b << 20 | b >>> 12) + c << 0;
+    a += (c ^ (d & (b ^ c))) + blocks[9] + 568446438;
+    a = (a << 5 | a >>> 27) + b << 0;
+    d += (b ^ (c & (a ^ b))) + blocks[14] - 1019803690;
+    d = (d << 9 | d >>> 23) + a << 0;
+    c += (a ^ (b & (d ^ a))) + blocks[3] - 187363961;
+    c = (c << 14 | c >>> 18) + d << 0;
+    b += (d ^ (a & (c ^ d))) + blocks[8] + 1163531501;
+    b = (b << 20 | b >>> 12) + c << 0;
+    a += (c ^ (d & (b ^ c))) + blocks[13] - 1444681467;
+    a = (a << 5 | a >>> 27) + b << 0;
+    d += (b ^ (c & (a ^ b))) + blocks[2] - 51403784;
+    d = (d << 9 | d >>> 23) + a << 0;
+    c += (a ^ (b & (d ^ a))) + blocks[7] + 1735328473;
+    c = (c << 14 | c >>> 18) + d << 0;
+    b += (d ^ (a & (c ^ d))) + blocks[12] - 1926607734;
+    b = (b << 20 | b >>> 12) + c << 0;
+    bc = b ^ c;
+    a += (bc ^ d) + blocks[5] - 378558;
+    a = (a << 4 | a >>> 28) + b << 0;
+    d += (bc ^ a) + blocks[8] - 2022574463;
+    d = (d << 11 | d >>> 21) + a << 0;
+    da = d ^ a;
+    c += (da ^ b) + blocks[11] + 1839030562;
+    c = (c << 16 | c >>> 16) + d << 0;
+    b += (da ^ c) + blocks[14] - 35309556;
+    b = (b << 23 | b >>> 9) + c << 0;
+    bc = b ^ c;
+    a += (bc ^ d) + blocks[1] - 1530992060;
+    a = (a << 4 | a >>> 28) + b << 0;
+    d += (bc ^ a) + blocks[4] + 1272893353;
+    d = (d << 11 | d >>> 21) + a << 0;
+    da = d ^ a;
+    c += (da ^ b) + blocks[7] - 155497632;
+    c = (c << 16 | c >>> 16) + d << 0;
+    b += (da ^ c) + blocks[10] - 1094730640;
+    b = (b << 23 | b >>> 9) + c << 0;
+    bc = b ^ c;
+    a += (bc ^ d) + blocks[13] + 681279174;
+    a = (a << 4 | a >>> 28) + b << 0;
+    d += (bc ^ a) + blocks[0] - 358537222;
+    d = (d << 11 | d >>> 21) + a << 0;
+    da = d ^ a;
+    c += (da ^ b) + blocks[3] - 722521979;
+    c = (c << 16 | c >>> 16) + d << 0;
+    b += (da ^ c) + blocks[6] + 76029189;
+    b = (b << 23 | b >>> 9) + c << 0;
+    bc = b ^ c;
+    a += (bc ^ d) + blocks[9] - 640364487;
+    a = (a << 4 | a >>> 28) + b << 0;
+    d += (bc ^ a) + blocks[12] - 421815835;
+    d = (d << 11 | d >>> 21) + a << 0;
+    da = d ^ a;
+    c += (da ^ b) + blocks[15] + 530742520;
+    c = (c << 16 | c >>> 16) + d << 0;
+    b += (da ^ c) + blocks[2] - 995338651;
+    b = (b << 23 | b >>> 9) + c << 0;
+    a += (c ^ (b | ~d)) + blocks[0] - 198630844;
+    a = (a << 6 | a >>> 26) + b << 0;
+    d += (b ^ (a | ~c)) + blocks[7] + 1126891415;
+    d = (d << 10 | d >>> 22) + a << 0;
+    c += (a ^ (d | ~b)) + blocks[14] - 1416354905;
+    c = (c << 15 | c >>> 17) + d << 0;
+    b += (d ^ (c | ~a)) + blocks[5] - 57434055;
+    b = (b << 21 | b >>> 11) + c << 0;
+    a += (c ^ (b | ~d)) + blocks[12] + 1700485571;
+    a = (a << 6 | a >>> 26) + b << 0;
+    d += (b ^ (a | ~c)) + blocks[3] - 1894986606;
+    d = (d << 10 | d >>> 22) + a << 0;
+    c += (a ^ (d | ~b)) + blocks[10] - 1051523;
+    c = (c << 15 | c >>> 17) + d << 0;
+    b += (d ^ (c | ~a)) + blocks[1] - 2054922799;
+    b = (b << 21 | b >>> 11) + c << 0;
+    a += (c ^ (b | ~d)) + blocks[8] + 1873313359;
+    a = (a << 6 | a >>> 26) + b << 0;
+    d += (b ^ (a | ~c)) + blocks[15] - 30611744;
+    d = (d << 10 | d >>> 22) + a << 0;
+    c += (a ^ (d | ~b)) + blocks[6] - 1560198380;
+    c = (c << 15 | c >>> 17) + d << 0;
+    b += (d ^ (c | ~a)) + blocks[13] + 1309151649;
+    b = (b << 21 | b >>> 11) + c << 0;
+    a += (c ^ (b | ~d)) + blocks[4] - 145523070;
+    a = (a << 6 | a >>> 26) + b << 0;
+    d += (b ^ (a | ~c)) + blocks[11] - 1120210379;
+    d = (d << 10 | d >>> 22) + a << 0;
+    c += (a ^ (d | ~b)) + blocks[2] + 718787259;
+    c = (c << 15 | c >>> 17) + d << 0;
+    b += (d ^ (c | ~a)) + blocks[9] - 343485551;
+    b = (b << 21 | b >>> 11) + c << 0;
+
+    if (this.first) {
+      this.h0 = a + 1732584193 << 0;
+      this.h1 = b - 271733879 << 0;
+      this.h2 = c - 1732584194 << 0;
+      this.h3 = d + 271733878 << 0;
+      this.first = false;
+    } else {
+      this.h0 = this.h0 + a << 0;
+      this.h1 = this.h1 + b << 0;
+      this.h2 = this.h2 + c << 0;
+      this.h3 = this.h3 + d << 0;
+    }
+  };
+
+  /**
+   * @method hex
+   * @memberof Md5
+   * @instance
+   * @description Output hash as hex string
+   * @returns {String} Hex string
+   * @see {@link md5.hex}
+   * @example
+   * hash.hex();
+   */
+  Md5.prototype.hex = function () {
+    this.finalize();
+
+    var h0 = this.h0, h1 = this.h1, h2 = this.h2, h3 = this.h3;
+
+    return HEX_CHARS[(h0 >> 4) & 0x0F] + HEX_CHARS[h0 & 0x0F] +
+      HEX_CHARS[(h0 >> 12) & 0x0F] + HEX_CHARS[(h0 >> 8) & 0x0F] +
+      HEX_CHARS[(h0 >> 20) & 0x0F] + HEX_CHARS[(h0 >> 16) & 0x0F] +
+      HEX_CHARS[(h0 >> 28) & 0x0F] + HEX_CHARS[(h0 >> 24) & 0x0F] +
+      HEX_CHARS[(h1 >> 4) & 0x0F] + HEX_CHARS[h1 & 0x0F] +
+      HEX_CHARS[(h1 >> 12) & 0x0F] + HEX_CHARS[(h1 >> 8) & 0x0F] +
+      HEX_CHARS[(h1 >> 20) & 0x0F] + HEX_CHARS[(h1 >> 16) & 0x0F] +
+      HEX_CHARS[(h1 >> 28) & 0x0F] + HEX_CHARS[(h1 >> 24) & 0x0F] +
+      HEX_CHARS[(h2 >> 4) & 0x0F] + HEX_CHARS[h2 & 0x0F] +
+      HEX_CHARS[(h2 >> 12) & 0x0F] + HEX_CHARS[(h2 >> 8) & 0x0F] +
+      HEX_CHARS[(h2 >> 20) & 0x0F] + HEX_CHARS[(h2 >> 16) & 0x0F] +
+      HEX_CHARS[(h2 >> 28) & 0x0F] + HEX_CHARS[(h2 >> 24) & 0x0F] +
+      HEX_CHARS[(h3 >> 4) & 0x0F] + HEX_CHARS[h3 & 0x0F] +
+      HEX_CHARS[(h3 >> 12) & 0x0F] + HEX_CHARS[(h3 >> 8) & 0x0F] +
+      HEX_CHARS[(h3 >> 20) & 0x0F] + HEX_CHARS[(h3 >> 16) & 0x0F] +
+      HEX_CHARS[(h3 >> 28) & 0x0F] + HEX_CHARS[(h3 >> 24) & 0x0F];
+  };
+
+  /**
+   * @method toString
+   * @memberof Md5
+   * @instance
+   * @description Output hash as hex string
+   * @returns {String} Hex string
+   * @see {@link md5.hex}
+   * @example
+   * hash.toString();
+   */
+  Md5.prototype.toString = Md5.prototype.hex;
+
+  /**
+   * @method digest
+   * @memberof Md5
+   * @instance
+   * @description Output hash as bytes array
+   * @returns {Array} Bytes array
+   * @see {@link md5.digest}
+   * @example
+   * hash.digest();
+   */
+  Md5.prototype.digest = function () {
+    this.finalize();
+
+    var h0 = this.h0, h1 = this.h1, h2 = this.h2, h3 = this.h3;
+    return [
+      h0 & 0xFF, (h0 >> 8) & 0xFF, (h0 >> 16) & 0xFF, (h0 >> 24) & 0xFF,
+      h1 & 0xFF, (h1 >> 8) & 0xFF, (h1 >> 16) & 0xFF, (h1 >> 24) & 0xFF,
+      h2 & 0xFF, (h2 >> 8) & 0xFF, (h2 >> 16) & 0xFF, (h2 >> 24) & 0xFF,
+      h3 & 0xFF, (h3 >> 8) & 0xFF, (h3 >> 16) & 0xFF, (h3 >> 24) & 0xFF
+    ];
+  };
+
+  /**
+   * @method array
+   * @memberof Md5
+   * @instance
+   * @description Output hash as bytes array
+   * @returns {Array} Bytes array
+   * @see {@link md5.array}
+   * @example
+   * hash.array();
+   */
+  Md5.prototype.array = Md5.prototype.digest;
+
+  /**
+   * @method arrayBuffer
+   * @memberof Md5
+   * @instance
+   * @description Output hash as ArrayBuffer
+   * @returns {ArrayBuffer} ArrayBuffer
+   * @see {@link md5.arrayBuffer}
+   * @example
+   * hash.arrayBuffer();
+   */
+  Md5.prototype.arrayBuffer = function () {
+    this.finalize();
+
+    var buffer = new ArrayBuffer(16);
+    var blocks = new Uint32Array(buffer);
+    blocks[0] = this.h0;
+    blocks[1] = this.h1;
+    blocks[2] = this.h2;
+    blocks[3] = this.h3;
+    return buffer;
+  };
+
+  /**
+   * @method buffer
+   * @deprecated This maybe confuse with Buffer in node.js. Please use arrayBuffer instead.
+   * @memberof Md5
+   * @instance
+   * @description Output hash as ArrayBuffer
+   * @returns {ArrayBuffer} ArrayBuffer
+   * @see {@link md5.buffer}
+   * @example
+   * hash.buffer();
+   */
+  Md5.prototype.buffer = Md5.prototype.arrayBuffer;
+
+  /**
+   * @method base64
+   * @memberof Md5
+   * @instance
+   * @description Output hash as base64 string
+   * @returns {String} base64 string
+   * @see {@link md5.base64}
+   * @example
+   * hash.base64();
+   */
+  Md5.prototype.base64 = function () {
+    var v1, v2, v3, base64Str = '', bytes = this.array();
+    for (var i = 0; i < 15;) {
+      v1 = bytes[i++];
+      v2 = bytes[i++];
+      v3 = bytes[i++];
+      base64Str += BASE64_ENCODE_CHAR[v1 >>> 2] +
+        BASE64_ENCODE_CHAR[(v1 << 4 | v2 >>> 4) & 63] +
+        BASE64_ENCODE_CHAR[(v2 << 2 | v3 >>> 6) & 63] +
+        BASE64_ENCODE_CHAR[v3 & 63];
+    }
+    v1 = bytes[i];
+    base64Str += BASE64_ENCODE_CHAR[v1 >>> 2] +
+      BASE64_ENCODE_CHAR[(v1 << 4) & 63] +
+      '==';
+    return base64Str;
+  };
+
+  var exports = createMethod();
+
+  if (COMMON_JS) {
+    module.exports = exports;
+  } else {
+    /**
+     * @method md5
+     * @description Md5 hash function, export to global in browsers.
+     * @param {String|Array|Uint8Array|ArrayBuffer} message message to hash
+     * @returns {String} md5 hashes
+     * @example
+     * md5(''); // d41d8cd98f00b204e9800998ecf8427e
+     * md5('The quick brown fox jumps over the lazy dog'); // 9e107d9d372bb6826bd81d3542a419d6
+     * md5('The quick brown fox jumps over the lazy dog.'); // e4d909c290d0fb1ca068ffaddf22cbd0
+     *
+     * // It also supports UTF-8 encoding
+     * md5('中文'); // a7bac2239fcdcb3a067903d8077c4a07
+     *
+     * // It also supports byte `Array`, `Uint8Array`, `ArrayBuffer`
+     * md5([]); // d41d8cd98f00b204e9800998ecf8427e
+     * md5(new Uint8Array([])); // d41d8cd98f00b204e9800998ecf8427e
+     */
+    root.md5 = exports;
+    if (AMD) {
+      undefined(function () {
+        return exports;
+      });
+    }
+  }
+})();
+});
+
+/*
+* Author    Jonathan Lurie - http://me.jonahanlurie.fr
+*
+* License   MIT
+* Link      https://github.com/jonathanlurie/pixpipejs
+* Lab       MCIN - Montreal Neurological Institute
+*/
+
 /**
 * A PixBinEncoder instance takes an Image2D or Image3D as input with `addInput(...)`
 * and encode it so that it can be saved as a *.pixp file.
@@ -20895,77 +22862,509 @@ class EegModDecoder extends Filter {
 * **Usage**
 * - [examples/savePixpFile.html](../examples/savePixpFile.html)
 */
-class PixBinEncoder extends Filter {
+class PixBinEncoder$1 {
   constructor(){
-    super();
-    this.setMetadata("filename", "untitled.pixb");
-    this.setMetadata("extension", "pixb");
+    this._compress = true;
+    this.reset();
+  }
 
+
+  /**
+  * [static]
+  * the first sequence of bytes for a pixbin file is this ASCII string
+  */
+  static MAGIC_NUMBER(){
+    return "PIXPIPE_PIXBIN";
   }
 
 
   /**
   * [PRIVATE]
-  * overwrite the original from Filter
-  * Only accept Image2D and Image3D
+  * reset inputs and inputs
   */
-  hasValidInput(){
-    var input = this._getInput();
-    return input && ( input.isOfType(Image2D.TYPE()) || input.isOfType(Image3D.TYPE()) );
+  reset(){
+    this._inputs = [];
+    this._output = null;
+    this._options = {
+      madeWith: "pixbincodec_js",
+      userObject: null,
+      description: null,
+    };
+  }
+
+
+  /**
+  * Set a boolean to secify if data should be compressed or not
+  * @param {Boolean} b - true to compress, false to not compress
+  */
+  enableDataCompression( b ){
+    this._compress = b;
+  }
+
+
+  /**
+  * Overwrite one of the default options.
+  * @param {String} optionName - one of "madeWith" (default: "pixbincodec_js"), "userObject" (default: null), "description" (default: null)
+  */
+  setOption( optionName, value ){
+    if( optionName in this._options){
+      this._options[ optionName ] = value;
+    }
+  }
+
+
+  /**
+  * Add an input. Multiple inputs can be added.
+  * @param {Object} obj - an object that comtain _data and _metadata
+  */
+  addInput( obj ){
+    if(PixBlockEncoder.isGoodCandidate( obj )){
+      this._inputs.push( obj );
+    }
+  }
+
+
+  /**
+  * Get the output
+  * @return {ArrayBuffer} the encoded data as a buffer
+  */
+  getOutput(){
+    return this._output;
+  }
+
+
+  /**
+  * Launch the encoding
+  */
+  run(){
+    if( !this._inputs.length ){
+      console.warn("The encoder must be specified at least one input.");
+      return;
+    }
+
+    var that = this;
+    var today = new Date();
+    var isLittleEndian = CodecUtils.isPlatformLittleEndian();
+    var blockEncoder = new PixBlockEncoder();
+
+    // this object is the JSON description at the begining of a PixBin
+    var pixBinIndex = {
+      date: today.toISOString(),
+      createdWith: this._options.madeWith,
+      description: this._options.description,
+      userObject: this._options.userObject,
+      pixblocksInfo: []
+    };
+
+    // array of binary blocks (each are Uint8Array or ArrayBuffer)
+    var pixBlocks = [];
+
+    // just a convenient shortcut
+    var pixblocksInfo = pixBinIndex.pixblocksInfo;
+
+
+    this._inputs.forEach(function( input, index ){
+      blockEncoder.setInput( input );
+      blockEncoder.enableDataCompression( that._compress );
+      blockEncoder.run();
+
+      var encodedBlock = blockEncoder.getOutput();
+
+      if( !encodedBlock ){
+        console.warn("The input of index " + index + " could not be encoded as a PixBlock.");
+        return;
+      }
+
+      // adding an entry to the PixBin index
+      var pixBinIndexEntry = {
+        type        : input.constructor.name,
+        description : ( "description" in input._metadata ) ? input._metadata.description : null,
+        byteLength  : encodedBlock.byteLength,
+        checksum    : md5$2( encodedBlock ),
+      };
+
+      pixblocksInfo.push( pixBinIndexEntry );
+      pixBlocks.push( encodedBlock );
+    });
+
+
+    if( !pixBlocks.length ){
+      console.warn("No input was compatible for PixBlock encoding.");
+    }
+
+    // Building the header ArrayBuffer of the file. It contains:
+    // - A ASCII string "pixpipe". 7 x Uint8 of charcodes (7 bytes)
+    // - A flag for encoding endianess, 0: big, 1: little. 1 x Uint8 (1 byte)
+    // - The byte length of the PixBin meta binary object. 1 x Uint32 (4 bytes)
+
+    // encoding the meta object into an ArrayBuffer
+    var pixBinIndexBinaryString = CodecUtils.objectToArrayBuffer(pixBinIndex);
+    var magicNumber = PixBinEncoder$1.MAGIC_NUMBER();
+
+    // the +5 stands for 1 endiannes byte (Uint8) + 4 bytes (1xUint32) of header length
+    var binPrimer = new ArrayBuffer( magicNumber.length + 5 );
+    var binPrimerView = new DataView( binPrimer );
+
+    CodecUtils.setString8InBuffer( magicNumber, binPrimer );
+    binPrimerView.setUint8( magicNumber.length, (+isLittleEndian));
+    binPrimerView.setUint32( magicNumber.length + 1, pixBinIndexBinaryString.byteLength, isLittleEndian );
+
+    var allBuffers = [binPrimer, pixBinIndexBinaryString].concat( pixBlocks );
+    this._output = CodecUtils.mergeBuffers( allBuffers );
+
+  }
+
+
+
+} /* END of class PixBinEncoder */
+
+/*
+* Author    Jonathan Lurie - http://me.jonahanlurie.fr
+*
+* License   MIT
+* Link      https://github.com/jonathanlurie/pixpipejs
+* Lab       MCIN - Montreal Neurological Institute
+*/
+
+
+/**
+* A PixBinDecoder instance decodes a *.pixp file and output an Image2D or Image3D.
+* The input, specified by `.addInput(...)` must be an ArrayBuffer
+* (from an `UrlToArrayBufferFilter`, an `UrlToArrayBufferReader` or anothrer source ).
+*
+* **Usage**
+* - [examples/pixpFileToImage2D.html](../examples/pixpFileToImage2D.html)
+*/
+class PixBinDecoder {
+  constructor(){
+    this._verifyChecksum = false;
+    this._input = null;
+    this._output = null;
+    this._binMeta = null;
+    this._parsingInfo = {
+      offsetToReachFirstBlock: -1,
+      isLittleEndian: -1,
+    };
+    
+    this._decodedBlocks = {};
+    this._isValid = false;
+    this.reset();
+  }
+
+
+  /**
+  * Specify an input
+  * @param {ArrayBuffer} buff - the input
+  */
+  setInput( buff ){
+    this.reset();
+    
+    if( buff instanceof ArrayBuffer ){
+      this._input = buff;
+      this._isValid = this._parseIndex();
+    }
+  }
+
+
+  /**
+  * To be called after setInput. Tells if the buffer loaded is valid or not.
+  * @return {Boolean} true if valid, false if not.
+  */
+  isValid(){
+    return this._isValid;
+  }
+
+  /**
+  * Get the the decoded output
+  * @return {Object} a decoded object
+  */
+  getOutput(){
+    return this._output;
+  }
+  
+  
+  /**
+  * Get the number of blocks encoded in this PixBin file
+  * @return {Number}
+  */
+  getNumberOfBlocks(){
+    return this._binMeta.pixblocksInfo.length;
+  }
+
+
+  /**
+  * Get the creation date of the file in the ISO8601 format
+  * @return {String} the data
+  */
+  getBinCreationDate(){
+    return this._binMeta.date;
+  }
+
+
+  /**
+  * Get the description of the PixBin file
+  * @return {String} the description
+  */
+  getBinDescription(){
+    return this._binMeta.description;
+  }
+  
+  
+  /**
+  * The userObject is a generic container added to the PixBin. It can carry all sorts of data.
+  * If not specified during encoding, it's null.
+  * @return {Object} the userObject
+  */
+  getBinUserObject(){
+    return this._binMeta.userObject;
+  }
+
+
+  /**
+  * Get the description of the block at the given index
+  * @param {Number} n - the index of the block
+  * @return {String} the description of this block
+  */
+  getBlockDescription( n ){
+    if( n<0 || n >= this.getNumberOfBlocks() ){
+      console.warn("The block index is out of range.");
+      return null;
+    }
+    return this._binMeta.pixblocksInfo[n].description;
+  }
+  
+  
+  /**
+  * Get the original type of the block. Convenient for knowing how to rebuild
+  * the object in its original form.
+  * @param {Number} n - the index of the block
+  * @return {String} the type ( comes from constructor.name )
+  */
+  getBlockType( n ){
+    if( n<0 || n >= this.getNumberOfBlocks() ){
+      console.warn("The block index is out of range.");
+      return null;
+    }
+    return this._binMeta.pixblocksInfo[n].type;
+  }
+
+
+  /**
+  * reset I/O and data to query 
+  */
+  reset(){
+    this._isValid = false;
+    this._input = null;
+    this._output = null;
+    this._binMeta = null;
+    this._parsingInfo = {
+      offsetToReachFirstBlock: -1,
+      isLittleEndian: -1,
+    };
+    this._decodedBlocks = {};
+  }
+
+
+  /**
+  * Specify wether or not  the bin decoder must perform a checksum verification
+  * for each block to be decoded.
+  * @param {Boolean} b - true to perfom verification, false to skip it (default: false)
+  */
+  enableBlockVerification( b ){
+    this._verifyChecksum = b;
+  }
+
+
+  /**
+  * [PRIVATE]
+  * 
+  */
+  _parseIndex(){
+    var input = this._input;
+
+    if( !input ){
+      console.warn("Input cannot be null");
+      return false;
+    }
+
+    var inputByteLength = input.byteLength;
+    var magicNumberToExpect = PixBinEncoder$1.MAGIC_NUMBER();
+
+    // control 1: the file must be large enough
+    if( inputByteLength < (magicNumberToExpect.length + 5) ){
+      console.warn("This buffer does not match a PixBin file.");
+      return false;
+    }
+
+    var view = new DataView( input );
+    var movingByteOffset = 0;
+    var magicNumber = CodecUtils.getString8FromBuffer(input, magicNumberToExpect.length );
+
+    // control 2: the magic number
+    if( magicNumber !== magicNumberToExpect){
+      console.warn("This file is not of PixBin type. (wrong magic number)");
+      return false;
+    }
+
+    movingByteOffset = magicNumberToExpect.length;
+    var isLittleEndian = view.getUint8(movingByteOffset);
+
+    // control 3: the endianess must be 0 or 1
+    if(isLittleEndian != 0 && isLittleEndian != 1){
+      console.warn("This file is not of PixBin type. (wrong endianess code)");
+      return false;
+    }
+
+    movingByteOffset += 1;
+    var pixBinIndexBinaryStringByteLength = view.getUint32( movingByteOffset, isLittleEndian );
+    movingByteOffset += 4;
+    var pixBinIndexObj = CodecUtils.ArrayBufferToObject( input.slice(movingByteOffset, movingByteOffset + pixBinIndexBinaryStringByteLength));
+    movingByteOffset += pixBinIndexBinaryStringByteLength;
+    
+    this._parsingInfo.offsetToReachFirstBlock = movingByteOffset;
+    this._parsingInfo.isLittleEndian = isLittleEndian;
+    this._binMeta = pixBinIndexObj;
+    
+    return true;
+  }
+  
+  
+  /**
+  * Fetch a block at the given index. The first time it called on a block,
+  * this block will be read from the stream and decoded.
+  * If a block is already decoded, it will be retrieved as is without trying to
+  * re-decode it, unless `forceDecoding` is `true`.
+  * @param {Number} n - the index of the block to fetch
+  * @param {Boolean} forceDecoding - force the decoding even though it was already decoded
+  * @return {Object} the decoded block, containing `_data_`, `_metadata` and `originalBlockType`
+  */
+  fetchBlock( n , forceDecoding=false ){
+    var nbBlocks = this.getNumberOfBlocks();
+    if( n<0 || n >= nbBlocks ){
+      console.warn("The block index is out of range.");
+      return null;
+    }
+    
+    if( n in this._decodedBlocks && !forceDecoding){
+      return this._decodedBlocks[ n ];
+    }
+    
+    var offset = this._parsingInfo.offsetToReachFirstBlock;
+    
+    for(var i=0; i<n; i++){
+      offset += this._binMeta.pixblocksInfo[i].byteLength;
+    }
+    
+    var blockInfo = this._binMeta.pixblocksInfo[n];
+    var pixBlockBuff = this._input.slice(offset, offset + blockInfo.byteLength);
+    
+    if( this._verifyChecksum && md5$2( pixBlockBuff ) !== blockInfo.checksum){
+      console.warn("The block #" + n + " is corrupted.");
+      return null;
+    }
+
+    var blockDecoder = new PixBlockDecoder();
+    blockDecoder.setInput( pixBlockBuff );
+    blockDecoder.run();
+    var decodedBlock = blockDecoder.getOutput();
+    
+    if( !decodedBlock ){
+      console.warn("The block #" + n + " could not be decoded.");
+      return null;
+    }
+    
+    this._decodedBlocks[ n ] = decodedBlock;
+    return decodedBlock;
+  }
+
+
+} /* END of class PixBinDecoder */
+
+/*
+* Author    Jonathan Lurie - http://me.jonahanlurie.fr
+*
+* License   MIT
+* Link      https://github.com/jonathanlurie/pixpipejs
+* Lab       MCIN - Montreal Neurological Institute
+*/
+
+/*
+* Author    Jonathan Lurie - http://me.jonahanlurie.fr
+*
+* License   MIT
+* Link      https://github.com/Pixpipe/pixpipejs
+* Lab       MCIN - Montreal Neurological Institute
+*/
+
+/**
+* A PixBinEncoder instance takes an Image2D or Image3D as input with `addInput(...)`
+* and encode it so that it can be saved as a *.pixp file.
+* An output filename can be specified using `.setMetadata("filename", "yourName.pixp");`,
+* by default, the name is "untitled.pixp".
+* When `update()` is called, a gzip blog is prepared as output[0] and can then be downloaded
+* when calling the method `.download()`. The gzip blob could also be sent over AJAX
+* using a third party library.
+*
+* **Usage**
+* - [examples/savePixpFile.html](../examples/savePixpFile.html)
+*/
+class PixBinEncoder$$1 extends Filter {
+  constructor(){
+    super();
+
+    // define if the encoder should compress the data, default: yes
+    this.setMetadata("compress", true);
+    
+    // to be transmitted to the encoder
+    this.setMetadata("description", "no description");
+    this.setMetadata("madeWith", "Pixpipejs");
+    this.setMetadata("userObject", null);
+  }
+
+
+  /**
+  * [static]
+  * the first sequence of bytes for a pixbin file is this ASCII string
+  */
+  static MAGIC_NUMBER(){
+    return "PIXPIPE_PIXBIN";
   }
 
 
   _run(){
-
-    if(! this.hasValidInput() ){
-      console.warn("PixBinEncoder can only encode Image2D and Image3D.");
-      return;
-    }
-
-    var input = this._getInput();
-
-    var pixBinMetadata = {
-      dataType: input.getData().constructor.name, // typed array type
-      pixpipeType: input.constructor.name, // most likely "Image2D", "Image3D", "MniVolume", "LineString", etc.
-      metadata: input.getMetadataCopy(),  // Image2D/Image3D._metadata
-    };
-
-    // this is a typed array
-    var data = input.getData();
+    var that = this;
     
-    var metadataJsonString = JSON.stringify( pixBinMetadata );
-    var metadataByteArray = new Uint8Array( metadataJsonString.length );
+    var encoder = new PixBinEncoder$1();
     
-    // converting the json string into a byte stream
-    for(var i = 0; i < metadataJsonString.length; ++i)
-      metadataByteArray[i] = metadataJsonString.charCodeAt(i);
+    // specifying some options
+    encoder.enableDataCompression( this.getMetadata("compress") );
+    encoder.setOption( 
+      "userObject",
+      this.getMetadata("userObject")
+    );
+    encoder.setOption( 
+      "description",
+      this.getMetadata("description")
+    );
+    encoder.setOption( 
+      "madeWith",
+      this.getMetadata("madeWith")
+    );
 
-    // creating the buffer
-    var metadataBuffer = new ArrayBuffer( 4 + metadataByteArray.length );
+    this._forEachInput(function( category, input ){
+      encoder.addInput( input );
+    });
 
-    // the data view is used to write into the buffer
-    var view = new DataView( metadataBuffer );
+    encoder.run();
     
-    var offsetFromHere = 0;
-    
-    // write the size of the metadata string
-    view.setUint32(offsetFromHere, metadataByteArray.length );
-    
-    // write the metadata themselves
-    offsetFromHere += 4;
-    for(var i=0; i<metadataByteArray.length; i++){
-      view.setUint8(offsetFromHere, metadataByteArray[i] );
-      offsetFromHere++;
-    }
-
-    // making a blob to be saved
-    this._output[0] = new Blob([metadataBuffer, data], {type: 'application/octet-binary'} );
+    this._output[ 0 ] = encoder.getOutput();
   }
 
 
   /**
   * Download the generated file
   */
+  /*
   download(){
     var output = this.getOutput();
 
@@ -20975,8 +23374,95 @@ class PixBinEncoder extends Filter {
       console.warn("No output computed yet.");
     }
   }
+  */
 
 } /* END of class PixBinEncoder */
+
+/*
+* Author    Jonathan Lurie - http://me.jonahanlurie.fr
+*
+* License   MIT
+* Link      https://github.com/Pixpipe/pixpipejs
+* Lab       MCIN - Montreal Neurological Institute
+*/
+
+/**
+* A PixBinDecoder instance decodes a *.pixp file and output an Image2D or Image3D.
+* The input, specified by `.addInput(...)` must be an ArrayBuffer
+* (from an `UrlToArrayBufferFilter`, an `UrlToArrayBufferReader` or anothrer source ).
+*
+* **Usage**
+* - [examples/pixpFileToImage2D.html](../examples/pixpFileToImage2D.html)
+*/
+class PixBinDecoder$1 extends Filter {
+  constructor(){
+    super();
+    this.addInputValidator(0, ArrayBuffer);
+    this.setMetadata("blockVerification", false);
+  }
+
+
+  _run(){
+    if(! this.hasValidInput() ){
+      console.warn("PixBinDecoder can only decode ArrayBuffer.");
+      return;
+    }
+  
+    var input = this._getInput();
+    var decoder = new PixBinDecoder();
+    decoder.enableBlockVerification( this.getMetadata("blockVerification") );
+    decoder.setInput( input );
+    
+    // dont go further is buffer is not valid
+    if( !decoder.isValid() ){
+      console.warn("The input buffer is invalid.");
+      return;
+    }
+    
+    var pixBinMetaObj = {
+      creationDate: decoder.getBinCreationDate(),
+      description: decoder.getBinDescription(),
+      userObject: decoder.getBinUserObject(),
+      numberOfBlocks: decoder.getNumberOfBlocks()
+    };
+    
+    // perform the decoding
+    var numberOfBlocks = decoder.getNumberOfBlocks();
+    
+    for(var i=0; i<numberOfBlocks; i++){
+      var blockType = decoder.getBlockType( i );
+      var block = decoder.fetchBlock( i );
+      var output = null;
+      var objectConstructor = CoreTypes.getCoreType( blockType );
+      
+      // the encoded object matches to a pixpipe type
+      if( objectConstructor ){
+        output = new objectConstructor();
+        output.setRawData( block._data );
+        output.setRawMetadata( block._metadata );
+      }
+      // Fallback on a not-pixpipe type
+      else{
+        var globalObject = CodecUtils.getGlobalObject();
+        if( blockType in globalObject ){
+          output = new globalObject[ blockType ]();
+          output._metadata = block._metadata;
+          output._data = block._data;
+        }
+        
+      }
+      
+      this._output[ i ] = output;
+    }
+    
+    // adding the metadata only if there are blocks
+    if( numberOfBlocks ){
+      this._output[ "PixBinMeta" ] = pixBinMetaObj;
+    }
+  }
+
+
+} /* END of class PixBinDecoder */
 
 /*
   Copyright (c) 2008, Adobe Systems Incorporated
@@ -22723,7 +25209,7 @@ function decode(jpegData, useTArray) {
   return image;
 }
 
-var index$2 = {
+var index$3 = {
   encode: encoder,
   decode: decoder
 };
@@ -22731,7 +25217,7 @@ var index$2 = {
 /*
 * Author   Jonathan Lurie - http://me.jonahanlurie.fr
 * License  MIT
-* Link     https://github.com/jonathanlurie/pixpipejs
+* Link     https://github.com/Pixpipe/pixpipejs
 * Lab      MCIN - Montreal Neurological Institute
 */
 
@@ -22759,7 +25245,7 @@ class JpegDecoder extends Filter {
     }
   
     try{
-      var jpegData = index$2.decode( inputBuffer );
+      var jpegData = index$3.decode( inputBuffer );
       var ncpp = jpegData.data.length / (jpegData.width*jpegData.height);
       var outputImage = new Image2D();
       var pixelData = new Uint8Array( jpegData.data.buffer );
@@ -23318,7 +25804,7 @@ UPNG._bin = {
 /*
 * Author   Jonathan Lurie - http://me.jonahanlurie.fr
 * License  MIT
-* Link     https://github.com/jonathanlurie/pixpipejs
+* Link     https://github.com/Pixpipe/pixpipejs
 * Lab      MCIN - Montreal Neurological Institute
 */
 
@@ -23393,12 +25879,15 @@ class PngDecoder extends Filter {
 * Author    Jonathan Lurie - http://me.jonahanlurie.fr
 *
 * License   MIT
-* Link      https://github.com/jonathanlurie/pixpipejs
+* Link      https://github.com/Pixpipe/pixpipejs
 * Lab       MCIN - Montreal Neurological Institute
 */
 
 
 // decoders
+//import { PixBinDecoder } from './PixBinDecoder.js';
+
+
 /**
 * An instance of Image2DGenericDecoder takes a ArrayBuffer 
 * as input 0 (`.addInput(myArrayBuffer)`) and output an Image2D.
@@ -23424,7 +25913,7 @@ class Image2DGenericDecoder extends Filter {
       JpegDecoder,
       PngDecoder,
       PixpDecoder,
-      PixBinDecoder
+      //PixBinDecoder
     ];
   }
   
@@ -23474,7 +25963,7 @@ var iota_1 = iota;
 
 // The _isBuffer check is for Safari 5-7 support, because it's missing
 // Object.prototype.constructor. Remove this eventually
-var index$3 = function (obj) {
+var index$4 = function (obj) {
   return obj != null && (isBuffer$1(obj) || isSlowBuffer$1(obj) || !!obj._isBuffer)
 };
 
@@ -23739,7 +26228,7 @@ b"+i+"*=d\
 }
 
 function arrayDType(data) {
-  if(index$3(data)) {
+  if(index$4(data)) {
     return "buffer"
   }
   if(hasTypedArrays) {
@@ -25938,7 +28427,7 @@ class InverseFourierImageFilter extends BaseFourierImageFilter {
 /*
 * Author   Jonathan Lurie - http://me.jonahanlurie.fr
 * License  MIT
-* Link      https://github.com/jonathanlurie/pixpipejs
+* Link      https://github.com/Pixpipe/pixpipejs
 * Lab       MCIN - Montreal Neurological Institute
 */
 
@@ -26051,7 +28540,7 @@ class ForEachPixelImageFilter extends ImageToImageFilter {
 /*
 * Author   Jonathan Lurie - http://me.jonahanlurie.fr
 * License  MIT
-* Link      https://github.com/jonathanlurie/pixpipejs
+* Link      https://github.com/Pixpipe/pixpipejs
 * Lab       MCIN - Montreal Neurological Institute
 */
 
@@ -27433,7 +29922,7 @@ return parser;
 /*
 * Author   Jonathan Lurie - http://me.jonahanlurie.fr
 * License  MIT
-* Link      https://github.com/jonathanlurie/pixpipejs
+* Link      https://github.com/Pixpipe/pixpipejs
 * Lab       MCIN - Montreal Neurological Institute
 */
 
@@ -27517,7 +30006,7 @@ class ImageBlendExpressionFilter extends ImageToImageFilter {
 /*
 * Author   Jonathan Lurie - http://me.jonahanlurie.fr
 * License  MIT
-* Link      https://github.com/jonathanlurie/pixpipejs
+* Link      https://github.com/Pixpipe/pixpipejs
 * Lab       MCIN - Montreal Neurological Institute
 */
 
@@ -27641,7 +30130,7 @@ class SpatialConvolutionFilter extends ImageToImageFilter {
 /*
 * Author   Jonathan Lurie - http://me.jonahanlurie.fr
 * License  MIT
-* Link      https://github.com/jonathanlurie/pixpipejs
+* Link      https://github.com/Pixpipe/pixpipejs
 * Lab       MCIN - Montreal Neurological Institute
 */
 
@@ -27704,7 +30193,7 @@ class MultiplyImageFilter extends ImageToImageFilter {
 /*
 * Author   Jonathan Lurie - http://me.jonahanlurie.fr
 * License  MIT
-* Link      https://github.com/jonathanlurie/pixpipejs
+* Link      https://github.com/Pixpipe/pixpipejs
 * Lab       MCIN - Montreal Neurological Institute
 */
 
@@ -27809,7 +30298,7 @@ class SimpleThresholdFilter extends ImageToImageFilter {
 /*
 * Author   Jonathan Lurie - http://me.jonahanlurie.fr
 * License  MIT
-* Link      https://github.com/jonathanlurie/pixpipejs
+* Link      https://github.com/Pixpipe/pixpipejs
 * Lab       MCIN - Montreal Neurological Institute
 */
 
@@ -27877,7 +30366,7 @@ class ImageDerivativeFilter extends ImageToImageFilter {
 /*
 * Author   Jonathan Lurie - http://me.jonahanlurie.fr
 * License  MIT
-* Link      https://github.com/jonathanlurie/pixpipejs
+* Link      https://github.com/Pixpipe/pixpipejs
 * Lab       MCIN - Montreal Neurological Institute
 */
 
@@ -27957,7 +30446,7 @@ class GradientImageFilter extends ImageToImageFilter {
 /*
 * Author   Jonathan Lurie - http://me.jonahanlurie.fr
 * License  MIT
-* Link      https://github.com/jonathanlurie/pixpipejs
+* Link      https://github.com/Pixpipe/pixpipejs
 * Lab       MCIN - Montreal Neurological Institute
 */
 
@@ -28013,7 +30502,7 @@ class NormalizeImageFilter extends ImageToImageFilter {
 /*
 * Author   Jonathan Lurie - http://me.jonahanlurie.fr
 * License  MIT
-* Link      https://github.com/jonathanlurie/pixpipejs
+* Link      https://github.com/Pixpipe/pixpipejs
 * Lab       MCIN - Montreal Neurological Institute
 */
 
@@ -28249,7 +30738,7 @@ class ContourImage2DFilter extends Filter {
 /*
 * Author   Jonathan Lurie - http://me.jonahanlurie.fr
 * License  MIT
-* Link      https://github.com/jonathanlurie/pixpipejs
+* Link      https://github.com/Pixpipe/pixpipejs
 * Lab       MCIN - Montreal Neurological Institute
 */
 
@@ -28440,7 +30929,7 @@ class FloodFillImageFilter extends ImageToImageFilter {
 /*
 * Author   Jonathan Lurie - http://me.jonahanlurie.fr
 * License  MIT
-* Link      https://github.com/jonathanlurie/pixpipejs
+* Link      https://github.com/Pixpipe/pixpipejs
 * Lab       MCIN - Montreal Neurological Institute
 */
 
@@ -28539,7 +31028,7 @@ class ContourHolesImage2DFilter extends Filter {
 /*
 * Author   Jonathan Lurie - http://me.jonahanlurie.fr
 * License  MIT
-* Link      https://github.com/jonathanlurie/pixpipejs
+* Link      https://github.com/Pixpipe/pixpipejs
 * Lab       MCIN - Montreal Neurological Institute
 */
 
@@ -28554,7 +31043,7 @@ class ContourHolesImage2DFilter extends Filter {
 * created ( because the filter ForEachPixelImageFilter creates an output with same number of band.)
 *
 * **Usage**
-* - [the filter TerrainRgbToElevationImageFilter](https://github.com/jonathanlurie/pixpipejs/blob/master/src/filter/TerrainRgbToElevationImageFilter.js)
+* - [the filter TerrainRgbToElevationImageFilter](https://github.com/Pixpipe/pixpipejs/blob/master/src/filter/TerrainRgbToElevationImageFilter.js)
 *
 */
 class ForEachPixelReadOnlyFilter extends Filter {
@@ -28598,7 +31087,7 @@ class ForEachPixelReadOnlyFilter extends Filter {
 /*
 * Author   Jonathan Lurie - http://me.jonahanlurie.fr
 * License  MIT
-* Link      https://github.com/jonathanlurie/pixpipejs
+* Link      https://github.com/Pixpipe/pixpipejs
 * Lab       MCIN - Montreal Neurological Institute
 */
 
@@ -28661,7 +31150,7 @@ class TerrainRgbToElevationImageFilter extends ImageToImageFilter {
 * Author    Jonathan Lurie - http://me.jonahanlurie.fr
 *
 * License   MIT
-* Link      https://github.com/jonathanlurie/pixpipejs
+* Link      https://github.com/Pixpipe/pixpipejs
 * Lab       MCIN - Montreal Neurological Institute
 */
 
@@ -28744,7 +31233,7 @@ class NearestNeighborSparseInterpolationImageFilter extends Filter {
 * Author    Jonathan Lurie - http://me.jonahanlurie.fr
 *
 * License   MIT
-* Link      https://github.com/jonathanlurie/pixpipejs
+* Link      https://github.com/Pixpipe/pixpipejs
 * Lab       MCIN - Montreal Neurological Institute
 */
 
@@ -29089,7 +31578,7 @@ var Delaunay;
 * Author    Jonathan Lurie - http://me.jonahanlurie.fr
 *
 * License   MIT
-* Link      https://github.com/jonathanlurie/pixpipejs
+* Link      https://github.com/Pixpipe/pixpipejs
 * Lab       MCIN - Montreal Neurological Institute
 */
 
@@ -29248,7 +31737,7 @@ class TriangulationSparseInterpolationImageFilter extends Filter {
 /*
 * Author   Jonathan Lurie - http://me.jonahanlurie.fr
 * License  MIT
-* Link      https://github.com/jonathanlurie/pixpipejs
+* Link      https://github.com/Pixpipe/pixpipejs
 * Lab       MCIN - Montreal Neurological Institute
 */
 
@@ -29458,7 +31947,7 @@ else module.exports = simplify;
 /*
 * Author   Jonathan Lurie - http://me.jonahanlurie.fr
 * License  MIT
-* Link     https://github.com/jonathanlurie/pixpipejs
+* Link     https://github.com/Pixpipe/pixpipejs
 * Lab      MCIN - Montreal Neurological Institute
 */
 
@@ -29526,7 +32015,7 @@ class SimplifyLineStringFilter extends Filter {
 /*
 * Author   Jonathan Lurie - http://me.jonahanlurie.fr
 * License  MIT
-* Link      https://github.com/jonathanlurie/pixpipejs
+* Link      https://github.com/Pixpipe/pixpipejs
 * Lab       MCIN - Montreal Neurological Institute
 */
 
@@ -29667,7 +32156,7 @@ class AngleToHueWheelHelper extends ImageToImageFilter {
 /*
 * Author   Jonathan Lurie - http://me.jonahanlurie.fr
 * License  MIT
-* Link      https://github.com/jonathanlurie/pixpipejs
+* Link      https://github.com/Pixpipe/pixpipejs
 * Lab       MCIN - Montreal Neurological Institute
 */
 
@@ -29851,7 +32340,7 @@ var ColorScales = {
 /*
 * Author   Jonathan Lurie - http://me.jonahanlurie.fr
 * License  MIT
-* Link      https://github.com/jonathanlurie/pixpipejs
+* Link      https://github.com/Pixpipe/pixpipejs
 * Lab       MCIN - Montreal Neurological Institute
 */
 
@@ -30217,7 +32706,7 @@ class Colormap extends PixpipeObject {
 /*
 * Author   Jonathan Lurie - http://me.jonahanlurie.fr
 * License  MIT
-* Link      https://github.com/jonathanlurie/pixpipejs
+* Link      https://github.com/Pixpipe/pixpipejs
 * Lab       MCIN - Montreal Neurological Institute
 */
 
@@ -30389,6 +32878,7 @@ class Image3DToMosaicFilter extends Filter{
 
 } /* END of class Image3DToMosaicFilter */
 
+exports.CoreTypes = CoreTypes;
 exports.PixpipeObject = PixpipeObject;
 exports.Filter = Filter;
 exports.Signal1D = Signal1D;
@@ -30402,6 +32892,7 @@ exports.UrlImageReader = UrlImageReader;
 exports.FileImageReader = FileImageReader;
 exports.FileToArrayBufferReader = FileToArrayBufferReader;
 exports.UrlToArrayBufferReader = UrlToArrayBufferReader;
+exports.BrowserDownloadBuffer = BrowserDownloadBuffer;
 exports.Minc2Decoder = Minc2Decoder;
 exports.NiftiDecoder = NiftiDecoder;
 exports.PixpEncoder = PixpEncoder;
@@ -30410,8 +32901,8 @@ exports.Image3DGenericDecoder = Image3DGenericDecoder;
 exports.TiffDecoder = TiffDecoder;
 exports.MghDecoder = MghDecoder;
 exports.EegModDecoder = EegModDecoder;
-exports.PixBinEncoder = PixBinEncoder;
-exports.PixBinDecoder = PixBinDecoder;
+exports.PixBinEncoder = PixBinEncoder$$1;
+exports.PixBinDecoder = PixBinDecoder$1;
 exports.JpegDecoder = JpegDecoder;
 exports.PngDecoder = PngDecoder;
 exports.Image2DGenericDecoder = Image2DGenericDecoder;

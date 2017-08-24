@@ -3,7 +3,7 @@
 *           Robert D. Vincent
 *
 * License   MIT
-* Link      https://github.com/jonathanlurie/pixpipejs
+* Link      https://github.com/Pixpipe/pixpipejs
 * Lab       MCIN - Montreal Neurological Institute
 */
 
@@ -304,11 +304,21 @@ class MghDecoder extends Filter {
       return;
     }
 
-    var header = this._parseMGHHeader( inputBuffer );
+    var header = null;
+    
+    try{
+      header = this._parseMGHHeader( inputBuffer );
+    }catch(e){
+      //console.warn( e );
+    }
+    
 
     // abort if header not valid
-    if(!header)
+    if(!header){
+      console.log("The input file is not a MGH file.");
       return;
+    }
+      
 
 
     var dataArray = this._createMGHData(header, inputBuffer)
