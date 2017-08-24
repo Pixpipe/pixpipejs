@@ -3,7 +3,7 @@
 *           Robert D. Vincent
 *
 * License   MIT
-* Link      https://github.com/jonathanlurie/pixpipejs
+* Link      https://github.com/Pixpipe/pixpipejs
 * Lab       MCIN - Montreal Neurological Institute
 */
 
@@ -316,11 +316,20 @@ class NiftiDecoder extends Filter {
       return;
     }
 
-    var header = this.parseNifti1Header( inputBuffer );
+    var header = null;
+    try{
+      header = this.parseNifti1Header( inputBuffer );
+    }catch(e){
+      //console.warn( e );
+    }
+    
 
     // abort if header not valid
-    if(!header)
+    if(!header){
+      console.warn("This file is not a NIfTI file.");
       return;
+    }
+      
 
     var dataArray = this.createNifti1Data(header, inputBuffer)
 

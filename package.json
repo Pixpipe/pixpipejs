@@ -15,7 +15,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/jonathanlurie/pixpipejs.git"
+    "url": "git+https://github.com/Pixpipe/pixpipejs.git"
   },
   "keywords": [
     "image",
@@ -27,9 +27,9 @@
   "author": "Jonathan Lurie",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/jonathanlurie/pixpipejs/issues"
+    "url": "https://github.com/Pixpipe/pixpipejs/issues"
   },
-  "homepage": "https://github.com/jonathanlurie/pixpipejs#readme",
+  "homepage": "https://github.com/Pixpipe/pixpipejs#readme",
   "dependencies": {
     "delaunay-fast": "github:pixpipe/delaunay",
     "expr-eval": "^1.0.0",
@@ -40,6 +40,7 @@
     "ndarray": "^1.0.18",
     "ndarray-fft": "^1.0.3",
     "pako": "^1.0.5",
+    "pixbincodec": "github:Pixpipe/pixbincodec",
     "qeegmodfile": "github:jonathanlurie/qeegmodfile",
     "rollup-plugin-bundle-worker": "^0.1.0",
     "simplify-js": "^1.2.1",

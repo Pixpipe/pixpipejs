@@ -1,8 +1,7 @@
 'use strict'
 
-//import mathjs from 'mathjs';
-
 // core classes
+export { CoreTypes } from './core/CoreTypes.js';
 export { PixpipeObject } from './core/PixpipeObject.js';
 export { Filter } from './core/Filter.js';
 export { Signal1D } from './core/Signal1D.js'
@@ -18,6 +17,7 @@ export { UrlImageReader } from './io/UrlImageReader.js';
 export { FileImageReader } from './io/FileImageReader.js';
 export { FileToArrayBufferReader } from './io/FileToArrayBufferReader.js';
 export { UrlToArrayBufferReader } from './io/UrlToArrayBufferReader.js';
+export { BrowserDownloadBuffer } from './io/BrowserDownloadBuffer.js';
 
 // decoders
 export { Minc2Decoder } from './decoder/Minc2Decoder.js';

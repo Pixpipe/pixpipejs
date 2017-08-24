@@ -1,6 +1,6 @@
 <html>
 <head>
-  <title>File to Jpeg</title>
+  <title>Generic Image2D</title>
 
   <script src="../dist/pixpipe.js"></script>
   <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700,900" rel="stylesheet">
@@ -11,8 +11,8 @@
   <p>
   This does the following :
   <ul>
-    <li>open a local Png file, using <code>pixpipe.FileToArrayBufferReader</code></li>
-    <li>redirect the file buffer into a <code>pixpipe.PngDecoder</code> to extract tiff dataset and metadata</li>
+    <li>open a local Jpeg file, using <code>pixpipe.FileToArrayBufferReader</code></li>
+    <li>redirect the file buffer into a <code>pixpipe.Image2DGenericDecoder</code></li>
     <li>get the output as a generic <code>pixpipe.Image2D</code> object</li>
     <li>display the image using <code>pixpipe.CanvasImageWriter</code></li>
   </ul>
@@ -44,20 +44,40 @@
 
       var buff = this.getOutput();
 
-      var pngDecoder = new pixpipe.PngDecoder();
-      pngDecoder.addInput( buff );
-      pngDecoder.update();
+      var decoder = new pixpipe.Image2DGenericDecoder();
+      decoder.addInput( buff );
+      decoder.update();
 
-      if( pngDecoder.getNumberOfOutputs() ){
-        var img = pngDecoder.getOutput();
+      if( decoder.getNumberOfOutputs() ){
+        var img = decoder.getOutput();
+        
+        // encoding...
+        var blockEncoder = new pixpipe.PixBlockEncoder();
+        blockEncoder.setMetadata( "compress", true );
+        blockEncoder.addInput( img );
+        blockEncoder.update();
+        var encodedBlock = blockEncoder.getOutput();
+        
+        console.log( "pixBlock byte length: " + encodedBlock.byteLength );
+        
+        // decoding...
+        var blockDecoder = new pixpipe.PixBlockDecoder();
+        blockDecoder.addInput( encodedBlock )
+        blockDecoder.update();
+        
+        var decodedImage = blockDecoder.getOutput();
         
         // create a filter to write the image into a canvas
         var imageToCanvasFilter = new pixpipe.CanvasImageWriter( );
         imageToCanvasFilter.setMetadata( "parentDivID", "myDiv" );
-        imageToCanvasFilter.addInput( img );
+        imageToCanvasFilter.addInput( decodedImage );
         imageToCanvasFilter.update();
+        
+      }else{
+        alert("This file format is not compatible. Only Tiff, PNG and JPEG.")
       }
       
+
     });
 
 
@@ -76,7 +96,7 @@
 
       // Perform the reading + conversion ibto ArrayBuffer
       file2Buff.update();
-		});
+    });
 
   }
   </script>
