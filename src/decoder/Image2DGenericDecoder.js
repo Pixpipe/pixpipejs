@@ -2,7 +2,7 @@
 * Author    Jonathan Lurie - http://me.jonahanlurie.fr
 *
 * License   MIT
-* Link      https://github.com/jonathanlurie/pixpipejs
+* Link      https://github.com/Pixpipe/pixpipejs
 * Lab       MCIN - Montreal Neurological Institute
 */
 
@@ -15,7 +15,7 @@ import { TiffDecoder } from './TiffDecoder.js';
 import { JpegDecoder } from './JpegDecoder.js';
 import { PngDecoder } from './PngDecoder.js';
 import { PixpDecoder } from './PixpDecoder.js';
-import { PixBinDecoder } from './PixBinDecoder.js';
+//import { PixBinDecoder } from './PixBinDecoder.js';
 
 
 /**
