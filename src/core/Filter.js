@@ -1,7 +1,7 @@
 /*
 * Author   Jonathan Lurie - http://me.jonahanlurie.fr
 * License  MIT
-* Link      https://github.com/jonathanlurie/pixpipejs
+* Link      https://github.com/Pixpipe/pixpipejs
 * Lab       MCIN - Montreal Neurological Institute
 */
 
@@ -32,6 +32,8 @@ class Filter extends PixpipeObject {
 
     this._inputValidator = {};
 
+    this._allValidator = null;
+
     this._input = {
       //"0": []
     };
@@ -45,7 +47,7 @@ class Filter extends PixpipeObject {
     this._timer = {};
 
     this._isOutputReady = false;
-    
+
     this.setMetadata("time", true);
 
   }
@@ -230,9 +232,17 @@ class Filter extends PixpipeObject {
   * @param {Type} InputType - the type of the expected input, like Image2D, Image3D, etc. without quotes
   */
   addInputValidator( category, InputType ){
-    if("TYPE" in InputType){
+    if ("TYPE" in InputType) {
+      if (category === 'ALL') {
+        this._allValidator = InputType.TYPE();
+        return;
+      }
       this._inputValidator[ category ] = InputType.TYPE();
-    }else{
+    } else {
+      if (category === 'ALL') {
+        this._allValidator = InputType;
+        return;
+      }
       this._inputValidator[ category ] = InputType;
     }
   }
@@ -245,34 +255,42 @@ class Filter extends PixpipeObject {
   */
   hasValidInput(){
     var that = this;
-    var inputCategories = Object.keys( this._inputValidator );
+    var inputCategories = this.getInputCategories();
     var valid = true;
-    
-    if(inputCategories.length == 0){
+    if(inputCategories.length === 0){
       valid = false;
       console.warn("No input validator was added. Filter cannot run. Use addInputValidator(...) to specify input types.");
     }
-
     inputCategories.forEach( function(key){
       var inputOfCategory = that._getInput( key );
-      
+
       if(inputOfCategory){
         if("isOfType" in inputOfCategory){
-          valid = valid && inputOfCategory.isOfType( that._inputValidator[ key ] )
+          if (that._inputValidator[ key ]) {
+            valid = valid && inputOfCategory.isOfType( that._inputValidator[ key ] );
+          }
+          if (that._allValidator) {
+            valid = valid && inputOfCategory.isOfType(that._allValidator);
+          }
         }else{
           try{
-            valid = valid && (inputOfCategory instanceof that._inputValidator[ key ] );
+            if (that._inputValidator[ key ]) {
+              valid = valid && (inputOfCategory instanceof that._inputValidator[ key ] );
+            }
+            if (that._allValidator) {
+              valid = valid && (inputOfCategory instanceof that._allValidator );
+            }
           }catch(e){
             valid = false;
           }
         }
-          
+
       }
       // input simply not existing!
       else{
         valid = false;
       }
-    
+
     });
 
     if(!valid){
@@ -288,6 +306,11 @@ class Filter extends PixpipeObject {
   * Launch the process.
   */
   update(){
+    // flush any existing output previously computed. Usefull when a filter is ran more than once.
+    // If no output is created the second time, the output from the previous time cannot be used instead
+    // (leading the user to think the second run created an output while it's actually the one from the first run) 
+    this._output = {};
+    
     if( this._metadata.time ){
       this.addTimeRecord("begin");
       this._run();
@@ -356,16 +379,16 @@ class Filter extends PixpipeObject {
   */
   triggerEvent( eventName /* any other arguments to follow */ ){
     var returnValue = null;
-    
+
     if(this.hasEvent(eventName)){
       if( arguments.length > 1 ){
-        
+
         // a-la-mano slicing argument array to comply with V8 JS engine optimization...
         var argToSend = [];
         for(var i=1; i<arguments.length; i++){
           argToSend.push( arguments[i] );
         }
-        
+
         returnValue = this._events[eventName].apply(this, argToSend )
       }else{
         returnValue = this._events[eventName].call(this);
@@ -373,7 +396,7 @@ class Filter extends PixpipeObject {
     }else{
       console.warn("The event " + eventName + " does not exist.");
     }
-    
+
     return returnValue;
   }
 
@@ -403,6 +426,12 @@ class Filter extends PixpipeObject {
   }
 
 
+  /**
+  * Remove all the inputs given so far.
+  */
+  clearAllInputs(){
+    this._input = {};
+  }
 
 } /* END class Filter */
 

@@ -1,10 +1,10 @@
 'use strict'
 
-//import mathjs from 'mathjs';
-
 // core classes
+export { CoreTypes } from './core/CoreTypes.js';
 export { PixpipeObject } from './core/PixpipeObject.js';
 export { Filter } from './core/Filter.js';
+export { Signal1D } from './core/Signal1D.js'
 export { Image2D } from './core/Image2D.js';
 export { Image3D } from './core/Image3D.js';
 export { ImageToImageFilter } from './core/ImageToImageFilter.js';
@@ -17,6 +17,7 @@ export { UrlImageReader } from './io/UrlImageReader.js';
 export { FileImageReader } from './io/FileImageReader.js';
 export { FileToArrayBufferReader } from './io/FileToArrayBufferReader.js';
 export { UrlToArrayBufferReader } from './io/UrlToArrayBufferReader.js';
+export { BrowserDownloadBuffer } from './io/BrowserDownloadBuffer.js';
 
 // decoders
 export { Minc2Decoder } from './decoder/Minc2Decoder.js';
@@ -29,8 +30,15 @@ export { MghDecoder } from './decoder/MghDecoder.js';
 export { EegModDecoder } from './decoder/EegModDecoder.js';
 export { PixBinEncoder } from './decoder/PixBinEncoder.js';
 export { PixBinDecoder } from './decoder/PixBinDecoder.js';
+export { JpegDecoder } from './decoder/JpegDecoder.js';
+export { PngDecoder } from './decoder/PngDecoder.js';
+export { Image2DGenericDecoder } from './decoder/Image2DGenericDecoder.js';
 
-// filters - processing of Images2D
+// filters - processing of Images2D and Signal1D
+export { ComponentProjectionImage2DFilter } from './filter/ComponentProjectionImage2DFilter';
+export { ComponentMergeImage2DFilter } from './filter/ComponentMergeImage2DFilter';
+export { ForwardFourierSignalFilter, InverseFourierSignalFilter } from './filter/FourierSignalFilters.js';
+export { ForwardFourierImageFilter, InverseFourierImageFilter } from './filter/FourierImageFilters.js';
 export { ForEachPixelImageFilter } from './filter/ForEachPixelImageFilter.js';
 export { SpectralScaleImageFilter } from './filter/SpectralScaleImageFilter.js';
 export { ImageBlendExpressionFilter } from './filter/ImageBlendExpressionFilter.js';
@@ -48,6 +56,8 @@ export { TerrainRgbToElevationImageFilter } from './filter/TerrainRgbToElevation
 export { NearestNeighborSparseInterpolationImageFilter } from './filter/NearestNeighborSparseInterpolationImageFilter.js';
 export { IDWSparseInterpolationImageFilter } from './filter/IDWSparseInterpolationImageFilter.js';
 export { TriangulationSparseInterpolationImageFilter } from './filter/TriangulationSparseInterpolationImageFilter.js';
+export { CropImageFilter } from './filter/CropImageFilter.js';
+export { SimplifyLineStringFilter } from './filter/SimplifyLineStringFilter.js';
 
 // helpers
 export { AngleToHueWheelHelper } from './helper/AngleToHueWheelHelper.js';

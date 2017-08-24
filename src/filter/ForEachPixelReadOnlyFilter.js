@@ -1,7 +1,7 @@
 /*
 * Author   Jonathan Lurie - http://me.jonahanlurie.fr
 * License  MIT
-* Link      https://github.com/jonathanlurie/pixpipejs
+* Link      https://github.com/Pixpipe/pixpipejs
 * Lab       MCIN - Montreal Neurological Institute
 */
 
@@ -20,7 +20,7 @@ import { Filter } from '../core/Filter.js';
 * created ( because the filter ForEachPixelImageFilter creates an output with same number of band.)
 *
 * **Usage**
-* - [the filter TerrainRgbToElevationImageFilter](https://github.com/jonathanlurie/pixpipejs/blob/master/src/filter/TerrainRgbToElevationImageFilter.js)
+* - [the filter TerrainRgbToElevationImageFilter](https://github.com/Pixpipe/pixpipejs/blob/master/src/filter/TerrainRgbToElevationImageFilter.js)
 *
 */
 class ForEachPixelReadOnlyFilter extends Filter {

@@ -1,0 +1,82 @@
+<html>
+<head>
+  <title>Crop Image2D</title>
+
+  <script src="../dist/pixpipe.js"></script>
+  <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700,900" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  
+  <style>
+  canvas, img {
+    margin: 10px 0 10px 0;
+    width: auto;
+    height: auto;
+  }
+  </style>
+</head>
+<body>
+  <h1><a href="https://github.com/Pixpipe/pixpipejs"><span style="color: #ff91d7">Pixpipe</span><span style="color: #FFFFFF">js</span></a></h1>
+  <p>
+  This does the following :
+  <ul>
+    <li>opening a local image file, using <code>pixpipe.FileImageReader</code></li>
+    <li>converting it into a <code>pixpipe.Image2D</code> object</li>
+    <li>croping it to keep only the center with <code>pixpipe.Image2D</code></li>
+    <li>display the crop in a canvas using <code>pixpipe.CropImageFilter</code></li>
+  </ul>
+  The first image displayed is the original. The second is the cropped.<br>
+  The cropped image discards the top/bottom/left/right quarters from the input, leaving only the middle half.
+  </p>
+
+  <div>
+		Select an image file:
+		<input type="file" id="fileInput">
+	</div>
+
+  <div id="myDiv"></div>
+
+  <script>
+  window.onload = function() {
+
+    var fileInput = document.getElementById('fileInput');
+
+    // create a filter to write the image into a canvas
+    var imageToCanvasFilter = new pixpipe.CanvasImageWriter();
+    imageToCanvasFilter.setMetadata( "parentDivID", "myDiv" );
+    imageToCanvasFilter.setMetadata("reset", false);
+
+    // The filter to read image from URL
+    var file2ImgFilter = new pixpipe.FileImageReader();
+
+    // the image is loaded...
+    // here, this = url2ImgFilter
+    file2ImgFilter.on("ready", function(){
+      var inputImage = this.getOutput();
+      
+      var cropFilter = new pixpipe.CropImageFilter();
+      cropFilter.addInput( inputImage );
+      cropFilter.setMetadata( "x", inputImage.getWidth() * 1/4 );
+      cropFilter.setMetadata( "y", inputImage.getHeight() * 1/4 );
+      cropFilter.setMetadata( "w", inputImage.getWidth() * 1/2);
+      cropFilter.setMetadata( "h", inputImage.getHeight() * 1/2 );  
+      cropFilter.update();
+    
+      imageToCanvasFilter.addInput( inputImage);
+      imageToCanvasFilter.update();
+      imageToCanvasFilter.addInput( cropFilter.getOutput() );
+      imageToCanvasFilter.update();
+    });
+
+    fileInput.addEventListener('change', function(e) {
+			var file = fileInput.files[0];
+      // set the input, an HTML5 File object
+      file2ImgFilter.addInput(file)
+      // Ask to fetch the image from URL
+      file2ImgFilter.update();
+		});
+
+  }
+  </script>
+
+</body>
+</html>
