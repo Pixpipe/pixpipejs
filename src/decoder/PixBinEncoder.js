@@ -2,16 +2,12 @@
 * Author    Jonathan Lurie - http://me.jonahanlurie.fr
 *
 * License   MIT
-* Link      https://github.com/jonathanlurie/pixpipejs
+* Link      https://github.com/Pixpipe/pixpipejs
 * Lab       MCIN - Montreal Neurological Institute
 */
 
-import pako from 'pako';
-import FileSaver from 'file-saver';
-//import JSZip from "jszip";
+import  { PixBinEncoder  as Encoder } from "pixbincodec"
 import { Filter } from '../core/Filter.js';
-import { Image2D } from '../core/Image2D.js';
-import { Image3D } from '../core/Image3D.js';
 
 
 /**
@@ -29,74 +25,60 @@ import { Image3D } from '../core/Image3D.js';
 class PixBinEncoder extends Filter {
   constructor(){
     super();
-    this.setMetadata("filename", "untitled.pixb");
-    this.setMetadata("extension", "pixb");
 
+    // define if the encoder should compress the data, default: yes
+    this.setMetadata("compress", true);
+    
+    // to be transmitted to the encoder
+    this.setMetadata("description", "no description");
+    this.setMetadata("madeWith", "Pixpipejs");
+    this.setMetadata("userObject", null);
   }
 
 
   /**
-  * [PRIVATE]
-  * overwrite the original from Filter
-  * Only accept Image2D and Image3D
+  * [static]
+  * the first sequence of bytes for a pixbin file is this ASCII string
   */
-  hasValidInput(){
-    var input = this._getInput();
-    return input && ( input.isOfType(Image2D.TYPE()) || input.isOfType(Image3D.TYPE()) );
+  static MAGIC_NUMBER(){
+    return "PIXPIPE_PIXBIN";
   }
 
 
   _run(){
-
-    if(! this.hasValidInput() ){
-      console.warn("PixBinEncoder can only encode Image2D and Image3D.");
-      return;
-    }
-
-    var input = this._getInput();
-
-    var pixBinMetadata = {
-      dataType: input.getData().constructor.name, // typed array type
-      pixpipeType: input.constructor.name, // most likely "Image2D", "Image3D", "MniVolume", "LineString", etc.
-      metadata: input.getMetadataCopy(),  // Image2D/Image3D._metadata
-    }
-
-    // this is a typed array
-    var data = input.getData();
+    var that = this;
     
-    var metadataJsonString = JSON.stringify( pixBinMetadata );
-    var metadataByteArray = new Uint8Array( metadataJsonString.length );
+    var encoder = new Encoder();
     
-    // converting the json string into a byte stream
-    for(var i = 0; i < metadataJsonString.length; ++i)
-      metadataByteArray[i] = metadataJsonString.charCodeAt(i);
+    // specifying some options
+    encoder.enableDataCompression( this.getMetadata("compress") );
+    encoder.setOption( 
+      "userObject",
+      this.getMetadata("userObject")
+    )
+    encoder.setOption( 
+      "description",
+      this.getMetadata("description")
+    )
+    encoder.setOption( 
+      "madeWith",
+      this.getMetadata("madeWith")
+    )
 
-    // creating the buffer
-    var metadataBuffer = new ArrayBuffer( 4 + metadataByteArray.length );
+    this._forEachInput(function( category, input ){
+      encoder.addInput( input );
+    });
 
-    // the data view is used to write into the buffer
-    var view = new DataView( metadataBuffer );
+    encoder.run();
     
-    var offsetFromHere = 0;
-    
-    // write the size of the metadata string
-    view.setUint32(offsetFromHere, metadataByteArray.length );
-    
-    // write the metadata themselves
-    offsetFromHere += 4;
-    for(var i=0; i<metadataByteArray.length; i++){
-      view.setUint8(offsetFromHere, metadataByteArray[i] );
-      offsetFromHere++;
-    }
-
-    // making a blob to be saved
-    this._output[0] = new Blob([metadataBuffer, data], {type: 'application/octet-binary'} );
+    this._output[ 0 ] = encoder.getOutput();
   }
 
 
   /**
   * Download the generated file
   */
+  /*
   download(){
     var output = this.getOutput();
 
@@ -106,6 +88,7 @@ class PixBinEncoder extends Filter {
       console.warn("No output computed yet.");
     }
   }
+  */
 
 } /* END of class PixBinEncoder */
 

@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>FileToArrayBufferReader to ArrayBuffer</title>
+
+  <script src="../dist/pixpipe.js"></script>
+  <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700,900" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .canvas-wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+  </style>
+</head>
+<body>
+  <h1><a href="https://github.com/pixpipe/pixpipejs"><span style="color: #ff91d7">Pixpipe</span><span style="color: #FFFFFF">js</span></a></h1>
+  <p>
+  This does the following :
+  <ul>
+    <li>Use <code>pixpipe.UrlImageReader</code> to load the image <code>images/sd.jpg</code></li>
+    <li>Use <code>pixpipe.CanvasImageWriter</code> to display the image</li>
+    <li>Use <code>pixpipe.ComponentProjectionImage2DFilter</code> decompose the picture into seperate RGB channels</li>
+    <li>Use <code>pixpipe.ComponentMergeImage2DFilter</code> to merge the seperate channels with 0 filled images the other components</li>
+    <li>Draw the decomposed images using <code>pixpipe.CanvasImageWriter</code></li>
+    <li>Merge all the components back together using <code>pixpipe.ComponentMergeImage2DFilter</code></li>
+    <li>Show the re-merged image using <code>pixpipe.CanvasImageWriter</code></li>
+  </ul>
+  </p>
+  <div class="canvas-wrapper">
+    <div id="container1"></div>
+    <div id="container2"></div>
+    <div id="container3"></div>
+    <div id="container4"></div>
+    <div id="container5"></div>
+  </div>
+  <script>
+    var urlToImage = new pixpipe.UrlImageReader();
+    urlToImage.addInput('images/sd.jpg');
+    urlToImage.on('ready', function() {
+      var original = urlToImage.getOutput();
+      var writer1 = new pixpipe.CanvasImageWriter();
+      writer1.setMetadata('parentDivID', 'container1');
+      writer1.addInput(original);
+      writer1.update();
+
+      var project = new pixpipe.ComponentProjectionImage2DFilter();
+      project.addInput(original);
+      project.setMetadata('componentOffset', 0);
+      project.update();
+      var red = project.getOutput();
+      var redMerger = new pixpipe.ComponentMergeImage2DFilter();
+      redMerger.addInput(red, 0);
+      redMerger.addInput(red.hollowClone(), 1);
+      redMerger.addInput(red.hollowClone(), 2);
+      redMerger.update();
+
+      var writer2 = new pixpipe.CanvasImageWriter();
+      writer2.setMetadata('parentDivID', 'container2');
+      writer2.addInput(redMerger.getOutput());
+      writer2.update();
+
+      project.addInput(original);
+      project.setMetadata('componentOffset', 1);
+      project.update();
+      var green = project.getOutput();
+      var greenMerger = new pixpipe.ComponentMergeImage2DFilter();
+      greenMerger.addInput(green.hollowClone(), 0);
+      greenMerger.addInput(green, 1);
+      greenMerger.addInput(green.hollowClone(), 2);
+      greenMerger.update();
+
+      var writer3 = new pixpipe.CanvasImageWriter();
+      writer3.setMetadata('parentDivID', 'container3');
+      writer3.addInput(greenMerger.getOutput());
+      writer3.update();
+
+      project.addInput(original);
+      project.setMetadata('componentOffset', 2);
+      project.update();
+      var blue = project.getOutput();
+      var blueMerger = new pixpipe.ComponentMergeImage2DFilter();
+      blueMerger.addInput(blue.hollowClone(), 0);
+      blueMerger.addInput(blue.hollowClone(), 1);
+      blueMerger.addInput(blue, 2);
+      blueMerger.update();
+
+      var writer4 = new pixpipe.CanvasImageWriter();
+      writer4.setMetadata('parentDivID', 'container4');
+      writer4.addInput(blueMerger.getOutput());
+      writer4.update();
+
+      var allMerger = new pixpipe.ComponentMergeImage2DFilter();
+      allMerger.addInput(red, 0);
+      allMerger.addInput(green, 1);
+      allMerger.addInput(blue, 2);
+      allMerger.update();
+
+      var writer5 = new pixpipe.CanvasImageWriter();
+      writer5.setMetadata('parentDivID', 'container5');
+      writer5.addInput(allMerger.getOutput());
+      writer5.update();
+    });
+    urlToImage.update();
+  </script>
+
+</body>
+</html>

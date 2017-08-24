@@ -1,3 +1,11 @@
+/*
+ * Author   Armin Taheri - https://github.com/ArminTaheri
+ * License  MIT
+ * Link     https://github.com/Pixpipe/pixpipejs
+ * Lab      MCIN - Montreal Neurological Institute
+ */
+ 
+import { CoreTypes } from './CoreTypes.js';
 import { PixpipeContainer } from './PixpipeContainer';
 
 class Signal1D extends PixpipeContainer {
@@ -40,5 +48,8 @@ class Signal1D extends PixpipeContainer {
     return copy
   }
 }
+
+// register this type as a CoreType
+CoreTypes.addCoreType( Signal1D );
 
 export { Signal1D }

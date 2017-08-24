@@ -41,38 +41,14 @@ Here is the list of compatible formats:
 [HERE](https://github.com/Pixpipe/pixpipeData) is the repo where some sample data are stored (mainly to avoid this repos to be too fat).
 
 
-# The Pixp format
-For saving intermediate or final results to a local storage, Pixpipe needs a file format. I wanted something generic enough to works with Image3D, Image2D and possible future formats without having to deal without having to deal with this or that specificity of this or that container. In other words, one single `save()` method and one single `open()` method, no matter the kind of data. This is possible thanks to the common features of `Image2D` and `Image3D` (they both inherit from `PixpipeContainer`). The format I've chosen for quite naive but very versatile: JSON, compressed with gzip (using [Pako](https://github.com/nodeca/pako)) The extension is `*.pixp`, here is the format description:
+# The PixBin format
+This is the binary file format used to store data from a Pixpipe pipeline. Thanks to it's proximity to Pixpipe structures a PixBin file can be opened and create the Pixpipe object instances as you left them.  
 
-```javascript
-// this is a 2D image
-{
-  // TypedArray type
-  "dataType":"Float32Array",
+The codec for PixBin is part of Pixpipejs but is also available as a separate package [here](https://github.com/Pixpipe/pixbincodec). A in-depth description of the file format is also available [here](https://github.com/Pixpipe/pixbincodec/blob/master/pixbinformat.md).
 
-  // 1D array of data
-  "data":[
-    255,128,64,255,255,128,64,255,255,128,64,255,255,128,64,255,255,128,64,255,255,128,64,255,255,128,64,255,255,128,64,255,255,128,64,255,255,128,64,255,255,128,64,255,255,128,64,255,255,128,64,255,255,128,64,255,255,128,64,255,255,128,64,255,255,128,64,255,255,128,64,255,255,128,64,255,255,128,64,255,255,128,64,255,255,128,64,255,255,128,64,255,255,128,64,255,255,128,64,255,255,128,64,255,255,128,64,255,255,128,64,255,255,128,64,255,255,128,64,255,255,128,64,255,255,128,64,255,255,128,64,255,255,128,64,255,255,128,64,255,255,128,64,255,255,128,64,255,255,128,64,255,255,128,64,255,255,128,64,255,255,128,64,255,255,128,64,255,255,128,64,255,255,128,64,255,255,128,64,255,255,128,64,255,255,128,64,255,255,128,64,255,255,128,64,255,255,128,64,255
-  ],
-
-  // metadata
-  "metadata":{
-    "ncpp":4,
-    "width":10,
-    "height":5
-  },
-
-  // Original Pixpipe type
-  "pixpipeType":"Image2D"
-}
-```
-- **TypedArray type** can be any typed array from here https://mzl.la/2nASpcK
-- **1D array of data** in case of rgba image, the data are ordered *rgbargbargba...*
-- **metadata** are usually different from Image2D and Image3D but always carry dimensionality and the number of components per pixel
-- **Original Pixpipe type** to be able to reconstruct the original object
-
-*Note:* JSON serialization does not play well with TypedArrays and interpret them as *Object* when parsing back, this is why we need to keep a track of the TypedArray type and need to convert the *data* into a regular *Array* (and not *TypedArray*).
-
+# Contribution
+Pixpipejs is open to contribution via **fork + pull requests**.  
+In addition, if you have an idea of a feature you would like to see in Pixpipejs, you can mention if in the **Wiki** and we'll see what we can do.
 
 # License
 MIT - See [LICENSE file](LICENSE).

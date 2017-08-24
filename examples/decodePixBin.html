@@ -1,0 +1,146 @@
+<html>
+<head>
+  <title>Decode PixBin</title>
+
+  <script src="../dist/pixpipe.js"></script>
+  <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700,900" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <h1><a href="https://github.com/Pixpipe/pixpipejs"><span style="color: #ff91d7">Pixpipe</span><span style="color: #FFFFFF">js</span></a></h1>
+  <p>
+  This does the following :
+  <ul>
+    <li>open a local PixBin (*.pixb) file, using <code>pixpipe.FileToArrayBufferReader</code></li>
+    <li>redirect the file buffer into a <code>pixpipe.PixBinDecoder</code></li>
+    <li>get the outputs as a generic that a possibly <code>pixpipe.Image3D</code> or <code>pixpipe.Image2D</code> object</li>
+    <li>display outputs in separate canvas using a single instance of <code>pixpipe.CanvasImageWriter</code></li>
+  </ul>
+
+  </p>
+
+  <div>
+    <br>
+    Validate with checksum <input id="enableChecksumValidation" type="checkbox"> (slightly slower)
+    <br>
+		Select a file:	<input type="file" id="fileInput">
+    <br>
+    <div id="fileInfo"></div>
+	</div>
+
+  <div id="myDiv"></div>
+
+
+  <script>
+  window.onload = function() {
+
+    var fileInput = document.getElementById('fileInput');
+    var fileInfo = document.getElementById('fileInfo')
+
+    // The filter to read image from URL
+    var file2Buff = new pixpipe.FileToArrayBufferReader();
+
+    // create a filter to write the image into a canvas
+    var imageToCanvasFilter = new pixpipe.CanvasImageWriter( );
+    imageToCanvasFilter.setMetadata( "parentDivID", "myDiv" );
+    imageToCanvasFilter.setMetadata("reset", false);  // to display multiple canvas in a single div
+
+    // the image is loaded...
+    // here, this = url2ImgFilter
+    file2Buff.on("ready", function(){
+
+      var filenames = this.getMetadata("filenames");
+
+      // raw buffer from file
+      var buff = this.getOutput();
+
+      var pixBinDecoder = new pixpipe.PixBinDecoder();
+      pixBinDecoder.setMetadata("verifyChecksum", document.getElementById("enableCompression").checked);
+      pixBinDecoder.addInput( buff );
+      pixBinDecoder.update();
+
+      // deal with each output
+      pixBinDecoder.forEachOutput(function(category, output){
+        // this output is special because it carries the PixBin metadata
+        if( category === "PixBinMeta" ){
+          fileInfo.innerHTML += "File creation data: " + output.creationDate + "<br>";
+          fileInfo.innerHTML += "Number of blocks (modality): " + output.numberOfBlocks + "<br>";
+          
+          if( output.description )
+            fileInfo.innerHTML += "File description: " + output.description + "<br>";
+            
+          if( output.userObject )
+            fileInfo.innerHTML += "User object: " + JSON.stringify( output.userObject ) + "<br>";
+        }
+        
+        console.log( output );
+
+        if( category === "meta" ){
+          return;
+        }
+        
+        if( !output )
+          return;
+          
+        if( !("isOfType" in output) )
+          return;
+
+        if( output.isOfType(pixpipe.Image3D.TYPE()) ){ 
+
+          // replace the default min max values of [0, 255]
+          imageToCanvasFilter.setMetadata("min", output.getMetadata("voxel_min"));
+          imageToCanvasFilter.setMetadata("max", output.getMetadata("voxel_max"));
+
+          // middle slice along x
+          imageToCanvasFilter.addInput(
+            output.getSlice("xspace", Math.floor(output.getMetadata("xspace").space_length / 2) )
+          );
+          imageToCanvasFilter.update();
+
+          // middle slice along y
+          imageToCanvasFilter.addInput(
+            output.getSlice("yspace", Math.floor(output.getMetadata("yspace").space_length / 2))
+          );
+          imageToCanvasFilter.update();
+
+          // middle slice along z
+          imageToCanvasFilter.addInput(
+            output.getSlice("zspace", Math.floor(output.getMetadata("zspace").space_length / 2))
+          );
+          imageToCanvasFilter.update();
+
+        }else if(output && output.isOfType(pixpipe.Image2D.TYPE()) ){ // this pixp is a Image2D
+          imageToCanvasFilter.addInput( output );
+          imageToCanvasFilter.update();
+
+        }else{
+          console.warn("Non-existant output for PixBinDecoder.");
+        }
+
+      })
+
+    });
+
+
+    // event listener of the file input
+    fileInput.addEventListener('change', function(e) {
+      var files = e.target.files;
+      var filenames = {};
+
+      for(var i=0; i<files.length; i++){
+        // set the input, an HTML5 File object and a category (ID)
+        file2Buff.addInput(files[i], i);
+        filenames[i] = files[i].name ;
+      }
+
+      file2Buff.setMetadata("filenames", filenames);
+
+      // Perform the reading + conversion ibto ArrayBuffer
+      file2Buff.update();
+		});
+
+  }
+  </script>
+
+</body>
+</html>
