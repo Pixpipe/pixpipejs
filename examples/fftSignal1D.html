@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>FileToArrayBufferReader to ArrayBuffer</title>
+
+  <script src="../dist/pixpipe.js"></script>
+  <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700,900" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .canvas-wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    canvas {
+      background-color: #fff;
+      width: 400px;
+      height: 150px;
+    }
+  </style>
+</head>
+<body>
+  <h1><a href="https://github.com/pixpipe/pixpipejs"><span style="color: #ff91d7">Pixpipe</span><span style="color: #FFFFFF">js</span></a></h1>
+  <p>
+  This does the following :
+  <ul>
+    <li>Display the signal <code>f(t) = sin(2 * pi * 0.3 * t) + 0.5 * sin(2 * pi * 12 * t)</code> wrapped in <code>pixpipe.Signal1D</code></li>
+    <li>Display the imaginary component of the fourier transform output from <code>pixpipe.ForwardFourierSignalFilter</code></li>
+    <li>Display the real component of the inverse fourier transform output from <code>pixpipe.InverseFourerSignalFilter</code></li>
+  </ul>
+  </p>
+  <div class="canvas-wrapper">
+    <canvas id="container1"></canvas>
+    <canvas id="container2"></canvas>
+    <canvas id="container3"></canvas>
+  </div>
+  <script>
+    var signal = generate1DSignal(
+      1,  // amplitude
+      0.3,  // signal freq
+      0,  // signal phase
+      10,  // sampling freq
+      200  // number of samples (should cover more than 2 periods)
+    );
+    generate1DSignal(
+      0.5,  // amplitude
+      12,  // signal freq
+      0,  // signal phase
+      10,  // sampling freq
+      200  // number of samples (should cover more than 2 periods)
+    ).fx.forEach((fx, i) => {
+      signal.fx[i] += fx;
+    });
+    var contexts = ['#container1', '#container2', '#container3'].map(function(s) {
+      return document.querySelector(s).getContext('2d');
+    });
+
+    drawSignal(contexts[0], signal.fx, 2, 75, 50);
+    var signal1dreal = new pixpipe.Signal1D();
+    signal1dreal.setData(signal.fx);
+    var signal1dimg = signal1dreal.hollowClone()
+
+    var fftfilter = new pixpipe.ForwardFourierSignalFilter();
+    fftfilter.addInput(signal1dreal, 0);
+    fftfilter.addInput(signal1dimg, 1);
+    fftfilter.update();
+    var fourierSignalreal = fftfilter.getOutput(0);
+    var fourierSignalimg = fftfilter.getOutput(1);
+
+    drawSignal(contexts[1], fourierSignalimg.getData(), 2, 75, 0.5);
+
+    var ifftfilter = new pixpipe.InverseFourierSignalFilter();
+    ifftfilter.addInput(fourierSignalreal, 0);
+    ifftfilter.addInput(fourierSignalimg, 1);
+    ifftfilter.update();
+    var inverseSignal = ifftfilter.getOutput(0);
+
+    drawSignal(contexts[2], inverseSignal.getData(), 2, 75, 50);
+
+    function drawSignal(context2d, array, spacing, offset, scale) {
+      context2d.beginPath();
+      context2d.moveTo(0, 150 - (offset + array[0]*scale));
+      for (var x = 1; x < array.length; x++) {
+        context2d.lineTo(x*spacing, 150 - (offset + array[x]*scale));
+      }
+      context2d.stroke();
+    }
+    /**
+    * Generate a 1D signal
+    * @param {Number} signalAmplitude - amplitude A of the signal
+    * @param {Number} signalFrequency - frequency of the signal
+    * @param {Number} signalPhase - oscillation shift at x=0
+    * @param {Number} samplingFrequency - must be at least twice as big as the frequency (Nyquist-Shannon)
+    * @param {Number} samplingSize - number of samples to create
+    */
+    function generate1DSignal(signalAmplitude, signalFrequency, signalPhase, samplingFrequency, samplingSize){
+      function getSignalValueAt( x ){
+        return signalAmplitude * Math.sin( 2 * Math.PI * signalFrequency * x + signalPhase);
+      }
+
+      var fx = new Float32Array( samplingSize );
+      var x = new Float32Array( samplingSize );
+
+      for(var i=0; i<samplingSize; i++){
+        var currentX = (1/samplingFrequency) * i;
+        x[ i ] = currentX;
+        fx[ i ] = getSignalValueAt( currentX );
+      }
+
+      return {
+        x: x,
+        fx: fx
+      };
+    }
+  </script>
+
+</body>
+</html>

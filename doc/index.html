@@ -13,7 +13,7 @@
     <div class='clearfix md-mxn2'>
       <div class='fixed md-show fix-3 overflow-auto max-height-100'>
         <div class='py1 px2'>
-          <h3 class='mb0 no-anchor'><a href="https://github.com/jonathanlurie/pixpipejs" target="_blank"><img src="assets/pixpipe256.png" alt="Pixpipejs"/></a></h3>
+          <h3 class='mb0 no-anchor'><a href="https://github.com/Pixpipe/pixpipejs" target="_blank"><img src="assets/pixpipe256.png" alt="Pixpipejs"/></a></h3>
           <div class='mb1'><code></code></div>
           <input
             placeholder='Filter'
@@ -66,6 +66,11 @@
                   href='#Filter.addTimeRecord'
                   class='regular block'>
                   addTimeRecord
+                </a>
+                <a
+                  href='#Filter.clearAllInputs'
+                  class='regular block'>
+                  clearAllInputs
                 </a>
                 <a
                   href='#Filter.forEachOutput'
@@ -313,6 +318,11 @@
                   hasMetadata
                 </a>
                 <a
+                  href='#PixpipeObject.isMetadataCyclic'
+                  class='regular block'>
+                  isMetadataCyclic
+                </a>
+                <a
                   href='#PixpipeObject.isOfType'
                   class='regular block'>
                   isOfType
@@ -361,6 +371,16 @@
                   href='#CanvasImageWriter.getCanvas'
                   class='regular block'>
                   getCanvas
+                </a>
+              <a
+                href='#PngDecoder'
+                class='block bold h3 bg-pink-alpha'>
+                PngDecoder
+              </a>
+                <a
+                  href='#PngDecoder._isPng'
+                  class='regular block'>
+                  _isPng
                 </a>
               <a
                 href='#UrlImageReader'
@@ -483,6 +503,11 @@
                   getDataCopy
                 </a>
                 <a
+                  href='#LineString.getNod'
+                  class='regular block'>
+                  getNod
+                </a>
+                <a
                   href='#LineString.getNumberOfPoints'
                   class='regular block'>
                   getNumberOfPoints
@@ -598,6 +623,21 @@
                   toJson
                 </a>
               <a
+                href='#CoreTypes'
+                class='block bold h3 bg-pink-alpha'>
+                CoreTypes
+              </a>
+                <a
+                  href='#CoreTypes.addCoreType'
+                  class='regular block'>
+                  addCoreType
+                </a>
+                <a
+                  href='#CoreTypes.getCoreType'
+                  class='regular block'>
+                  getCoreType
+                </a>
+              <a
                 href='#LineStringPrinterOnImage2DHelper'
                 class='block bold h3 bg-pink-alpha'>
                 LineStringPrinterOnImage2DHelper
@@ -607,6 +647,11 @@
                   class='regular block'>
                   addLineString
                 </a>
+              <a
+                href='#BrowserDownloadBuffer'
+                class='block bold h3 bg-pink-alpha'>
+                BrowserDownloadBuffer
+              </a>
               <a
                 href='#Minc2Decoder'
                 class='block bold h3 bg-pink-alpha'>
@@ -913,6 +958,11 @@
                   getData
                 </a>
                 <a
+                  href='#Image2D.getDataAsFloat32Array'
+                  class='regular block'>
+                  getDataAsFloat32Array
+                </a>
+                <a
                   href='#Image2D.getDataAsUInt8Array'
                   class='regular block'>
                   getDataAsUInt8Array
@@ -1013,20 +1063,10 @@
                   parseNifti1Header
                 </a>
               <a
-                href='#PixBinEncoder'
+                href='#CropImageFilter'
                 class='block bold h3 bg-pink-alpha'>
-                PixBinEncoder
+                CropImageFilter
               </a>
-                <a
-                  href='#PixBinEncoder.download'
-                  class='regular block'>
-                  download
-                </a>
-                <a
-                  href='#PixBinEncoder.hasValidInput'
-                  class='regular block'>
-                  hasValidInput
-                </a>
               <a
                 href='#PixpEncoder'
                 class='block bold h3 bg-pink-alpha'>
@@ -1083,6 +1123,11 @@
                 ignore_offsets
               </a>
               <a
+                href='#Image2DGenericDecoder'
+                class='block bold h3 bg-pink-alpha'>
+                Image2DGenericDecoder
+              </a>
+              <a
                 href='#Image3DGenericDecoder'
                 class='block bold h3 bg-pink-alpha'>
                 Image3DGenericDecoder
@@ -1102,6 +1147,31 @@
                 class='block bold h3 bg-pink-alpha'>
                 ImageDerivativeFilter
               </a>
+              <a
+                href='#JpegDecoder'
+                class='block bold h3 bg-pink-alpha'>
+                JpegDecoder
+              </a>
+              <a
+                href='#PixBinEncoder'
+                class='block bold h3 bg-pink-alpha'>
+                PixBinEncoder
+              </a>
+                <a
+                  href='#PixBinEncoder.MAGIC_NUMBER'
+                  class='regular block'>
+                  MAGIC_NUMBER
+                </a>
+              <a
+                href='#PixBinEncoder'
+                class='block bold h3 bg-pink-alpha'>
+                PixBinEncoder
+              </a>
+                <a
+                  href='#PixBinEncoder.MAGIC_NUMBER'
+                  class='regular block'>
+                  MAGIC_NUMBER
+                </a>
               <a
                 href='#MghDecoder'
                 class='block bold h3 bg-pink-alpha'>
@@ -1151,6 +1221,11 @@
                 href='#SimpleThresholdFilter'
                 class='block bold h3 bg-pink-alpha'>
                 SimpleThresholdFilter
+              </a>
+              <a
+                href='#SimplifyLineStringFilter'
+                class='block bold h3 bg-pink-alpha'>
+                SimplifyLineStringFilter
               </a>
               <a
                 href='#SpatialConvolutionFilter'
@@ -1455,6 +1530,26 @@ should noly be used by the class that inherit Filter.</p>
           </div>
         </li>
     </ul>
+</section>
+          </div>
+        </div>
+        <div class='collapsible' id='Filter.clearAllInputs'>
+          <a href='#Filter.clearAllInputs'>
+            <code>
+              clearAllInputs<span class='gray'></span>
+            </code>
+            <div class='force-inline'>
+              <p>Remove all the inputs given so far.</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2'>
+<section class='py2 clearfix'>
+  <h2 id='Filter.clearAllInputs' class='mt0'>
+    clearAllInputs<span class='gray'></span>
+  </h2>
+  <p>Remove all the inputs given so far.</p>
+
 </section>
           </div>
         </div>
@@ -3082,6 +3177,33 @@ The metadata that exist only in <em>this</em> are kept.</p>
 </section>
           </div>
         </div>
+        <div class='collapsible' id='PixpipeObject.isMetadataCyclic'>
+          <a href='#PixpipeObject.isMetadataCyclic'>
+            <code>
+              isMetadataCyclic<span class='gray'></span>
+            </code>
+            <div class='force-inline'>
+              <p>Verifies if the metadata object contain a cyclic object.</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2'>
+<section class='py2 clearfix'>
+  <h2 id='PixpipeObject.isMetadataCyclic' class='mt0'>
+    isMetadataCyclic<span class='gray'></span>
+  </h2>
+  <p>Verifies if the metadata object contain a cyclic object.</p>
+
+      <h4>Returns</h4>
+      <code><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean">Boolean</a></code></code>
+      :
+      <div class='force-inline'>
+        <p>true if metadata is cyclic, false if not</p>
+
+      </div>
+</section>
+          </div>
+        </div>
         <div class='collapsible' id='PixpipeObject.isOfType'>
           <a href='#PixpipeObject.isOfType'>
             <code>
@@ -3221,12 +3343,14 @@ values of the image will be looked-up (or computed if not defined).</p>
     CanvasImageWriter<span class='gray'></span>
   </h2>
   <p>CanvasImageWriter is a filter to output an instance of Image into a
-HTML5 canvas element.
-The metadata &quot;parentDivID&quot; has to be set using <code>setMetadata(&quot;parentDivID&quot;, &quot;whatever&quot;)</code>
-The metadata &quot;alpha&quot;, if true, enable transparency. Default: false.
-If the input Image2D has values not in [0, 255], you can remap/stretch using
-setMetadata(&quot;min&quot;, xxx ) default: 0
-setMetadata(&quot;max&quot;, xxx ) default: 255</p>
+HTML5 canvas element.<br>
+The metadata &quot;parentDivID&quot; has to be set using <code>setMetadata(&quot;parentDivID&quot;, &quot;whatever&quot;)</code><br>
+The metadata &quot;alpha&quot;, if true, enable transparency. Default: false.<br>
+If the input Image2D has values not in [0, 255], you can remap/stretch using<br>
+setMetadata(&quot;min&quot;, xxx ) default: 0<br>
+setMetadata(&quot;max&quot;, xxx ) default: 255<br>
+We can also use <code>setMetadata(&quot;reset&quot;, false)</code> so that we can add another canvas
+with a new image at update.</p>
 <p><strong>Usage</strong></p>
 <ul>
 <li><a href="../examples/imageToCanvasFilter.html">examples/imageToCanvasFilter.html</a></li>
@@ -3373,6 +3497,57 @@ remap the intensity between getMetadata(&quot;min&quot;) and getMetadata(&quot;m
       :
       <div class='force-inline'>
         <p>canvas</p>
+
+      </div>
+</section>
+          </div>
+        </div>
+</section>
+</div><div class='py1'><section class='py2 clearfix'>
+  <h2 id='PngDecoder' class='mt0'>
+    PngDecoder<span class='gray'></span>
+  </h2>
+  <p>An instance of PngDecoder will decode a PNG image in native Javascript and
+output an Image2D. This is of course slower than using <code>io/FileImageReader.js</code>
+but this is compatible with Node and not rely on HTML5 Canvas.</p>
+<p><strong>Usage</strong></p>
+<ul>
+<li><a href="../examples/fileToPng.html">examples/fileToPng.html</a></li>
+</ul>
+
+      <h4>Instance members</h4>
+        <div class='collapsible' id='PngDecoder._isPng'>
+          <a href='#PngDecoder._isPng'>
+            <code>
+              _isPng<span class='gray'>(buffer)</span>
+            </code>
+            <div class='force-inline'>
+              <p>Checks if the input buffer is of a png file</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2'>
+<section class='py2 clearfix'>
+  <h2 id='PngDecoder._isPng' class='mt0'>
+    _isPng<span class='gray'>(buffer)</span>
+  </h2>
+  <p>Checks if the input buffer is of a png file</p>
+
+    <h4>Parameters</h4>
+    <ul class='suppress-p-margin'>
+        <li><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/ArrayBuffer">ArrayBuffer</a></code> <strong>buffer</strong>
+          :
+          <div class='force-inline'>
+            <p>an array buffer inside which a PNG could be hiding!</p>
+
+          </div>
+        </li>
+    </ul>
+      <h4>Returns</h4>
+      <code><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean">Boolean</a></code></code>
+      :
+      <div class='force-inline'>
+        <p>true if the buffer is a valid PNG buffer, false if not</p>
 
       </div>
 </section>
@@ -3997,6 +4172,33 @@ in case of doubt, use  getDataCopy()</p>
       :
       <div class='force-inline'>
         <p>a deep copy of the data</p>
+
+      </div>
+</section>
+          </div>
+        </div>
+        <div class='collapsible' id='LineString.getNod'>
+          <a href='#LineString.getNod'>
+            <code>
+              getNod<span class='gray'></span>
+            </code>
+            <div class='force-inline'>
+              <p>Get the number of dimensions</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2'>
+<section class='py2 clearfix'>
+  <h2 id='LineString.getNod' class='mt0'>
+    getNod<span class='gray'></span>
+  </h2>
+  <p>Get the number of dimensions</p>
+
+      <h4>Returns</h4>
+      <code><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">Number</a></code></code>
+      :
+      <div class='force-inline'>
+        <p>the nod</p>
 
       </div>
 </section>
@@ -4753,6 +4955,104 @@ the width is the size of the LUT currently in use.</p>
         </div>
 </section>
 </div><div class='py1'><section class='py2 clearfix'>
+  <h2 id='CoreTypes' class='mt0'>
+    CoreTypes<span class='gray'>(typeClass)</span>
+  </h2>
+  <p>CoreTypes is bit of an exception in Pixpipejs because it does not inherit from
+PixpipeObject and it contains only static methods. In a sens, it&apos;s comparable
+to a singleton that stores all the core types constructors of Pixpipe so that
+they can be retrived only by querying their name.</p>
+<p>At the creation of a new type, the static method <code>.addCoreType()</code> should be
+called right after the closing curly bracket of the class declaration.
+This is if we want to reference this class as a core type.</p>
+
+    <h4>Parameters</h4>
+    <ul class='suppress-p-margin'>
+        <li> <strong>typeClass</strong>
+          :
+          <div class='force-inline'>
+            
+          </div>
+        </li>
+    </ul>
+      <h4>Static members</h4>
+        <div class='collapsible' id='CoreTypes.addCoreType'>
+          <a href='#CoreTypes.addCoreType'>
+            <code>
+              addCoreType<span class='gray'>(typeClass)</span>
+            </code>
+            <div class='force-inline'>
+              <p>[STATIC]
+Adds a new type to the collection of core types. This is used when we want
+to retrieve a type and instanciate an object of this type using its constructor name.</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2 m2'>
+<section class='py2 clearfix'>
+  <h2 id='CoreTypes.addCoreType' class='mt0'>
+    addCoreType<span class='gray'>(typeClass)</span>
+  </h2>
+  <p>[STATIC]
+Adds a new type to the collection of core types. This is used when we want
+to retrieve a type and instanciate an object of this type using its constructor name.</p>
+
+    <h4>Parameters</h4>
+    <ul class='suppress-p-margin'>
+        <li><code>Class</code> <strong>typeClass</strong>
+          :
+          <div class='force-inline'>
+            <p>the class of the type</p>
+
+          </div>
+        </li>
+    </ul>
+</section>
+          </div>
+        </div>
+        <div class='collapsible' id='CoreTypes.getCoreType'>
+          <a href='#CoreTypes.getCoreType'>
+            <code>
+              getCoreType<span class='gray'>(typeName)</span>
+            </code>
+            <div class='force-inline'>
+              <p>[STATIC]
+Return the constructor of the given type name. This is useful to instanciate
+an object based on the name of its type (eg. in PixBinDecoder)</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2 m2'>
+<section class='py2 clearfix'>
+  <h2 id='CoreTypes.getCoreType' class='mt0'>
+    getCoreType<span class='gray'>(typeName)</span>
+  </h2>
+  <p>[STATIC]
+Return the constructor of the given type name. This is useful to instanciate
+an object based on the name of its type (eg. in PixBinDecoder)</p>
+
+    <h4>Parameters</h4>
+    <ul class='suppress-p-margin'>
+        <li><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a></code> <strong>typeName</strong>
+          :
+          <div class='force-inline'>
+            <p>the name of the type eg. &quot;Image2D&quot;</p>
+
+          </div>
+        </li>
+    </ul>
+      <h4>Returns</h4>
+      <code><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function">Function</a></code></code>
+      :
+      <div class='force-inline'>
+        <p>constructor for the given type</p>
+
+      </div>
+</section>
+          </div>
+        </div>
+</section>
+</div><div class='py1'><section class='py2 clearfix'>
   <h2 id='LineStringPrinterOnImage2DHelper' class='mt0'>
     LineStringPrinterOnImage2DHelper<span class='gray'></span>
   </h2>
@@ -4803,6 +5103,15 @@ instance and <code>c</code> is an Array representing a color (i.e. [255, 0, 0] f
 </section>
           </div>
         </div>
+</section>
+</div><div class='py1'><section class='py2 clearfix'>
+  <h2 id='BrowserDownloadBuffer' class='mt0'>
+    BrowserDownloadBuffer<span class='gray'></span>
+  </h2>
+  <p>An instance of BrowserDownloadBuffer takes an ArrayBuffer as input and triggers
+a download when <code>update()</code> is called. This is for <strong>browser only</strong>!<br>
+A filename must be specified using <code>.setMetadata( &quot;filename&quot;, &quot;myFile.ext&quot; )</code>.</p>
+
 </section>
 </div><div class='py1'><section class='py2 clearfix'>
   <h2 id='Minc2Decoder' class='mt0'>
@@ -6796,6 +7105,33 @@ in case of doubt, use  getDataCopy()</p>
 </section>
           </div>
         </div>
+        <div class='collapsible' id='Image2D.getDataAsFloat32Array'>
+          <a href='#Image2D.getDataAsFloat32Array'>
+            <code>
+              getDataAsFloat32Array<span class='gray'></span>
+            </code>
+            <div class='force-inline'>
+              <p>Get a copy of the data but forced as Float 32 (no scaling is done)</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2'>
+<section class='py2 clearfix'>
+  <h2 id='Image2D.getDataAsFloat32Array' class='mt0'>
+    getDataAsFloat32Array<span class='gray'></span>
+  </h2>
+  <p>Get a copy of the data but forced as Float 32 (no scaling is done)</p>
+
+      <h4>Returns</h4>
+      <code><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Float32Array">Float32Array</a></code></code>
+      :
+      <div class='force-inline'>
+        <p>the casted array</p>
+
+      </div>
+</section>
+          </div>
+        </div>
         <div class='collapsible' id='Image2D.getDataAsUInt8Array'>
           <a href='#Image2D.getDataAsUInt8Array'>
             <code>
@@ -7447,66 +7783,19 @@ found in the standard NIfTI-1 library (nifti1_io.c).</p>
         </div>
 </section>
 </div><div class='py1'><section class='py2 clearfix'>
-  <h2 id='PixBinEncoder' class='mt0'>
-    PixBinEncoder<span class='gray'></span>
+  <h2 id='CropImageFilter' class='mt0'>
+    CropImageFilter<span class='gray'></span>
   </h2>
-  <p>A PixBinEncoder instance takes an Image2D or Image3D as input with <code>addInput(...)</code>
-and encode it so that it can be saved as a *.pixp file.
-An output filename can be specified using <code>.setMetadata(&quot;filename&quot;, &quot;yourName.pixp&quot;);</code>,
-by default, the name is &quot;untitled.pixp&quot;.
-When <code>update()</code> is called, a gzip blog is prepared as output[0] and can then be downloaded
-when calling the method <code>.download()</code>. The gzip blob could also be sent over AJAX
-using a third party library.</p>
+  <p>An instance of CropImageFilter is used to crop an <code>Image2D</code>. This filter accepts
+a single input, using <code>.addInput( myImage )</code>, then, it requires a top left point
+that must be set with <code>.setMetadata( &quot;x&quot;, Number)</code> and <code>.setMetadata( &quot;y&quot;, Number)</code>.
+In addition, you must specify the width and heigth of the output using
+<code>.setMetadata( &quot;w&quot;, Number)</code> and <code>.setMetadata( &quot;h&quot;, Number)</code>.</p>
 <p><strong>Usage</strong></p>
 <ul>
-<li><a href="../examples/savePixpFile.html">examples/savePixpFile.html</a></li>
+<li><a href="../examples/cropImage2D.html">examples/cropImage2D.html</a></li>
 </ul>
 
-      <h4>Instance members</h4>
-        <div class='collapsible' id='PixBinEncoder.download'>
-          <a href='#PixBinEncoder.download'>
-            <code>
-              download<span class='gray'></span>
-            </code>
-            <div class='force-inline'>
-              <p>Download the generated file</p>
-
-            </div>
-          </a>
-          <div class='collapser border px2'>
-<section class='py2 clearfix'>
-  <h2 id='PixBinEncoder.download' class='mt0'>
-    download<span class='gray'></span>
-  </h2>
-  <p>Download the generated file</p>
-
-</section>
-          </div>
-        </div>
-        <div class='collapsible' id='PixBinEncoder.hasValidInput'>
-          <a href='#PixBinEncoder.hasValidInput'>
-            <code>
-              hasValidInput<span class='gray'></span>
-            </code>
-            <div class='force-inline'>
-              <p>[PRIVATE]
-overwrite the original from Filter
-Only accept Image2D and Image3D</p>
-
-            </div>
-          </a>
-          <div class='collapser border px2'>
-<section class='py2 clearfix'>
-  <h2 id='PixBinEncoder.hasValidInput' class='mt0'>
-    hasValidInput<span class='gray'></span>
-  </h2>
-  <p>[PRIVATE]
-overwrite the original from Filter
-Only accept Image2D and Image3D</p>
-
-</section>
-          </div>
-        </div>
 </section>
 </div><div class='py1'><section class='py2 clearfix'>
   <h2 id='PixpEncoder' class='mt0'>
@@ -7604,7 +7893,7 @@ an array, ie. [Number, Number, Number] for an RGB image.</p>
 created ( because the filter ForEachPixelImageFilter creates an output with same number of band.)</p>
 <p><strong>Usage</strong></p>
 <ul>
-<li><a href="https://github.com/jonathanlurie/pixpipejs/blob/master/src/filter/TerrainRgbToElevationImageFilter.js">the filter TerrainRgbToElevationImageFilter</a></li>
+<li><a href="https://github.com/Pixpipe/pixpipejs/blob/master/src/filter/TerrainRgbToElevationImageFilter.js">the filter TerrainRgbToElevationImageFilter</a></li>
 </ul>
 
 </section>
@@ -7725,6 +8014,25 @@ ignore_offsets to false.</p>
 
 </section>
 </div><div class='py1'><section class='py2 clearfix'>
+  <h2 id='Image2DGenericDecoder' class='mt0'>
+    Image2DGenericDecoder<span class='gray'></span>
+  </h2>
+  <p>An instance of Image2DGenericDecoder takes a ArrayBuffer
+as input 0 (<code>.addInput(myArrayBuffer)</code>) and output an Image2D.
+The <code>update</code> method will perform several decoding attempts, using the readers
+specified in the constructor.
+In case of success (one of the registered decoder was compatible to the data)
+the metadata <code>decoderConstructor</code> and <code>decoderName</code> are made accessible and give
+information about the file format. If no decoder managed to decode the input buffer,
+this filter will not have any output.</p>
+<p>Developers: if a new 2D dataset decoder is added, reference it here and in the import list</p>
+<p><strong>Usage</strong></p>
+<ul>
+<li><a href="../examples/fileToGenericImage2D.html">examples/fileToGenericImage2D.html</a></li>
+</ul>
+
+</section>
+</div><div class='py1'><section class='py2 clearfix'>
   <h2 id='Image3DGenericDecoder' class='mt0'>
     Image3DGenericDecoder<span class='gray'></span>
   </h2>
@@ -7798,6 +8106,89 @@ h = [1, -1]</p>
 <li><a href="../examples/derivativeImage2D.html">examples/derivativeImage2D.html</a></li>
 </ul>
 
+</section>
+</div><div class='py1'><section class='py2 clearfix'>
+  <h2 id='JpegDecoder' class='mt0'>
+    JpegDecoder<span class='gray'></span>
+  </h2>
+  <p>An instance of JpegDecoder will decode a JPEG image in native Javascript and
+output an Image2D. This is of course slower than using <code>io/FileImageReader.js</code>
+but this is compatible with Node and not rely on HTML5 Canvas.</p>
+<p><strong>Usage</strong></p>
+<ul>
+<li><a href="../examples/fileToJpeg.html">examples/fileToJpeg.html</a></li>
+</ul>
+
+</section>
+</div><div class='py1'><section class='py2 clearfix'>
+  <h2 id='PixBinEncoder' class='mt0'>
+    PixBinEncoder<span class='gray'></span>
+  </h2>
+  <p>A PixBinEncoder instance takes an Image2D or Image3D as input with <code>addInput(...)</code>
+and encode it so that it can be saved as a *.pixp file.
+An output filename can be specified using <code>.setMetadata(&quot;filename&quot;, &quot;yourName.pixp&quot;);</code>,
+by default, the name is &quot;untitled.pixp&quot;.
+When <code>update()</code> is called, a gzip blog is prepared as output[0] and can then be downloaded
+when calling the method <code>.download()</code>. The gzip blob could also be sent over AJAX
+using a third party library.</p>
+<p><strong>Usage</strong></p>
+<ul>
+<li><a href="../examples/savePixpFile.html">examples/savePixpFile.html</a></li>
+</ul>
+
+      <h4>Static members</h4>
+        <div class='collapsible' id='PixBinEncoder.MAGIC_NUMBER'>
+          <a href='#PixBinEncoder.MAGIC_NUMBER'>
+            <code>
+              MAGIC_NUMBER<span class='gray'></span>
+            </code>
+            <div class='force-inline'>
+              <p>[static]
+the first sequence of bytes for a pixbin file is this ASCII string</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2 m2'>
+<section class='py2 clearfix'>
+  <h2 id='PixBinEncoder.MAGIC_NUMBER' class='mt0'>
+    MAGIC_NUMBER<span class='gray'></span>
+  </h2>
+  <p>[static]
+the first sequence of bytes for a pixbin file is this ASCII string</p>
+
+</section>
+          </div>
+        </div>
+</section>
+</div><div class='py1'><section class='py2 clearfix'>
+  <h2 id='PixBinEncoder' class='mt0'>
+    PixBinEncoder<span class='gray'></span>
+  </h2>
+  <p>Download the generated file</p>
+
+      <h4>Static members</h4>
+        <div class='collapsible' id='PixBinEncoder.MAGIC_NUMBER'>
+          <a href='#PixBinEncoder.MAGIC_NUMBER'>
+            <code>
+              MAGIC_NUMBER<span class='gray'></span>
+            </code>
+            <div class='force-inline'>
+              <p>[static]
+the first sequence of bytes for a pixbin file is this ASCII string</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2 m2'>
+<section class='py2 clearfix'>
+  <h2 id='PixBinEncoder.MAGIC_NUMBER' class='mt0'>
+    MAGIC_NUMBER<span class='gray'></span>
+  </h2>
+  <p>[static]
+the first sequence of bytes for a pixbin file is this ASCII string</p>
+
+</section>
+          </div>
+        </div>
 </section>
 </div><div class='py1'><section class='py2 clearfix'>
   <h2 id='MghDecoder' class='mt0'>
@@ -7972,6 +8363,19 @@ RGBA image, you can decide of preserving the alpha channel or not, using
 
 </section>
 </div><div class='py1'><section class='py2 clearfix'>
+  <h2 id='SimplifyLineStringFilter' class='mt0'>
+    SimplifyLineStringFilter<span class='gray'></span>
+  </h2>
+  <p>An instance of SimplifyLineStringFilter takes a LineString and simplifies upon
+a given tolerance distance (in pixel, possibly being sub-pixel).
+This filter outputs another LineString with a fewer amount of points.</p>
+<p><strong>Usage</strong></p>
+<ul>
+<li><a href="../examples/contourSimplifiedImage2D.html">examples/contourSimplifiedImage2D.html</a></li>
+</ul>
+
+</section>
+</div><div class='py1'><section class='py2 clearfix'>
   <h2 id='SpatialConvolutionFilter' class='mt0'>
     SpatialConvolutionFilter<span class='gray'></span>
   </h2>
@@ -8030,7 +8434,7 @@ various bith depth and types (8bits, 32bits, etc.)</p>
 <p>Info: Tiff 6.0 specification <a href="http://www.npes.org/pdf/TIFF-v6.pdf">http://www.npes.org/pdf/TIFF-v6.pdf</a></p>
 <p><strong>Usage</strong></p>
 <ul>
-<li><a href="../examples/fileToTiff.html">examples/savePixpFile.html</a></li>
+<li><a href="../examples/fileToTiff.html">examples/fileToTiff.html</a></li>
 </ul>
 
 </section>

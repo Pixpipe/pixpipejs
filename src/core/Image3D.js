@@ -1,10 +1,11 @@
 /*
 * Author   Jonathan Lurie - http://me.jonahanlurie.fr
 * License  MIT
-* Link      https://github.com/jonathanlurie/pixpipejs
+* Link      https://github.com/Pixpipe/pixpipejs
 * Lab       MCIN - Montreal Neurological Institute
 */
 
+import { CoreTypes } from './CoreTypes.js';
 import { PixpipeContainer } from './PixpipeContainer.js';
 import { Image2D } from './Image2D.js';
 
@@ -543,5 +544,8 @@ class Image3D extends PixpipeContainer{
   
 
 } /* END of class Image3D */
+
+// register this type as a CoreType
+CoreTypes.addCoreType( Image3D );
 
 export { Image3D }

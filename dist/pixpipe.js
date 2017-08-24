@@ -7,7 +7,60 @@
 /*
 * Author   Jonathan Lurie - http://me.jonahanlurie.fr
 * License  MIT
-* Link      https://github.com/jonathanlurie/pixpipejs
+* Link     https://github.com/Pixpipe/pixpipejs
+* Lab      MCIN - Montreal Neurological Institute
+*/
+
+
+// The index types are stored in this sort-of-private/sort-of-static object.
+var coreTypes = {};
+
+/**
+* CoreTypes is bit of an exception in Pixpipejs because it does not inherit from
+* PixpipeObject and it contains only static methods. In a sens, it's comparable
+* to a singleton that stores all the core types constructors of Pixpipe so that
+* they can be retrived only by querying their name.
+* 
+* At the creation of a new type, the static method `.addCoreType()` should be
+* called right after the closing curly bracket of the class declaration.
+* This is if we want to reference this class as a core type.
+*/
+class CoreTypes {
+  
+  /**
+  * [STATIC]
+  * Adds a new type to the collection of core types. This is used when we want
+  * to retrieve a type and instanciate an object of this type using its constructor name.
+  * @param {Class} typeClass  - the class of the type
+  */
+  static addCoreType( typeClass ){
+    if( typeof typeClass === "function" ){
+      coreTypes[ typeClass.name ] = typeClass;
+    }
+  }
+  
+  
+  /**
+  * [STATIC]
+  * Return the constructor of the given type name. This is useful to instanciate 
+  * an object based on the name of its type (eg. in PixBinDecoder)
+  * @param {String} typeName - the name of the type eg. "Image2D"
+  * @return {Function} constructor for the given type
+  */
+  static getCoreType( typeName ){
+    if( typeName in coreTypes ){
+      return coreTypes[ typeName ]
+    }else{
+      return null;
+    }
+  }
+  
+}
+
+/*
+* Author   Jonathan Lurie - http://me.jonahanlurie.fr
+* License  MIT
+* Link      https://github.com/Pixpipe/pixpipejs
 * Lab       MCIN - Montreal Neurological Institute
 */
 
@@ -159,12 +212,27 @@ class PixpipeObject {
     return optionsObject[ key ] || defaultValue;
   }
 
+
+  /**
+  * Verifies if the metadata object contain a cyclic object.
+  * @return {Boolean} true if metadata is cyclic, false if not
+  */
+  isMetadataCyclic(){
+    try{
+      JSON.stringify( this._metadata );
+    }catch(e){
+      return true;
+    }
+    
+    return false;
+  }
+
 }
 
 /*
 * Author   Jonathan Lurie - http://me.jonahanlurie.fr
 * License  MIT
-* Link      https://github.com/jonathanlurie/pixpipejs
+* Link      https://github.com/Pixpipe/pixpipejs
 * Lab       MCIN - Montreal Neurological Institute
 */
 
@@ -191,6 +259,8 @@ class Filter extends PixpipeObject {
     this._events = {};
 
     this._inputValidator = {};
+
+    this._allValidator = null;
 
     this._input = {
       //"0": []
@@ -390,9 +460,17 @@ class Filter extends PixpipeObject {
   * @param {Type} InputType - the type of the expected input, like Image2D, Image3D, etc. without quotes
   */
   addInputValidator( category, InputType ){
-    if("TYPE" in InputType){
+    if ("TYPE" in InputType) {
+      if (category === 'ALL') {
+        this._allValidator = InputType.TYPE();
+        return;
+      }
       this._inputValidator[ category ] = InputType.TYPE();
-    }else{
+    } else {
+      if (category === 'ALL') {
+        this._allValidator = InputType;
+        return;
+      }
       this._inputValidator[ category ] = InputType;
     }
   }
@@ -405,23 +483,31 @@ class Filter extends PixpipeObject {
   */
   hasValidInput(){
     var that = this;
-    var inputCategories = Object.keys( this._inputValidator );
+    var inputCategories = this.getInputCategories();
     var valid = true;
-
-    if(inputCategories.length == 0){
+    if(inputCategories.length === 0){
       valid = false;
       console.warn("No input validator was added. Filter cannot run. Use addInputValidator(...) to specify input types.");
     }
-
     inputCategories.forEach( function(key){
       var inputOfCategory = that._getInput( key );
 
       if(inputOfCategory){
         if("isOfType" in inputOfCategory){
-          valid = valid && inputOfCategory.isOfType( that._inputValidator[ key ] );
+          if (that._inputValidator[ key ]) {
+            valid = valid && inputOfCategory.isOfType( that._inputValidator[ key ] );
+          }
+          if (that._allValidator) {
+            valid = valid && inputOfCategory.isOfType(that._allValidator);
+          }
         }else{
           try{
-            valid = valid && (inputOfCategory instanceof that._inputValidator[ key ] );
+            if (that._inputValidator[ key ]) {
+              valid = valid && (inputOfCategory instanceof that._inputValidator[ key ] );
+            }
+            if (that._allValidator) {
+              valid = valid && (inputOfCategory instanceof that._allValidator );
+            }
           }catch(e){
             valid = false;
           }
@@ -448,6 +534,11 @@ class Filter extends PixpipeObject {
   * Launch the process.
   */
   update(){
+    // flush any existing output previously computed. Usefull when a filter is ran more than once.
+    // If no output is created the second time, the output from the previous time cannot be used instead
+    // (leading the user to think the second run created an output while it's actually the one from the first run) 
+    this._output = {};
+    
     if( this._metadata.time ){
       this.addTimeRecord("begin");
       this._run();
@@ -476,7 +567,7 @@ class Filter extends PixpipeObject {
   * @param {String} recordName - name of the record
   */
   addTimeRecord( recordName ){
-    this._timer[ recordName ] = 0;
+    this._timer[ recordName ] = performance.now();
   }
 
 
@@ -563,13 +654,19 @@ class Filter extends PixpipeObject {
   }
 
 
+  /**
+  * Remove all the inputs given so far.
+  */
+  clearAllInputs(){
+    this._input = {};
+  }
 
 } /* END class Filter */
 
 /*
 * Author   Jonathan Lurie - http://me.jonahanlurie.fr
 * License  MIT
-* Link      https://github.com/jonathanlurie/pixpipejs
+* Link      https://github.com/Pixpipe/pixpipejs
 * Lab       MCIN - Montreal Neurological Institute
 */
 
@@ -605,6 +702,13 @@ class PixpipeContainer extends PixpipeObject {
 
 } /* END of class PixpipeContainer */
 
+/*
+ * Author   Armin Taheri - https://github.com/ArminTaheri
+ * License  MIT
+ * Link     https://github.com/Pixpipe/pixpipejs
+ * Lab      MCIN - Montreal Neurological Institute
+ */
+ 
 class Signal1D extends PixpipeContainer {
   constructor() {
     super();
@@ -646,10 +750,13 @@ class Signal1D extends PixpipeContainer {
   }
 }
 
+// register this type as a CoreType
+CoreTypes.addCoreType( Signal1D );
+
 /*
 * Author   Jonathan Lurie - http://me.jonahanlurie.fr
 * License  MIT
-* Link      https://github.com/jonathanlurie/pixpipejs
+* Link      https://github.com/Pixpipe/pixpipejs
 * Lab       MCIN - Montreal Neurological Institute
 */
 
@@ -731,19 +838,19 @@ class Image2D extends PixpipeContainer{
   /**
   * Get an empty copy of an image. Like a clone but the array of data is filled
   * with zeros and no metadata.
-  * @return {Image2D} 
+  * @return {Image2D}
   */
   hollowClone(){
     var cpImg = new Image2D();
     var ncpp = this.getMetadata("ncpp");
     var width = this.getMetadata("width");
     var height = this.getMetadata("height");
-    
+
     cpImg.setData( new Float32Array(width*height*ncpp).fill(0), width, height, ncpp);
     return cpImg;
   }
-  
-  
+
+
   /**
   * Create a clone of this image that ensure data are encoded in a Float32Array.
   * @return {Image2D} the F32 clone
@@ -753,7 +860,7 @@ class Image2D extends PixpipeContainer{
     var ncpp = this.getMetadata("ncpp");
     var width = this.getMetadata("width");
     var height = this.getMetadata("height");
-    
+
     cpImg.setData( new Float32Array(this._data), width, height, ncpp);
     cpImg.copyMetadataFrom( this );
     return cpImg;
@@ -818,7 +925,7 @@ class Image2D extends PixpipeContainer{
             this._data[ pos1D + i] = color[i];
           }
         }
-      }else 
+      }else
       // we gave a RGB color instead of a RGBA, it's ok...
       if(color.length == 3 && ncpp == 4){
         var pos1D = this.get1dIndexFrom2dPosition( position );
@@ -856,14 +963,14 @@ class Image2D extends PixpipeContainer{
       var color = null;
       var pos1D = this.get1dIndexFrom2dPosition( position );
 
-      // 
+      //
       if(ncpp == 1){
         color = [this._data[pos1D]];
       }else{
         pos1D *= ncpp;
         color = this._data.slice(pos1D, pos1D + ncpp);
       }
-      
+
       return color;
 
     }else{
@@ -899,7 +1006,7 @@ class Image2D extends PixpipeContainer{
     return this._metadata.ncpp;
   }
 
-  
+
   /**
   * Alias to getComponentsPerPixel. Return the number of components per pixel.
   * @return {Number} ncpp
@@ -949,6 +1056,21 @@ class Image2D extends PixpipeContainer{
 
     return uintData;
   }
+
+
+  /**
+  * Get a copy of the data but forced as Float 32 (no scaling is done)
+  * @return {Float32Array} the casted array
+  */
+  getDataAsFloat32Array(){
+    if(! this._data){
+      console.warn("No data, cannot make a copy of it.");
+      return;
+    }
+    
+    return new Float32Array( this._data );
+  }
+
 
   /**
   * Compute the (x, y) position from a position in a 1D array.
@@ -1035,20 +1157,20 @@ class Image2D extends PixpipeContainer{
     }
     return this.getMetadata("avg");
   }
-  
-  
+
+
   /**
   * Tells if a given point is inside or outside the image
   * @param {Object} pos - position like {x: Number, y: Number}
   * @return {Boolean} true for inside, false for outside
   */
   isInside( pos ){
-    return ( 
+    return (
       pos.x >= 0 && pos.x < this._metadata.width &&
       pos.y >= 0 && pos.y < this._metadata.height
     )
   }
-  
+
   /**
   * Sample the color along a segment
   * @param {Object} posFrom - starting position of type {x: Number, y: Number}
@@ -1075,55 +1197,58 @@ class Image2D extends PixpipeContainer{
     // both position must be inside the image
     if( !this.isInside(posFrom) || !this.isInside(posTo) )
       return null;
-      
+
     var dx = posTo.x - posFrom.x;
     var dy = posTo.y - posFrom.y;
     var euclidianDistance = Math.sqrt( Math.pow(dx , 2) + Math.pow(dy , 2) );
     var numberOfSamples = Math.floor( euclidianDistance + 1 );
-    
+
     // we want to sample every unit distance along the segment
     var stepX = dx / euclidianDistance;
     var stepY = dy / euclidianDistance;
-    
+
     var ncpp = this._metadata.ncpp;
     var positions = new Array(numberOfSamples).fill(0);
     var colors = new Array(ncpp).fill(0);
     var labels = new Array(numberOfSamples).fill(0);
-    
+
     // creating empty arrays for colors
     for(var c=0; c<ncpp; c++){
       colors[c] = new Array(numberOfSamples).fill(0) ;
     }
-    
+
     // walk along the segment, from posFrom to posTo
     for(var i=0; i<numberOfSamples; i++){
       var currentPos = {x: Math.round(posFrom.x + i*stepX) , y: Math.round(posFrom.y + i*stepY) };
       positions[i] = currentPos;
       labels[i] = "(" + currentPos.x + ", " + currentPos.y + ")";
-      
+
       var pixValue = this.getPixel( currentPos );
-      
+
       // each channel is dispatched in its array
       for(var c=0; c<ncpp; c++){
         colors[c][i] = pixValue[c];
       }
     }
-    
+
     return {
       positions: positions,
       labels: labels,
       colors: colors
     }
   } /* END of method getLineSample */
-  
-  
+
+
 
 } /* END of class Image2D */
+
+// register this type as a CoreType
+CoreTypes.addCoreType( Image2D );
 
 /*
 * Author   Jonathan Lurie - http://me.jonahanlurie.fr
 * License  MIT
-* Link      https://github.com/jonathanlurie/pixpipejs
+* Link      https://github.com/Pixpipe/pixpipejs
 * Lab       MCIN - Montreal Neurological Institute
 */
 
@@ -1663,10 +1788,13 @@ class Image3D extends PixpipeContainer{
 
 } /* END of class Image3D */
 
+// register this type as a CoreType
+CoreTypes.addCoreType( Image3D );
+
 /*
 * Author   Jonathan Lurie - http://me.jonahanlurie.fr
 * License  MIT
-* Link      https://github.com/jonathanlurie/pixpipejs
+* Link      https://github.com/Pixpipe/pixpipejs
 * Lab       MCIN - Montreal Neurological Institute
 */
 
@@ -1745,7 +1873,7 @@ class ImageToImageFilter extends Filter {
 /*
 * Author   Jonathan Lurie - http://me.jonahanlurie.fr
 * License  MIT
-* Link      https://github.com/jonathanlurie/pixpipejs
+* Link      https://github.com/Pixpipe/pixpipejs
 * Lab       MCIN - Montreal Neurological Institute
 */
 
@@ -1891,7 +2019,7 @@ class MniVolume extends Image3D{
     // adding some fields to metadata header
     this._finishHeader();
 
-    console.log(this._metadata);
+    console.log(this);
   }
 
 
@@ -1950,10 +2078,13 @@ class MniVolume extends Image3D{
 
 } /* END of class Image3D */
 
+// register this type as a CoreType
+CoreTypes.addCoreType( MniVolume );
+
 /*
 * Author   Jonathan Lurie - http://me.jonahanlurie.fr
 * License  MIT
-* Link      https://github.com/jonathanlurie/pixpipejs
+* Link      https://github.com/Pixpipe/pixpipejs
 * Lab       MCIN - Montreal Neurological Institute
 */
 
@@ -2027,6 +2158,15 @@ class LineString extends PixpipeContainer {
     }
     
     this.setMetadata("nod", nod);
+  }
+  
+  
+  /**
+  * Get the number of dimensions
+  * @return {Number} the nod
+  */
+  getNod(){
+    return this.getMetadata("nod");
   }
   
   
@@ -2192,21 +2332,26 @@ class LineString extends PixpipeContainer {
   
 } /* END of class LineString */
 
+// register this type as a CoreType
+CoreTypes.addCoreType( LineString );
+
 /*
 * Author   Jonathan Lurie - http://me.jonahanlurie.fr
 * License  MIT
-* Link      https://github.com/jonathanlurie/pixpipejs
+* Link      https://github.com/Pixpipe/pixpipejs
 * Lab       MCIN - Montreal Neurological Institute
 */
 
 /**
 * CanvasImageWriter is a filter to output an instance of Image into a
-* HTML5 canvas element.
-* The metadata "parentDivID" has to be set using `setMetadata("parentDivID", "whatever")`
-* The metadata "alpha", if true, enable transparency. Default: false.
-* If the input Image2D has values not in [0, 255], you can remap/stretch using
-* setMetadata("min", xxx ) default: 0
-* setMetadata("max", xxx ) default: 255
+* HTML5 canvas element.  
+* The metadata "parentDivID" has to be set using `setMetadata("parentDivID", "whatever")`  
+* The metadata "alpha", if true, enable transparency. Default: false.  
+* If the input Image2D has values not in [0, 255], you can remap/stretch using  
+* setMetadata("min", xxx ) default: 0  
+* setMetadata("max", xxx ) default: 255  
+* We can also use `setMetadata("reset", false)` so that we can add another canvas
+* with a new image at update.  
 *
 * **Usage**
 * - [examples/imageToCanvasFilter.html](../examples/imageToCanvasFilter.html)
@@ -2394,7 +2539,7 @@ class CanvasImageWriter extends Filter{
 /*
 * Author   Jonathan Lurie - http://me.jonahanlurie.fr
 * License  MIT
-* Link      https://github.com/jonathanlurie/pixpipejs
+* Link      https://github.com/Pixpipe/pixpipejs
 * Lab       MCIN - Montreal Neurological Institute
 */
 
@@ -2490,7 +2635,7 @@ class UrlImageReader extends Filter {
 /*
 * Author   Jonathan Lurie - http://me.jonahanlurie.fr
 * License  MIT
-* Link      https://github.com/jonathanlurie/pixpipejs
+* Link      https://github.com/Pixpipe/pixpipejs
 * Lab       MCIN - Montreal Neurological Institute
 */
 
@@ -2749,19 +2894,19 @@ function chdir (dir) {
 function umask() { return 0; }
 
 // from https://github.com/kumavis/browser-process-hrtime/blob/master/index.js
-var performance = global$1.performance || {};
+var performance$1 = global$1.performance || {};
 var performanceNow =
-  performance.now        ||
-  performance.mozNow     ||
-  performance.msNow      ||
-  performance.oNow       ||
-  performance.webkitNow  ||
+  performance$1.now        ||
+  performance$1.mozNow     ||
+  performance$1.msNow      ||
+  performance$1.oNow       ||
+  performance$1.webkitNow  ||
   function(){ return (new Date()).getTime() };
 
 // generate timestamp or delta
 // see http://nodejs.org/api/process.html#process_process_hrtime
 function hrtime(previousTimestamp){
-  var clocktime = performanceNow.call(performance)*1e-3;
+  var clocktime = performanceNow.call(performance$1)*1e-3;
   var seconds = Math.floor(clocktime);
   var nanoseconds = Math.floor((clocktime%1)*1e9);
   if (previousTimestamp) {
@@ -2810,7 +2955,9 @@ var process = {
 
 var commonjsGlobal = typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
 
-
+function commonjsRequire () {
+	throw new Error('Dynamic requires are not currently supported by rollup-plugin-commonjs');
+}
 
 
 
@@ -12226,7 +12373,7 @@ var index$1 = pako;
 /*
 * Author   Jonathan Lurie - http://me.jonahanlurie.fr
 * License  MIT
-* Link      https://github.com/jonathanlurie/pixpipejs
+* Link      https://github.com/Pixpipe/pixpipejs
 * Lab       MCIN - Montreal Neurological Institute
 */
 
@@ -12338,7 +12485,7 @@ class FileToArrayBufferReader extends Filter {
 /*
 * Author   Jonathan Lurie - http://me.jonahanlurie.fr
 * License  MIT
-* Link      https://github.com/jonathanlurie/pixpipejs
+* Link      https://github.com/Pixpipe/pixpipejs
 * Lab       MCIN - Montreal Neurological Institute
 */
 
@@ -12440,12 +12587,237 @@ class UrlToArrayBufferReader extends Filter {
 
 } /* END of class UrlToArrayBufferReader */
 
+var FileSaver = createCommonjsModule(function (module) {
+/* FileSaver.js
+ * A saveAs() FileSaver implementation.
+ * 1.3.2
+ * 2016-06-16 18:25:19
+ *
+ * By Eli Grey, http://eligrey.com
+ * License: MIT
+ *   See https://github.com/eligrey/FileSaver.js/blob/master/LICENSE.md
+ */
+
+/*global self */
+/*jslint bitwise: true, indent: 4, laxbreak: true, laxcomma: true, smarttabs: true, plusplus: true */
+
+/*! @source http://purl.eligrey.com/github/FileSaver.js/blob/master/FileSaver.js */
+
+var saveAs = saveAs || (function(view) {
+	"use strict";
+	// IE <10 is explicitly unsupported
+	if (typeof view === "undefined" || typeof navigator !== "undefined" && /MSIE [1-9]\./.test(navigator.userAgent)) {
+		return;
+	}
+	var
+		  doc = view.document
+		  // only get URL when necessary in case Blob.js hasn't overridden it yet
+		, get_URL = function() {
+			return view.URL || view.webkitURL || view;
+		}
+		, save_link = doc.createElementNS("http://www.w3.org/1999/xhtml", "a")
+		, can_use_save_link = "download" in save_link
+		, click = function(node) {
+			var event = new MouseEvent("click");
+			node.dispatchEvent(event);
+		}
+		, is_safari = /constructor/i.test(view.HTMLElement) || view.safari
+		, is_chrome_ios =/CriOS\/[\d]+/.test(navigator.userAgent)
+		, throw_outside = function(ex) {
+			(view.setImmediate || view.setTimeout)(function() {
+				throw ex;
+			}, 0);
+		}
+		, force_saveable_type = "application/octet-stream"
+		// the Blob API is fundamentally broken as there is no "downloadfinished" event to subscribe to
+		, arbitrary_revoke_timeout = 1000 * 40 // in ms
+		, revoke = function(file) {
+			var revoker = function() {
+				if (typeof file === "string") { // file is an object URL
+					get_URL().revokeObjectURL(file);
+				} else { // file is a File
+					file.remove();
+				}
+			};
+			setTimeout(revoker, arbitrary_revoke_timeout);
+		}
+		, dispatch = function(filesaver, event_types, event) {
+			event_types = [].concat(event_types);
+			var i = event_types.length;
+			while (i--) {
+				var listener = filesaver["on" + event_types[i]];
+				if (typeof listener === "function") {
+					try {
+						listener.call(filesaver, event || filesaver);
+					} catch (ex) {
+						throw_outside(ex);
+					}
+				}
+			}
+		}
+		, auto_bom = function(blob) {
+			// prepend BOM for UTF-8 XML and text/* types (including HTML)
+			// note: your browser will automatically convert UTF-16 U+FEFF to EF BB BF
+			if (/^\s*(?:text\/\S*|application\/xml|\S*\/\S*\+xml)\s*;.*charset\s*=\s*utf-8/i.test(blob.type)) {
+				return new Blob([String.fromCharCode(0xFEFF), blob], {type: blob.type});
+			}
+			return blob;
+		}
+		, FileSaver = function(blob, name, no_auto_bom) {
+			if (!no_auto_bom) {
+				blob = auto_bom(blob);
+			}
+			// First try a.download, then web filesystem, then object URLs
+			var
+				  filesaver = this
+				, type = blob.type
+				, force = type === force_saveable_type
+				, object_url
+				, dispatch_all = function() {
+					dispatch(filesaver, "writestart progress write writeend".split(" "));
+				}
+				// on any filesys errors revert to saving with object URLs
+				, fs_error = function() {
+					if ((is_chrome_ios || (force && is_safari)) && view.FileReader) {
+						// Safari doesn't allow downloading of blob urls
+						var reader = new FileReader();
+						reader.onloadend = function() {
+							var url = is_chrome_ios ? reader.result : reader.result.replace(/^data:[^;]*;/, 'data:attachment/file;');
+							var popup = view.open(url, '_blank');
+							if(!popup) view.location.href = url;
+							url=undefined; // release reference before dispatching
+							filesaver.readyState = filesaver.DONE;
+							dispatch_all();
+						};
+						reader.readAsDataURL(blob);
+						filesaver.readyState = filesaver.INIT;
+						return;
+					}
+					// don't create more object URLs than needed
+					if (!object_url) {
+						object_url = get_URL().createObjectURL(blob);
+					}
+					if (force) {
+						view.location.href = object_url;
+					} else {
+						var opened = view.open(object_url, "_blank");
+						if (!opened) {
+							// Apple does not allow window.open, see https://developer.apple.com/library/safari/documentation/Tools/Conceptual/SafariExtensionGuide/WorkingwithWindowsandTabs/WorkingwithWindowsandTabs.html
+							view.location.href = object_url;
+						}
+					}
+					filesaver.readyState = filesaver.DONE;
+					dispatch_all();
+					revoke(object_url);
+				};
+			filesaver.readyState = filesaver.INIT;
+
+			if (can_use_save_link) {
+				object_url = get_URL().createObjectURL(blob);
+				setTimeout(function() {
+					save_link.href = object_url;
+					save_link.download = name;
+					click(save_link);
+					dispatch_all();
+					revoke(object_url);
+					filesaver.readyState = filesaver.DONE;
+				});
+				return;
+			}
+
+			fs_error();
+		}
+		, FS_proto = FileSaver.prototype
+		, saveAs = function(blob, name, no_auto_bom) {
+			return new FileSaver(blob, name || blob.name || "download", no_auto_bom);
+		};
+	// IE 10+ (native saveAs)
+	if (typeof navigator !== "undefined" && navigator.msSaveOrOpenBlob) {
+		return function(blob, name, no_auto_bom) {
+			name = name || blob.name || "download";
+
+			if (!no_auto_bom) {
+				blob = auto_bom(blob);
+			}
+			return navigator.msSaveOrOpenBlob(blob, name);
+		};
+	}
+
+	FS_proto.abort = function(){};
+	FS_proto.readyState = FS_proto.INIT = 0;
+	FS_proto.WRITING = 1;
+	FS_proto.DONE = 2;
+
+	FS_proto.error =
+	FS_proto.onwritestart =
+	FS_proto.onprogress =
+	FS_proto.onwrite =
+	FS_proto.onabort =
+	FS_proto.onerror =
+	FS_proto.onwriteend =
+		null;
+
+	return saveAs;
+}(
+	   typeof self !== "undefined" && self
+	|| typeof window !== "undefined" && window
+	|| commonjsGlobal.content
+));
+// `self` is undefined in Firefox for Android content script context
+// while `this` is nsIContentFrameMessageManager
+// with an attribute `content` that corresponds to the window
+
+if ('object' !== "undefined" && module.exports) {
+  module.exports.saveAs = saveAs;
+} else if ((typeof undefined !== "undefined" && undefined !== null) && (undefined.amd !== null)) {
+  undefined("FileSaver.js", function() {
+    return saveAs;
+  });
+}
+});
+
+/**
+* An instance of BrowserDownloadBuffer takes an ArrayBuffer as input and triggers
+* a download when `update()` is called. This is for **browser only**!  
+* A filename must be specified using `.setMetadata( "filename", "myFile.ext" )`.
+*
+*/
+class BrowserDownloadBuffer extends Filter {
+  constructor(){
+    super();
+    this.addInputValidator(0, ArrayBuffer);
+    this.setMetadata( "filename", null );
+  }
+  
+  
+  _run(){
+    if(! this.hasValidInput() ){
+      console.warn("BrowserDownloadBuffer uses only ArrayBuffer.");
+      return;
+    }
+    
+    var filename = this.getMetadata( "filename" );
+    
+    if( !filename ){
+      console.warn("A filename must be specified. Use the method `.setMetadata('filename', 'theFile.ext')` on this filter.");
+      return;
+    }
+    
+    // making a blob
+    var blob = new Blob( [this._getInput()], {type: 'application/octet-binary'} );
+    
+    // triggers the download of the file
+    FileSaver.saveAs( blob, filename);
+  }
+  
+} /* END of class BrowserDownloadBuffer */
+
 /*
 * Author    Jonathan Lurie - http://me.jonahanlurie.fr
 *           Robert D. Vincent
 *
 * License   MIT
-* Link      https://github.com/jonathanlurie/pixpipejs
+* Link      https://github.com/Pixpipe/pixpipejs
 * Lab       MCIN - Montreal Neurological Institute
 */
 
@@ -15288,7 +15660,7 @@ class Minc2Decoder extends Filter{
 *           Robert D. Vincent
 *
 * License   MIT
-* Link      https://github.com/jonathanlurie/pixpipejs
+* Link      https://github.com/Pixpipe/pixpipejs
 * Lab       MCIN - Montreal Neurological Institute
 */
 
@@ -15596,11 +15968,20 @@ class NiftiDecoder extends Filter {
       return;
     }
 
-    var header = this.parseNifti1Header( inputBuffer );
+    var header = null;
+    try{
+      header = this.parseNifti1Header( inputBuffer );
+    }catch(e){
+      //console.warn( e );
+    }
+    
 
     // abort if header not valid
-    if(!header)
+    if(!header){
+      console.warn("This file is not a NIfTI file.");
       return;
+    }
+      
 
     var dataArray = this.createNifti1Data(header, inputBuffer);
 
@@ -15615,200 +15996,11 @@ class NiftiDecoder extends Filter {
 
 } /* END class NiftiDecoder */
 
-var FileSaver = createCommonjsModule(function (module) {
-/* FileSaver.js
- * A saveAs() FileSaver implementation.
- * 1.3.2
- * 2016-06-16 18:25:19
- *
- * By Eli Grey, http://eligrey.com
- * License: MIT
- *   See https://github.com/eligrey/FileSaver.js/blob/master/LICENSE.md
- */
-
-/*global self */
-/*jslint bitwise: true, indent: 4, laxbreak: true, laxcomma: true, smarttabs: true, plusplus: true */
-
-/*! @source http://purl.eligrey.com/github/FileSaver.js/blob/master/FileSaver.js */
-
-var saveAs = saveAs || (function(view) {
-	"use strict";
-	// IE <10 is explicitly unsupported
-	if (typeof view === "undefined" || typeof navigator !== "undefined" && /MSIE [1-9]\./.test(navigator.userAgent)) {
-		return;
-	}
-	var
-		  doc = view.document
-		  // only get URL when necessary in case Blob.js hasn't overridden it yet
-		, get_URL = function() {
-			return view.URL || view.webkitURL || view;
-		}
-		, save_link = doc.createElementNS("http://www.w3.org/1999/xhtml", "a")
-		, can_use_save_link = "download" in save_link
-		, click = function(node) {
-			var event = new MouseEvent("click");
-			node.dispatchEvent(event);
-		}
-		, is_safari = /constructor/i.test(view.HTMLElement) || view.safari
-		, is_chrome_ios =/CriOS\/[\d]+/.test(navigator.userAgent)
-		, throw_outside = function(ex) {
-			(view.setImmediate || view.setTimeout)(function() {
-				throw ex;
-			}, 0);
-		}
-		, force_saveable_type = "application/octet-stream"
-		// the Blob API is fundamentally broken as there is no "downloadfinished" event to subscribe to
-		, arbitrary_revoke_timeout = 1000 * 40 // in ms
-		, revoke = function(file) {
-			var revoker = function() {
-				if (typeof file === "string") { // file is an object URL
-					get_URL().revokeObjectURL(file);
-				} else { // file is a File
-					file.remove();
-				}
-			};
-			setTimeout(revoker, arbitrary_revoke_timeout);
-		}
-		, dispatch = function(filesaver, event_types, event) {
-			event_types = [].concat(event_types);
-			var i = event_types.length;
-			while (i--) {
-				var listener = filesaver["on" + event_types[i]];
-				if (typeof listener === "function") {
-					try {
-						listener.call(filesaver, event || filesaver);
-					} catch (ex) {
-						throw_outside(ex);
-					}
-				}
-			}
-		}
-		, auto_bom = function(blob) {
-			// prepend BOM for UTF-8 XML and text/* types (including HTML)
-			// note: your browser will automatically convert UTF-16 U+FEFF to EF BB BF
-			if (/^\s*(?:text\/\S*|application\/xml|\S*\/\S*\+xml)\s*;.*charset\s*=\s*utf-8/i.test(blob.type)) {
-				return new Blob([String.fromCharCode(0xFEFF), blob], {type: blob.type});
-			}
-			return blob;
-		}
-		, FileSaver = function(blob, name, no_auto_bom) {
-			if (!no_auto_bom) {
-				blob = auto_bom(blob);
-			}
-			// First try a.download, then web filesystem, then object URLs
-			var
-				  filesaver = this
-				, type = blob.type
-				, force = type === force_saveable_type
-				, object_url
-				, dispatch_all = function() {
-					dispatch(filesaver, "writestart progress write writeend".split(" "));
-				}
-				// on any filesys errors revert to saving with object URLs
-				, fs_error = function() {
-					if ((is_chrome_ios || (force && is_safari)) && view.FileReader) {
-						// Safari doesn't allow downloading of blob urls
-						var reader = new FileReader();
-						reader.onloadend = function() {
-							var url = is_chrome_ios ? reader.result : reader.result.replace(/^data:[^;]*;/, 'data:attachment/file;');
-							var popup = view.open(url, '_blank');
-							if(!popup) view.location.href = url;
-							url=undefined; // release reference before dispatching
-							filesaver.readyState = filesaver.DONE;
-							dispatch_all();
-						};
-						reader.readAsDataURL(blob);
-						filesaver.readyState = filesaver.INIT;
-						return;
-					}
-					// don't create more object URLs than needed
-					if (!object_url) {
-						object_url = get_URL().createObjectURL(blob);
-					}
-					if (force) {
-						view.location.href = object_url;
-					} else {
-						var opened = view.open(object_url, "_blank");
-						if (!opened) {
-							// Apple does not allow window.open, see https://developer.apple.com/library/safari/documentation/Tools/Conceptual/SafariExtensionGuide/WorkingwithWindowsandTabs/WorkingwithWindowsandTabs.html
-							view.location.href = object_url;
-						}
-					}
-					filesaver.readyState = filesaver.DONE;
-					dispatch_all();
-					revoke(object_url);
-				};
-			filesaver.readyState = filesaver.INIT;
-
-			if (can_use_save_link) {
-				object_url = get_URL().createObjectURL(blob);
-				setTimeout(function() {
-					save_link.href = object_url;
-					save_link.download = name;
-					click(save_link);
-					dispatch_all();
-					revoke(object_url);
-					filesaver.readyState = filesaver.DONE;
-				});
-				return;
-			}
-
-			fs_error();
-		}
-		, FS_proto = FileSaver.prototype
-		, saveAs = function(blob, name, no_auto_bom) {
-			return new FileSaver(blob, name || blob.name || "download", no_auto_bom);
-		};
-	// IE 10+ (native saveAs)
-	if (typeof navigator !== "undefined" && navigator.msSaveOrOpenBlob) {
-		return function(blob, name, no_auto_bom) {
-			name = name || blob.name || "download";
-
-			if (!no_auto_bom) {
-				blob = auto_bom(blob);
-			}
-			return navigator.msSaveOrOpenBlob(blob, name);
-		};
-	}
-
-	FS_proto.abort = function(){};
-	FS_proto.readyState = FS_proto.INIT = 0;
-	FS_proto.WRITING = 1;
-	FS_proto.DONE = 2;
-
-	FS_proto.error =
-	FS_proto.onwritestart =
-	FS_proto.onprogress =
-	FS_proto.onwrite =
-	FS_proto.onabort =
-	FS_proto.onerror =
-	FS_proto.onwriteend =
-		null;
-
-	return saveAs;
-}(
-	   typeof self !== "undefined" && self
-	|| typeof window !== "undefined" && window
-	|| commonjsGlobal.content
-));
-// `self` is undefined in Firefox for Android content script context
-// while `this` is nsIContentFrameMessageManager
-// with an attribute `content` that corresponds to the window
-
-if ('object' !== "undefined" && module.exports) {
-  module.exports.saveAs = saveAs;
-} else if ((typeof undefined !== "undefined" && undefined !== null) && (undefined.amd !== null)) {
-  undefined("FileSaver.js", function() {
-    return saveAs;
-  });
-}
-});
-
 /*
 * Author    Jonathan Lurie - http://me.jonahanlurie.fr
 *
 * License   MIT
-* Link      https://github.com/jonathanlurie/pixpipejs
+* Link      https://github.com/Pixpipe/pixpipejs
 * Lab       MCIN - Montreal Neurological Institute
 */
 
@@ -15899,7 +16091,7 @@ class PixpEncoder extends Filter {
 * Author    Jonathan Lurie - http://me.jonahanlurie.fr
 *
 * License   MIT
-* Link      https://github.com/jonathanlurie/pixpipejs
+* Link      https://github.com/Pixpipe/pixpipejs
 * Lab       MCIN - Montreal Neurological Institute
 */
 
@@ -15994,7 +16186,7 @@ class PixpDecoder extends Filter {
 *           Robert D. Vincent
 *
 * License   MIT
-* Link      https://github.com/jonathanlurie/pixpipejs
+* Link      https://github.com/Pixpipe/pixpipejs
 * Lab       MCIN - Montreal Neurological Institute
 */
 
@@ -16291,11 +16483,21 @@ class MghDecoder extends Filter {
       return;
     }
 
-    var header = this._parseMGHHeader( inputBuffer );
+    var header = null;
+    
+    try{
+      header = this._parseMGHHeader( inputBuffer );
+    }catch(e){
+      //console.warn( e );
+    }
+    
 
     // abort if header not valid
-    if(!header)
+    if(!header){
+      console.log("The input file is not a MGH file.");
       return;
+    }
+      
 
 
     var dataArray = this._createMGHData(header, inputBuffer);
@@ -16317,100 +16519,15 @@ class MghDecoder extends Filter {
 * Author    Jonathan Lurie - http://me.jonahanlurie.fr
 *
 * License   MIT
-* Link      https://github.com/jonathanlurie/pixpipejs
-* Lab       MCIN - Montreal Neurological Institute
-*/
-
-/**
-* A PixBinDecoder instance decodes a *.pixp file and output an Image2D or Image3D.
-* The input, specified by `.addInput(...)` must be an ArrayBuffer
-* (from an `UrlToArrayBufferFilter`, an `UrlToArrayBufferReader` or anothrer source ).
-*
-* **Usage**
-* - [examples/pixpFileToImage2D.html](../examples/pixpFileToImage2D.html)
-*/
-class PixBinDecoder extends Filter {
-  constructor(){
-    super();
-    this.addInputValidator(0, ArrayBuffer);
-  }
-
-
-  _run(){
-
-    if(! this.hasValidInput() ){
-      console.warn("PixBinDecoder can only decode ArrayBuffer.");
-      return;
-    }
-
-    var input = this._getInput();
-    var inputByteLength = input.byteLength;
-
-    // the view to decode the buffer
-    var view = new DataView( input );
-    var offsetFromHere = 0;
-    
-    // fetch the extendedMetadata string length
-    var extendedMetadataStringLength = view.getUint32( offsetFromHere );
-    offsetFromHere += 4;
-    
-    // getting extendedMetadata
-    var extendedMetadataBytes = new Uint8Array(input, offsetFromHere, extendedMetadataStringLength);
-    var extendedMetadata = JSON.parse( String.fromCharCode( ...extendedMetadataBytes ) );
-    offsetFromHere += extendedMetadataStringLength;
-    
-    // getting the data
-    var constructorHost = null;
-    
-    try{
-      constructorHost = window; // in a web browser
-    }catch( e ){
-      try{
-        constructorHost = GLOBAL; // in node
-      }catch( e ){
-        console.warn( "You are not in a Javascript environment?? Weird." );
-        return;
-      }
-    }
-    
-    if(! constructorHost[ extendedMetadata.dataType ]){
-      console.warn( "Data array from pixb file is unknown: " + extendedMetadata.dataType );
-      return;
-    }
-    
-    /*
-      There is a known issues in JS that a TypedArray cannot be created starting at a non-multiple-of-2 start offset 
-      if the type of data within this array is supposed to take more than one byte (ie. Uint16, Float32, etc.).
-      The error is stated like that (in Chrome):
-      "Uncaught RangeError: start offset of Uint16Array should be a multiple of 2"
-      When it comes to Float32, Chrome wants an offset that is multiple of 4, and so on.
-      
-      The workaround is to slice the buffer to take only the data part of it (basically to remove what is before)
-      so that this new array starts with an offset 0, no matter what was before.
-    */
-    
-    var data = new constructorHost[ extendedMetadata.dataType ]( input.slice( offsetFromHere ) );
-    
-    var output = new pixpipe[ extendedMetadata.pixpipeType ];
-    output.setRawData( data );
-    output.setRawMetadata( extendedMetadata.metadata );
-
-    this._output[0] = output;
-  }
-
-
-} /* END of class PixBinDecoder */
-
-/*
-* Author    Jonathan Lurie - http://me.jonahanlurie.fr
-*
-* License   MIT
-* Link      https://github.com/jonathanlurie/pixpipejs
+* Link      https://github.com/Pixpipe/pixpipejs
 * Lab       MCIN - Montreal Neurological Institute
 */
 
 
 // decoders
+//import { PixBinDecoder } from './PixBinDecoder.js';
+
+
 /**
 * An instance of Image3DGenericDecoder takes a ArrayBuffer 
 * as input 0 (`.addInput(myArrayBuffer)`) and output an Image3D.
@@ -16433,7 +16550,7 @@ class Image3DGenericDecoder extends Filter {
       NiftiDecoder,
       MghDecoder,
       PixpDecoder,
-      PixBinDecoder
+      //PixBinDecoder
     ];
   }
   
@@ -20460,7 +20577,7 @@ if (typeof window !== "undefined") {
 /*
 * Author   Jonathan Lurie - http://me.jonahanlurie.fr
 * License  MIT
-* Link      https://github.com/jonathanlurie/pixpipejs
+* Link      https://github.com/Pixpipe/pixpipejs
 * Lab       MCIN - Montreal Neurological Institute
 */
 
@@ -20474,7 +20591,7 @@ if (typeof window !== "undefined") {
 * Info: Tiff 6.0 specification http://www.npes.org/pdf/TIFF-v6.pdf
 *
 * **Usage**
-* - [examples/savePixpFile.html](../examples/fileToTiff.html)
+* - [examples/fileToTiff.html](../examples/fileToTiff.html)
 *
 */
 class TiffDecoder extends Filter {
@@ -20494,23 +20611,27 @@ class TiffDecoder extends Filter {
     
     var success = false;
     
-    var tiffData = main.parse(inputBuffer);
-    var tiffImage = tiffData.getImage();
-    
-    var data = tiffImage.readRasters( {interleave: true} );
-    var width = tiffImage.getWidth();
-    var height = tiffImage.getHeight();
-    var ncpp = tiffImage.getSamplesPerPixel();
-    
-    if(ncpp == (data.length / (width*height))){
-      success = true;
-    }
-    
-    if( success ){
-      var outputImg = this._addOutput( Image2D );
-      outputImg.setData( data, width, height, ncpp);
-    }else{
-      console.warn("Tiff support is experimental and this file is not compatible.");
+    try{
+      var tiffData = main.parse(inputBuffer);
+      var tiffImage = tiffData.getImage();
+      
+      var data = tiffImage.readRasters( {interleave: true} );
+      var width = tiffImage.getWidth();
+      var height = tiffImage.getHeight();
+      var ncpp = tiffImage.getSamplesPerPixel();
+      
+      if(ncpp == (data.length / (width*height))){
+        success = true;
+      }
+      
+      if( success ){
+        var outputImg = this._addOutput( Image2D );
+        outputImg.setData( data, width, height, ncpp);
+      }else{
+        console.warn("Tiff support is experimental and this file is not compatible.");
+      }
+    }catch(e){
+      console.warn("This buffer is not from a TIFF file.");
     }
     
   }
@@ -20818,6 +20939,753 @@ class EegModDecoder extends Filter {
 
 } /* END of class EegModDecoder */
 
+var index$2 = createCommonjsModule(function (module) {
+var traverse = module.exports = function (obj) {
+    return new Traverse(obj);
+};
+
+function Traverse (obj) {
+    this.value = obj;
+}
+
+Traverse.prototype.get = function (ps) {
+    var node = this.value;
+    for (var i = 0; i < ps.length; i ++) {
+        var key = ps[i];
+        if (!node || !hasOwnProperty.call(node, key)) {
+            node = undefined;
+            break;
+        }
+        node = node[key];
+    }
+    return node;
+};
+
+Traverse.prototype.has = function (ps) {
+    var node = this.value;
+    for (var i = 0; i < ps.length; i ++) {
+        var key = ps[i];
+        if (!node || !hasOwnProperty.call(node, key)) {
+            return false;
+        }
+        node = node[key];
+    }
+    return true;
+};
+
+Traverse.prototype.set = function (ps, value) {
+    var node = this.value;
+    for (var i = 0; i < ps.length - 1; i ++) {
+        var key = ps[i];
+        if (!hasOwnProperty.call(node, key)) node[key] = {};
+        node = node[key];
+    }
+    node[ps[i]] = value;
+    return value;
+};
+
+Traverse.prototype.map = function (cb) {
+    return walk(this.value, cb, true);
+};
+
+Traverse.prototype.forEach = function (cb) {
+    this.value = walk(this.value, cb, false);
+    return this.value;
+};
+
+Traverse.prototype.reduce = function (cb, init) {
+    var skip = arguments.length === 1;
+    var acc = skip ? this.value : init;
+    this.forEach(function (x) {
+        if (!this.isRoot || !skip) {
+            acc = cb.call(this, acc, x);
+        }
+    });
+    return acc;
+};
+
+Traverse.prototype.paths = function () {
+    var acc = [];
+    this.forEach(function (x) {
+        acc.push(this.path); 
+    });
+    return acc;
+};
+
+Traverse.prototype.nodes = function () {
+    var acc = [];
+    this.forEach(function (x) {
+        acc.push(this.node);
+    });
+    return acc;
+};
+
+Traverse.prototype.clone = function () {
+    var parents = [], nodes = [];
+    
+    return (function clone (src) {
+        for (var i = 0; i < parents.length; i++) {
+            if (parents[i] === src) {
+                return nodes[i];
+            }
+        }
+        
+        if (typeof src === 'object' && src !== null) {
+            var dst = copy(src);
+            
+            parents.push(src);
+            nodes.push(dst);
+            
+            forEach(objectKeys(src), function (key) {
+                dst[key] = clone(src[key]);
+            });
+            
+            parents.pop();
+            nodes.pop();
+            return dst;
+        }
+        else {
+            return src;
+        }
+    })(this.value);
+};
+
+function walk (root, cb, immutable) {
+    var path = [];
+    var parents = [];
+    var alive = true;
+    
+    return (function walker (node_) {
+        var node = immutable ? copy(node_) : node_;
+        var modifiers = {};
+        
+        var keepGoing = true;
+        
+        var state = {
+            node : node,
+            node_ : node_,
+            path : [].concat(path),
+            parent : parents[parents.length - 1],
+            parents : parents,
+            key : path.slice(-1)[0],
+            isRoot : path.length === 0,
+            level : path.length,
+            circular : null,
+            update : function (x, stopHere) {
+                if (!state.isRoot) {
+                    state.parent.node[state.key] = x;
+                }
+                state.node = x;
+                if (stopHere) keepGoing = false;
+            },
+            'delete' : function (stopHere) {
+                delete state.parent.node[state.key];
+                if (stopHere) keepGoing = false;
+            },
+            remove : function (stopHere) {
+                if (isArray(state.parent.node)) {
+                    state.parent.node.splice(state.key, 1);
+                }
+                else {
+                    delete state.parent.node[state.key];
+                }
+                if (stopHere) keepGoing = false;
+            },
+            keys : null,
+            before : function (f) { modifiers.before = f; },
+            after : function (f) { modifiers.after = f; },
+            pre : function (f) { modifiers.pre = f; },
+            post : function (f) { modifiers.post = f; },
+            stop : function () { alive = false; },
+            block : function () { keepGoing = false; }
+        };
+        
+        if (!alive) return state;
+        
+        function updateState() {
+            if (typeof state.node === 'object' && state.node !== null) {
+                if (!state.keys || state.node_ !== state.node) {
+                    state.keys = objectKeys(state.node);
+                }
+                
+                state.isLeaf = state.keys.length == 0;
+                
+                for (var i = 0; i < parents.length; i++) {
+                    if (parents[i].node_ === node_) {
+                        state.circular = parents[i];
+                        break;
+                    }
+                }
+            }
+            else {
+                state.isLeaf = true;
+                state.keys = null;
+            }
+            
+            state.notLeaf = !state.isLeaf;
+            state.notRoot = !state.isRoot;
+        }
+        
+        updateState();
+        
+        // use return values to update if defined
+        var ret = cb.call(state, state.node);
+        if (ret !== undefined && state.update) state.update(ret);
+        
+        if (modifiers.before) modifiers.before.call(state, state.node);
+        
+        if (!keepGoing) return state;
+        
+        if (typeof state.node == 'object'
+        && state.node !== null && !state.circular) {
+            parents.push(state);
+            
+            updateState();
+            
+            forEach(state.keys, function (key, i) {
+                path.push(key);
+                
+                if (modifiers.pre) modifiers.pre.call(state, state.node[key], key);
+                
+                var child = walker(state.node[key]);
+                if (immutable && hasOwnProperty.call(state.node, key)) {
+                    state.node[key] = child.node;
+                }
+                
+                child.isLast = i == state.keys.length - 1;
+                child.isFirst = i == 0;
+                
+                if (modifiers.post) modifiers.post.call(state, child);
+                
+                path.pop();
+            });
+            parents.pop();
+        }
+        
+        if (modifiers.after) modifiers.after.call(state, state.node);
+        
+        return state;
+    })(root).node;
+}
+
+function copy (src) {
+    if (typeof src === 'object' && src !== null) {
+        var dst;
+        
+        if (isArray(src)) {
+            dst = [];
+        }
+        else if (isDate(src)) {
+            dst = new Date(src.getTime ? src.getTime() : src);
+        }
+        else if (isRegExp(src)) {
+            dst = new RegExp(src);
+        }
+        else if (isError(src)) {
+            dst = { message: src.message };
+        }
+        else if (isBoolean(src)) {
+            dst = new Boolean(src);
+        }
+        else if (isNumber(src)) {
+            dst = new Number(src);
+        }
+        else if (isString(src)) {
+            dst = new String(src);
+        }
+        else if (Object.create && Object.getPrototypeOf) {
+            dst = Object.create(Object.getPrototypeOf(src));
+        }
+        else if (src.constructor === Object) {
+            dst = {};
+        }
+        else {
+            var proto =
+                (src.constructor && src.constructor.prototype)
+                || src.__proto__
+                || {};
+            var T = function () {};
+            T.prototype = proto;
+            dst = new T;
+        }
+        
+        forEach(objectKeys(src), function (key) {
+            dst[key] = src[key];
+        });
+        return dst;
+    }
+    else return src;
+}
+
+var objectKeys = Object.keys || function keys (obj) {
+    var res = [];
+    for (var key in obj) res.push(key);
+    return res;
+};
+
+function toS (obj) { return Object.prototype.toString.call(obj) }
+function isDate (obj) { return toS(obj) === '[object Date]' }
+function isRegExp (obj) { return toS(obj) === '[object RegExp]' }
+function isError (obj) { return toS(obj) === '[object Error]' }
+function isBoolean (obj) { return toS(obj) === '[object Boolean]' }
+function isNumber (obj) { return toS(obj) === '[object Number]' }
+function isString (obj) { return toS(obj) === '[object String]' }
+
+var isArray = Array.isArray || function isArray (xs) {
+    return Object.prototype.toString.call(xs) === '[object Array]';
+};
+
+var forEach = function (xs, fn) {
+    if (xs.forEach) return xs.forEach(fn)
+    else for (var i = 0; i < xs.length; i++) {
+        fn(xs[i], i, xs);
+    }
+};
+
+forEach(objectKeys(Traverse.prototype), function (key) {
+    traverse[key] = function (obj) {
+        var args = [].slice.call(arguments, 1);
+        var t = new Traverse(obj);
+        return t[key].apply(t, args);
+    };
+});
+
+var hasOwnProperty = Object.hasOwnProperty || function (obj, key) {
+    return key in obj;
+};
+});
+
+/**
+* The CodecUtils class gather some static methods that can be useful while
+* encodeing/decoding data.
+* CodecUtils does not have a constructor, don't try to instanciate it.
+*/
+class CodecUtils {
+
+
+  /**
+  * Get whether or not the platform is using little endian.
+  * @return {Boolen } true if the platform is little endian, false if big endian
+  */
+  static isPlatformLittleEndian() {
+    var a = new Uint32Array([0x12345678]);
+    var b = new Uint8Array(a.buffer, a.byteOffset, a.byteLength);
+    return (b[0] != 0x12);
+  }
+
+
+  /**
+  * convert an ArrayBuffer into a unicode string (2 bytes for each char)
+  * @param {ArrayBuffer} buf - input ArrayBuffer
+  * @return {String} a string compatible with Unicode characters
+  */
+  static arrayBufferToString16( buf ) {
+    return String.fromCharCode.apply(null, new Uint16Array(buf));
+  }
+
+
+  /**
+  * convert a unicode string into an ArrayBuffer
+  * Note that the str is a regular string but it will be encoded with
+  * 2 bytes per char instead of 1 ( ASCII uses 1 byte/char )
+  * @param {String} str - string to encode
+  * @return {ArrayBuffer} the output ArrayBuffer
+  */
+  static string16ToArrayBuffer( str ) {
+    var buf = new ArrayBuffer(str.length*2); // 2 bytes for each char
+    var bufView = new Uint16Array(buf);
+    for (var i=0; i < str.length; i++) {
+      bufView[i] = str.charCodeAt(i);
+    }
+    return buf;
+  }
+
+
+  /**
+  * Convert an ArrayBuffer into a ASCII string (1 byte for each char)
+  * @param {ArrayBuffer} buf - buffer to convert into ASCII string
+  * @return {String} the output string
+  */
+  static arrayBufferToString8( buf ) {
+    return String.fromCharCode.apply(null, new Uint8Array(buf));
+  }
+
+
+  /**
+  * Convert a ASCII string into an ArrayBuffer.
+  * Note that the str is a regular string, it will be encoded with 1 byte per char
+  * @param {String} str - string to encode
+  * @return {ArrayBuffer}
+  */
+  static string8ToArrayBuffer( str ) {
+    var buf = new ArrayBuffer(str.length);
+    var bufView = new Uint8Array(buf);
+    for (var i=0; i < str.length; i++) {
+      bufView[i] = str.charCodeAt(i);
+    }
+    return buf;
+  }
+
+
+  /**
+  * Write a ASCII string into a buffer
+  * @param {String} str - a string that contains only ASCII characters
+  * @param {ArrayBuffer} buffer - the buffer where to write the string
+  * @param {Number} byteOffset - the offset to apply, in number of bytes
+  */
+  static setString8InBuffer( str, buffer, byteOffset = 0 ){
+    if( byteOffset < 0){
+      console.warn("The byte offset cannot be negative.");
+      return;
+    }
+
+    if( !buffer || !(buffer instanceof ArrayBuffer)){
+      console.warn("The buffer must be a valid ArrayBuffer.");
+      return;
+    }
+
+    if( (str.length + byteOffset) > buffer.byteLength ){
+      console.warn("The string is too long to be writen in this buffer.");
+      return;
+    }
+
+    var bufView = new Uint8Array(buffer);
+
+    for (var i=0; i < str.length; i++) {
+      bufView[i + byteOffset] = str.charCodeAt(i);
+    }
+  }
+
+
+  /**
+  * Extract an ASCII string from an ArrayBuffer
+  * @param {ArrayBuffer} buffer - the buffer
+  * @param {Number} strLength - number of chars in the string we want
+  * @param {Number} byteOffset - the offset in number of bytes
+  * @return {String} the string, or null in case of error
+  */
+  static getString8FromBuffer( buffer, strLength, byteOffset=0 ){
+    if( byteOffset < 0){
+      console.warn("The byte offset cannot be negative.");
+      return null;
+    }
+
+    if( !buffer || !(buffer instanceof ArrayBuffer)){
+      console.warn("The buffer must be a valid ArrayBuffer.");
+      return null;
+    }
+
+    if( (strLength + byteOffset) > buffer.byteLength ){
+      console.warn("The string is too long to be writen in this buffer.");
+      return null;
+    }
+
+    return String.fromCharCode.apply(null, new Uint8Array(buffer, byteOffset, strLength));
+  }
+
+
+  /**
+  * Serializes a JS object into an ArrayBuffer.
+  * This is using a unicode JSON intermediate step.
+  * @param {Object} obj - an object that does not have cyclic structure
+  * @return {ArrayBuffer} the serialized output
+  */
+  static objectToArrayBuffer( obj ){
+    var buff = null;
+    var objCleanClone = CodecUtils.makeSerializeFriendly(obj);
+
+    try{
+      var strObj = JSON.stringify( objCleanClone );
+      buff = CodecUtils.string16ToArrayBuffer(strObj);
+    }catch(e){
+      console.warn(e);
+    }
+
+    return buff;
+  }
+
+
+  /**
+  * Convert an ArrayBuffer into a JS Object. This uses an intermediate unicode JSON string.
+  * Of course, this buffer has to come from a serialized object.
+  * @param {ArrayBuffer} buff - the ArrayBuffer that hides some object
+  * @return {Object} the deserialized object
+  */
+  static ArrayBufferToObject( buff ){
+    var obj = null;
+
+    try{
+      var strObj = CodecUtils.arrayBufferToString16( buff );
+      obj = JSON.parse( strObj );
+    }catch(e){
+      console.warn(e);
+    }
+
+    return obj;
+  }
+
+
+  /**
+  * Get if wether of not the arg is a typed array
+  * @param {Object} obj - possibly a typed array, or maybe not
+  * @return {Boolean} true if obj is a typed array
+  */
+  static isTypedArray( obj ){
+    return ( obj instanceof Int8Array         ||
+             obj instanceof Uint8Array        ||
+             obj instanceof Uint8ClampedArray ||
+             obj instanceof Int16Array        ||
+             obj instanceof Uint16Array       ||
+             obj instanceof Int32Array        ||
+             obj instanceof Uint32Array       ||
+             obj instanceof Float32Array      ||
+             obj instanceof Float64Array )
+  }
+
+
+  /**
+  * Merge some ArrayBuffes in a single one
+  * @param {Array} arrayOfBuffers - some ArrayBuffers
+  * @return {ArrayBuffer} the larger merged buffer
+  */
+  static mergeBuffers( arrayOfBuffers ){
+    var totalByteSize = 0;
+
+    for(var i=0; i<arrayOfBuffers.length; i++){
+      totalByteSize += arrayOfBuffers[i].byteLength;
+    }
+
+    var concatArray = new Uint8Array( totalByteSize );
+
+    var offset = 0;
+    for(var i=0; i<arrayOfBuffers.length; i++){
+      concatArray.set( new Uint8Array(arrayOfBuffers[i]), offset);
+      offset += arrayOfBuffers[i].byteLength;
+    }
+
+    return concatArray.buffer;
+  }
+
+
+  /**
+  * In a browser, the global object is `window` while in Node, it's `GLOBAL`.
+  * This method return the one that is relevant to the execution context.
+  * @return {Object} the global object
+  */
+  static getGlobalObject(){
+    var constructorHost = null;
+
+    try{
+      constructorHost = window; // in a web browser
+    }catch( e ){
+      try{
+        constructorHost = GLOBAL; // in node
+      }catch( e ){
+        console.warn( "You are not in a Javascript environment?? Weird." );
+        return null;
+      }
+    }
+    return constructorHost;
+  }
+
+
+  /**
+  * Extract a typed array from an arbitrary buffer, with an arbitrary offset
+  * @param {ArrayBuffer} buffer - the buffer from which we extract data
+  * @param {Number} byteOffset - offset from the begining of buffer
+  * @param {Function} arrayType - function object, actually the constructor of the output array
+  * @param {Number} numberOfElements - nb of elem we want to fetch from the buffer
+  * @return {TypedArray} output of type given by arg arrayType - this is a copy, not a view
+  */
+  static extractTypedArray( buffer, byteOffset, arrayType, numberOfElements ){
+    if( !buffer ){
+      console.warn("Input Buffer is null.");
+      return null;
+    }
+
+    if(! (buffer instanceof ArrayBuffer) ){
+      console.warn("Buffer must be of type ArrayBuffer");
+      return null;
+    }
+
+    if(numberOfElements <= 0){
+      console.warn("The number of elements to fetch must be greater than 0");
+      return null;
+    }
+
+    if(byteOffset < 0){
+      console.warn("The byte offset must be possitive or 0");
+      return null;
+    }
+
+    if( byteOffset >= buffer.byteLength ){
+      console.warn("The offset cannot be larger than the size of the buffer.");
+      return null;
+    }
+
+    if( arrayType instanceof Function && !("BYTES_PER_ELEMENT" in arrayType)){
+      console.warn("ArrayType must be a typed array constructor function.");
+      return null;
+    }
+
+    if( arrayType.BYTES_PER_ELEMENT * numberOfElements + byteOffset > buffer.byteLength ){
+      console.warn("The requested number of elements is too large for this buffer");
+      return;
+    }
+
+    var slicedBuff = buffer.slice(byteOffset, byteOffset + numberOfElements*arrayType.BYTES_PER_ELEMENT);
+    return new arrayType( slicedBuff )
+  }
+
+
+  /**
+  * Get some info about the given TypedArray
+  * @param {TypedArray} typedArray - one of the typed array
+  * @return {Object} in form of {type: String, signed: Boolean, bytesPerElements: Number, byteLength: Number, length: Number}
+  */
+  static getTypedArrayInfo( typedArray ){
+    var type = null;
+    var signed = false;
+
+    if( typedArray instanceof Int8Array ){
+      type = "int";
+      signed = false;
+    }else if( typedArray instanceof Uint8Array ){
+      type = "int";
+      signed = true;
+    }else if( typedArray instanceof Uint8ClampedArray ){
+      type = "int";
+      signed = true;
+    }else if( typedArray instanceof Int16Array ){
+      type = "int";
+      signed = false;
+    }else if( typedArray instanceof Uint16Array ){
+      type = "int";
+      signed = true;
+    }else if( typedArray instanceof Int32Array ){
+      type = "int";
+      signed = false;
+    }else if( typedArray instanceof Uint32Array ){
+      type = "int";
+      signed = true;
+    }else if( typedArray instanceof Float32Array ){
+      type = "float";
+      signed = false;
+    }else if( typedArray instanceof Float64Array ){
+      type = "float";
+      signed = false;
+    }
+
+    return {
+      type: type,
+      signed: signed,
+      bytesPerElements: typedArray.BYTES_PER_ELEMENT,
+      byteLength: typedArray.byteLength,
+      length: typedArray.length
+    }
+  }
+  
+  
+  /**
+  * Counts the number of typed array obj has as attributes
+  * @param {Object} obj - an Object
+  * @return {Number} the number of typed array
+  */
+  static howManyTypedArrayAttributes( obj ){
+    var typArrCounter = 0;
+    index$2(obj).forEach(function (x) {
+      typArrCounter += CodecUtils.isTypedArray(x);
+    });
+    return typArrCounter;
+  }
+
+
+  /**
+  * Check if the given object contains any circular reference.
+  * (Circular ref are non serilizable easily, we want to spot them)
+  * @param {Object} obj - An object to check
+  * @return {Boolean} true if obj contains circular refm false if not
+  */
+  static hasCircularReference( obj ){
+    var hasCircular = false;
+    index$2(obj).forEach(function (x) {
+      if (this.circular){
+        hasCircular = true;
+      }
+    });
+    return hasCircular;
+  }
+  
+  
+  /**
+  * Remove circular dependencies from an object and return a circularRef-free version
+  * of the object (does not change the original obj), of null if no circular ref was found
+  * @param {Object} obj - An object to check
+  * @return {Object} a circular-ref free object copy if any was found, or null if no circ was found
+  */
+  static removeCircularReference( obj ){
+    var hasCircular = false;
+    var noCircRefObj = index$2(obj).map(function (x) {
+      if (this.circular){
+        this.remove();
+        hasCircular = true;
+      }
+    });
+    return hasCircular ? noCircRefObj : null;
+  }
+  
+  
+  /**
+  * Clone the object and replace the typed array attributes by regular Arrays.
+  * @param {Object} obj - an object to alter
+  * @return {Object} the clone if ant typed array were changed, or null if was obj didnt contain any typed array.
+  */
+  static replaceTypedArrayAttributesByArrays( obj ){
+    var hasTypedArray = false;
+    
+    var noTypedArrClone = index$2(obj).map(function (x) {
+      if (CodecUtils.isTypedArray(x)){
+        // here, we cannot call .length directly because traverse.map already serialized
+        // typed arrays into regular objects
+        var origSize = Object.keys(x).length;
+        var untypedArray = new Array( origSize );
+        
+        for(var i=0; i<origSize; i++){
+          untypedArray[i] = x[i];
+        }
+        this.update( untypedArray );
+        hasTypedArray = true;
+      }
+    });
+    return hasTypedArray ? noTypedArrClone : null;
+  }
+  
+  
+  /**
+  * Creates a clone, does not alter the original object.
+  * Remove circular dependencies and replace typed arrays by regular arrays.
+  * Both will make the serialization possible and more reliable.
+  * @param {Object} obj - the object to make serialization friendly
+  * @return {Object} a clean clone, or null if nothing was done
+  */
+  static makeSerializeFriendly( obj ){
+    var newObj = obj;
+    var noCircular = CodecUtils.removeCircularReference(newObj);
+    
+    if( noCircular )
+      newObj = noCircular;
+      
+    var noTypedArr = CodecUtils.replaceTypedArrayAttributesByArrays(newObj);
+    
+    if( noTypedArr )
+      newObj = noTypedArr;
+      
+    return newObj;
+  }
+  
+
+} /* END of class CodecUtils */
+
 /*
 * Author    Jonathan Lurie - http://me.jonahanlurie.fr
 *
@@ -20826,7 +21694,1162 @@ class EegModDecoder extends Filter {
 * Lab       MCIN - Montreal Neurological Institute
 */
 
-//import JSZip from "jszip";
+
+// list of different kinds of data we accept as input
+const dataCases = {
+  invalid: null,  // the data is not compatible (Number, String)
+  typedArray: 1,  // the data is compatible, as a typed array
+  mixedArrays: 2, // the data is compatible, as an array of typed array
+  complexObject: 3 // a complex object is also compatible (can be a untyped array)
+};
+
+
+class PixBlockEncoder {
+
+  constructor(){
+    this._compress = false;
+    this.reset();
+  }
+
+
+  /**
+  * reset inputs and inputs
+  */
+  reset(){
+    this._input = null;
+    this._inputCase = null;
+    this._output = null;
+  }
+
+
+  /**
+  * Set a boolean to secify if data should be compressed or not
+  * @param {Boolean} b - true to compress, false to not compress
+  */
+  enableDataCompression( b ){
+    this._compress = b;
+  }
+
+
+  /**
+  * Specify an input to the encoder
+  * @param {Object} obj - an object candidate, containing a _data and _metadata attributes
+  */
+  setInput( obj ){
+    this._inputCase = PixBlockEncoder.isGoodCandidate( obj );
+    if(this._inputCase){
+      this._input = obj;
+    }
+  }
+
+
+  /**
+  * Get the output
+  * @return {Object} the output, or null
+  */
+  getOutput(){
+    return this._output;
+  }
+
+
+  /**
+  * Check if the given object is a good intput candidate
+  * @param {Object} obj - an object candidate, containing a _data and _metadata attributes
+  * @return {Boolean} true if good candidate, false if not
+  */
+  static isGoodCandidate( obj ){
+    if( !obj ){
+      console.warn("Input object cannot be null.");
+      return false;
+    }
+
+    if( !("_metadata" in obj)){
+      console.warn("Input object must contain a _metadata object.");
+      return false;
+    }
+
+    if( !("_data" in obj)){
+      console.warn("Input object must contain a _data object.");
+      return false;
+    }
+
+    var metadata = obj._metadata;
+    var data = obj._data;
+
+    // check: metadata should not contain cyclic structures
+    try{
+      JSON.stringify( metadata );
+    }catch(e){
+      console.warn("The metadata object contains cyclic structures. Cannot be used.");
+      return false;
+    }
+
+    var inputCase = PixBlockEncoder.determineDataCase( data );
+
+    // testing the case based on the kinf of data we want to input
+    if( inputCase === dataCases.invalid ){
+      console.warn("The input is invalid.");
+    }
+
+    return inputCase;
+  }
+
+
+  /**
+  * Launch the encoding of the block
+  */
+  run(){
+    var input = this._input;
+
+    if( !input || !this._inputCase ){
+      console.warn("An input must be given to the PixBlockEncoder.");
+      return;
+    }
+
+    var compress = this._compress;
+    var data = input._data;
+    var compressedData = null;
+
+    var byteStreamInfo = [];
+    var usingDataSubsets = false;
+
+    switch (this._inputCase) {
+
+      // The input is a typed array ********************************
+      case dataCases.typedArray:
+        {
+          //var byteStreamInfoSubset = CodecUtils.getTypedArrayInfo(data);
+          var byteStreamInfoSubset = this._getDataSubsetInfo(data);
+
+          // additional compression flag
+          byteStreamInfoSubset.compressedByteLength = null;
+
+          if(this._compress){
+            compressedData = index$1.deflate( data.buffer );
+            byteStreamInfoSubset.compressedByteLength = compressedData.byteLength;
+          }
+
+          byteStreamInfo.push( byteStreamInfoSubset );
+        }
+        break;
+
+
+      // The input is an Array of typed arrays *********************
+      case dataCases.mixedArrays:
+        {
+          usingDataSubsets = true;
+          compressedData = [];
+
+          // collect bytestream info for each subset of data
+          for(var i=0; i<data.length; i++){
+
+            var byteStreamInfoSubset = this._getDataSubsetInfo( data[i] );
+
+            // if not a typed array, this subset needs further modifications
+            if( !byteStreamInfoSubset.isTypedArray ){
+              data[i] = new Uint8Array( CodecUtils.objectToArrayBuffer( data[i] ) );
+              byteStreamInfoSubset.byteLength = data[i].byteLength;
+            }
+
+            if(this._compress){
+              var compressedDataSubset = index$1.deflate( data[i].buffer );
+              byteStreamInfoSubset.compressedByteLength = compressedDataSubset.byteLength;
+              compressedData.push( compressedDataSubset );
+            }
+
+            byteStreamInfo.push( byteStreamInfoSubset );
+          }
+        }
+        break;
+
+      // The input is an Array of typed arrays *********************
+      case dataCases.complexObject:
+        {
+          var byteStreamInfoSubset = this._getDataSubsetInfo( data );
+
+          // replace the original data object with this uncompressed serialized version.
+          // We wrap it into a Uint8Array so that we can call .buffer on it, just like all the others
+          data = new Uint8Array( CodecUtils.objectToArrayBuffer( data ) );
+          byteStreamInfoSubset.byteLength = data.byteLength;
+
+          if(this._compress){
+            compressedData = index$1.deflate( data );
+            byteStreamInfoSubset.compressedByteLength = compressedData.byteLength;
+          }
+
+          byteStreamInfo.push( byteStreamInfoSubset );
+        }
+        break;
+
+      default:
+        console.warn("A problem occured.");
+        return;
+    }
+
+    // from now, if compression is enabled, what we call data is compressed data
+    if(this._compress){
+      data = compressedData;
+    }
+
+    // the metadata are converted into a buffer
+    var metadataBuffer = CodecUtils.objectToArrayBuffer( input._metadata );
+
+    var pixBlockHeader = {
+      byteStreamInfo     : byteStreamInfo,
+      originalBlockType  : input.constructor.name,
+      metadataByteLength : metadataBuffer.byteLength
+    };
+
+    // converting the pixBlockHeader obj into a buffer
+    var pixBlockHeaderBuff = CodecUtils.objectToArrayBuffer( pixBlockHeader );
+
+    // this list will then be transformed into a single buffer
+    var allBuffers = [
+      // primer, part 1: endianess
+      new Uint8Array( [ + CodecUtils.isPlatformLittleEndian() ] ).buffer,
+      // primer, part 2: size of the header buff
+      new Uint32Array( [pixBlockHeaderBuff.byteLength] ).buffer,
+
+      // the header buff
+      pixBlockHeaderBuff,
+
+      // the metadata buffer
+      metadataBuffer
+    ];
+
+    // adding the actual data buffer to the list
+    if( usingDataSubsets ){
+      for(var i=0; i<data.length; i++){
+          allBuffers.push( data[i].buffer );
+      }
+    }else{
+      allBuffers.push( data.buffer );
+    }
+
+    this._output = CodecUtils.mergeBuffers( allBuffers );
+  }
+
+
+  /**
+  * [STATIC]
+  * Give in what case we fall when we want to use this data.
+  * Cases are described at the top
+  * @param {Whatever} data - a piec of data, object, array, typed array...
+  * @return {Number} the case
+  */
+  static determineDataCase( data ){
+    if( data instanceof Object ){
+      if( CodecUtils.isTypedArray( data ) )
+        return dataCases.typedArray;
+
+      /*
+      if( data instanceof Array )
+        if(data.every( function(element){ return CodecUtils.isTypedArray(element) }))
+          return dataCases.mixedArrays;
+      */
+
+      // TODO: change the name of this case, since we want to accept Arrays of whatever
+      if( data instanceof Array )
+        return dataCases.mixedArrays;
+
+      return dataCases.complexObject;
+    }else{
+      return dataCases.invalid;
+    }
+  }
+
+
+  /**
+  * [PRIVATE]
+  * Return some infomation about the data subset so that it's easier to parse later
+  * @param {Object} subset - can be a typedArray or a complex object
+  * @return {Object} reconstruction info about this subset
+  */
+  _getDataSubsetInfo( subset ){
+    var infoObj = null;
+
+    if( CodecUtils.isTypedArray(subset) ){
+      infoObj = CodecUtils.getTypedArrayInfo( subset );
+      infoObj.isTypedArray = true;
+    }else{
+      infoObj = {
+        type: subset.constructor.name,
+        compressedByteLength: null,
+        byteLength: null,
+        length: null,
+        isTypedArray: false
+      };
+    }
+
+    return infoObj;
+  }
+
+
+} /* END of class PixBlockEncoder */
+
+/*
+* Author    Jonathan Lurie - http://me.jonahanlurie.fr
+*
+* License   MIT
+* Link      https://github.com/jonathanlurie/pixpipejs
+* Lab       MCIN - Montreal Neurological Institute
+*/
+
+class PixBlockDecoder {
+  constructor(){
+    this.reset();
+  }
+
+
+  /**
+  * reset inputs and inputs
+  */
+  reset(){
+    this._input = null;
+    this._output = null;
+  }
+
+
+  /**
+  * Specify an input
+  * @param {ArrayBuffer} buff - the arraybuffer that contains some data to be deserialized
+  */
+  setInput( buff ){
+    // check input
+    if( !(buff instanceof ArrayBuffer) ){
+      console.warn("Input should be a valid ArrayBuffer");
+      return;
+    }
+    this._input = buff;
+  }
+
+
+  /**
+  * Get the output
+  * @return {Object} the output, or null
+  */
+  getOutput(){
+    return this._output;
+  }
+
+
+  /*
+  * Launch the decoding
+  */
+  run(){
+
+    var input = this._input;
+    var view = new DataView( input );
+    var isLtlt = view.getUint8( 0 );
+    var readingByteOffset = 0;
+
+    // primer, part 1
+    // get the endianess used to encode the file
+    var isLittleEndian = view.getUint8(0);
+    readingByteOffset += 1;
+
+    // primer, part 2
+    // get the length of the string buffer (unicode json) that follows
+    var pixBlockHeaderBufferByteLength = view.getUint32(1, readingByteOffset);
+    readingByteOffset += 4;
+
+    // get the string buffer
+    var pixBlockHeaderBuffer = input.slice( readingByteOffset, readingByteOffset + pixBlockHeaderBufferByteLength );
+    var pixBlockHeader = CodecUtils.ArrayBufferToObject( pixBlockHeaderBuffer );
+    readingByteOffset += pixBlockHeaderBufferByteLength;
+
+    // fetching the metadata
+    var metadataBuffer = input.slice( readingByteOffset, readingByteOffset + pixBlockHeader.metadataByteLength );
+    var metadataObject = CodecUtils.ArrayBufferToObject( metadataBuffer );
+    readingByteOffset += pixBlockHeader.metadataByteLength;
+
+    // the data streams are the byte streams when they are converted back to actual typedArrays/Objects
+    var dataStreams = [];
+
+    for(var i=0; i<pixBlockHeader.byteStreamInfo.length; i++){
+      // act as a flag: if not null, it means data were compressed
+      var compressedByteLength = pixBlockHeader.byteStreamInfo[i].compressedByteLength;
+
+      // create a typed array out of the inflated buffer
+      var dataStreamConstructor = this._getDataTypeFromByteStreamInfo(pixBlockHeader.byteStreamInfo[i]);
+
+      // know if it's a typed array or a complex object
+      var isTypedArray = pixBlockHeader.byteStreamInfo[i].isTypedArray;
+
+      // meaning, the stream is compresed
+      if( compressedByteLength ){
+        // fetch the compresed dataStream
+        var compressedByteStream = new Uint8Array( input, readingByteOffset, compressedByteLength );
+
+        // inflate the dataStream
+        var inflatedByteStream = index$1.inflate( compressedByteStream );
+
+        var dataStream = null;
+        /*
+        if( dataStreamConstructor === Object){
+          dataStream = CodecUtils.ArrayBufferToObject( inflatedByteStream.buffer  );
+        }else{
+          dataStream = new dataStreamConstructor( inflatedByteStream.buffer );
+        }
+        */
+
+        if( isTypedArray ){
+          dataStream = new dataStreamConstructor( inflatedByteStream.buffer );
+        }else{
+          dataStream = CodecUtils.ArrayBufferToObject( inflatedByteStream.buffer  );
+        }
+
+        dataStreams.push( dataStream );
+        readingByteOffset += compressedByteLength;
+
+      }
+      // the stream were NOT compressed
+      else{
+        var dataStream = null;
+        if( isTypedArray ){
+         dataStream = CodecUtils.extractTypedArray(
+           input,
+           readingByteOffset,
+           this._getDataTypeFromByteStreamInfo(pixBlockHeader.byteStreamInfo[i]),
+           pixBlockHeader.byteStreamInfo[i].length
+         );
+        }else{
+          var objectBuffer = CodecUtils.extractTypedArray(
+           input,
+           readingByteOffset,
+           Uint8Array,
+           pixBlockHeader.byteStreamInfo[i].byteLength
+          );
+          dataStream = CodecUtils.ArrayBufferToObject( objectBuffer.buffer );
+        }
+
+
+        dataStreams.push( dataStream );
+        readingByteOffset += pixBlockHeader.byteStreamInfo[i].byteLength;
+      }
+    }
+
+    // If data is a single typed array (= not composed of a subset)
+    // we get rid of the useless wrapping array
+    if( dataStreams.length == 1){
+      dataStreams = dataStreams[0];
+    }
+
+    this._output = {
+      originalBlockType: pixBlockHeader.originalBlockType,
+      _data: dataStreams,
+      _metadata: metadataObject
+    };
+  }
+
+
+  /**
+  * Get the array type based on byte stream info.
+  * The returned object can be used as a constructor
+  * @return {Function} constructor of a typed array
+  */
+  _getDataTypeFromByteStreamInfo( bsi ){
+    var dataType = "Object";
+    var globalObject = CodecUtils.getGlobalObject();
+
+    if( bsi.type === "int" ){
+      dataType = bsi.signed ? "Uint" : "Int";
+      dataType += bsi.bytesPerElements*8 + "Array";
+
+    }else if( bsi.type === "float" ){
+      dataType = "Float";
+      dataType += bsi.bytesPerElements*8 + "Array";
+      var globalObject = CodecUtils.getGlobalObject();
+
+    }
+
+    return ( globalObject[ dataType ] )
+  }
+
+
+} /* END of class PixBlockDecoder */
+
+var md5$2 = createCommonjsModule(function (module) {
+/**
+ * [js-md5]{@link https://github.com/emn178/js-md5}
+ *
+ * @namespace md5
+ * @version 0.6.0
+ * @author Chen, Yi-Cyuan [emn178@gmail.com]
+ * @copyright Chen, Yi-Cyuan 2014-2017
+ * @license MIT
+ */
+(function () {
+  'use strict';
+
+  var ERROR = 'input is invalid type';
+  var WINDOW = typeof window === 'object';
+  var root = WINDOW ? window : {};
+  if (root.JS_MD5_NO_WINDOW) {
+    WINDOW = false;
+  }
+  var WEB_WORKER = !WINDOW && typeof self === 'object';
+  var NODE_JS = !root.JS_MD5_NO_NODE_JS && typeof process === 'object' && process.versions && process.versions.node;
+  if (NODE_JS) {
+    root = commonjsGlobal;
+  } else if (WEB_WORKER) {
+    root = self;
+  }
+  var COMMON_JS = !root.JS_MD5_NO_COMMON_JS && 'object' === 'object' && module.exports;
+  var AMD = typeof undefined === 'function' && undefined.amd;
+  var ARRAY_BUFFER = !root.JS_MD5_NO_ARRAY_BUFFER && typeof ArrayBuffer !== 'undefined';
+  var HEX_CHARS = '0123456789abcdef'.split('');
+  var EXTRA = [128, 32768, 8388608, -2147483648];
+  var SHIFT = [0, 8, 16, 24];
+  var OUTPUT_TYPES = ['hex', 'array', 'digest', 'buffer', 'arrayBuffer', 'base64'];
+  var BASE64_ENCODE_CHAR = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'.split('');
+
+  var blocks = [], buffer8;
+  if (ARRAY_BUFFER) {
+    var buffer = new ArrayBuffer(68);
+    buffer8 = new Uint8Array(buffer);
+    blocks = new Uint32Array(buffer);
+  }
+
+  if (root.JS_MD5_NO_NODE_JS || !Array.isArray) {
+    Array.isArray = function (obj) {
+      return Object.prototype.toString.call(obj) === '[object Array]';
+    };
+  }
+
+  /**
+   * @method hex
+   * @memberof md5
+   * @description Output hash as hex string
+   * @param {String|Array|Uint8Array|ArrayBuffer} message message to hash
+   * @returns {String} Hex string
+   * @example
+   * md5.hex('The quick brown fox jumps over the lazy dog');
+   * // equal to
+   * md5('The quick brown fox jumps over the lazy dog');
+   */
+  /**
+   * @method digest
+   * @memberof md5
+   * @description Output hash as bytes array
+   * @param {String|Array|Uint8Array|ArrayBuffer} message message to hash
+   * @returns {Array} Bytes array
+   * @example
+   * md5.digest('The quick brown fox jumps over the lazy dog');
+   */
+  /**
+   * @method array
+   * @memberof md5
+   * @description Output hash as bytes array
+   * @param {String|Array|Uint8Array|ArrayBuffer} message message to hash
+   * @returns {Array} Bytes array
+   * @example
+   * md5.array('The quick brown fox jumps over the lazy dog');
+   */
+  /**
+   * @method arrayBuffer
+   * @memberof md5
+   * @description Output hash as ArrayBuffer
+   * @param {String|Array|Uint8Array|ArrayBuffer} message message to hash
+   * @returns {ArrayBuffer} ArrayBuffer
+   * @example
+   * md5.arrayBuffer('The quick brown fox jumps over the lazy dog');
+   */
+  /**
+   * @method buffer
+   * @deprecated This maybe confuse with Buffer in node.js. Please use arrayBuffer instead.
+   * @memberof md5
+   * @description Output hash as ArrayBuffer
+   * @param {String|Array|Uint8Array|ArrayBuffer} message message to hash
+   * @returns {ArrayBuffer} ArrayBuffer
+   * @example
+   * md5.buffer('The quick brown fox jumps over the lazy dog');
+   */
+  /**
+   * @method base64
+   * @memberof md5
+   * @description Output hash as base64 string
+   * @param {String|Array|Uint8Array|ArrayBuffer} message message to hash
+   * @returns {String} base64 string
+   * @example
+   * md5.base64('The quick brown fox jumps over the lazy dog');
+   */
+  var createOutputMethod = function (outputType) {
+    return function (message) {
+      return new Md5(true).update(message)[outputType]();
+    };
+  };
+
+  /**
+   * @method create
+   * @memberof md5
+   * @description Create Md5 object
+   * @returns {Md5} Md5 object.
+   * @example
+   * var hash = md5.create();
+   */
+  /**
+   * @method update
+   * @memberof md5
+   * @description Create and update Md5 object
+   * @param {String|Array|Uint8Array|ArrayBuffer} message message to hash
+   * @returns {Md5} Md5 object.
+   * @example
+   * var hash = md5.update('The quick brown fox jumps over the lazy dog');
+   * // equal to
+   * var hash = md5.create();
+   * hash.update('The quick brown fox jumps over the lazy dog');
+   */
+  var createMethod = function () {
+    var method = createOutputMethod('hex');
+    if (NODE_JS) {
+      method = nodeWrap(method);
+    }
+    method.create = function () {
+      return new Md5();
+    };
+    method.update = function (message) {
+      return method.create().update(message);
+    };
+    for (var i = 0; i < OUTPUT_TYPES.length; ++i) {
+      var type = OUTPUT_TYPES[i];
+      method[type] = createOutputMethod(type);
+    }
+    return method;
+  };
+
+  var nodeWrap = function (method) {
+    var crypto = eval("require('crypto')");
+    var Buffer = eval("require('buffer').Buffer");
+    var nodeMethod = function (message) {
+      if (typeof message === 'string') {
+        return crypto.createHash('md5').update(message, 'utf8').digest('hex');
+      } else {
+        if (message === null || message === undefined) {
+          throw ERROR;
+        } else if (message.constructor === ArrayBuffer) {
+          message = new Uint8Array(message);
+        }
+      }
+      if (Array.isArray(message) || ArrayBuffer.isView(message) ||
+        message.constructor === Buffer) {
+        return crypto.createHash('md5').update(new Buffer(message)).digest('hex');
+      } else {
+        return method(message);
+      }
+    };
+    return nodeMethod;
+  };
+
+  /**
+   * Md5 class
+   * @class Md5
+   * @description This is internal class.
+   * @see {@link md5.create}
+   */
+  function Md5(sharedMemory) {
+    if (sharedMemory) {
+      blocks[0] = blocks[16] = blocks[1] = blocks[2] = blocks[3] =
+      blocks[4] = blocks[5] = blocks[6] = blocks[7] =
+      blocks[8] = blocks[9] = blocks[10] = blocks[11] =
+      blocks[12] = blocks[13] = blocks[14] = blocks[15] = 0;
+      this.blocks = blocks;
+      this.buffer8 = buffer8;
+    } else {
+      if (ARRAY_BUFFER) {
+        var buffer = new ArrayBuffer(68);
+        this.buffer8 = new Uint8Array(buffer);
+        this.blocks = new Uint32Array(buffer);
+      } else {
+        this.blocks = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+      }
+    }
+    this.h0 = this.h1 = this.h2 = this.h3 = this.start = this.bytes = 0;
+    this.finalized = this.hashed = false;
+    this.first = true;
+  }
+
+  /**
+   * @method update
+   * @memberof Md5
+   * @instance
+   * @description Update hash
+   * @param {String|Array|Uint8Array|ArrayBuffer} message message to hash
+   * @returns {Md5} Md5 object.
+   * @see {@link md5.update}
+   */
+  Md5.prototype.update = function (message) {
+    if (this.finalized) {
+      return;
+    }
+    var notString = typeof(message) != 'string';
+    if (notString) {
+      if (message === null || message === undefined) {
+        throw ERROR;
+      } else if (message.constructor === root.ArrayBuffer) {
+        message = new Uint8Array(message);
+      }
+    }
+    var length = message.length;
+    if (notString) {
+      if (typeof length !== 'number' ||
+        !Array.isArray(message) && 
+        !(ARRAY_BUFFER && ArrayBuffer.isView(message))) {
+        throw ERROR;
+      }
+    }
+    var code, index = 0, i, blocks = this.blocks;
+    var buffer8 = this.buffer8;
+
+    while (index < length) {
+      if (this.hashed) {
+        this.hashed = false;
+        blocks[0] = blocks[16];
+        blocks[16] = blocks[1] = blocks[2] = blocks[3] =
+        blocks[4] = blocks[5] = blocks[6] = blocks[7] =
+        blocks[8] = blocks[9] = blocks[10] = blocks[11] =
+        blocks[12] = blocks[13] = blocks[14] = blocks[15] = 0;
+      }
+
+      if (notString) {
+        if (ARRAY_BUFFER) {
+          for (i = this.start; index < length && i < 64; ++index) {
+            buffer8[i++] = message[index];
+          }
+        } else {
+          for (i = this.start; index < length && i < 64; ++index) {
+            blocks[i >> 2] |= message[index] << SHIFT[i++ & 3];
+          }
+        }
+      } else {
+        if (ARRAY_BUFFER) {
+          for (i = this.start; index < length && i < 64; ++index) {
+            code = message.charCodeAt(index);
+            if (code < 0x80) {
+              buffer8[i++] = code;
+            } else if (code < 0x800) {
+              buffer8[i++] = 0xc0 | (code >> 6);
+              buffer8[i++] = 0x80 | (code & 0x3f);
+            } else if (code < 0xd800 || code >= 0xe000) {
+              buffer8[i++] = 0xe0 | (code >> 12);
+              buffer8[i++] = 0x80 | ((code >> 6) & 0x3f);
+              buffer8[i++] = 0x80 | (code & 0x3f);
+            } else {
+              code = 0x10000 + (((code & 0x3ff) << 10) | (message.charCodeAt(++index) & 0x3ff));
+              buffer8[i++] = 0xf0 | (code >> 18);
+              buffer8[i++] = 0x80 | ((code >> 12) & 0x3f);
+              buffer8[i++] = 0x80 | ((code >> 6) & 0x3f);
+              buffer8[i++] = 0x80 | (code & 0x3f);
+            }
+          }
+        } else {
+          for (i = this.start; index < length && i < 64; ++index) {
+            code = message.charCodeAt(index);
+            if (code < 0x80) {
+              blocks[i >> 2] |= code << SHIFT[i++ & 3];
+            } else if (code < 0x800) {
+              blocks[i >> 2] |= (0xc0 | (code >> 6)) << SHIFT[i++ & 3];
+              blocks[i >> 2] |= (0x80 | (code & 0x3f)) << SHIFT[i++ & 3];
+            } else if (code < 0xd800 || code >= 0xe000) {
+              blocks[i >> 2] |= (0xe0 | (code >> 12)) << SHIFT[i++ & 3];
+              blocks[i >> 2] |= (0x80 | ((code >> 6) & 0x3f)) << SHIFT[i++ & 3];
+              blocks[i >> 2] |= (0x80 | (code & 0x3f)) << SHIFT[i++ & 3];
+            } else {
+              code = 0x10000 + (((code & 0x3ff) << 10) | (message.charCodeAt(++index) & 0x3ff));
+              blocks[i >> 2] |= (0xf0 | (code >> 18)) << SHIFT[i++ & 3];
+              blocks[i >> 2] |= (0x80 | ((code >> 12) & 0x3f)) << SHIFT[i++ & 3];
+              blocks[i >> 2] |= (0x80 | ((code >> 6) & 0x3f)) << SHIFT[i++ & 3];
+              blocks[i >> 2] |= (0x80 | (code & 0x3f)) << SHIFT[i++ & 3];
+            }
+          }
+        }
+      }
+      this.lastByteIndex = i;
+      this.bytes += i - this.start;
+      if (i >= 64) {
+        this.start = i - 64;
+        this.hash();
+        this.hashed = true;
+      } else {
+        this.start = i;
+      }
+    }
+    return this;
+  };
+
+  Md5.prototype.finalize = function () {
+    if (this.finalized) {
+      return;
+    }
+    this.finalized = true;
+    var blocks = this.blocks, i = this.lastByteIndex;
+    blocks[i >> 2] |= EXTRA[i & 3];
+    if (i >= 56) {
+      if (!this.hashed) {
+        this.hash();
+      }
+      blocks[0] = blocks[16];
+      blocks[16] = blocks[1] = blocks[2] = blocks[3] =
+      blocks[4] = blocks[5] = blocks[6] = blocks[7] =
+      blocks[8] = blocks[9] = blocks[10] = blocks[11] =
+      blocks[12] = blocks[13] = blocks[14] = blocks[15] = 0;
+    }
+    blocks[14] = this.bytes << 3;
+    this.hash();
+  };
+
+  Md5.prototype.hash = function () {
+    var a, b, c, d, bc, da, blocks = this.blocks;
+
+    if (this.first) {
+      a = blocks[0] - 680876937;
+      a = (a << 7 | a >>> 25) - 271733879 << 0;
+      d = (-1732584194 ^ a & 2004318071) + blocks[1] - 117830708;
+      d = (d << 12 | d >>> 20) + a << 0;
+      c = (-271733879 ^ (d & (a ^ -271733879))) + blocks[2] - 1126478375;
+      c = (c << 17 | c >>> 15) + d << 0;
+      b = (a ^ (c & (d ^ a))) + blocks[3] - 1316259209;
+      b = (b << 22 | b >>> 10) + c << 0;
+    } else {
+      a = this.h0;
+      b = this.h1;
+      c = this.h2;
+      d = this.h3;
+      a += (d ^ (b & (c ^ d))) + blocks[0] - 680876936;
+      a = (a << 7 | a >>> 25) + b << 0;
+      d += (c ^ (a & (b ^ c))) + blocks[1] - 389564586;
+      d = (d << 12 | d >>> 20) + a << 0;
+      c += (b ^ (d & (a ^ b))) + blocks[2] + 606105819;
+      c = (c << 17 | c >>> 15) + d << 0;
+      b += (a ^ (c & (d ^ a))) + blocks[3] - 1044525330;
+      b = (b << 22 | b >>> 10) + c << 0;
+    }
+
+    a += (d ^ (b & (c ^ d))) + blocks[4] - 176418897;
+    a = (a << 7 | a >>> 25) + b << 0;
+    d += (c ^ (a & (b ^ c))) + blocks[5] + 1200080426;
+    d = (d << 12 | d >>> 20) + a << 0;
+    c += (b ^ (d & (a ^ b))) + blocks[6] - 1473231341;
+    c = (c << 17 | c >>> 15) + d << 0;
+    b += (a ^ (c & (d ^ a))) + blocks[7] - 45705983;
+    b = (b << 22 | b >>> 10) + c << 0;
+    a += (d ^ (b & (c ^ d))) + blocks[8] + 1770035416;
+    a = (a << 7 | a >>> 25) + b << 0;
+    d += (c ^ (a & (b ^ c))) + blocks[9] - 1958414417;
+    d = (d << 12 | d >>> 20) + a << 0;
+    c += (b ^ (d & (a ^ b))) + blocks[10] - 42063;
+    c = (c << 17 | c >>> 15) + d << 0;
+    b += (a ^ (c & (d ^ a))) + blocks[11] - 1990404162;
+    b = (b << 22 | b >>> 10) + c << 0;
+    a += (d ^ (b & (c ^ d))) + blocks[12] + 1804603682;
+    a = (a << 7 | a >>> 25) + b << 0;
+    d += (c ^ (a & (b ^ c))) + blocks[13] - 40341101;
+    d = (d << 12 | d >>> 20) + a << 0;
+    c += (b ^ (d & (a ^ b))) + blocks[14] - 1502002290;
+    c = (c << 17 | c >>> 15) + d << 0;
+    b += (a ^ (c & (d ^ a))) + blocks[15] + 1236535329;
+    b = (b << 22 | b >>> 10) + c << 0;
+    a += (c ^ (d & (b ^ c))) + blocks[1] - 165796510;
+    a = (a << 5 | a >>> 27) + b << 0;
+    d += (b ^ (c & (a ^ b))) + blocks[6] - 1069501632;
+    d = (d << 9 | d >>> 23) + a << 0;
+    c += (a ^ (b & (d ^ a))) + blocks[11] + 643717713;
+    c = (c << 14 | c >>> 18) + d << 0;
+    b += (d ^ (a & (c ^ d))) + blocks[0] - 373897302;
+    b = (b << 20 | b >>> 12) + c << 0;
+    a += (c ^ (d & (b ^ c))) + blocks[5] - 701558691;
+    a = (a << 5 | a >>> 27) + b << 0;
+    d += (b ^ (c & (a ^ b))) + blocks[10] + 38016083;
+    d = (d << 9 | d >>> 23) + a << 0;
+    c += (a ^ (b & (d ^ a))) + blocks[15] - 660478335;
+    c = (c << 14 | c >>> 18) + d << 0;
+    b += (d ^ (a & (c ^ d))) + blocks[4] - 405537848;
+    b = (b << 20 | b >>> 12) + c << 0;
+    a += (c ^ (d & (b ^ c))) + blocks[9] + 568446438;
+    a = (a << 5 | a >>> 27) + b << 0;
+    d += (b ^ (c & (a ^ b))) + blocks[14] - 1019803690;
+    d = (d << 9 | d >>> 23) + a << 0;
+    c += (a ^ (b & (d ^ a))) + blocks[3] - 187363961;
+    c = (c << 14 | c >>> 18) + d << 0;
+    b += (d ^ (a & (c ^ d))) + blocks[8] + 1163531501;
+    b = (b << 20 | b >>> 12) + c << 0;
+    a += (c ^ (d & (b ^ c))) + blocks[13] - 1444681467;
+    a = (a << 5 | a >>> 27) + b << 0;
+    d += (b ^ (c & (a ^ b))) + blocks[2] - 51403784;
+    d = (d << 9 | d >>> 23) + a << 0;
+    c += (a ^ (b & (d ^ a))) + blocks[7] + 1735328473;
+    c = (c << 14 | c >>> 18) + d << 0;
+    b += (d ^ (a & (c ^ d))) + blocks[12] - 1926607734;
+    b = (b << 20 | b >>> 12) + c << 0;
+    bc = b ^ c;
+    a += (bc ^ d) + blocks[5] - 378558;
+    a = (a << 4 | a >>> 28) + b << 0;
+    d += (bc ^ a) + blocks[8] - 2022574463;
+    d = (d << 11 | d >>> 21) + a << 0;
+    da = d ^ a;
+    c += (da ^ b) + blocks[11] + 1839030562;
+    c = (c << 16 | c >>> 16) + d << 0;
+    b += (da ^ c) + blocks[14] - 35309556;
+    b = (b << 23 | b >>> 9) + c << 0;
+    bc = b ^ c;
+    a += (bc ^ d) + blocks[1] - 1530992060;
+    a = (a << 4 | a >>> 28) + b << 0;
+    d += (bc ^ a) + blocks[4] + 1272893353;
+    d = (d << 11 | d >>> 21) + a << 0;
+    da = d ^ a;
+    c += (da ^ b) + blocks[7] - 155497632;
+    c = (c << 16 | c >>> 16) + d << 0;
+    b += (da ^ c) + blocks[10] - 1094730640;
+    b = (b << 23 | b >>> 9) + c << 0;
+    bc = b ^ c;
+    a += (bc ^ d) + blocks[13] + 681279174;
+    a = (a << 4 | a >>> 28) + b << 0;
+    d += (bc ^ a) + blocks[0] - 358537222;
+    d = (d << 11 | d >>> 21) + a << 0;
+    da = d ^ a;
+    c += (da ^ b) + blocks[3] - 722521979;
+    c = (c << 16 | c >>> 16) + d << 0;
+    b += (da ^ c) + blocks[6] + 76029189;
+    b = (b << 23 | b >>> 9) + c << 0;
+    bc = b ^ c;
+    a += (bc ^ d) + blocks[9] - 640364487;
+    a = (a << 4 | a >>> 28) + b << 0;
+    d += (bc ^ a) + blocks[12] - 421815835;
+    d = (d << 11 | d >>> 21) + a << 0;
+    da = d ^ a;
+    c += (da ^ b) + blocks[15] + 530742520;
+    c = (c << 16 | c >>> 16) + d << 0;
+    b += (da ^ c) + blocks[2] - 995338651;
+    b = (b << 23 | b >>> 9) + c << 0;
+    a += (c ^ (b | ~d)) + blocks[0] - 198630844;
+    a = (a << 6 | a >>> 26) + b << 0;
+    d += (b ^ (a | ~c)) + blocks[7] + 1126891415;
+    d = (d << 10 | d >>> 22) + a << 0;
+    c += (a ^ (d | ~b)) + blocks[14] - 1416354905;
+    c = (c << 15 | c >>> 17) + d << 0;
+    b += (d ^ (c | ~a)) + blocks[5] - 57434055;
+    b = (b << 21 | b >>> 11) + c << 0;
+    a += (c ^ (b | ~d)) + blocks[12] + 1700485571;
+    a = (a << 6 | a >>> 26) + b << 0;
+    d += (b ^ (a | ~c)) + blocks[3] - 1894986606;
+    d = (d << 10 | d >>> 22) + a << 0;
+    c += (a ^ (d | ~b)) + blocks[10] - 1051523;
+    c = (c << 15 | c >>> 17) + d << 0;
+    b += (d ^ (c | ~a)) + blocks[1] - 2054922799;
+    b = (b << 21 | b >>> 11) + c << 0;
+    a += (c ^ (b | ~d)) + blocks[8] + 1873313359;
+    a = (a << 6 | a >>> 26) + b << 0;
+    d += (b ^ (a | ~c)) + blocks[15] - 30611744;
+    d = (d << 10 | d >>> 22) + a << 0;
+    c += (a ^ (d | ~b)) + blocks[6] - 1560198380;
+    c = (c << 15 | c >>> 17) + d << 0;
+    b += (d ^ (c | ~a)) + blocks[13] + 1309151649;
+    b = (b << 21 | b >>> 11) + c << 0;
+    a += (c ^ (b | ~d)) + blocks[4] - 145523070;
+    a = (a << 6 | a >>> 26) + b << 0;
+    d += (b ^ (a | ~c)) + blocks[11] - 1120210379;
+    d = (d << 10 | d >>> 22) + a << 0;
+    c += (a ^ (d | ~b)) + blocks[2] + 718787259;
+    c = (c << 15 | c >>> 17) + d << 0;
+    b += (d ^ (c | ~a)) + blocks[9] - 343485551;
+    b = (b << 21 | b >>> 11) + c << 0;
+
+    if (this.first) {
+      this.h0 = a + 1732584193 << 0;
+      this.h1 = b - 271733879 << 0;
+      this.h2 = c - 1732584194 << 0;
+      this.h3 = d + 271733878 << 0;
+      this.first = false;
+    } else {
+      this.h0 = this.h0 + a << 0;
+      this.h1 = this.h1 + b << 0;
+      this.h2 = this.h2 + c << 0;
+      this.h3 = this.h3 + d << 0;
+    }
+  };
+
+  /**
+   * @method hex
+   * @memberof Md5
+   * @instance
+   * @description Output hash as hex string
+   * @returns {String} Hex string
+   * @see {@link md5.hex}
+   * @example
+   * hash.hex();
+   */
+  Md5.prototype.hex = function () {
+    this.finalize();
+
+    var h0 = this.h0, h1 = this.h1, h2 = this.h2, h3 = this.h3;
+
+    return HEX_CHARS[(h0 >> 4) & 0x0F] + HEX_CHARS[h0 & 0x0F] +
+      HEX_CHARS[(h0 >> 12) & 0x0F] + HEX_CHARS[(h0 >> 8) & 0x0F] +
+      HEX_CHARS[(h0 >> 20) & 0x0F] + HEX_CHARS[(h0 >> 16) & 0x0F] +
+      HEX_CHARS[(h0 >> 28) & 0x0F] + HEX_CHARS[(h0 >> 24) & 0x0F] +
+      HEX_CHARS[(h1 >> 4) & 0x0F] + HEX_CHARS[h1 & 0x0F] +
+      HEX_CHARS[(h1 >> 12) & 0x0F] + HEX_CHARS[(h1 >> 8) & 0x0F] +
+      HEX_CHARS[(h1 >> 20) & 0x0F] + HEX_CHARS[(h1 >> 16) & 0x0F] +
+      HEX_CHARS[(h1 >> 28) & 0x0F] + HEX_CHARS[(h1 >> 24) & 0x0F] +
+      HEX_CHARS[(h2 >> 4) & 0x0F] + HEX_CHARS[h2 & 0x0F] +
+      HEX_CHARS[(h2 >> 12) & 0x0F] + HEX_CHARS[(h2 >> 8) & 0x0F] +
+      HEX_CHARS[(h2 >> 20) & 0x0F] + HEX_CHARS[(h2 >> 16) & 0x0F] +
+      HEX_CHARS[(h2 >> 28) & 0x0F] + HEX_CHARS[(h2 >> 24) & 0x0F] +
+      HEX_CHARS[(h3 >> 4) & 0x0F] + HEX_CHARS[h3 & 0x0F] +
+      HEX_CHARS[(h3 >> 12) & 0x0F] + HEX_CHARS[(h3 >> 8) & 0x0F] +
+      HEX_CHARS[(h3 >> 20) & 0x0F] + HEX_CHARS[(h3 >> 16) & 0x0F] +
+      HEX_CHARS[(h3 >> 28) & 0x0F] + HEX_CHARS[(h3 >> 24) & 0x0F];
+  };
+
+  /**
+   * @method toString
+   * @memberof Md5
+   * @instance
+   * @description Output hash as hex string
+   * @returns {String} Hex string
+   * @see {@link md5.hex}
+   * @example
+   * hash.toString();
+   */
+  Md5.prototype.toString = Md5.prototype.hex;
+
+  /**
+   * @method digest
+   * @memberof Md5
+   * @instance
+   * @description Output hash as bytes array
+   * @returns {Array} Bytes array
+   * @see {@link md5.digest}
+   * @example
+   * hash.digest();
+   */
+  Md5.prototype.digest = function () {
+    this.finalize();
+
+    var h0 = this.h0, h1 = this.h1, h2 = this.h2, h3 = this.h3;
+    return [
+      h0 & 0xFF, (h0 >> 8) & 0xFF, (h0 >> 16) & 0xFF, (h0 >> 24) & 0xFF,
+      h1 & 0xFF, (h1 >> 8) & 0xFF, (h1 >> 16) & 0xFF, (h1 >> 24) & 0xFF,
+      h2 & 0xFF, (h2 >> 8) & 0xFF, (h2 >> 16) & 0xFF, (h2 >> 24) & 0xFF,
+      h3 & 0xFF, (h3 >> 8) & 0xFF, (h3 >> 16) & 0xFF, (h3 >> 24) & 0xFF
+    ];
+  };
+
+  /**
+   * @method array
+   * @memberof Md5
+   * @instance
+   * @description Output hash as bytes array
+   * @returns {Array} Bytes array
+   * @see {@link md5.array}
+   * @example
+   * hash.array();
+   */
+  Md5.prototype.array = Md5.prototype.digest;
+
+  /**
+   * @method arrayBuffer
+   * @memberof Md5
+   * @instance
+   * @description Output hash as ArrayBuffer
+   * @returns {ArrayBuffer} ArrayBuffer
+   * @see {@link md5.arrayBuffer}
+   * @example
+   * hash.arrayBuffer();
+   */
+  Md5.prototype.arrayBuffer = function () {
+    this.finalize();
+
+    var buffer = new ArrayBuffer(16);
+    var blocks = new Uint32Array(buffer);
+    blocks[0] = this.h0;
+    blocks[1] = this.h1;
+    blocks[2] = this.h2;
+    blocks[3] = this.h3;
+    return buffer;
+  };
+
+  /**
+   * @method buffer
+   * @deprecated This maybe confuse with Buffer in node.js. Please use arrayBuffer instead.
+   * @memberof Md5
+   * @instance
+   * @description Output hash as ArrayBuffer
+   * @returns {ArrayBuffer} ArrayBuffer
+   * @see {@link md5.buffer}
+   * @example
+   * hash.buffer();
+   */
+  Md5.prototype.buffer = Md5.prototype.arrayBuffer;
+
+  /**
+   * @method base64
+   * @memberof Md5
+   * @instance
+   * @description Output hash as base64 string
+   * @returns {String} base64 string
+   * @see {@link md5.base64}
+   * @example
+   * hash.base64();
+   */
+  Md5.prototype.base64 = function () {
+    var v1, v2, v3, base64Str = '', bytes = this.array();
+    for (var i = 0; i < 15;) {
+      v1 = bytes[i++];
+      v2 = bytes[i++];
+      v3 = bytes[i++];
+      base64Str += BASE64_ENCODE_CHAR[v1 >>> 2] +
+        BASE64_ENCODE_CHAR[(v1 << 4 | v2 >>> 4) & 63] +
+        BASE64_ENCODE_CHAR[(v2 << 2 | v3 >>> 6) & 63] +
+        BASE64_ENCODE_CHAR[v3 & 63];
+    }
+    v1 = bytes[i];
+    base64Str += BASE64_ENCODE_CHAR[v1 >>> 2] +
+      BASE64_ENCODE_CHAR[(v1 << 4) & 63] +
+      '==';
+    return base64Str;
+  };
+
+  var exports = createMethod();
+
+  if (COMMON_JS) {
+    module.exports = exports;
+  } else {
+    /**
+     * @method md5
+     * @description Md5 hash function, export to global in browsers.
+     * @param {String|Array|Uint8Array|ArrayBuffer} message message to hash
+     * @returns {String} md5 hashes
+     * @example
+     * md5(''); // d41d8cd98f00b204e9800998ecf8427e
+     * md5('The quick brown fox jumps over the lazy dog'); // 9e107d9d372bb6826bd81d3542a419d6
+     * md5('The quick brown fox jumps over the lazy dog.'); // e4d909c290d0fb1ca068ffaddf22cbd0
+     *
+     * // It also supports UTF-8 encoding
+     * md5('中文'); // a7bac2239fcdcb3a067903d8077c4a07
+     *
+     * // It also supports byte `Array`, `Uint8Array`, `ArrayBuffer`
+     * md5([]); // d41d8cd98f00b204e9800998ecf8427e
+     * md5(new Uint8Array([])); // d41d8cd98f00b204e9800998ecf8427e
+     */
+    root.md5 = exports;
+    if (AMD) {
+      undefined(function () {
+        return exports;
+      });
+    }
+  }
+})();
+});
+
+/*
+* Author    Jonathan Lurie - http://me.jonahanlurie.fr
+*
+* License   MIT
+* Link      https://github.com/jonathanlurie/pixpipejs
+* Lab       MCIN - Montreal Neurological Institute
+*/
+
 /**
 * A PixBinEncoder instance takes an Image2D or Image3D as input with `addInput(...)`
 * and encode it so that it can be saved as a *.pixp file.
@@ -20839,77 +22862,509 @@ class EegModDecoder extends Filter {
 * **Usage**
 * - [examples/savePixpFile.html](../examples/savePixpFile.html)
 */
-class PixBinEncoder extends Filter {
+class PixBinEncoder$1 {
   constructor(){
-    super();
-    this.setMetadata("filename", "untitled.pixb");
-    this.setMetadata("extension", "pixb");
+    this._compress = true;
+    this.reset();
+  }
 
+
+  /**
+  * [static]
+  * the first sequence of bytes for a pixbin file is this ASCII string
+  */
+  static MAGIC_NUMBER(){
+    return "PIXPIPE_PIXBIN";
   }
 
 
   /**
   * [PRIVATE]
-  * overwrite the original from Filter
-  * Only accept Image2D and Image3D
+  * reset inputs and inputs
   */
-  hasValidInput(){
-    var input = this._getInput();
-    return input && ( input.isOfType(Image2D.TYPE()) || input.isOfType(Image3D.TYPE()) );
+  reset(){
+    this._inputs = [];
+    this._output = null;
+    this._options = {
+      madeWith: "pixbincodec_js",
+      userObject: null,
+      description: null,
+    };
+  }
+
+
+  /**
+  * Set a boolean to secify if data should be compressed or not
+  * @param {Boolean} b - true to compress, false to not compress
+  */
+  enableDataCompression( b ){
+    this._compress = b;
+  }
+
+
+  /**
+  * Overwrite one of the default options.
+  * @param {String} optionName - one of "madeWith" (default: "pixbincodec_js"), "userObject" (default: null), "description" (default: null)
+  */
+  setOption( optionName, value ){
+    if( optionName in this._options){
+      this._options[ optionName ] = value;
+    }
+  }
+
+
+  /**
+  * Add an input. Multiple inputs can be added.
+  * @param {Object} obj - an object that comtain _data and _metadata
+  */
+  addInput( obj ){
+    if(PixBlockEncoder.isGoodCandidate( obj )){
+      this._inputs.push( obj );
+    }
+  }
+
+
+  /**
+  * Get the output
+  * @return {ArrayBuffer} the encoded data as a buffer
+  */
+  getOutput(){
+    return this._output;
+  }
+
+
+  /**
+  * Launch the encoding
+  */
+  run(){
+    if( !this._inputs.length ){
+      console.warn("The encoder must be specified at least one input.");
+      return;
+    }
+
+    var that = this;
+    var today = new Date();
+    var isLittleEndian = CodecUtils.isPlatformLittleEndian();
+    var blockEncoder = new PixBlockEncoder();
+
+    // this object is the JSON description at the begining of a PixBin
+    var pixBinIndex = {
+      date: today.toISOString(),
+      createdWith: this._options.madeWith,
+      description: this._options.description,
+      userObject: this._options.userObject,
+      pixblocksInfo: []
+    };
+
+    // array of binary blocks (each are Uint8Array or ArrayBuffer)
+    var pixBlocks = [];
+
+    // just a convenient shortcut
+    var pixblocksInfo = pixBinIndex.pixblocksInfo;
+
+
+    this._inputs.forEach(function( input, index ){
+      blockEncoder.setInput( input );
+      blockEncoder.enableDataCompression( that._compress );
+      blockEncoder.run();
+
+      var encodedBlock = blockEncoder.getOutput();
+
+      if( !encodedBlock ){
+        console.warn("The input of index " + index + " could not be encoded as a PixBlock.");
+        return;
+      }
+
+      // adding an entry to the PixBin index
+      var pixBinIndexEntry = {
+        type        : input.constructor.name,
+        description : ( "description" in input._metadata ) ? input._metadata.description : null,
+        byteLength  : encodedBlock.byteLength,
+        checksum    : md5$2( encodedBlock ),
+      };
+
+      pixblocksInfo.push( pixBinIndexEntry );
+      pixBlocks.push( encodedBlock );
+    });
+
+
+    if( !pixBlocks.length ){
+      console.warn("No input was compatible for PixBlock encoding.");
+    }
+
+    // Building the header ArrayBuffer of the file. It contains:
+    // - A ASCII string "pixpipe". 7 x Uint8 of charcodes (7 bytes)
+    // - A flag for encoding endianess, 0: big, 1: little. 1 x Uint8 (1 byte)
+    // - The byte length of the PixBin meta binary object. 1 x Uint32 (4 bytes)
+
+    // encoding the meta object into an ArrayBuffer
+    var pixBinIndexBinaryString = CodecUtils.objectToArrayBuffer(pixBinIndex);
+    var magicNumber = PixBinEncoder$1.MAGIC_NUMBER();
+
+    // the +5 stands for 1 endiannes byte (Uint8) + 4 bytes (1xUint32) of header length
+    var binPrimer = new ArrayBuffer( magicNumber.length + 5 );
+    var binPrimerView = new DataView( binPrimer );
+
+    CodecUtils.setString8InBuffer( magicNumber, binPrimer );
+    binPrimerView.setUint8( magicNumber.length, (+isLittleEndian));
+    binPrimerView.setUint32( magicNumber.length + 1, pixBinIndexBinaryString.byteLength, isLittleEndian );
+
+    var allBuffers = [binPrimer, pixBinIndexBinaryString].concat( pixBlocks );
+    this._output = CodecUtils.mergeBuffers( allBuffers );
+
+  }
+
+
+
+} /* END of class PixBinEncoder */
+
+/*
+* Author    Jonathan Lurie - http://me.jonahanlurie.fr
+*
+* License   MIT
+* Link      https://github.com/jonathanlurie/pixpipejs
+* Lab       MCIN - Montreal Neurological Institute
+*/
+
+
+/**
+* A PixBinDecoder instance decodes a *.pixp file and output an Image2D or Image3D.
+* The input, specified by `.addInput(...)` must be an ArrayBuffer
+* (from an `UrlToArrayBufferFilter`, an `UrlToArrayBufferReader` or anothrer source ).
+*
+* **Usage**
+* - [examples/pixpFileToImage2D.html](../examples/pixpFileToImage2D.html)
+*/
+class PixBinDecoder {
+  constructor(){
+    this._verifyChecksum = false;
+    this._input = null;
+    this._output = null;
+    this._binMeta = null;
+    this._parsingInfo = {
+      offsetToReachFirstBlock: -1,
+      isLittleEndian: -1,
+    };
+    
+    this._decodedBlocks = {};
+    this._isValid = false;
+    this.reset();
+  }
+
+
+  /**
+  * Specify an input
+  * @param {ArrayBuffer} buff - the input
+  */
+  setInput( buff ){
+    this.reset();
+    
+    if( buff instanceof ArrayBuffer ){
+      this._input = buff;
+      this._isValid = this._parseIndex();
+    }
+  }
+
+
+  /**
+  * To be called after setInput. Tells if the buffer loaded is valid or not.
+  * @return {Boolean} true if valid, false if not.
+  */
+  isValid(){
+    return this._isValid;
+  }
+
+  /**
+  * Get the the decoded output
+  * @return {Object} a decoded object
+  */
+  getOutput(){
+    return this._output;
+  }
+  
+  
+  /**
+  * Get the number of blocks encoded in this PixBin file
+  * @return {Number}
+  */
+  getNumberOfBlocks(){
+    return this._binMeta.pixblocksInfo.length;
+  }
+
+
+  /**
+  * Get the creation date of the file in the ISO8601 format
+  * @return {String} the data
+  */
+  getBinCreationDate(){
+    return this._binMeta.date;
+  }
+
+
+  /**
+  * Get the description of the PixBin file
+  * @return {String} the description
+  */
+  getBinDescription(){
+    return this._binMeta.description;
+  }
+  
+  
+  /**
+  * The userObject is a generic container added to the PixBin. It can carry all sorts of data.
+  * If not specified during encoding, it's null.
+  * @return {Object} the userObject
+  */
+  getBinUserObject(){
+    return this._binMeta.userObject;
+  }
+
+
+  /**
+  * Get the description of the block at the given index
+  * @param {Number} n - the index of the block
+  * @return {String} the description of this block
+  */
+  getBlockDescription( n ){
+    if( n<0 || n >= this.getNumberOfBlocks() ){
+      console.warn("The block index is out of range.");
+      return null;
+    }
+    return this._binMeta.pixblocksInfo[n].description;
+  }
+  
+  
+  /**
+  * Get the original type of the block. Convenient for knowing how to rebuild
+  * the object in its original form.
+  * @param {Number} n - the index of the block
+  * @return {String} the type ( comes from constructor.name )
+  */
+  getBlockType( n ){
+    if( n<0 || n >= this.getNumberOfBlocks() ){
+      console.warn("The block index is out of range.");
+      return null;
+    }
+    return this._binMeta.pixblocksInfo[n].type;
+  }
+
+
+  /**
+  * reset I/O and data to query 
+  */
+  reset(){
+    this._isValid = false;
+    this._input = null;
+    this._output = null;
+    this._binMeta = null;
+    this._parsingInfo = {
+      offsetToReachFirstBlock: -1,
+      isLittleEndian: -1,
+    };
+    this._decodedBlocks = {};
+  }
+
+
+  /**
+  * Specify wether or not  the bin decoder must perform a checksum verification
+  * for each block to be decoded.
+  * @param {Boolean} b - true to perfom verification, false to skip it (default: false)
+  */
+  enableBlockVerification( b ){
+    this._verifyChecksum = b;
+  }
+
+
+  /**
+  * [PRIVATE]
+  * 
+  */
+  _parseIndex(){
+    var input = this._input;
+
+    if( !input ){
+      console.warn("Input cannot be null");
+      return false;
+    }
+
+    var inputByteLength = input.byteLength;
+    var magicNumberToExpect = PixBinEncoder$1.MAGIC_NUMBER();
+
+    // control 1: the file must be large enough
+    if( inputByteLength < (magicNumberToExpect.length + 5) ){
+      console.warn("This buffer does not match a PixBin file.");
+      return false;
+    }
+
+    var view = new DataView( input );
+    var movingByteOffset = 0;
+    var magicNumber = CodecUtils.getString8FromBuffer(input, magicNumberToExpect.length );
+
+    // control 2: the magic number
+    if( magicNumber !== magicNumberToExpect){
+      console.warn("This file is not of PixBin type. (wrong magic number)");
+      return false;
+    }
+
+    movingByteOffset = magicNumberToExpect.length;
+    var isLittleEndian = view.getUint8(movingByteOffset);
+
+    // control 3: the endianess must be 0 or 1
+    if(isLittleEndian != 0 && isLittleEndian != 1){
+      console.warn("This file is not of PixBin type. (wrong endianess code)");
+      return false;
+    }
+
+    movingByteOffset += 1;
+    var pixBinIndexBinaryStringByteLength = view.getUint32( movingByteOffset, isLittleEndian );
+    movingByteOffset += 4;
+    var pixBinIndexObj = CodecUtils.ArrayBufferToObject( input.slice(movingByteOffset, movingByteOffset + pixBinIndexBinaryStringByteLength));
+    movingByteOffset += pixBinIndexBinaryStringByteLength;
+    
+    this._parsingInfo.offsetToReachFirstBlock = movingByteOffset;
+    this._parsingInfo.isLittleEndian = isLittleEndian;
+    this._binMeta = pixBinIndexObj;
+    
+    return true;
+  }
+  
+  
+  /**
+  * Fetch a block at the given index. The first time it called on a block,
+  * this block will be read from the stream and decoded.
+  * If a block is already decoded, it will be retrieved as is without trying to
+  * re-decode it, unless `forceDecoding` is `true`.
+  * @param {Number} n - the index of the block to fetch
+  * @param {Boolean} forceDecoding - force the decoding even though it was already decoded
+  * @return {Object} the decoded block, containing `_data_`, `_metadata` and `originalBlockType`
+  */
+  fetchBlock( n , forceDecoding=false ){
+    var nbBlocks = this.getNumberOfBlocks();
+    if( n<0 || n >= nbBlocks ){
+      console.warn("The block index is out of range.");
+      return null;
+    }
+    
+    if( n in this._decodedBlocks && !forceDecoding){
+      return this._decodedBlocks[ n ];
+    }
+    
+    var offset = this._parsingInfo.offsetToReachFirstBlock;
+    
+    for(var i=0; i<n; i++){
+      offset += this._binMeta.pixblocksInfo[i].byteLength;
+    }
+    
+    var blockInfo = this._binMeta.pixblocksInfo[n];
+    var pixBlockBuff = this._input.slice(offset, offset + blockInfo.byteLength);
+    
+    if( this._verifyChecksum && md5$2( pixBlockBuff ) !== blockInfo.checksum){
+      console.warn("The block #" + n + " is corrupted.");
+      return null;
+    }
+
+    var blockDecoder = new PixBlockDecoder();
+    blockDecoder.setInput( pixBlockBuff );
+    blockDecoder.run();
+    var decodedBlock = blockDecoder.getOutput();
+    
+    if( !decodedBlock ){
+      console.warn("The block #" + n + " could not be decoded.");
+      return null;
+    }
+    
+    this._decodedBlocks[ n ] = decodedBlock;
+    return decodedBlock;
+  }
+
+
+} /* END of class PixBinDecoder */
+
+/*
+* Author    Jonathan Lurie - http://me.jonahanlurie.fr
+*
+* License   MIT
+* Link      https://github.com/jonathanlurie/pixpipejs
+* Lab       MCIN - Montreal Neurological Institute
+*/
+
+/*
+* Author    Jonathan Lurie - http://me.jonahanlurie.fr
+*
+* License   MIT
+* Link      https://github.com/Pixpipe/pixpipejs
+* Lab       MCIN - Montreal Neurological Institute
+*/
+
+/**
+* A PixBinEncoder instance takes an Image2D or Image3D as input with `addInput(...)`
+* and encode it so that it can be saved as a *.pixp file.
+* An output filename can be specified using `.setMetadata("filename", "yourName.pixp");`,
+* by default, the name is "untitled.pixp".
+* When `update()` is called, a gzip blog is prepared as output[0] and can then be downloaded
+* when calling the method `.download()`. The gzip blob could also be sent over AJAX
+* using a third party library.
+*
+* **Usage**
+* - [examples/savePixpFile.html](../examples/savePixpFile.html)
+*/
+class PixBinEncoder$$1 extends Filter {
+  constructor(){
+    super();
+
+    // define if the encoder should compress the data, default: yes
+    this.setMetadata("compress", true);
+    
+    // to be transmitted to the encoder
+    this.setMetadata("description", "no description");
+    this.setMetadata("madeWith", "Pixpipejs");
+    this.setMetadata("userObject", null);
+  }
+
+
+  /**
+  * [static]
+  * the first sequence of bytes for a pixbin file is this ASCII string
+  */
+  static MAGIC_NUMBER(){
+    return "PIXPIPE_PIXBIN";
   }
 
 
   _run(){
-
-    if(! this.hasValidInput() ){
-      console.warn("PixBinEncoder can only encode Image2D and Image3D.");
-      return;
-    }
-
-    var input = this._getInput();
-
-    var pixBinMetadata = {
-      dataType: input.getData().constructor.name, // typed array type
-      pixpipeType: input.constructor.name, // most likely "Image2D", "Image3D", "MniVolume", "LineString", etc.
-      metadata: input.getMetadataCopy(),  // Image2D/Image3D._metadata
-    };
-
-    // this is a typed array
-    var data = input.getData();
+    var that = this;
     
-    var metadataJsonString = JSON.stringify( pixBinMetadata );
-    var metadataByteArray = new Uint8Array( metadataJsonString.length );
+    var encoder = new PixBinEncoder$1();
     
-    // converting the json string into a byte stream
-    for(var i = 0; i < metadataJsonString.length; ++i)
-      metadataByteArray[i] = metadataJsonString.charCodeAt(i);
+    // specifying some options
+    encoder.enableDataCompression( this.getMetadata("compress") );
+    encoder.setOption( 
+      "userObject",
+      this.getMetadata("userObject")
+    );
+    encoder.setOption( 
+      "description",
+      this.getMetadata("description")
+    );
+    encoder.setOption( 
+      "madeWith",
+      this.getMetadata("madeWith")
+    );
 
-    // creating the buffer
-    var metadataBuffer = new ArrayBuffer( 4 + metadataByteArray.length );
+    this._forEachInput(function( category, input ){
+      encoder.addInput( input );
+    });
 
-    // the data view is used to write into the buffer
-    var view = new DataView( metadataBuffer );
+    encoder.run();
     
-    var offsetFromHere = 0;
-    
-    // write the size of the metadata string
-    view.setUint32(offsetFromHere, metadataByteArray.length );
-    
-    // write the metadata themselves
-    offsetFromHere += 4;
-    for(var i=0; i<metadataByteArray.length; i++){
-      view.setUint8(offsetFromHere, metadataByteArray[i] );
-      offsetFromHere++;
-    }
-
-    // making a blob to be saved
-    this._output[0] = new Blob([metadataBuffer, data], {type: 'application/octet-binary'} );
+    this._output[ 0 ] = encoder.getOutput();
   }
 
 
   /**
   * Download the generated file
   */
+  /*
   download(){
     var output = this.getOutput();
 
@@ -20919,8 +23374,2575 @@ class PixBinEncoder extends Filter {
       console.warn("No output computed yet.");
     }
   }
+  */
 
 } /* END of class PixBinEncoder */
+
+/*
+* Author    Jonathan Lurie - http://me.jonahanlurie.fr
+*
+* License   MIT
+* Link      https://github.com/Pixpipe/pixpipejs
+* Lab       MCIN - Montreal Neurological Institute
+*/
+
+/**
+* A PixBinDecoder instance decodes a *.pixp file and output an Image2D or Image3D.
+* The input, specified by `.addInput(...)` must be an ArrayBuffer
+* (from an `UrlToArrayBufferFilter`, an `UrlToArrayBufferReader` or anothrer source ).
+*
+* **Usage**
+* - [examples/pixpFileToImage2D.html](../examples/pixpFileToImage2D.html)
+*/
+class PixBinDecoder$1 extends Filter {
+  constructor(){
+    super();
+    this.addInputValidator(0, ArrayBuffer);
+    this.setMetadata("blockVerification", false);
+  }
+
+
+  _run(){
+    if(! this.hasValidInput() ){
+      console.warn("PixBinDecoder can only decode ArrayBuffer.");
+      return;
+    }
+  
+    var input = this._getInput();
+    var decoder = new PixBinDecoder();
+    decoder.enableBlockVerification( this.getMetadata("blockVerification") );
+    decoder.setInput( input );
+    
+    // dont go further is buffer is not valid
+    if( !decoder.isValid() ){
+      console.warn("The input buffer is invalid.");
+      return;
+    }
+    
+    var pixBinMetaObj = {
+      creationDate: decoder.getBinCreationDate(),
+      description: decoder.getBinDescription(),
+      userObject: decoder.getBinUserObject(),
+      numberOfBlocks: decoder.getNumberOfBlocks()
+    };
+    
+    // perform the decoding
+    var numberOfBlocks = decoder.getNumberOfBlocks();
+    
+    for(var i=0; i<numberOfBlocks; i++){
+      var blockType = decoder.getBlockType( i );
+      var block = decoder.fetchBlock( i );
+      var output = null;
+      var objectConstructor = CoreTypes.getCoreType( blockType );
+      
+      // the encoded object matches to a pixpipe type
+      if( objectConstructor ){
+        output = new objectConstructor();
+        output.setRawData( block._data );
+        output.setRawMetadata( block._metadata );
+      }
+      // Fallback on a not-pixpipe type
+      else{
+        var globalObject = CodecUtils.getGlobalObject();
+        if( blockType in globalObject ){
+          output = new globalObject[ blockType ]();
+          output._metadata = block._metadata;
+          output._data = block._data;
+        }
+        
+      }
+      
+      this._output[ i ] = output;
+    }
+    
+    // adding the metadata only if there are blocks
+    if( numberOfBlocks ){
+      this._output[ "PixBinMeta" ] = pixBinMetaObj;
+    }
+  }
+
+
+} /* END of class PixBinDecoder */
+
+/*
+  Copyright (c) 2008, Adobe Systems Incorporated
+  All rights reserved.
+
+  Redistribution and use in source and binary forms, with or without 
+  modification, are permitted provided that the following conditions are
+  met:
+
+  * Redistributions of source code must retain the above copyright notice, 
+    this list of conditions and the following disclaimer.
+  
+  * Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the 
+    documentation and/or other materials provided with the distribution.
+  
+  * Neither the name of Adobe Systems Incorporated nor the names of its 
+    contributors may be used to endorse or promote products derived from 
+    this software without specific prior written permission.
+
+  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
+  IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+  THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+  PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR 
+  CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+  EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+  PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+  PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+  LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*/
+/*
+JPEG encoder ported to JavaScript and optimized by Andreas Ritter, www.bytestrom.eu, 11/2009
+
+Basic GUI blocking jpeg encoder
+*/
+
+var btoa = btoa || function(buf) {
+  return new Buffer(buf).toString('base64');
+};
+
+function JPEGEncoder(quality) {
+  var self = this;
+	var fround = Math.round;
+	var ffloor = Math.floor;
+	var YTable = new Array(64);
+	var UVTable = new Array(64);
+	var fdtbl_Y = new Array(64);
+	var fdtbl_UV = new Array(64);
+	var YDC_HT;
+	var UVDC_HT;
+	var YAC_HT;
+	var UVAC_HT;
+	
+	var bitcode = new Array(65535);
+	var category = new Array(65535);
+	var outputfDCTQuant = new Array(64);
+	var DU = new Array(64);
+	var byteout = [];
+	var bytenew = 0;
+	var bytepos = 7;
+	
+	var YDU = new Array(64);
+	var UDU = new Array(64);
+	var VDU = new Array(64);
+	var clt = new Array(256);
+	var RGB_YUV_TABLE = new Array(2048);
+	var currentQuality;
+	
+	var ZigZag = [
+			 0, 1, 5, 6,14,15,27,28,
+			 2, 4, 7,13,16,26,29,42,
+			 3, 8,12,17,25,30,41,43,
+			 9,11,18,24,31,40,44,53,
+			10,19,23,32,39,45,52,54,
+			20,22,33,38,46,51,55,60,
+			21,34,37,47,50,56,59,61,
+			35,36,48,49,57,58,62,63
+		];
+	
+	var std_dc_luminance_nrcodes = [0,0,1,5,1,1,1,1,1,1,0,0,0,0,0,0,0];
+	var std_dc_luminance_values = [0,1,2,3,4,5,6,7,8,9,10,11];
+	var std_ac_luminance_nrcodes = [0,0,2,1,3,3,2,4,3,5,5,4,4,0,0,1,0x7d];
+	var std_ac_luminance_values = [
+			0x01,0x02,0x03,0x00,0x04,0x11,0x05,0x12,
+			0x21,0x31,0x41,0x06,0x13,0x51,0x61,0x07,
+			0x22,0x71,0x14,0x32,0x81,0x91,0xa1,0x08,
+			0x23,0x42,0xb1,0xc1,0x15,0x52,0xd1,0xf0,
+			0x24,0x33,0x62,0x72,0x82,0x09,0x0a,0x16,
+			0x17,0x18,0x19,0x1a,0x25,0x26,0x27,0x28,
+			0x29,0x2a,0x34,0x35,0x36,0x37,0x38,0x39,
+			0x3a,0x43,0x44,0x45,0x46,0x47,0x48,0x49,
+			0x4a,0x53,0x54,0x55,0x56,0x57,0x58,0x59,
+			0x5a,0x63,0x64,0x65,0x66,0x67,0x68,0x69,
+			0x6a,0x73,0x74,0x75,0x76,0x77,0x78,0x79,
+			0x7a,0x83,0x84,0x85,0x86,0x87,0x88,0x89,
+			0x8a,0x92,0x93,0x94,0x95,0x96,0x97,0x98,
+			0x99,0x9a,0xa2,0xa3,0xa4,0xa5,0xa6,0xa7,
+			0xa8,0xa9,0xaa,0xb2,0xb3,0xb4,0xb5,0xb6,
+			0xb7,0xb8,0xb9,0xba,0xc2,0xc3,0xc4,0xc5,
+			0xc6,0xc7,0xc8,0xc9,0xca,0xd2,0xd3,0xd4,
+			0xd5,0xd6,0xd7,0xd8,0xd9,0xda,0xe1,0xe2,
+			0xe3,0xe4,0xe5,0xe6,0xe7,0xe8,0xe9,0xea,
+			0xf1,0xf2,0xf3,0xf4,0xf5,0xf6,0xf7,0xf8,
+			0xf9,0xfa
+		];
+	
+	var std_dc_chrominance_nrcodes = [0,0,3,1,1,1,1,1,1,1,1,1,0,0,0,0,0];
+	var std_dc_chrominance_values = [0,1,2,3,4,5,6,7,8,9,10,11];
+	var std_ac_chrominance_nrcodes = [0,0,2,1,2,4,4,3,4,7,5,4,4,0,1,2,0x77];
+	var std_ac_chrominance_values = [
+			0x00,0x01,0x02,0x03,0x11,0x04,0x05,0x21,
+			0x31,0x06,0x12,0x41,0x51,0x07,0x61,0x71,
+			0x13,0x22,0x32,0x81,0x08,0x14,0x42,0x91,
+			0xa1,0xb1,0xc1,0x09,0x23,0x33,0x52,0xf0,
+			0x15,0x62,0x72,0xd1,0x0a,0x16,0x24,0x34,
+			0xe1,0x25,0xf1,0x17,0x18,0x19,0x1a,0x26,
+			0x27,0x28,0x29,0x2a,0x35,0x36,0x37,0x38,
+			0x39,0x3a,0x43,0x44,0x45,0x46,0x47,0x48,
+			0x49,0x4a,0x53,0x54,0x55,0x56,0x57,0x58,
+			0x59,0x5a,0x63,0x64,0x65,0x66,0x67,0x68,
+			0x69,0x6a,0x73,0x74,0x75,0x76,0x77,0x78,
+			0x79,0x7a,0x82,0x83,0x84,0x85,0x86,0x87,
+			0x88,0x89,0x8a,0x92,0x93,0x94,0x95,0x96,
+			0x97,0x98,0x99,0x9a,0xa2,0xa3,0xa4,0xa5,
+			0xa6,0xa7,0xa8,0xa9,0xaa,0xb2,0xb3,0xb4,
+			0xb5,0xb6,0xb7,0xb8,0xb9,0xba,0xc2,0xc3,
+			0xc4,0xc5,0xc6,0xc7,0xc8,0xc9,0xca,0xd2,
+			0xd3,0xd4,0xd5,0xd6,0xd7,0xd8,0xd9,0xda,
+			0xe2,0xe3,0xe4,0xe5,0xe6,0xe7,0xe8,0xe9,
+			0xea,0xf2,0xf3,0xf4,0xf5,0xf6,0xf7,0xf8,
+			0xf9,0xfa
+		];
+	
+	function initQuantTables(sf){
+			var YQT = [
+				16, 11, 10, 16, 24, 40, 51, 61,
+				12, 12, 14, 19, 26, 58, 60, 55,
+				14, 13, 16, 24, 40, 57, 69, 56,
+				14, 17, 22, 29, 51, 87, 80, 62,
+				18, 22, 37, 56, 68,109,103, 77,
+				24, 35, 55, 64, 81,104,113, 92,
+				49, 64, 78, 87,103,121,120,101,
+				72, 92, 95, 98,112,100,103, 99
+			];
+			
+			for (var i = 0; i < 64; i++) {
+				var t = ffloor((YQT[i]*sf+50)/100);
+				if (t < 1) {
+					t = 1;
+				} else if (t > 255) {
+					t = 255;
+				}
+				YTable[ZigZag[i]] = t;
+			}
+			var UVQT = [
+				17, 18, 24, 47, 99, 99, 99, 99,
+				18, 21, 26, 66, 99, 99, 99, 99,
+				24, 26, 56, 99, 99, 99, 99, 99,
+				47, 66, 99, 99, 99, 99, 99, 99,
+				99, 99, 99, 99, 99, 99, 99, 99,
+				99, 99, 99, 99, 99, 99, 99, 99,
+				99, 99, 99, 99, 99, 99, 99, 99,
+				99, 99, 99, 99, 99, 99, 99, 99
+			];
+			for (var j = 0; j < 64; j++) {
+				var u = ffloor((UVQT[j]*sf+50)/100);
+				if (u < 1) {
+					u = 1;
+				} else if (u > 255) {
+					u = 255;
+				}
+				UVTable[ZigZag[j]] = u;
+			}
+			var aasf = [
+				1.0, 1.387039845, 1.306562965, 1.175875602,
+				1.0, 0.785694958, 0.541196100, 0.275899379
+			];
+			var k = 0;
+			for (var row = 0; row < 8; row++)
+			{
+				for (var col = 0; col < 8; col++)
+				{
+					fdtbl_Y[k]  = (1.0 / (YTable [ZigZag[k]] * aasf[row] * aasf[col] * 8.0));
+					fdtbl_UV[k] = (1.0 / (UVTable[ZigZag[k]] * aasf[row] * aasf[col] * 8.0));
+					k++;
+				}
+			}
+		}
+		
+		function computeHuffmanTbl(nrcodes, std_table){
+			var codevalue = 0;
+			var pos_in_table = 0;
+			var HT = new Array();
+			for (var k = 1; k <= 16; k++) {
+				for (var j = 1; j <= nrcodes[k]; j++) {
+					HT[std_table[pos_in_table]] = [];
+					HT[std_table[pos_in_table]][0] = codevalue;
+					HT[std_table[pos_in_table]][1] = k;
+					pos_in_table++;
+					codevalue++;
+				}
+				codevalue*=2;
+			}
+			return HT;
+		}
+		
+		function initHuffmanTbl()
+		{
+			YDC_HT = computeHuffmanTbl(std_dc_luminance_nrcodes,std_dc_luminance_values);
+			UVDC_HT = computeHuffmanTbl(std_dc_chrominance_nrcodes,std_dc_chrominance_values);
+			YAC_HT = computeHuffmanTbl(std_ac_luminance_nrcodes,std_ac_luminance_values);
+			UVAC_HT = computeHuffmanTbl(std_ac_chrominance_nrcodes,std_ac_chrominance_values);
+		}
+	
+		function initCategoryNumber()
+		{
+			var nrlower = 1;
+			var nrupper = 2;
+			for (var cat = 1; cat <= 15; cat++) {
+				//Positive numbers
+				for (var nr = nrlower; nr<nrupper; nr++) {
+					category[32767+nr] = cat;
+					bitcode[32767+nr] = [];
+					bitcode[32767+nr][1] = cat;
+					bitcode[32767+nr][0] = nr;
+				}
+				//Negative numbers
+				for (var nrneg =-(nrupper-1); nrneg<=-nrlower; nrneg++) {
+					category[32767+nrneg] = cat;
+					bitcode[32767+nrneg] = [];
+					bitcode[32767+nrneg][1] = cat;
+					bitcode[32767+nrneg][0] = nrupper-1+nrneg;
+				}
+				nrlower <<= 1;
+				nrupper <<= 1;
+			}
+		}
+		
+		function initRGBYUVTable() {
+			for(var i = 0; i < 256;i++) {
+				RGB_YUV_TABLE[i]      		=  19595 * i;
+				RGB_YUV_TABLE[(i+ 256)>>0] 	=  38470 * i;
+				RGB_YUV_TABLE[(i+ 512)>>0] 	=   7471 * i + 0x8000;
+				RGB_YUV_TABLE[(i+ 768)>>0] 	= -11059 * i;
+				RGB_YUV_TABLE[(i+1024)>>0] 	= -21709 * i;
+				RGB_YUV_TABLE[(i+1280)>>0] 	=  32768 * i + 0x807FFF;
+				RGB_YUV_TABLE[(i+1536)>>0] 	= -27439 * i;
+				RGB_YUV_TABLE[(i+1792)>>0] 	= - 5329 * i;
+			}
+		}
+		
+		// IO functions
+		function writeBits(bs)
+		{
+			var value = bs[0];
+			var posval = bs[1]-1;
+			while ( posval >= 0 ) {
+				if (value & (1 << posval) ) {
+					bytenew |= (1 << bytepos);
+				}
+				posval--;
+				bytepos--;
+				if (bytepos < 0) {
+					if (bytenew == 0xFF) {
+						writeByte(0xFF);
+						writeByte(0);
+					}
+					else {
+						writeByte(bytenew);
+					}
+					bytepos=7;
+					bytenew=0;
+				}
+			}
+		}
+	
+		function writeByte(value)
+		{
+			//byteout.push(clt[value]); // write char directly instead of converting later
+      byteout.push(value);
+		}
+	
+		function writeWord(value)
+		{
+			writeByte((value>>8)&0xFF);
+			writeByte((value   )&0xFF);
+		}
+		
+		// DCT & quantization core
+		function fDCTQuant(data, fdtbl)
+		{
+			var d0, d1, d2, d3, d4, d5, d6, d7;
+			/* Pass 1: process rows. */
+			var dataOff=0;
+			var i;
+			var I8 = 8;
+			var I64 = 64;
+			for (i=0; i<I8; ++i)
+			{
+				d0 = data[dataOff];
+				d1 = data[dataOff+1];
+				d2 = data[dataOff+2];
+				d3 = data[dataOff+3];
+				d4 = data[dataOff+4];
+				d5 = data[dataOff+5];
+				d6 = data[dataOff+6];
+				d7 = data[dataOff+7];
+				
+				var tmp0 = d0 + d7;
+				var tmp7 = d0 - d7;
+				var tmp1 = d1 + d6;
+				var tmp6 = d1 - d6;
+				var tmp2 = d2 + d5;
+				var tmp5 = d2 - d5;
+				var tmp3 = d3 + d4;
+				var tmp4 = d3 - d4;
+	
+				/* Even part */
+				var tmp10 = tmp0 + tmp3;	/* phase 2 */
+				var tmp13 = tmp0 - tmp3;
+				var tmp11 = tmp1 + tmp2;
+				var tmp12 = tmp1 - tmp2;
+	
+				data[dataOff] = tmp10 + tmp11; /* phase 3 */
+				data[dataOff+4] = tmp10 - tmp11;
+	
+				var z1 = (tmp12 + tmp13) * 0.707106781; /* c4 */
+				data[dataOff+2] = tmp13 + z1; /* phase 5 */
+				data[dataOff+6] = tmp13 - z1;
+	
+				/* Odd part */
+				tmp10 = tmp4 + tmp5; /* phase 2 */
+				tmp11 = tmp5 + tmp6;
+				tmp12 = tmp6 + tmp7;
+	
+				/* The rotator is modified from fig 4-8 to avoid extra negations. */
+				var z5 = (tmp10 - tmp12) * 0.382683433; /* c6 */
+				var z2 = 0.541196100 * tmp10 + z5; /* c2-c6 */
+				var z4 = 1.306562965 * tmp12 + z5; /* c2+c6 */
+				var z3 = tmp11 * 0.707106781; /* c4 */
+	
+				var z11 = tmp7 + z3;	/* phase 5 */
+				var z13 = tmp7 - z3;
+	
+				data[dataOff+5] = z13 + z2;	/* phase 6 */
+				data[dataOff+3] = z13 - z2;
+				data[dataOff+1] = z11 + z4;
+				data[dataOff+7] = z11 - z4;
+	
+				dataOff += 8; /* advance pointer to next row */
+			}
+	
+			/* Pass 2: process columns. */
+			dataOff = 0;
+			for (i=0; i<I8; ++i)
+			{
+				d0 = data[dataOff];
+				d1 = data[dataOff + 8];
+				d2 = data[dataOff + 16];
+				d3 = data[dataOff + 24];
+				d4 = data[dataOff + 32];
+				d5 = data[dataOff + 40];
+				d6 = data[dataOff + 48];
+				d7 = data[dataOff + 56];
+				
+				var tmp0p2 = d0 + d7;
+				var tmp7p2 = d0 - d7;
+				var tmp1p2 = d1 + d6;
+				var tmp6p2 = d1 - d6;
+				var tmp2p2 = d2 + d5;
+				var tmp5p2 = d2 - d5;
+				var tmp3p2 = d3 + d4;
+				var tmp4p2 = d3 - d4;
+	
+				/* Even part */
+				var tmp10p2 = tmp0p2 + tmp3p2;	/* phase 2 */
+				var tmp13p2 = tmp0p2 - tmp3p2;
+				var tmp11p2 = tmp1p2 + tmp2p2;
+				var tmp12p2 = tmp1p2 - tmp2p2;
+	
+				data[dataOff] = tmp10p2 + tmp11p2; /* phase 3 */
+				data[dataOff+32] = tmp10p2 - tmp11p2;
+	
+				var z1p2 = (tmp12p2 + tmp13p2) * 0.707106781; /* c4 */
+				data[dataOff+16] = tmp13p2 + z1p2; /* phase 5 */
+				data[dataOff+48] = tmp13p2 - z1p2;
+	
+				/* Odd part */
+				tmp10p2 = tmp4p2 + tmp5p2; /* phase 2 */
+				tmp11p2 = tmp5p2 + tmp6p2;
+				tmp12p2 = tmp6p2 + tmp7p2;
+	
+				/* The rotator is modified from fig 4-8 to avoid extra negations. */
+				var z5p2 = (tmp10p2 - tmp12p2) * 0.382683433; /* c6 */
+				var z2p2 = 0.541196100 * tmp10p2 + z5p2; /* c2-c6 */
+				var z4p2 = 1.306562965 * tmp12p2 + z5p2; /* c2+c6 */
+				var z3p2 = tmp11p2 * 0.707106781; /* c4 */
+	
+				var z11p2 = tmp7p2 + z3p2;	/* phase 5 */
+				var z13p2 = tmp7p2 - z3p2;
+	
+				data[dataOff+40] = z13p2 + z2p2; /* phase 6 */
+				data[dataOff+24] = z13p2 - z2p2;
+				data[dataOff+ 8] = z11p2 + z4p2;
+				data[dataOff+56] = z11p2 - z4p2;
+	
+				dataOff++; /* advance pointer to next column */
+			}
+	
+			// Quantize/descale the coefficients
+			var fDCTQuant;
+			for (i=0; i<I64; ++i)
+			{
+				// Apply the quantization and scaling factor & Round to nearest integer
+				fDCTQuant = data[i]*fdtbl[i];
+				outputfDCTQuant[i] = (fDCTQuant > 0.0) ? ((fDCTQuant + 0.5)|0) : ((fDCTQuant - 0.5)|0);
+				//outputfDCTQuant[i] = fround(fDCTQuant);
+
+			}
+			return outputfDCTQuant;
+		}
+		
+		function writeAPP0()
+		{
+			writeWord(0xFFE0); // marker
+			writeWord(16); // length
+			writeByte(0x4A); // J
+			writeByte(0x46); // F
+			writeByte(0x49); // I
+			writeByte(0x46); // F
+			writeByte(0); // = "JFIF",'\0'
+			writeByte(1); // versionhi
+			writeByte(1); // versionlo
+			writeByte(0); // xyunits
+			writeWord(1); // xdensity
+			writeWord(1); // ydensity
+			writeByte(0); // thumbnwidth
+			writeByte(0); // thumbnheight
+		}
+	
+		function writeSOF0(width, height)
+		{
+			writeWord(0xFFC0); // marker
+			writeWord(17);   // length, truecolor YUV JPG
+			writeByte(8);    // precision
+			writeWord(height);
+			writeWord(width);
+			writeByte(3);    // nrofcomponents
+			writeByte(1);    // IdY
+			writeByte(0x11); // HVY
+			writeByte(0);    // QTY
+			writeByte(2);    // IdU
+			writeByte(0x11); // HVU
+			writeByte(1);    // QTU
+			writeByte(3);    // IdV
+			writeByte(0x11); // HVV
+			writeByte(1);    // QTV
+		}
+	
+		function writeDQT()
+		{
+			writeWord(0xFFDB); // marker
+			writeWord(132);	   // length
+			writeByte(0);
+			for (var i=0; i<64; i++) {
+				writeByte(YTable[i]);
+			}
+			writeByte(1);
+			for (var j=0; j<64; j++) {
+				writeByte(UVTable[j]);
+			}
+		}
+	
+		function writeDHT()
+		{
+			writeWord(0xFFC4); // marker
+			writeWord(0x01A2); // length
+	
+			writeByte(0); // HTYDCinfo
+			for (var i=0; i<16; i++) {
+				writeByte(std_dc_luminance_nrcodes[i+1]);
+			}
+			for (var j=0; j<=11; j++) {
+				writeByte(std_dc_luminance_values[j]);
+			}
+	
+			writeByte(0x10); // HTYACinfo
+			for (var k=0; k<16; k++) {
+				writeByte(std_ac_luminance_nrcodes[k+1]);
+			}
+			for (var l=0; l<=161; l++) {
+				writeByte(std_ac_luminance_values[l]);
+			}
+	
+			writeByte(1); // HTUDCinfo
+			for (var m=0; m<16; m++) {
+				writeByte(std_dc_chrominance_nrcodes[m+1]);
+			}
+			for (var n=0; n<=11; n++) {
+				writeByte(std_dc_chrominance_values[n]);
+			}
+	
+			writeByte(0x11); // HTUACinfo
+			for (var o=0; o<16; o++) {
+				writeByte(std_ac_chrominance_nrcodes[o+1]);
+			}
+			for (var p=0; p<=161; p++) {
+				writeByte(std_ac_chrominance_values[p]);
+			}
+		}
+	
+		function writeSOS()
+		{
+			writeWord(0xFFDA); // marker
+			writeWord(12); // length
+			writeByte(3); // nrofcomponents
+			writeByte(1); // IdY
+			writeByte(0); // HTY
+			writeByte(2); // IdU
+			writeByte(0x11); // HTU
+			writeByte(3); // IdV
+			writeByte(0x11); // HTV
+			writeByte(0); // Ss
+			writeByte(0x3f); // Se
+			writeByte(0); // Bf
+		}
+		
+		function processDU(CDU, fdtbl, DC, HTDC, HTAC){
+			var EOB = HTAC[0x00];
+			var M16zeroes = HTAC[0xF0];
+			var pos;
+			var I16 = 16;
+			var I63 = 63;
+			var I64 = 64;
+			var DU_DCT = fDCTQuant(CDU, fdtbl);
+			//ZigZag reorder
+			for (var j=0;j<I64;++j) {
+				DU[ZigZag[j]]=DU_DCT[j];
+			}
+			var Diff = DU[0] - DC; DC = DU[0];
+			//Encode DC
+			if (Diff==0) {
+				writeBits(HTDC[0]); // Diff might be 0
+			} else {
+				pos = 32767+Diff;
+				writeBits(HTDC[category[pos]]);
+				writeBits(bitcode[pos]);
+			}
+			//Encode ACs
+			var end0pos = 63; // was const... which is crazy
+			for (; (end0pos>0)&&(DU[end0pos]==0); end0pos--) {}
+			//end0pos = first element in reverse order !=0
+			if ( end0pos == 0) {
+				writeBits(EOB);
+				return DC;
+			}
+			var i = 1;
+			var lng;
+			while ( i <= end0pos ) {
+				var startpos = i;
+				for (; (DU[i]==0) && (i<=end0pos); ++i) {}
+				var nrzeroes = i-startpos;
+				if ( nrzeroes >= I16 ) {
+					lng = nrzeroes>>4;
+					for (var nrmarker=1; nrmarker <= lng; ++nrmarker)
+						writeBits(M16zeroes);
+					nrzeroes = nrzeroes&0xF;
+				}
+				pos = 32767+DU[i];
+				writeBits(HTAC[(nrzeroes<<4)+category[pos]]);
+				writeBits(bitcode[pos]);
+				i++;
+			}
+			if ( end0pos != I63 ) {
+				writeBits(EOB);
+			}
+			return DC;
+		}
+
+		function initCharLookupTable(){
+			var sfcc = String.fromCharCode;
+			for(var i=0; i < 256; i++){ ///// ACHTUNG // 255
+				clt[i] = sfcc(i);
+			}
+		}
+		
+		this.encode = function(image,quality) // image data object
+		{
+			var time_start = new Date().getTime();
+			
+			if(quality) setQuality(quality);
+			
+			// Initialize bit writer
+			byteout = new Array();
+			bytenew=0;
+			bytepos=7;
+	
+			// Add JPEG headers
+			writeWord(0xFFD8); // SOI
+			writeAPP0();
+			writeDQT();
+			writeSOF0(image.width,image.height);
+			writeDHT();
+			writeSOS();
+
+	
+			// Encode 8x8 macroblocks
+			var DCY=0;
+			var DCU=0;
+			var DCV=0;
+			
+			bytenew=0;
+			bytepos=7;
+			
+			
+			this.encode.displayName = "_encode_";
+
+			var imageData = image.data;
+			var width = image.width;
+			var height = image.height;
+
+			var quadWidth = width*4;
+			var tripleWidth = width*3;
+			
+			var x, y = 0;
+			var r, g, b;
+			var start,p, col,row,pos;
+			while(y < height){
+				x = 0;
+				while(x < quadWidth){
+				start = quadWidth * y + x;
+				p = start;
+				col = -1;
+				row = 0;
+				
+				for(pos=0; pos < 64; pos++){
+					row = pos >> 3;// /8
+					col = ( pos & 7 ) * 4; // %8
+					p = start + ( row * quadWidth ) + col;		
+					
+					if(y+row >= height){ // padding bottom
+						p-= (quadWidth*(y+1+row-height));
+					}
+
+					if(x+col >= quadWidth){ // padding right	
+						p-= ((x+col) - quadWidth +4);
+					}
+					
+					r = imageData[ p++ ];
+					g = imageData[ p++ ];
+					b = imageData[ p++ ];
+					
+					
+					/* // calculate YUV values dynamically
+					YDU[pos]=((( 0.29900)*r+( 0.58700)*g+( 0.11400)*b))-128; //-0x80
+					UDU[pos]=(((-0.16874)*r+(-0.33126)*g+( 0.50000)*b));
+					VDU[pos]=((( 0.50000)*r+(-0.41869)*g+(-0.08131)*b));
+					*/
+					
+					// use lookup table (slightly faster)
+					YDU[pos] = ((RGB_YUV_TABLE[r]             + RGB_YUV_TABLE[(g +  256)>>0] + RGB_YUV_TABLE[(b +  512)>>0]) >> 16)-128;
+					UDU[pos] = ((RGB_YUV_TABLE[(r +  768)>>0] + RGB_YUV_TABLE[(g + 1024)>>0] + RGB_YUV_TABLE[(b + 1280)>>0]) >> 16)-128;
+					VDU[pos] = ((RGB_YUV_TABLE[(r + 1280)>>0] + RGB_YUV_TABLE[(g + 1536)>>0] + RGB_YUV_TABLE[(b + 1792)>>0]) >> 16)-128;
+
+				}
+				
+				DCY = processDU(YDU, fdtbl_Y, DCY, YDC_HT, YAC_HT);
+				DCU = processDU(UDU, fdtbl_UV, DCU, UVDC_HT, UVAC_HT);
+				DCV = processDU(VDU, fdtbl_UV, DCV, UVDC_HT, UVAC_HT);
+				x+=32;
+				}
+				y+=8;
+			}
+			
+			
+			////////////////////////////////////////////////////////////////
+	
+			// Do the bit alignment of the EOI marker
+			if ( bytepos >= 0 ) {
+				var fillbits = [];
+				fillbits[1] = bytepos+1;
+				fillbits[0] = (1<<(bytepos+1))-1;
+				writeBits(fillbits);
+			}
+	
+			writeWord(0xFFD9); //EOI
+
+      //return new Uint8Array(byteout);
+      return new Buffer(byteout);
+
+			var jpegDataUri = 'data:image/jpeg;base64,' + btoa(byteout.join(''));
+			
+			byteout = [];
+			
+			// benchmarking
+			var duration = new Date().getTime() - time_start;
+    		//console.log('Encoding time: '+ duration + 'ms');
+    		//
+			
+			return jpegDataUri			
+	};
+	
+	function setQuality(quality){
+		if (quality <= 0) {
+			quality = 1;
+		}
+		if (quality > 100) {
+			quality = 100;
+		}
+		
+		if(currentQuality == quality) return // don't recalc if unchanged
+		
+		var sf = 0;
+		if (quality < 50) {
+			sf = Math.floor(5000 / quality);
+		} else {
+			sf = Math.floor(200 - quality*2);
+		}
+		
+		initQuantTables(sf);
+		currentQuality = quality;
+		//console.log('Quality set to: '+quality +'%');
+	}
+	
+	function init(){
+		var time_start = new Date().getTime();
+		if(!quality) quality = 50;
+		// Create tables
+		initCharLookupTable();
+		initHuffmanTbl();
+		initCategoryNumber();
+		initRGBYUVTable();
+		
+		setQuality(quality);
+		var duration = new Date().getTime() - time_start;
+    	//console.log('Initialization '+ duration + 'ms');
+	}
+	
+	init();
+	
+}
+var encoder = encode;
+
+function encode(imgData, qu) {
+  if (typeof qu === 'undefined') qu = 50;
+  var encoder = new JPEGEncoder(qu);
+	var data = encoder.encode(imgData, qu);
+  return {
+    data: data,
+    width: imgData.width,
+    height: imgData.height
+  };
+}
+
+/* -*- tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- /
+/* vim: set shiftwidth=2 tabstop=2 autoindent cindent expandtab: */
+/*
+   Copyright 2011 notmasteryet
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+*/
+
+// - The JPEG specification can be found in the ITU CCITT Recommendation T.81
+//   (www.w3.org/Graphics/JPEG/itu-t81.pdf)
+// - The JFIF specification can be found in the JPEG File Interchange Format
+//   (www.w3.org/Graphics/JPEG/jfif3.pdf)
+// - The Adobe Application-Specific JPEG markers in the Supporting the DCT Filters
+//   in PostScript Level 2, Technical Note #5116
+//   (partners.adobe.com/public/developer/en/ps/sdk/5116.DCT_Filter.pdf)
+
+var JpegImage = (function jpegImage() {
+  "use strict";
+  var dctZigZag = new Int32Array([
+     0,
+     1,  8,
+    16,  9,  2,
+     3, 10, 17, 24,
+    32, 25, 18, 11, 4,
+     5, 12, 19, 26, 33, 40,
+    48, 41, 34, 27, 20, 13,  6,
+     7, 14, 21, 28, 35, 42, 49, 56,
+    57, 50, 43, 36, 29, 22, 15,
+    23, 30, 37, 44, 51, 58,
+    59, 52, 45, 38, 31,
+    39, 46, 53, 60,
+    61, 54, 47,
+    55, 62,
+    63
+  ]);
+
+  var dctCos1  =  4017;   // cos(pi/16)
+  var dctSin1  =   799;   // sin(pi/16)
+  var dctCos3  =  3406;   // cos(3*pi/16)
+  var dctSin3  =  2276;   // sin(3*pi/16)
+  var dctCos6  =  1567;   // cos(6*pi/16)
+  var dctSin6  =  3784;   // sin(6*pi/16)
+  var dctSqrt2 =  5793;   // sqrt(2)
+  var dctSqrt1d2 = 2896;  // sqrt(2) / 2
+
+  function constructor() {
+  }
+
+  function buildHuffmanTable(codeLengths, values) {
+    var k = 0, code = [], i, j, length = 16;
+    while (length > 0 && !codeLengths[length - 1])
+      length--;
+    code.push({children: [], index: 0});
+    var p = code[0], q;
+    for (i = 0; i < length; i++) {
+      for (j = 0; j < codeLengths[i]; j++) {
+        p = code.pop();
+        p.children[p.index] = values[k];
+        while (p.index > 0) {
+          p = code.pop();
+        }
+        p.index++;
+        code.push(p);
+        while (code.length <= i) {
+          code.push(q = {children: [], index: 0});
+          p.children[p.index] = q.children;
+          p = q;
+        }
+        k++;
+      }
+      if (i + 1 < length) {
+        // p here points to last code
+        code.push(q = {children: [], index: 0});
+        p.children[p.index] = q.children;
+        p = q;
+      }
+    }
+    return code[0].children;
+  }
+
+  function decodeScan(data, offset,
+                      frame, components, resetInterval,
+                      spectralStart, spectralEnd,
+                      successivePrev, successive) {
+    var precision = frame.precision;
+    var samplesPerLine = frame.samplesPerLine;
+    var scanLines = frame.scanLines;
+    var mcusPerLine = frame.mcusPerLine;
+    var progressive = frame.progressive;
+    var maxH = frame.maxH, maxV = frame.maxV;
+
+    var startOffset = offset, bitsData = 0, bitsCount = 0;
+    function readBit() {
+      if (bitsCount > 0) {
+        bitsCount--;
+        return (bitsData >> bitsCount) & 1;
+      }
+      bitsData = data[offset++];
+      if (bitsData == 0xFF) {
+        var nextByte = data[offset++];
+        if (nextByte) {
+          throw new Error("unexpected marker: " + ((bitsData << 8) | nextByte).toString(16));
+        }
+        // unstuff 0
+      }
+      bitsCount = 7;
+      return bitsData >>> 7;
+    }
+    function decodeHuffman(tree) {
+      var node = tree, bit;
+      while ((bit = readBit()) !== null) {
+        node = node[bit];
+        if (typeof node === 'number')
+          return node;
+        if (typeof node !== 'object')
+          throw new Error("invalid huffman sequence");
+      }
+      return null;
+    }
+    function receive(length) {
+      var n = 0;
+      while (length > 0) {
+        var bit = readBit();
+        if (bit === null) return;
+        n = (n << 1) | bit;
+        length--;
+      }
+      return n;
+    }
+    function receiveAndExtend(length) {
+      var n = receive(length);
+      if (n >= 1 << (length - 1))
+        return n;
+      return n + (-1 << length) + 1;
+    }
+    function decodeBaseline(component, zz) {
+      var t = decodeHuffman(component.huffmanTableDC);
+      var diff = t === 0 ? 0 : receiveAndExtend(t);
+      zz[0]= (component.pred += diff);
+      var k = 1;
+      while (k < 64) {
+        var rs = decodeHuffman(component.huffmanTableAC);
+        var s = rs & 15, r = rs >> 4;
+        if (s === 0) {
+          if (r < 15)
+            break;
+          k += 16;
+          continue;
+        }
+        k += r;
+        var z = dctZigZag[k];
+        zz[z] = receiveAndExtend(s);
+        k++;
+      }
+    }
+    function decodeDCFirst(component, zz) {
+      var t = decodeHuffman(component.huffmanTableDC);
+      var diff = t === 0 ? 0 : (receiveAndExtend(t) << successive);
+      zz[0] = (component.pred += diff);
+    }
+    function decodeDCSuccessive(component, zz) {
+      zz[0] |= readBit() << successive;
+    }
+    var eobrun = 0;
+    function decodeACFirst(component, zz) {
+      if (eobrun > 0) {
+        eobrun--;
+        return;
+      }
+      var k = spectralStart, e = spectralEnd;
+      while (k <= e) {
+        var rs = decodeHuffman(component.huffmanTableAC);
+        var s = rs & 15, r = rs >> 4;
+        if (s === 0) {
+          if (r < 15) {
+            eobrun = receive(r) + (1 << r) - 1;
+            break;
+          }
+          k += 16;
+          continue;
+        }
+        k += r;
+        var z = dctZigZag[k];
+        zz[z] = receiveAndExtend(s) * (1 << successive);
+        k++;
+      }
+    }
+    var successiveACState = 0, successiveACNextValue;
+    function decodeACSuccessive(component, zz) {
+      var k = spectralStart, e = spectralEnd, r = 0;
+      while (k <= e) {
+        var z = dctZigZag[k];
+        var direction = zz[z] < 0 ? -1 : 1;
+        switch (successiveACState) {
+        case 0: // initial state
+          var rs = decodeHuffman(component.huffmanTableAC);
+          var s = rs & 15, r = rs >> 4;
+          if (s === 0) {
+            if (r < 15) {
+              eobrun = receive(r) + (1 << r);
+              successiveACState = 4;
+            } else {
+              r = 16;
+              successiveACState = 1;
+            }
+          } else {
+            if (s !== 1)
+              throw new Error("invalid ACn encoding");
+            successiveACNextValue = receiveAndExtend(s);
+            successiveACState = r ? 2 : 3;
+          }
+          continue;
+        case 1: // skipping r zero items
+        case 2:
+          if (zz[z])
+            zz[z] += (readBit() << successive) * direction;
+          else {
+            r--;
+            if (r === 0)
+              successiveACState = successiveACState == 2 ? 3 : 0;
+          }
+          break;
+        case 3: // set value for a zero item
+          if (zz[z])
+            zz[z] += (readBit() << successive) * direction;
+          else {
+            zz[z] = successiveACNextValue << successive;
+            successiveACState = 0;
+          }
+          break;
+        case 4: // eob
+          if (zz[z])
+            zz[z] += (readBit() << successive) * direction;
+          break;
+        }
+        k++;
+      }
+      if (successiveACState === 4) {
+        eobrun--;
+        if (eobrun === 0)
+          successiveACState = 0;
+      }
+    }
+    function decodeMcu(component, decode, mcu, row, col) {
+      var mcuRow = (mcu / mcusPerLine) | 0;
+      var mcuCol = mcu % mcusPerLine;
+      var blockRow = mcuRow * component.v + row;
+      var blockCol = mcuCol * component.h + col;
+      decode(component, component.blocks[blockRow][blockCol]);
+    }
+    function decodeBlock(component, decode, mcu) {
+      var blockRow = (mcu / component.blocksPerLine) | 0;
+      var blockCol = mcu % component.blocksPerLine;
+      decode(component, component.blocks[blockRow][blockCol]);
+    }
+
+    var componentsLength = components.length;
+    var component, i, j, k, n;
+    var decodeFn;
+    if (progressive) {
+      if (spectralStart === 0)
+        decodeFn = successivePrev === 0 ? decodeDCFirst : decodeDCSuccessive;
+      else
+        decodeFn = successivePrev === 0 ? decodeACFirst : decodeACSuccessive;
+    } else {
+      decodeFn = decodeBaseline;
+    }
+
+    var mcu = 0, marker;
+    var mcuExpected;
+    if (componentsLength == 1) {
+      mcuExpected = components[0].blocksPerLine * components[0].blocksPerColumn;
+    } else {
+      mcuExpected = mcusPerLine * frame.mcusPerColumn;
+    }
+    if (!resetInterval) resetInterval = mcuExpected;
+
+    var h, v;
+    while (mcu < mcuExpected) {
+      // reset interval stuff
+      for (i = 0; i < componentsLength; i++)
+        components[i].pred = 0;
+      eobrun = 0;
+
+      if (componentsLength == 1) {
+        component = components[0];
+        for (n = 0; n < resetInterval; n++) {
+          decodeBlock(component, decodeFn, mcu);
+          mcu++;
+        }
+      } else {
+        for (n = 0; n < resetInterval; n++) {
+          for (i = 0; i < componentsLength; i++) {
+            component = components[i];
+            h = component.h;
+            v = component.v;
+            for (j = 0; j < v; j++) {
+              for (k = 0; k < h; k++) {
+                decodeMcu(component, decodeFn, mcu, j, k);
+              }
+            }
+          }
+          mcu++;
+
+          // If we've reached our expected MCU's, stop decoding
+          if (mcu === mcuExpected) break;
+        }
+      }
+
+      // find marker
+      bitsCount = 0;
+      marker = (data[offset] << 8) | data[offset + 1];
+      if (marker < 0xFF00) {
+        throw new Error("marker was not found");
+      }
+
+      if (marker >= 0xFFD0 && marker <= 0xFFD7) { // RSTx
+        offset += 2;
+      }
+      else
+        break;
+    }
+
+    return offset - startOffset;
+  }
+
+  function buildComponentData(frame, component) {
+    var lines = [];
+    var blocksPerLine = component.blocksPerLine;
+    var blocksPerColumn = component.blocksPerColumn;
+    var samplesPerLine = blocksPerLine << 3;
+    var R = new Int32Array(64), r = new Uint8Array(64);
+
+    // A port of poppler's IDCT method which in turn is taken from:
+    //   Christoph Loeffler, Adriaan Ligtenberg, George S. Moschytz,
+    //   "Practical Fast 1-D DCT Algorithms with 11 Multiplications",
+    //   IEEE Intl. Conf. on Acoustics, Speech & Signal Processing, 1989,
+    //   988-991.
+    function quantizeAndInverse(zz, dataOut, dataIn) {
+      var qt = component.quantizationTable;
+      var v0, v1, v2, v3, v4, v5, v6, v7, t;
+      var p = dataIn;
+      var i;
+
+      // dequant
+      for (i = 0; i < 64; i++)
+        p[i] = zz[i] * qt[i];
+
+      // inverse DCT on rows
+      for (i = 0; i < 8; ++i) {
+        var row = 8 * i;
+
+        // check for all-zero AC coefficients
+        if (p[1 + row] == 0 && p[2 + row] == 0 && p[3 + row] == 0 &&
+            p[4 + row] == 0 && p[5 + row] == 0 && p[6 + row] == 0 &&
+            p[7 + row] == 0) {
+          t = (dctSqrt2 * p[0 + row] + 512) >> 10;
+          p[0 + row] = t;
+          p[1 + row] = t;
+          p[2 + row] = t;
+          p[3 + row] = t;
+          p[4 + row] = t;
+          p[5 + row] = t;
+          p[6 + row] = t;
+          p[7 + row] = t;
+          continue;
+        }
+
+        // stage 4
+        v0 = (dctSqrt2 * p[0 + row] + 128) >> 8;
+        v1 = (dctSqrt2 * p[4 + row] + 128) >> 8;
+        v2 = p[2 + row];
+        v3 = p[6 + row];
+        v4 = (dctSqrt1d2 * (p[1 + row] - p[7 + row]) + 128) >> 8;
+        v7 = (dctSqrt1d2 * (p[1 + row] + p[7 + row]) + 128) >> 8;
+        v5 = p[3 + row] << 4;
+        v6 = p[5 + row] << 4;
+
+        // stage 3
+        t = (v0 - v1+ 1) >> 1;
+        v0 = (v0 + v1 + 1) >> 1;
+        v1 = t;
+        t = (v2 * dctSin6 + v3 * dctCos6 + 128) >> 8;
+        v2 = (v2 * dctCos6 - v3 * dctSin6 + 128) >> 8;
+        v3 = t;
+        t = (v4 - v6 + 1) >> 1;
+        v4 = (v4 + v6 + 1) >> 1;
+        v6 = t;
+        t = (v7 + v5 + 1) >> 1;
+        v5 = (v7 - v5 + 1) >> 1;
+        v7 = t;
+
+        // stage 2
+        t = (v0 - v3 + 1) >> 1;
+        v0 = (v0 + v3 + 1) >> 1;
+        v3 = t;
+        t = (v1 - v2 + 1) >> 1;
+        v1 = (v1 + v2 + 1) >> 1;
+        v2 = t;
+        t = (v4 * dctSin3 + v7 * dctCos3 + 2048) >> 12;
+        v4 = (v4 * dctCos3 - v7 * dctSin3 + 2048) >> 12;
+        v7 = t;
+        t = (v5 * dctSin1 + v6 * dctCos1 + 2048) >> 12;
+        v5 = (v5 * dctCos1 - v6 * dctSin1 + 2048) >> 12;
+        v6 = t;
+
+        // stage 1
+        p[0 + row] = v0 + v7;
+        p[7 + row] = v0 - v7;
+        p[1 + row] = v1 + v6;
+        p[6 + row] = v1 - v6;
+        p[2 + row] = v2 + v5;
+        p[5 + row] = v2 - v5;
+        p[3 + row] = v3 + v4;
+        p[4 + row] = v3 - v4;
+      }
+
+      // inverse DCT on columns
+      for (i = 0; i < 8; ++i) {
+        var col = i;
+
+        // check for all-zero AC coefficients
+        if (p[1*8 + col] == 0 && p[2*8 + col] == 0 && p[3*8 + col] == 0 &&
+            p[4*8 + col] == 0 && p[5*8 + col] == 0 && p[6*8 + col] == 0 &&
+            p[7*8 + col] == 0) {
+          t = (dctSqrt2 * dataIn[i+0] + 8192) >> 14;
+          p[0*8 + col] = t;
+          p[1*8 + col] = t;
+          p[2*8 + col] = t;
+          p[3*8 + col] = t;
+          p[4*8 + col] = t;
+          p[5*8 + col] = t;
+          p[6*8 + col] = t;
+          p[7*8 + col] = t;
+          continue;
+        }
+
+        // stage 4
+        v0 = (dctSqrt2 * p[0*8 + col] + 2048) >> 12;
+        v1 = (dctSqrt2 * p[4*8 + col] + 2048) >> 12;
+        v2 = p[2*8 + col];
+        v3 = p[6*8 + col];
+        v4 = (dctSqrt1d2 * (p[1*8 + col] - p[7*8 + col]) + 2048) >> 12;
+        v7 = (dctSqrt1d2 * (p[1*8 + col] + p[7*8 + col]) + 2048) >> 12;
+        v5 = p[3*8 + col];
+        v6 = p[5*8 + col];
+
+        // stage 3
+        t = (v0 - v1 + 1) >> 1;
+        v0 = (v0 + v1 + 1) >> 1;
+        v1 = t;
+        t = (v2 * dctSin6 + v3 * dctCos6 + 2048) >> 12;
+        v2 = (v2 * dctCos6 - v3 * dctSin6 + 2048) >> 12;
+        v3 = t;
+        t = (v4 - v6 + 1) >> 1;
+        v4 = (v4 + v6 + 1) >> 1;
+        v6 = t;
+        t = (v7 + v5 + 1) >> 1;
+        v5 = (v7 - v5 + 1) >> 1;
+        v7 = t;
+
+        // stage 2
+        t = (v0 - v3 + 1) >> 1;
+        v0 = (v0 + v3 + 1) >> 1;
+        v3 = t;
+        t = (v1 - v2 + 1) >> 1;
+        v1 = (v1 + v2 + 1) >> 1;
+        v2 = t;
+        t = (v4 * dctSin3 + v7 * dctCos3 + 2048) >> 12;
+        v4 = (v4 * dctCos3 - v7 * dctSin3 + 2048) >> 12;
+        v7 = t;
+        t = (v5 * dctSin1 + v6 * dctCos1 + 2048) >> 12;
+        v5 = (v5 * dctCos1 - v6 * dctSin1 + 2048) >> 12;
+        v6 = t;
+
+        // stage 1
+        p[0*8 + col] = v0 + v7;
+        p[7*8 + col] = v0 - v7;
+        p[1*8 + col] = v1 + v6;
+        p[6*8 + col] = v1 - v6;
+        p[2*8 + col] = v2 + v5;
+        p[5*8 + col] = v2 - v5;
+        p[3*8 + col] = v3 + v4;
+        p[4*8 + col] = v3 - v4;
+      }
+
+      // convert to 8-bit integers
+      for (i = 0; i < 64; ++i) {
+        var sample = 128 + ((p[i] + 8) >> 4);
+        dataOut[i] = sample < 0 ? 0 : sample > 0xFF ? 0xFF : sample;
+      }
+    }
+
+    var i, j;
+    for (var blockRow = 0; blockRow < blocksPerColumn; blockRow++) {
+      var scanLine = blockRow << 3;
+      for (i = 0; i < 8; i++)
+        lines.push(new Uint8Array(samplesPerLine));
+      for (var blockCol = 0; blockCol < blocksPerLine; blockCol++) {
+        quantizeAndInverse(component.blocks[blockRow][blockCol], r, R);
+
+        var offset = 0, sample = blockCol << 3;
+        for (j = 0; j < 8; j++) {
+          var line = lines[scanLine + j];
+          for (i = 0; i < 8; i++)
+            line[sample + i] = r[offset++];
+        }
+      }
+    }
+    return lines;
+  }
+
+  function clampTo8bit(a) {
+    return a < 0 ? 0 : a > 255 ? 255 : a;
+  }
+
+  constructor.prototype = {
+    load: function load(path) {
+      var xhr = new XMLHttpRequest();
+      xhr.open("GET", path, true);
+      xhr.responseType = "arraybuffer";
+      xhr.onload = (function() {
+        // TODO catch parse error
+        var data = new Uint8Array(xhr.response || xhr.mozResponseArrayBuffer);
+        this.parse(data);
+        if (this.onload)
+          this.onload();
+      }).bind(this);
+      xhr.send(null);
+    },
+    parse: function parse(data) {
+      var offset = 0, length = data.length;
+      function readUint16() {
+        var value = (data[offset] << 8) | data[offset + 1];
+        offset += 2;
+        return value;
+      }
+      function readDataBlock() {
+        var length = readUint16();
+        var array = data.subarray(offset, offset + length - 2);
+        offset += array.length;
+        return array;
+      }
+      function prepareComponents(frame) {
+        var maxH = 0, maxV = 0;
+        var component, componentId;
+        for (componentId in frame.components) {
+          if (frame.components.hasOwnProperty(componentId)) {
+            component = frame.components[componentId];
+            if (maxH < component.h) maxH = component.h;
+            if (maxV < component.v) maxV = component.v;
+          }
+        }
+        var mcusPerLine = Math.ceil(frame.samplesPerLine / 8 / maxH);
+        var mcusPerColumn = Math.ceil(frame.scanLines / 8 / maxV);
+        for (componentId in frame.components) {
+          if (frame.components.hasOwnProperty(componentId)) {
+            component = frame.components[componentId];
+            var blocksPerLine = Math.ceil(Math.ceil(frame.samplesPerLine / 8) * component.h / maxH);
+            var blocksPerColumn = Math.ceil(Math.ceil(frame.scanLines  / 8) * component.v / maxV);
+            var blocksPerLineForMcu = mcusPerLine * component.h;
+            var blocksPerColumnForMcu = mcusPerColumn * component.v;
+            var blocks = [];
+            for (var i = 0; i < blocksPerColumnForMcu; i++) {
+              var row = [];
+              for (var j = 0; j < blocksPerLineForMcu; j++)
+                row.push(new Int32Array(64));
+              blocks.push(row);
+            }
+            component.blocksPerLine = blocksPerLine;
+            component.blocksPerColumn = blocksPerColumn;
+            component.blocks = blocks;
+          }
+        }
+        frame.maxH = maxH;
+        frame.maxV = maxV;
+        frame.mcusPerLine = mcusPerLine;
+        frame.mcusPerColumn = mcusPerColumn;
+      }
+      var jfif = null;
+      var adobe = null;
+      var pixels = null;
+      var frame, resetInterval;
+      var quantizationTables = [], frames = [];
+      var huffmanTablesAC = [], huffmanTablesDC = [];
+      var fileMarker = readUint16();
+      if (fileMarker != 0xFFD8) { // SOI (Start of Image)
+        throw new Error("SOI not found");
+      }
+
+      fileMarker = readUint16();
+      while (fileMarker != 0xFFD9) { // EOI (End of image)
+        var i, j, l;
+        switch(fileMarker) {
+          case 0xFF00: break;
+          case 0xFFE0: // APP0 (Application Specific)
+          case 0xFFE1: // APP1
+          case 0xFFE2: // APP2
+          case 0xFFE3: // APP3
+          case 0xFFE4: // APP4
+          case 0xFFE5: // APP5
+          case 0xFFE6: // APP6
+          case 0xFFE7: // APP7
+          case 0xFFE8: // APP8
+          case 0xFFE9: // APP9
+          case 0xFFEA: // APP10
+          case 0xFFEB: // APP11
+          case 0xFFEC: // APP12
+          case 0xFFED: // APP13
+          case 0xFFEE: // APP14
+          case 0xFFEF: // APP15
+          case 0xFFFE: // COM (Comment)
+            var appData = readDataBlock();
+
+            if (fileMarker === 0xFFE0) {
+              if (appData[0] === 0x4A && appData[1] === 0x46 && appData[2] === 0x49 &&
+                appData[3] === 0x46 && appData[4] === 0) { // 'JFIF\x00'
+                jfif = {
+                  version: { major: appData[5], minor: appData[6] },
+                  densityUnits: appData[7],
+                  xDensity: (appData[8] << 8) | appData[9],
+                  yDensity: (appData[10] << 8) | appData[11],
+                  thumbWidth: appData[12],
+                  thumbHeight: appData[13],
+                  thumbData: appData.subarray(14, 14 + 3 * appData[12] * appData[13])
+                };
+              }
+            }
+            // TODO APP1 - Exif
+            if (fileMarker === 0xFFEE) {
+              if (appData[0] === 0x41 && appData[1] === 0x64 && appData[2] === 0x6F &&
+                appData[3] === 0x62 && appData[4] === 0x65 && appData[5] === 0) { // 'Adobe\x00'
+                adobe = {
+                  version: appData[6],
+                  flags0: (appData[7] << 8) | appData[8],
+                  flags1: (appData[9] << 8) | appData[10],
+                  transformCode: appData[11]
+                };
+              }
+            }
+            break;
+
+          case 0xFFDB: // DQT (Define Quantization Tables)
+            var quantizationTablesLength = readUint16();
+            var quantizationTablesEnd = quantizationTablesLength + offset - 2;
+            while (offset < quantizationTablesEnd) {
+              var quantizationTableSpec = data[offset++];
+              var tableData = new Int32Array(64);
+              if ((quantizationTableSpec >> 4) === 0) { // 8 bit values
+                for (j = 0; j < 64; j++) {
+                  var z = dctZigZag[j];
+                  tableData[z] = data[offset++];
+                }
+              } else if ((quantizationTableSpec >> 4) === 1) { //16 bit
+                for (j = 0; j < 64; j++) {
+                  var z = dctZigZag[j];
+                  tableData[z] = readUint16();
+                }
+              } else
+                throw new Error("DQT: invalid table spec");
+              quantizationTables[quantizationTableSpec & 15] = tableData;
+            }
+            break;
+
+          case 0xFFC0: // SOF0 (Start of Frame, Baseline DCT)
+          case 0xFFC1: // SOF1 (Start of Frame, Extended DCT)
+          case 0xFFC2: // SOF2 (Start of Frame, Progressive DCT)
+            readUint16(); // skip data length
+            frame = {};
+            frame.extended = (fileMarker === 0xFFC1);
+            frame.progressive = (fileMarker === 0xFFC2);
+            frame.precision = data[offset++];
+            frame.scanLines = readUint16();
+            frame.samplesPerLine = readUint16();
+            frame.components = {};
+            frame.componentsOrder = [];
+            var componentsCount = data[offset++], componentId;
+            var maxH = 0, maxV = 0;
+            for (i = 0; i < componentsCount; i++) {
+              componentId = data[offset];
+              var h = data[offset + 1] >> 4;
+              var v = data[offset + 1] & 15;
+              var qId = data[offset + 2];
+              frame.componentsOrder.push(componentId);
+              frame.components[componentId] = {
+                h: h,
+                v: v,
+                quantizationIdx: qId
+              };
+              offset += 3;
+            }
+            prepareComponents(frame);
+            frames.push(frame);
+            break;
+
+          case 0xFFC4: // DHT (Define Huffman Tables)
+            var huffmanLength = readUint16();
+            for (i = 2; i < huffmanLength;) {
+              var huffmanTableSpec = data[offset++];
+              var codeLengths = new Uint8Array(16);
+              var codeLengthSum = 0;
+              for (j = 0; j < 16; j++, offset++)
+                codeLengthSum += (codeLengths[j] = data[offset]);
+              var huffmanValues = new Uint8Array(codeLengthSum);
+              for (j = 0; j < codeLengthSum; j++, offset++)
+                huffmanValues[j] = data[offset];
+              i += 17 + codeLengthSum;
+
+              ((huffmanTableSpec >> 4) === 0 ?
+                huffmanTablesDC : huffmanTablesAC)[huffmanTableSpec & 15] =
+                buildHuffmanTable(codeLengths, huffmanValues);
+            }
+            break;
+
+          case 0xFFDD: // DRI (Define Restart Interval)
+            readUint16(); // skip data length
+            resetInterval = readUint16();
+            break;
+
+          case 0xFFDA: // SOS (Start of Scan)
+            var scanLength = readUint16();
+            var selectorsCount = data[offset++];
+            var components = [], component;
+            for (i = 0; i < selectorsCount; i++) {
+              component = frame.components[data[offset++]];
+              var tableSpec = data[offset++];
+              component.huffmanTableDC = huffmanTablesDC[tableSpec >> 4];
+              component.huffmanTableAC = huffmanTablesAC[tableSpec & 15];
+              components.push(component);
+            }
+            var spectralStart = data[offset++];
+            var spectralEnd = data[offset++];
+            var successiveApproximation = data[offset++];
+            var processed = decodeScan(data, offset,
+              frame, components, resetInterval,
+              spectralStart, spectralEnd,
+              successiveApproximation >> 4, successiveApproximation & 15);
+            offset += processed;
+            break;
+          default:
+            if (data[offset - 3] == 0xFF &&
+                data[offset - 2] >= 0xC0 && data[offset - 2] <= 0xFE) {
+              // could be incorrect encoding -- last 0xFF byte of the previous
+              // block was eaten by the encoder
+              offset -= 3;
+              break;
+            }
+            throw new Error("unknown JPEG marker " + fileMarker.toString(16));
+        }
+        fileMarker = readUint16();
+      }
+      if (frames.length != 1)
+        throw new Error("only single frame JPEGs supported");
+
+      // set each frame's components quantization table
+      for (var i = 0; i < frames.length; i++) {
+        var cp = frames[i].components;
+        for (var j in cp) {
+          cp[j].quantizationTable = quantizationTables[cp[j].quantizationIdx];
+          delete cp[j].quantizationIdx;
+        }
+      }
+
+      this.width = frame.samplesPerLine;
+      this.height = frame.scanLines;
+      this.jfif = jfif;
+      this.adobe = adobe;
+      this.components = [];
+      for (var i = 0; i < frame.componentsOrder.length; i++) {
+        var component = frame.components[frame.componentsOrder[i]];
+        this.components.push({
+          lines: buildComponentData(frame, component),
+          scaleX: component.h / frame.maxH,
+          scaleY: component.v / frame.maxV
+        });
+      }
+    },
+    getData: function getData(width, height) {
+      var scaleX = this.width / width, scaleY = this.height / height;
+
+      var component1, component2, component3, component4;
+      var component1Line, component2Line, component3Line, component4Line;
+      var x, y;
+      var offset = 0;
+      var Y, Cb, Cr, K, C, M, Ye, R, G, B;
+      var colorTransform;
+      var dataLength = width * height * this.components.length;
+      var data = new Uint8Array(dataLength);
+      switch (this.components.length) {
+        case 1:
+          component1 = this.components[0];
+          for (y = 0; y < height; y++) {
+            component1Line = component1.lines[0 | (y * component1.scaleY * scaleY)];
+            for (x = 0; x < width; x++) {
+              Y = component1Line[0 | (x * component1.scaleX * scaleX)];
+
+              data[offset++] = Y;
+            }
+          }
+          break;
+        case 2:
+          // PDF might compress two component data in custom colorspace
+          component1 = this.components[0];
+          component2 = this.components[1];
+          for (y = 0; y < height; y++) {
+            component1Line = component1.lines[0 | (y * component1.scaleY * scaleY)];
+            component2Line = component2.lines[0 | (y * component2.scaleY * scaleY)];
+            for (x = 0; x < width; x++) {
+              Y = component1Line[0 | (x * component1.scaleX * scaleX)];
+              data[offset++] = Y;
+              Y = component2Line[0 | (x * component2.scaleX * scaleX)];
+              data[offset++] = Y;
+            }
+          }
+          break;
+        case 3:
+          // The default transform for three components is true
+          colorTransform = true;
+          // The adobe transform marker overrides any previous setting
+          if (this.adobe && this.adobe.transformCode)
+            colorTransform = true;
+          else if (typeof this.colorTransform !== 'undefined')
+            colorTransform = !!this.colorTransform;
+
+          component1 = this.components[0];
+          component2 = this.components[1];
+          component3 = this.components[2];
+          for (y = 0; y < height; y++) {
+            component1Line = component1.lines[0 | (y * component1.scaleY * scaleY)];
+            component2Line = component2.lines[0 | (y * component2.scaleY * scaleY)];
+            component3Line = component3.lines[0 | (y * component3.scaleY * scaleY)];
+            for (x = 0; x < width; x++) {
+              if (!colorTransform) {
+                R = component1Line[0 | (x * component1.scaleX * scaleX)];
+                G = component2Line[0 | (x * component2.scaleX * scaleX)];
+                B = component3Line[0 | (x * component3.scaleX * scaleX)];
+              } else {
+                Y = component1Line[0 | (x * component1.scaleX * scaleX)];
+                Cb = component2Line[0 | (x * component2.scaleX * scaleX)];
+                Cr = component3Line[0 | (x * component3.scaleX * scaleX)];
+
+                R = clampTo8bit(Y + 1.402 * (Cr - 128));
+                G = clampTo8bit(Y - 0.3441363 * (Cb - 128) - 0.71413636 * (Cr - 128));
+                B = clampTo8bit(Y + 1.772 * (Cb - 128));
+              }
+
+              data[offset++] = R;
+              data[offset++] = G;
+              data[offset++] = B;
+            }
+          }
+          break;
+        case 4:
+          if (!this.adobe)
+            throw 'Unsupported color mode (4 components)';
+          // The default transform for four components is false
+          colorTransform = false;
+          // The adobe transform marker overrides any previous setting
+          if (this.adobe && this.adobe.transformCode)
+            colorTransform = true;
+          else if (typeof this.colorTransform !== 'undefined')
+            colorTransform = !!this.colorTransform;
+
+          component1 = this.components[0];
+          component2 = this.components[1];
+          component3 = this.components[2];
+          component4 = this.components[3];
+          for (y = 0; y < height; y++) {
+            component1Line = component1.lines[0 | (y * component1.scaleY * scaleY)];
+            component2Line = component2.lines[0 | (y * component2.scaleY * scaleY)];
+            component3Line = component3.lines[0 | (y * component3.scaleY * scaleY)];
+            component4Line = component4.lines[0 | (y * component4.scaleY * scaleY)];
+            for (x = 0; x < width; x++) {
+              if (!colorTransform) {
+                C = component1Line[0 | (x * component1.scaleX * scaleX)];
+                M = component2Line[0 | (x * component2.scaleX * scaleX)];
+                Ye = component3Line[0 | (x * component3.scaleX * scaleX)];
+                K = component4Line[0 | (x * component4.scaleX * scaleX)];
+              } else {
+                Y = component1Line[0 | (x * component1.scaleX * scaleX)];
+                Cb = component2Line[0 | (x * component2.scaleX * scaleX)];
+                Cr = component3Line[0 | (x * component3.scaleX * scaleX)];
+                K = component4Line[0 | (x * component4.scaleX * scaleX)];
+
+                C = 255 - clampTo8bit(Y + 1.402 * (Cr - 128));
+                M = 255 - clampTo8bit(Y - 0.3441363 * (Cb - 128) - 0.71413636 * (Cr - 128));
+                Ye = 255 - clampTo8bit(Y + 1.772 * (Cb - 128));
+              }
+              data[offset++] = 255-C;
+              data[offset++] = 255-M;
+              data[offset++] = 255-Ye;
+              data[offset++] = 255-K;
+            }
+          }
+          break;
+        default:
+          throw 'Unsupported color mode';
+      }
+      return data;
+    },
+    copyToImageData: function copyToImageData(imageData) {
+      var width = imageData.width, height = imageData.height;
+      var imageDataArray = imageData.data;
+      var data = this.getData(width, height);
+      var i = 0, j = 0, x, y;
+      var Y, K, C, M, R, G, B;
+      switch (this.components.length) {
+        case 1:
+          for (y = 0; y < height; y++) {
+            for (x = 0; x < width; x++) {
+              Y = data[i++];
+
+              imageDataArray[j++] = Y;
+              imageDataArray[j++] = Y;
+              imageDataArray[j++] = Y;
+              imageDataArray[j++] = 255;
+            }
+          }
+          break;
+        case 3:
+          for (y = 0; y < height; y++) {
+            for (x = 0; x < width; x++) {
+              R = data[i++];
+              G = data[i++];
+              B = data[i++];
+
+              imageDataArray[j++] = R;
+              imageDataArray[j++] = G;
+              imageDataArray[j++] = B;
+              imageDataArray[j++] = 255;
+            }
+          }
+          break;
+        case 4:
+          for (y = 0; y < height; y++) {
+            for (x = 0; x < width; x++) {
+              C = data[i++];
+              M = data[i++];
+              Y = data[i++];
+              K = data[i++];
+
+              R = 255 - clampTo8bit(C * (1 - K / 255) + K);
+              G = 255 - clampTo8bit(M * (1 - K / 255) + K);
+              B = 255 - clampTo8bit(Y * (1 - K / 255) + K);
+
+              imageDataArray[j++] = R;
+              imageDataArray[j++] = G;
+              imageDataArray[j++] = B;
+              imageDataArray[j++] = 255;
+            }
+          }
+          break;
+        default:
+          throw 'Unsupported color mode';
+      }
+    }
+  };
+
+  return constructor;
+})();
+var decoder = decode;
+
+function decode(jpegData, useTArray) {
+  var arr = new Uint8Array(jpegData);
+  var decoder = new JpegImage();
+  decoder.parse(arr);
+
+  var image = {
+    width: decoder.width,
+    height: decoder.height,
+    data: useTArray ?
+      new Uint8Array(decoder.width * decoder.height * 4) :
+      new Buffer(decoder.width * decoder.height * 4)
+  };
+
+  decoder.copyToImageData(image);
+
+  return image;
+}
+
+var index$3 = {
+  encode: encoder,
+  decode: decoder
+};
+
+/*
+* Author   Jonathan Lurie - http://me.jonahanlurie.fr
+* License  MIT
+* Link     https://github.com/Pixpipe/pixpipejs
+* Lab      MCIN - Montreal Neurological Institute
+*/
+
+/**
+* An instance of JpegDecoder will decode a JPEG image in native Javascript and
+* output an Image2D. This is of course slower than using `io/FileImageReader.js`
+* but this is compatible with Node and not rely on HTML5 Canvas.
+*
+* **Usage**
+* - [examples/fileToJpeg.html](../examples/fileToJpeg.html)
+*/
+class JpegDecoder extends Filter {
+  constructor() {
+    super();
+    this.addInputValidator(0, ArrayBuffer);
+  }
+  
+  _run(){
+
+    var inputBuffer = this._getInput(0);
+
+    if(!inputBuffer){
+      console.warn("JpegDecoder requires an ArrayBuffer as input \"0\". Unable to continue.");
+      return;
+    }
+  
+    try{
+      var jpegData = index$3.decode( inputBuffer );
+      var ncpp = jpegData.data.length / (jpegData.width*jpegData.height);
+      var outputImage = new Image2D();
+      var pixelData = new Uint8Array( jpegData.data.buffer );
+      
+      outputImage.setData( pixelData, jpegData.width, jpegData.height, ncpp);
+      this._output[ 0 ] = outputImage;
+    }catch(e){
+      //console.warn(e);
+      //console.warn("This is not a JPEG file, unable to decode this file.");
+    }
+  }
+} /* JpegDecoder */
+
+var UPNG = createCommonjsModule(function (module) {
+(function(){
+var UPNG = {};
+
+// Make available for import by `require()`
+{module.exports = UPNG;}
+
+var pako;
+if (typeof commonjsRequire == "function") {pako = index$1;}
+else {pako = window.pako;}
+
+function log() { if (typeof process=="undefined" || process.env.NODE_ENV=="development") console.log.apply(console, arguments);  }
+
+(function(UPNG, pako){
+
+UPNG.toRGBA8 = function(out)
+{
+	//console.log(out.ctype, out.depth);
+	var w = out.width, h = out.height, area = w*h, bpp = UPNG.decode._getBPP(out);
+	var bpl = Math.ceil(w*bpp/8);	// bytes per line
+
+	var bf = new Uint8Array(area*4), bf32 = new Uint32Array(bf.buffer);
+	var data = out.data, ctype = out.ctype, depth = out.depth;
+	var rs = UPNG._bin.readUshort;
+
+	if     (ctype==6) { // RGB + alpha
+		var qarea = area<<2;
+		if(depth== 8) for(var i=0; i<qarea;i++) {  bf[i] = data[i];  /*if((i&3)==3) bf[i]=255;*/  }
+		if(depth==16) for(var i=0; i<qarea;i++) {  bf[i] = data[i<<1];  }
+	}
+	else if(ctype==2) {	// RGB
+		var ts=out.tabs["tRNS"], tr=-1, tg=-1, tb=-1;
+		if(ts) {  tr=ts[0];  tg=ts[1];  tb=ts[2];  }
+		if(depth== 8) for(var i=0; i<area; i++) {  var qi=i<<2, ti=i*3;  bf[qi] = data[ti];  bf[qi+1] = data[ti+1];  bf[qi+2] = data[ti+2];  bf[qi+3] = 255;
+			if(tr!=-1 && data[ti]   ==tr && data[ti+1]   ==tg && data[ti+2]   ==tb) bf[qi+3] = 0;  }
+		if(depth==16) for(var i=0; i<area; i++) {  var qi=i<<2, ti=i*6;  bf[qi] = data[ti];  bf[qi+1] = data[ti+2];  bf[qi+2] = data[ti+4];  bf[qi+3] = 255;
+			if(tr!=-1 && rs(data,ti)==tr && rs(data,ti+2)==tg && rs(data,ti+4)==tb) bf[qi+3] = 0;  }
+	}
+	else if(ctype==3) {	// palette
+		var p=out.tabs["PLTE"], ap=out.tabs["tRNS"], tl=ap?ap.length:0;
+		if(depth==1) for(var y=0; y<h; y++) {  var s0 = y*bpl, t0 = y*w;
+			for(var i=0; i<w; i++) { var qi=(t0+i)<<2, j=((data[s0+(i>>3)]>>(7-((i&7)<<0)))& 1), cj=3*j;  bf[qi]=p[cj];  bf[qi+1]=p[cj+1];  bf[qi+2]=p[cj+2];  bf[qi+3]=(j<tl)?ap[j]:255;  }
+		}
+		if(depth==2) for(var y=0; y<h; y++) {  var s0 = y*bpl, t0 = y*w;
+			for(var i=0; i<w; i++) { var qi=(t0+i)<<2, j=((data[s0+(i>>2)]>>(6-((i&3)<<1)))& 3), cj=3*j;  bf[qi]=p[cj];  bf[qi+1]=p[cj+1];  bf[qi+2]=p[cj+2];  bf[qi+3]=(j<tl)?ap[j]:255;  }
+		}
+		if(depth==4) for(var y=0; y<h; y++) {  var s0 = y*bpl, t0 = y*w;
+			for(var i=0; i<w; i++) { var qi=(t0+i)<<2, j=((data[s0+(i>>1)]>>(4-((i&1)<<2)))&15), cj=3*j;  bf[qi]=p[cj];  bf[qi+1]=p[cj+1];  bf[qi+2]=p[cj+2];  bf[qi+3]=(j<tl)?ap[j]:255;  }
+		}
+		if(depth==8) for(var i=0; i<area; i++ ) {  var qi=i<<2, j=data[i]                      , cj=3*j;  bf[qi]=p[cj];  bf[qi+1]=p[cj+1];  bf[qi+2]=p[cj+2];  bf[qi+3]=(j<tl)?ap[j]:255;  }
+	}
+	else if(ctype==4) {	// gray + alpha
+		if(depth== 8)  for(var i=0; i<area; i++) {  var qi=i<<2, di=i<<1, gr=data[di];  bf[qi]=gr;  bf[qi+1]=gr;  bf[qi+2]=gr;  bf[qi+3]=data[di+1];  }
+		if(depth==16)  for(var i=0; i<area; i++) {  var qi=i<<2, di=i<<2, gr=data[di];  bf[qi]=gr;  bf[qi+1]=gr;  bf[qi+2]=gr;  bf[qi+3]=data[di+2];  }
+	}
+	else if(ctype==0) {	// gray
+		var tr = out.tabs["tRNS"] ? out.tabs["tRNS"] : -1;
+		if(depth== 1) for(var i=0; i<area; i++) {  var gr=255*((data[i>>3]>>(7 -((i&7)   )))& 1), al=(gr==tr*255)?0:255;  bf32[i]=(al<<24)|(gr<<16)|(gr<<8)|gr;  }
+		if(depth== 2) for(var i=0; i<area; i++) {  var gr= 85*((data[i>>2]>>(6 -((i&3)<<1)))& 3), al=(gr==tr* 85)?0:255;  bf32[i]=(al<<24)|(gr<<16)|(gr<<8)|gr;  }
+		if(depth== 4) for(var i=0; i<area; i++) {  var gr= 17*((data[i>>1]>>(4 -((i&1)<<2)))&15), al=(gr==tr* 17)?0:255;  bf32[i]=(al<<24)|(gr<<16)|(gr<<8)|gr;  }
+		if(depth== 8) for(var i=0; i<area; i++) {  var gr=data[i  ] , al=(gr           ==tr)?0:255;  bf32[i]=(al<<24)|(gr<<16)|(gr<<8)|gr;  }
+		if(depth==16) for(var i=0; i<area; i++) {  var gr=data[i<<1], al=(rs(data,i<<1)==tr)?0:255;  bf32[i]=(al<<24)|(gr<<16)|(gr<<8)|gr;  }
+	}
+	else log("unsupported color type", ctype);
+	return bf;
+};
+
+UPNG.encode = function(buff, w, h, ps)
+{
+	if(ps==null) ps=0;
+	var img = new Uint8Array(buff);
+	var data = new Uint8Array(img.length+100);
+	var wr=[0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a];
+	for(var i=0; i<8; i++) data[i]=wr[i];
+	var offset = 8,  bin = UPNG._bin, crc = UPNG.crc.crc;
+
+	var nimg = UPNG.encode.compress(img, w, h, ps);
+
+	bin.writeUint (data,offset, 13);     offset+=4;
+	bin.writeASCII(data,offset,"IHDR");  offset+=4;
+	bin.writeUint (data,offset,w);  offset+=4;
+	bin.writeUint (data,offset,h);  offset+=4;
+	data[offset] = nimg.depth;  offset++;  // depth
+	data[offset] = nimg.ctype;  offset++;  // ctype
+	data[offset] = 0;  offset++;  // compress
+	data[offset] = 0;  offset++;  // filter
+	data[offset] = 0;  offset++;  // interlace
+	bin.writeUint (data,offset,crc(data,offset-17,17));  offset+=4; // crc
+
+	// 9 bytes to say, that it is sRGB
+	bin.writeUint (data,offset, 1);      offset+=4;
+	bin.writeASCII(data,offset,"sRGB");  offset+=4;
+	data[offset] = 1;  offset++;
+	bin.writeUint (data,offset,crc(data,offset-5,5));  offset+=4; // crc
+
+
+	if(nimg.ctype==3) {
+		var dl = nimg.plte.length;
+		bin.writeUint (data,offset, dl*3);  offset+=4;
+		bin.writeASCII(data,offset,"PLTE");  offset+=4;
+		for(var i=0; i<dl; i++){
+			var ti=i*3, c=nimg.plte[i], r=(c)&255, g=(c>>8)&255, b=(c>>16)&255;
+			data[offset+ti+0]=r;  data[offset+ti+1]=g;  data[offset+ti+2]=b;
+		}
+		offset+=dl*3;
+		bin.writeUint (data,offset,crc(data,offset-dl*3-4,dl*3+4));  offset+=4; // crc
+
+		if(nimg.gotAlpha) {
+			bin.writeUint (data,offset, dl);  offset+=4;
+			bin.writeASCII(data,offset,"tRNS");  offset+=4;
+			for(var i=0; i<dl; i++)  data[offset+i]=(nimg.plte[i]>>24)&255;
+			offset+=dl;
+			bin.writeUint (data,offset,crc(data,offset-dl-4,dl+4));  offset+=4; // crc
+		}
+	}
+
+	var dl = nimg.data.length;
+	bin.writeUint (data,offset, dl);     offset+=4;
+	bin.writeASCII(data,offset,"IDAT");  offset+=4;
+	for(var i=0; i<dl; i++) data[offset+i] = nimg.data[i];
+	offset += dl;
+	bin.writeUint (data,offset,crc(data,offset-dl-4,dl+4));  offset+=4; // crc
+
+	bin.writeUint (data,offset, 0);     offset+=4;
+	bin.writeASCII(data,offset,"IEND");  offset+=4;
+	bin.writeUint (data,offset,crc(data,offset-4,4));  offset+=4; // crc
+
+	return data.buffer.slice(0,offset);
+};
+
+UPNG.encode.compress = function(img, w, h, ps)
+{
+	if(ps!=0) img = UPNG.quantize(img, w, h, ps);
+
+	var ctype = 6, depth = 8, plte=[], bpp = 4, bpl = 4*w;
+	var img32 = new Uint32Array(img.buffer);
+	var gotAlpha=false, cmap=[];
+	for(var i=0; i<img.length; i+=4) {
+		var c = img32[i>>2];  if(plte.length<600 && cmap[c]==null) {  cmap[c]=plte.length;  plte.push(c);  }
+		if(img[i+3]!=255) gotAlpha = true;
+	}
+	var cc=plte.length;
+	if(cc<=256) {
+		if(cc<= 2) depth=1;  else if(cc<= 4) depth=2;  else if(cc<=16) depth=4;  else depth=8;
+		bpl = Math.ceil(depth*w/8), nimg = new Uint8Array(bpl*h);
+		for(var y=0; y<h; y++) {  var i=y*bpl, ii=y*w;
+			if(depth==1) for(var x=0; x<w; x++) nimg[i+(x>>3)]  |=  (cmap[img32[ii+x]]<<(7-(x&7)  ));
+			if(depth==2) for(var x=0; x<w; x++) nimg[i+(x>>2)]  |=  (cmap[img32[ii+x]]<<(6-(x&3)*2));
+			if(depth==4) for(var x=0; x<w; x++) nimg[i+(x>>1)]  |=  (cmap[img32[ii+x]]<<(4-(x&1)*4));
+			if(depth==8) for(var x=0; x<w; x++) nimg[i+ x    ]   =   cmap[img32[ii+x]];
+		}
+		img=nimg;  ctype=3;  bpp=1;
+	}
+	else if(gotAlpha==false) {
+		var nimg = new Uint8Array(w*h*3), area=w*h;
+		for(var i=0; i<area; i++) { var ti=i*3, qi=i*4;  nimg[ti]=img[qi];  nimg[ti+1]=img[qi+1];  nimg[ti+2]=img[qi+2];  }
+		img=nimg;  ctype=2;  bpp=3;  bpl=3*w;
+	}
+
+	var data = new Uint8Array(w*h*bpp+h);
+	return {ctype:ctype, depth:depth, plte:plte, gotAlpha:gotAlpha, data: UPNG.encode._filterZero(img,h,bpp,bpl,data)  };
+};
+
+UPNG.encode._filterZero = function(img,h,bpp,bpl,data)
+{
+	var fls = [];
+	for(var t=0; t<5; t++) {  if(h*bpl>500000 && (t==2 || t==3 || t==4)) continue;
+		for(var y=0; y<h; y++) UPNG.encode._filterLine(data, img, y, bpl, bpp, t);
+		fls.push(pako["deflate"](data));  if(bpp==1) break;
+	}
+	var ti, tsize=1e9;
+	for(var i=0; i<fls.length; i++) if(fls[i].length<tsize) {  ti=i;  tsize=fls[i].length;  }
+	//log("top filter", ti);
+	return fls[ti];
+};
+UPNG.encode._filterLine = function(data, img, y, bpl, bpp, type)
+{
+	var i = y*bpl, di = i+y, paeth = UPNG.decode._paeth;
+	data[di]=type;  di++;
+
+	if(type==0) for(var x=0; x<bpl; x++) data[di+x] = img[i+x];
+	else if(type==1) {
+		for(var x=  0; x<bpp; x++) data[di+x] =  img[i+x];
+		for(var x=bpp; x<bpl; x++) data[di+x] = (img[i+x]-img[i+x-bpp]+256)&255;
+	}
+	else if(y==0) {
+		for(var x=  0; x<bpp; x++) data[di+x] = img[i+x];
+
+		if(type==2) for(var x=bpp; x<bpl; x++) data[di+x] = img[i+x];
+		if(type==3) for(var x=bpp; x<bpl; x++) data[di+x] = (img[i+x] - (img[i+x-bpp]>>1) +256)&255;
+		if(type==4) for(var x=bpp; x<bpl; x++) data[di+x] = (img[i+x] - paeth(img[i+x-bpp], 0, 0) +256)&255;
+	}
+	else {
+		if(type==2) { for(var x=  0; x<bpl; x++) data[di+x] = (img[i+x]+256 - img[i+x-bpl])&255;  }
+		if(type==3) { for(var x=  0; x<bpp; x++) data[di+x] = (img[i+x]+256 - (img[i+x-bpl]>>1))&255;
+					  for(var x=bpp; x<bpl; x++) data[di+x] = (img[i+x]+256 - ((img[i+x-bpl]+img[i+x-bpp])>>1))&255;  }
+		if(type==4) { for(var x=  0; x<bpp; x++) data[di+x] = (img[i+x]+256 - paeth(0, img[i+x-bpl], 0))&255;
+					  for(var x=bpp; x<bpl; x++) data[di+x] = (img[i+x]+256 - paeth(img[i+x-bpp], img[i+x-bpl], img[i+x-bpp-bpl]))&255;  }
+	}
+};
+
+UPNG.crc = {
+	table : ( function() {
+	   var tab = new Uint32Array(256);
+	   for (var n=0; n<256; n++) {
+			var c = n;
+			for (var k=0; k<8; k++) {
+				if (c & 1)  c = 0xedb88320 ^ (c >>> 1);
+				else        c = c >>> 1;
+			}
+			tab[n] = c;  }
+		return tab;  })(),
+	update : function(c, buf, off$$1, len) {
+		for (var i=0; i<len; i++)  c = UPNG.crc.table[(c ^ buf[off$$1+i]) & 0xff] ^ (c >>> 8);
+		return c;
+	},
+	crc : function(b,o,l)  {  return UPNG.crc.update(0xffffffff,b,o,l) ^ 0xffffffff;  }
+};
+
+UPNG.quantize = function(img, w, h, ps)
+{
+	var nimg = new Uint8Array(img.length), pind = new Uint16Array(w*h), area=w*h, edist=UPNG.quantize.dist;
+	for(var i=0; i<area; i++) {
+		var qi=i<<2, a=img[qi+3]/255;
+		nimg[qi+0] = img[qi+0]*a;  nimg[qi+1] = img[qi+1]*a;  nimg[qi+2] = img[qi+2]*a;  nimg[qi+3] = img[qi+3];
+	}
+	var plte=[], used=[], pr=0, plim = Math.max(100, 10*ps);
+	while(true) {
+		used=[];  plte=[];
+		var msk = 0xff - ((1<<pr)-1), add = ((1<<pr))>>1;
+		for(var i=0; i<area; i++) {  var qi=i<<2;  var r=nimg[qi],g=nimg[qi+1],b=nimg[qi+2],a=nimg[qi+3];
+			var nr=(r&msk)+add, ng=(g&msk)+add, nb=(b&msk)+add, na=(a&msk)+add, key=(na<<24)|(nb<<16)|(ng<<8)|nr;
+			if(used[key]) {  var pv=plte[used[key]];  pv.occ++;  }
+			else {  used[key]=plte.length;  plte.push(  {occ:1, r:nr,g:ng,b:nb,a:na}  );  }
+			if(plte.length>plim) break;
+		}
+		if(plte.length>plim) {  pr++;  continue;  }
+		break;
+	}
+	if(pr==0 && plte.length<=ps) return img;
+	plte.sort(function(a,b) {return b.occ-a.occ;});
+
+	ps = Math.min(ps, plte.length);
+	var nplte = new Uint8Array(ps*4);
+	for(var i=0; i<ps; i++) {  var qi=i<<2,c=plte[i];  nplte[qi]=c.r;  nplte[qi+1]=c.g;  nplte[qi+2]=c.b;  nplte[qi+3]=c.a;  }
+	plte = nplte;  //*/
+
+	var icnt = Math.max(1, Math.min(10, Math.floor(1024/ps)));
+	for(var it=0; it<icnt; it++)
+	{
+		var hist=new Uint32Array(ps), nplt=new Uint32Array(ps*4);
+		var ndst=new Uint32Array(ps), nind=new Uint32Array(ps  );
+		for(var i=0; i<ps; i++) { var qi=i<<2;
+			var r=plte[qi], g=plte[qi+1], b=plte[qi+2], a=plte[qi+3];
+			var ci=0; cd=1e9;
+			for(var j=0; j<ps; j++) {  if(j==i) continue;
+				var dst = edist(r,g,b,a,plte,j<<2);
+				if(dst<cd) {  ci=j;  cd=dst;  }
+			}
+			ndst[i]=cd;  nind[i]=ci;
+		}
+		for(var i=0; i<area; i++) {  var qi=i<<2;
+			var r=nimg[qi], g=nimg[qi+1], b=nimg[qi+2], a=nimg[qi+3];
+			var ci=0, cd=1e9;
+			ci=pind[i];  cd=edist(r,g,b,a,plte,ci<<2);  if(cd<=(ndst[ci]>>1)) {}  else
+			for(var j=0; j<ps; j++) {
+				var dst = edist(r,g,b,a,plte,j<<2);
+				if(dst<cd) {  ci=j;  cd=dst;
+					if(dst<=(ndst[ci]>>1)) break;
+					var dst = edist(r,g,b,a,plte,nind[j]<<2);
+					if(dst<=(ndst[ci]>>1)) {  ci=nind[j];  break;  }
+				}
+			}
+			pind[i]=ci;  hist[ci]++;  var qci=ci<<2;
+			nplt[qci]+=r;  nplt[qci+1]+=g;  nplt[qci+2]+=b;  nplt[qci+3]+=a;
+		}
+		for(var i=0; i<ps; i++) {  var qi=i<<2, den=1/hist[i];
+			plte[qi]=nplt[qi]*den;  plte[qi+1]=nplt[qi+1]*den;  plte[qi+2]=nplt[qi+2]*den;  plte[qi+3]=nplt[qi+3]*den;
+		}
+	}
+	//UPNG.quantize.dither(nimg, w,h, pind,plte, ps);  // I think that (current) dithering is not worth it
+	for(var i=0; i<area; i++) {
+		var qi=i<<2, ci=pind[i], qci=ci<<2, ia = plte[qci+3]==0 ? 0 : 255/plte[qci+3];
+		nimg[qi+0] = plte[qci+0]*ia;  nimg[qi+1] = plte[qci+1]*ia;  nimg[qi+2] = plte[qci+2]*ia;  nimg[qi+3] = plte[qci+3];
+	}
+	return nimg;
+};
+UPNG.quantize.dist = function(r,g,b,a,ba,bi)
+{
+	var pr=ba[bi], pg=ba[bi+1], pb=ba[bi+2], pa=ba[bi+3];
+	return (pr-r)*(pr-r)+(pg-g)*(pg-g)+(pb-b)*(pb-b)+(pa-a)*(pa-a);
+};
+UPNG.quantize.dither = function(nimg, w, h, pind, plte, ps)
+{
+	var err = new Float32Array(w*h*4), i16 = 1/16;
+	var edist = UPNG.quantize.dist, round=Math.round, qw=w<<2;
+	for(var y=0; y<h; y++)
+		for(var x=0; x<w; x++) {
+			var i = y*w+x, qi=i<<2;
+			for(var j=0; j<4; j++) err[qi+j] = Math.max(-8, Math.min(8, err[qi+j]));
+			var r=round(nimg[qi]+err[qi]), g=round(nimg[qi+1]+err[qi+1]), b=round(nimg[qi+2]+err[qi+2]), a=round(nimg[qi+3]+err[qi+3]);
+			var ci=0, cd=1e9;
+			for(var j=0; j<ps; j++) {
+				var dst = edist(r,g,b,a,plte,j<<2);
+				if(dst<cd) {  ci=j;  cd=dst;  }
+			}
+			pind[i]=ci;
+			var ciq = ci<<2;
+			var dr=r-plte[ciq], dg=g-plte[ciq+1], db=b-plte[ciq+2], da=a-plte[ciq+3];
+
+			err[qi   +4+0] += (7*dr*i16);  err[qi   +4+1] += (7*dg*i16);  err[qi   +4+2] += (7*db*i16);  err[qi   +4+3] += (7*da*i16);
+			err[qi+qw-4+0] += (3*dr*i16);  err[qi+qw-4+1] += (3*dg*i16);  err[qi+qw-4+2] += (3*db*i16);  err[qi+qw-4+3] += (3*da*i16);
+			err[qi+qw  +0] += (5*dr*i16);  err[qi+qw  +1] += (5*dg*i16);  err[qi+qw  +2] += (5*db*i16);  err[qi+qw  +3] += (5*da*i16);
+			err[qi+qw+4+0] += (1*dr*i16);  err[qi+qw+4+1] += (1*dg*i16);  err[qi+qw+4+2] += (1*db*i16);  err[qi+qw+4+3] += (1*da*i16);
+		}
+};
+
+UPNG.decode = function(buff)
+{
+	var data = new Uint8Array(buff), offset = 8, bin = UPNG._bin, rUs = bin.readUshort;
+	var out = {tabs:{}};
+	var dd = new Uint8Array(data.length), doff = 0;	 // put all IDAT data into it
+
+	while(true)
+	{
+		var len = bin.readUint(data, offset);  offset += 4;
+		var type = bin.readASCII(data, offset, 4);  offset += 4;
+		//log(offset, len, type);
+
+		if     (type=="IHDR")  {  UPNG.decode._IHDR(data, offset, out);  }
+		else if(type=="IDAT") {
+			for(var i=0; i<len; i++) dd[doff+i] = data[offset+i];
+			doff += len;
+		}
+		else if(type=="pHYs") {
+			out.tabs[type] = [bin.readUint(data, offset), bin.readUint(data, offset+4), data[offset+8]];
+		}
+		else if(type=="cHRM") {
+			out.tabs[type] = [];
+			for(var i=0; i<8; i++) out.tabs[type].push(bin.readUint(data, offset+i*4));
+		}
+		else if(type=="tEXt") {
+			if(out.tabs[type]==null) out.tabs[type] = {};
+			var nz = bin.nextZero(data, offset);
+			var keyw = bin.readASCII(data, offset, nz-offset);
+			var text = bin.readASCII(data, nz+1, offset+len-nz-1);
+			out.tabs[type][keyw] = text;
+		}
+		else if(type=="iTXt") {
+			if(out.tabs[type]==null) out.tabs[type] = {};
+			var nz = 0, off$$1 = offset;
+			nz = bin.nextZero(data, off$$1);
+			var keyw = bin.readASCII(data, off$$1, nz-off$$1);  off$$1 = nz + 1;
+			var cflag = data[off$$1], cmeth = data[off$$1+1];  off$$1+=2;
+			nz = bin.nextZero(data, off$$1);
+			var ltag = bin.readASCII(data, off$$1, nz-off$$1);  off$$1 = nz + 1;
+			nz = bin.nextZero(data, off$$1);
+			var tkeyw = bin.readUTF8(data, off$$1, nz-off$$1);  off$$1 = nz + 1;
+			var text = bin.readUTF8(data, off$$1, len-(off$$1-offset));
+			out.tabs[type][keyw] = text;
+		}
+		else if(type=="PLTE") {
+			out.tabs[type] = bin.readBytes(data, offset, len);
+		}
+		else if(type=="hIST") {
+			var pl = out.tabs["PLTE"].length/3;
+			out.tabs[type] = [];  for(var i=0; i<pl; i++) out.tabs[type].push(rUs(data, offset+i*2));
+		}
+		else if(type=="tRNS") {
+			if     (out.ctype==3) out.tabs[type] = bin.readBytes(data, offset, len);
+			else if(out.ctype==0) out.tabs[type] = rUs(data, offset);
+			else if(out.ctype==2) out.tabs[type] = [ rUs(data,offset),rUs(data,offset+2),rUs(data,offset+4) ];
+			else log("tRNS for unsupported color type",out.ctype, len);
+		}
+		else if(type=="gAMA") out.tabs[type] = bin.readUint(data, offset)/100000;
+		else if(type=="sRGB") out.tabs[type] = data[offset];
+		else if(type=="bKGD")
+		{
+			if     (out.ctype==0 || out.ctype==4) out.tabs[type] = [rUs(data, offset)];
+			else if(out.ctype==2 || out.ctype==6) out.tabs[type] = [rUs(data, offset), rUs(data, offset+2), rUs(data, offset+4)];
+			else if(out.ctype==3) out.tabs[type] = data[offset];
+		}
+		else if(type=="IEND") {
+			if(out.compress ==0) dd = UPNG.decode._inflate(dd);
+			else log("unsupported compression method:", out.interlace);
+
+			if(out.filter!=0) log("unsupported filter method:", out.filter);
+
+			if(out.interlace==0) out.data = UPNG.decode._filterZero(dd, out, 0, out.width, out.height);
+			else if(out.interlace==1) out.data = UPNG.decode._readInterlace(dd, out);
+			else log("unsupported interlace method:", out.interlace);
+
+			break;
+		}
+		else {  log("unknown chunk type", type, len);  }
+		offset += len;
+		var crc = bin.readUint(data, offset);  offset += 4;
+	}
+	delete out.compress;  delete out.interlace;  delete out.filter;
+	return out;
+};
+
+UPNG.decode._inflate = function(data) {  return pako["inflate"](data);  };
+
+UPNG.decode._readInterlace = function(data, out)
+{
+	var w = out.width, h = out.height;
+	var bpp = UPNG.decode._getBPP(out), cbpp = bpp>>3, bpl = Math.ceil(w*bpp/8);
+	var img = new Uint8Array( h * bpl );
+	var di = 0;
+
+	var starting_row  = [ 0, 0, 4, 0, 2, 0, 1 ];
+	var starting_col  = [ 0, 4, 0, 2, 0, 1, 0 ];
+	var row_increment = [ 8, 8, 8, 4, 4, 2, 2 ];
+	var col_increment = [ 8, 8, 4, 4, 2, 2, 1 ];
+
+	var pass=0;
+	while(pass<7)
+	{
+		var ri = row_increment[pass], ci = col_increment[pass];
+		var sw = 0, sh = 0;
+		var cr = starting_row[pass];  while(cr<h) {  cr+=ri;  sh++;  }
+		var cc = starting_col[pass];  while(cc<w) {  cc+=ci;  sw++;  }
+		var bpll = Math.ceil(sw*bpp/8);
+		UPNG.decode._filterZero(data, out, di, sw, sh);
+
+		var y=0, row = starting_row[pass];
+		while(row<h)
+		{
+			var col = starting_col[pass];
+			var cdi = (di+y*bpll)<<3;
+
+			while(col<w)
+			{
+				if(bpp==1) {
+					var val = data[cdi>>3];  val = (val>>(7-(cdi&7)))&1;
+					img[row*bpl + (col>>3)] |= (val << (7-((col&3)<<0)));
+				}
+				if(bpp==2) {
+					var val = data[cdi>>3];  val = (val>>(6-(cdi&7)))&3;
+					img[row*bpl + (col>>2)] |= (val << (6-((col&3)<<1)));
+				}
+				if(bpp==4) {
+					var val = data[cdi>>3];  val = (val>>(4-(cdi&7)))&15;
+					img[row*bpl + (col>>1)] |= (val << (4-((col&1)<<2)));
+				}
+				if(bpp>=8) {
+					var ii = row*bpl+col*cbpp;
+					for(var j=0; j<cbpp; j++) img[ii+j] = data[(cdi>>3)+j];
+				}
+				cdi+=bpp;  col+=ci;
+			}
+			y++;  row += ri;
+		}
+		if(sw*sh!=0) di += sh * (1 + bpll);
+		pass = pass + 1;
+	}
+	return img;
+};
+
+UPNG.decode._getBPP = function(out) {
+	var noc = [1,null,3,1,2,null,4][out.ctype];
+	if(noc==null) log("unsupported color type", out.ctype);
+	return noc * out.depth;
+};
+
+UPNG.decode._filterZero = function(data, out, off$$1, w, h)
+{
+	var bpp = UPNG.decode._getBPP(out), bpl = Math.ceil(w*bpp/8), paeth = UPNG.decode._paeth;
+	bpp = Math.ceil(bpp/8);
+
+	for(var y=0; y<h; y++)  {
+		var i = off$$1+y*bpl, di = i+y+1;
+		var type = data[di-1];
+
+		if     (type==0) for(var x=  0; x<bpl; x++) data[i+x] = data[di+x];
+		else if(type==1) {
+			for(var x=  0; x<bpp; x++) data[i+x] = data[di+x];
+			for(var x=bpp; x<bpl; x++) data[i+x] = (data[di+x] + data[i+x-bpp])&255;
+		}
+		else if(y==0) {
+			for(var x=  0; x<bpp; x++) data[i+x] = data[di+x];
+			if(type==2) for(var x=bpp; x<bpl; x++) data[i+x] = (data[di+x])&255;
+			if(type==3) for(var x=bpp; x<bpl; x++) data[i+x] = (data[di+x] + (data[i+x-bpp]>>1) )&255;
+			if(type==4) for(var x=bpp; x<bpl; x++) data[i+x] = (data[di+x] + paeth(data[i+x-bpp], 0, 0) )&255;
+		}
+		else {
+			if(type==2) { for(var x=  0; x<bpl; x++) data[i+x] = (data[di+x] + data[i+x-bpl])&255;  }
+
+			if(type==3) { for(var x=  0; x<bpp; x++) data[i+x] = (data[di+x] + (data[i+x-bpl]>>1))&255;
+			              for(var x=bpp; x<bpl; x++) data[i+x] = (data[di+x] + ((data[i+x-bpl]+data[i+x-bpp])>>1) )&255;  }
+
+			if(type==4) { for(var x=  0; x<bpp; x++) data[i+x] = (data[di+x] + paeth(0, data[i+x-bpl], 0))&255;
+						  for(var x=bpp; x<bpl; x++) data[i+x] = (data[di+x] + paeth(data[i+x-bpp], data[i+x-bpl], data[i+x-bpp-bpl]) )&255;  }
+		}
+	}
+	return data;
+};
+
+UPNG.decode._paeth = function(a,b,c)
+{
+	var p = a+b-c, pa = Math.abs(p-a), pb = Math.abs(p-b), pc = Math.abs(p-c);
+	if (pa <= pb && pa <= pc)  return a;
+	else if (pb <= pc)  return b;
+	return c;
+};
+
+UPNG.decode._IHDR = function(data, offset, out)
+{
+	var bin = UPNG._bin;
+	out.width  = bin.readUint(data, offset);  offset += 4;
+	out.height = bin.readUint(data, offset);  offset += 4;
+	out.depth     = data[offset];  offset++;
+	out.ctype     = data[offset];  offset++;
+	out.compress  = data[offset];  offset++;
+	out.filter    = data[offset];  offset++;
+	out.interlace = data[offset];  offset++;
+};
+
+UPNG._bin = {
+	nextZero   : function(data,p)  {  while(data[p]!=0) p++;  return p;  },
+	readUshort : function(buff,p)  {  return (buff[p]<< 8) | buff[p+1];  },
+	writeUshort: function(buff,p,n){  buff[p] = (n>>8)&255;  buff[p+1] = n&255;  },
+	readUint   : function(buff,p)  {  return (buff[p]*(256*256*256)) + ((buff[p+1]<<16) | (buff[p+2]<< 8) | buff[p+3]);  },
+	writeUint  : function(buff,p,n){  buff[p]=(n>>24)&255;  buff[p+1]=(n>>16)&255;  buff[p+2]=(n>>8)&255;  buff[p+3]=n&255;  },
+	readASCII  : function(buff,p,l){  var s = "";  for(var i=0; i<l; i++) s += String.fromCharCode(buff[p+i]);  return s;    },
+	writeASCII : function(data,p,s){  for(var i=0; i<s.length; i++) data[p+i] = s.charCodeAt(i);  },
+	readBytes  : function(buff,p,l){  var arr = [];   for(var i=0; i<l; i++) arr.push(buff[p+i]);   return arr;  },
+	pad : function(n) { return n.length < 2 ? "0" + n : n; },
+	readUTF8 : function(buff, p, l) {
+		var s = "", ns;
+		for(var i=0; i<l; i++) s += "%" + UPNG._bin.pad(buff[p+i].toString(16));
+		try {  ns = decodeURIComponent(s); }
+		catch(e) {  return UPNG._bin.readASCII(buff, p, l);  }
+		return  ns;
+	}
+};
+
+})(UPNG, pako);
+})();
+});
+
+/*
+* Author   Jonathan Lurie - http://me.jonahanlurie.fr
+* License  MIT
+* Link     https://github.com/Pixpipe/pixpipejs
+* Lab      MCIN - Montreal Neurological Institute
+*/
+
+
+
+//import pngjs from 'pngjs'; // ependency issues
+/**
+* An instance of PngDecoder will decode a PNG image in native Javascript and
+* output an Image2D. This is of course slower than using `io/FileImageReader.js`
+* but this is compatible with Node and not rely on HTML5 Canvas.
+*
+* **Usage**
+* - [examples/fileToPng.html](../examples/fileToPng.html)
+*/
+class PngDecoder extends Filter {
+  constructor() {
+    super();
+    this.addInputValidator(0, ArrayBuffer);
+  }
+  
+  _run(){
+    var inputBuffer = this._getInput(0);
+
+    if(!inputBuffer){
+      console.warn("PngDecoder requires an ArrayBuffer as input \"0\". Unable to continue.");
+      return;
+    }
+    
+    if( !this._isPng( inputBuffer ) ){
+      console.warn("This is not a PNG file, unable to decode this file.");
+      return;
+    }
+    
+    // The decode method uses Pako to uncompress the data. Pako outputs a larger array
+    // than the expected size, so we have to cut it - It seems a bit cumbersome or being
+    // kindof manual work, but it's 2x faster than using upng.toRGBA8()
+    try{
+      var pngData = UPNG.decode( inputBuffer );
+      var ncpp = Math.round(pngData.data.length / (pngData.width*pngData.height) );
+      var outputImage = new Image2D();
+      var croppedArray = new pngData.data.constructor( pngData.data.buffer, 0, pngData.width * pngData.height * ncpp);
+      outputImage.setData(croppedArray, pngData.width, pngData.height, ncpp);
+      this._output[ 0 ] = outputImage;
+    }catch(e){
+      console.warn(e);
+    }
+    
+  }
+  
+  
+  /**
+  * Checks if the input buffer is of a png file
+  * @param {ArrayBuffer} buffer - an array buffer inside which a PNG could be hiding!
+  * @return {Boolean} true if the buffer is a valid PNG buffer, false if not
+  */
+  _isPng( buffer ){
+    var first8Bytes = new Uint8Array( buffer, 0, 8);
+    var validSequence = new Uint8Array( [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
+    
+    for(var i=0; i<first8Bytes.length; i++){
+      if(first8Bytes[i] != validSequence[i])
+        return false;
+    }
+    
+    return true;
+  }
+  
+  
+} /* PngDecoder */
+
+/*
+* Author    Jonathan Lurie - http://me.jonahanlurie.fr
+*
+* License   MIT
+* Link      https://github.com/Pixpipe/pixpipejs
+* Lab       MCIN - Montreal Neurological Institute
+*/
+
+
+// decoders
+//import { PixBinDecoder } from './PixBinDecoder.js';
+
+
+/**
+* An instance of Image2DGenericDecoder takes a ArrayBuffer 
+* as input 0 (`.addInput(myArrayBuffer)`) and output an Image2D.
+* The `update` method will perform several decoding attempts, using the readers
+* specified in the constructor.
+* In case of success (one of the registered decoder was compatible to the data)
+* the metadata `decoderConstructor` and `decoderName` are made accessible and give
+* information about the file format. If no decoder managed to decode the input buffer,
+* this filter will not have any output.
+*
+* Developers: if a new 2D dataset decoder is added, reference it here and in the import list
+*
+* **Usage**
+* - [examples/fileToGenericImage2D.html](../examples/fileToGenericImage2D.html)
+*/
+class Image2DGenericDecoder extends Filter {
+  
+  constructor(){
+    super();
+    
+    this._decoders = [
+      TiffDecoder,
+      JpegDecoder,
+      PngDecoder,
+      PixpDecoder,
+      //PixBinDecoder
+    ];
+  }
+  
+  
+  _run(){
+    var inputBuffer = this._getInput(0);
+    
+    if(!inputBuffer){
+      console.warn("The input buffer must not be null.");
+      return;
+    }
+    
+    // try with each decoder
+    for(var d=0; d<this._decoders.length; d++){
+      var decoder = new this._decoders[d]();
+      decoder.addInput( inputBuffer );
+      decoder.update();
+      
+      if(decoder.getNumberOfOutputs()){
+        this._output[0] = decoder.getOutput();
+        this.setMetadata("decoderConstructor", this._decoders[d]);
+        this.setMetadata("decoderName", this._decoders[d].name);
+        break;
+      }
+    }
+  }
+  
+  
+} /* END of class Image2DGenericDecoder */
 
 function iota(n) {
   var result = new Array(n);
@@ -20941,7 +25963,7 @@ var iota_1 = iota;
 
 // The _isBuffer check is for Safari 5-7 support, because it's missing
 // Object.prototype.constructor. Remove this eventually
-var index$2 = function (obj) {
+var index$4 = function (obj) {
   return obj != null && (isBuffer$1(obj) || isSlowBuffer$1(obj) || !!obj._isBuffer)
 };
 
@@ -21206,7 +26228,7 @@ b"+i+"*=d\
 }
 
 function arrayDType(data) {
-  if(index$2(data)) {
+  if(index$4(data)) {
     return "buffer"
   }
   if(hasTypedArrays) {
@@ -21286,6 +26308,157 @@ var CACHED_CONSTRUCTORS = {
 }
 
 var ndarray = wrappedNDArrayCtor;
+
+function dtypeToType(dtype) {
+  switch(dtype) {
+    case 'uint8':
+      return Uint8Array;
+    case 'uint16':
+      return Uint16Array;
+    case 'uint32':
+      return Uint32Array;
+    case 'int8':
+      return Int8Array;
+    case 'int16':
+      return Int16Array;
+    case 'int32':
+      return Int32Array;
+    case 'float':
+    case 'float32':
+      return Float32Array;
+    case 'double':
+    case 'float64':
+      return Float64Array;
+    case 'uint8_clamped':
+      return Uint8ClampedArray;
+    case 'generic':
+    case 'buffer':
+    case 'data':
+    case 'dataview':
+      return ArrayBuffer;
+    case 'array':
+      return Array;
+  }
+}
+
+var zeros = function zeros(shape, dtype) {
+  dtype = dtype || 'float64';
+  var sz = 1;
+  for(var i=0; i<shape.length; ++i) {
+    sz *= shape[i];
+  }
+  return ndarray(new (dtypeToType(dtype))(sz), shape);
+};
+
+/*
+ * Author   Armin Taheri - https://github.com/ArminTaheri
+ * License  MIT
+ * Link     https://github.com/Pixpipe/pixpipejs
+ * Lab      MCIN - Montreal Neurological Institute
+ */
+
+class ComponentProjectionImage2DFilter extends Filter {
+  constructor() {
+    super();
+    this.addInputValidator(0, Image2D);
+    this.setMetadata('componentOffset', 0);
+  }
+  
+  
+  _run() {
+    if( ! this.hasValidInput()){
+      console.warn("A filter of type ComponentProjectionImage2DFilter requires 1 input of Image2D.");
+      return;
+    }
+    const inputSignal = this._getInput(0);
+    const width = inputSignal.getMetadata('width');
+    const height = inputSignal.getMetadata('height');
+    const ncpp = inputSignal.getMetadata('ncpp');
+    const offset = this.getMetadata('componentOffset');
+    const arr = ndarray(inputSignal.getData(), [width, height, ncpp]);
+    const projected = arr.pick(null, null, offset); // pick out the component as an ndarray
+    const projectedArray = zeros([width, height], arr.dtype);
+    for (let i = 0; i < width; i++) {
+      for (let j = 0; j < height; j++) {
+        projectedArray.set(i, j, projected.get(i, j));
+      }
+    }
+    const projectedImage = new Image2D();
+    projectedImage.setData(projectedArray.data, width, height, 1);
+    this._output[0] = projectedImage;
+  }
+
+}
+
+/*
+ * Author   Armin Taheri - https://github.com/ArminTaheri
+ * License  MIT
+ * Link     https://github.com/Pixpipe/pixpipejs
+ * Lab      MCIN - Montreal Neurological Institute
+ */
+
+function validateInputs(inputImages) {
+  const widths = inputImages.map(i => i.getMetadata('width'));
+  const widthsEqual = widths.reduce((eq, w) => eq && w === widths[0], true);
+  if (!widthsEqual) {
+    return false;
+  }
+  const heights = inputImages.map(i => i.getMetadata('height'));
+  const heightsEqual = heights.reduce((eq, h) => eq && h === heights[0], true);
+  if (!heightsEqual) {
+    return false;
+  }
+  const types = inputImages.map(i => i.getData().constructor);
+  const typesEqual = types.reduce((eq, t) => eq && t === types[0], true);
+  if (!typesEqual) {
+    return false;
+  }
+  return true;
+}
+
+class ComponentMergeImage2DFilter extends Filter {
+  constructor() {
+    super();
+    this.addInputValidator('ALL', Image2D);
+  }
+  _run() {
+    if(this.getNumberOfInputs() < 2) {
+      console.warn('A filter of type ComponentMergeImage2DFilter needs 2 or more inputs.');
+      return;
+    }
+    if( ! this.hasValidInput()){
+      console.warn("A filter of type ComponentMergeImage2DFilter requires inputs of Image2D.");
+      return;
+    }
+    const inputImages = this.getInputCategories().map(cat => this._getInput(cat));
+    if (!validateInputs(inputImages)) {
+      console.warn('A filter of type ComponentMergeImage2DFilter requires inputs to be the same dimensions and array type');
+      return;
+    }
+    const width = inputImages[0].getMetadata('width');
+    const height = inputImages[0].getMetadata('height');
+    const ncpps = inputImages.map(i => i.getMetadata('ncpp'));
+    const totalncpp = ncpps.reduce((x,y) => x + y);
+    const type = ndarray(inputImages[0].getData()).dtype;
+    const merged = zeros([width, height, totalncpp], type);
+
+    let ncppoffset = 0;
+    inputImages.forEach((image, index) => {
+      const ncpp = image.getMetadata('ncpp');
+      const img = ndarray(image.getData(), [width, height, ncpp]);
+      for (let i = 0; i < width; i++) {
+        for (let j = 0; j < height; j++) {
+          for (let k = 0; k < ncpp; k++) {
+            merged.set(i, j, ncppoffset + k, img.get(i, j, k));
+          }
+        }
+      }
+      ncppoffset += ncpp;
+    });
+    this._output[0] = new Image2D();
+    this._output[0].setData(merged.data, width, height, totalncpp);
+  }
+}
 
 function unique_pred(list, compare) {
   var ptr = 1
@@ -23130,6 +28303,12 @@ function ndfft(dir, x, y) {
 
 var fft = ndfft;
 
+/*
+ * Author   Armin Taheri - https://github.com/ArminTaheri
+ * License  MIT
+ * Link     https://github.com/Pixpipe/pixpipejs
+ * Lab      MCIN - Montreal Neurological Institute
+ */
 const DIRECTIONS = {
   'FORWARD': 1,
   'INVERSE': -1,
@@ -23139,21 +28318,26 @@ class BaseFourierSignalFilter extends Filter {
   constructor(direction) {
     super();
     this.direction = direction;
+    this.setMetadata('direction', this.direction);
     if (DIRECTIONS[this.direction] === undefined) {
       throw new Error(`${this.direction} is not a valid fourier transform direction. Please try one of: ${Object.keys(DIRECTIONS)}`);
     }
     this.addInputValidator(0, Signal1D);
+    this.addInputValidator(1, Signal1D);
   }
   _run() {
     if( ! this.hasValidInput()){
-      console.warn("A filter of type BaseFourierSignalFilter requires 1 input of Signal1D.");
+      console.warn("A filter of type BaseFourierSignalFilter requires 2 inputs of Signal1D.");
       return;
     }
-    const inputSignal = this._getInput(0);
-    const length = inputSignal.getMetadata('length');
-    const real = ndarray(inputSignal.clone().getData(), [length]);
-    const img = ndarray(inputSignal.hollowClone().getData(), [length]);
-    this.setMetadata('direction', this.direction);
+    const realSignal = this._getInput(0);
+    const imgSignal = this._getInput(1);
+    const length = realSignal.getMetadata('length');
+    if (length !== imgSignal.getMetadata('length')) {
+      console.warn('The imaginary and real components of the signal need to be of equal length.');
+    }
+    const real = ndarray(realSignal.clone().getData(), [length]);
+    const img = ndarray(imgSignal.clone().getData(), [length]);
 
     fft(DIRECTIONS[this.direction], real, img);
     this._output[0] = new Signal1D();
@@ -23169,7 +28353,72 @@ class ForwardFourierSignalFilter extends BaseFourierSignalFilter {
   }
 }
 
-class InverseFourerSignalFilter extends BaseFourierSignalFilter {
+class InverseFourierSignalFilter extends BaseFourierSignalFilter {
+  constructor() {
+    super('INVERSE');
+  }
+}
+
+/*
+ * Author   Armin Taheri - https://github.com/ArminTaheri
+ * License  MIT
+ * Link     https://github.com/Pixpipe/pixpipejs
+ * Lab      MCIN - Montreal Neurological Institute
+ */
+const DIRECTIONS$1 = {
+  'FORWARD': 1,
+  'INVERSE': -1,
+};
+
+class BaseFourierImageFilter extends Filter {
+  constructor(direction) {
+    super();
+    this.direction = direction;
+    if (DIRECTIONS$1[this.direction] === undefined) {
+      throw new Error(`${this.direction} is not a valid fourier transform direction. Please try one of: ${Object.keys(DIRECTIONS$1)}`);
+    }
+    this.addInputValidator(0, Image2D);
+    this.addInputValidator(1, Image2D);
+  }
+  _run() {
+    if( ! this.hasValidInput()){
+      console.warn("A filter of type BaseFourierSignalFilter requires 2 inputs of Signal1D.");
+      return;
+    }
+    const inputImagereal = this._getInput(0);
+    const inputImageimg = this._getInput(1);
+    const ncpp = inputImagereal.getMetadata('ncpp');
+    if (ncpp > 1) {
+      console.warn('Please make sure the input images are made of exactly 1 channel.');
+      return;
+    }
+
+    const width = inputImagereal.getMetadata('width');
+    const height =inputImagereal.getMetadata('height');
+    if (width !== inputImageimg.getMetadata('width') || height !== inputImageimg.getMetadata('height')) {
+      console.warn('Please make sure the real and imaginary input images are the same dimensions');
+    }
+    const real = ndarray(inputImagereal.getDataAsFloat32Array(), [width, height]);
+    const img = ndarray(inputImageimg.getDataAsFloat32Array(), [width, height]);
+    this.setMetadata('direction', this.direction);
+
+    fft(DIRECTIONS$1[this.direction], real, img);
+    this._output[0] = new Image2D();
+    this._output[0].setData(real.data, width, height, 1);
+    this._output[0].setMetadata('ncpp', 1);
+    this._output[1] = new Image2D();
+    this._output[1].setData(img.data, width, height, 1);
+    this._output[1].setMetadata('ncpp', 1);
+  }
+}
+
+class ForwardFourierImageFilter extends BaseFourierImageFilter {
+  constructor() {
+    super('FORWARD');
+  }
+}
+
+class InverseFourierImageFilter extends BaseFourierImageFilter {
   constructor() {
     super('INVERSE');
   }
@@ -23178,7 +28427,7 @@ class InverseFourerSignalFilter extends BaseFourierSignalFilter {
 /*
 * Author   Jonathan Lurie - http://me.jonahanlurie.fr
 * License  MIT
-* Link      https://github.com/jonathanlurie/pixpipejs
+* Link      https://github.com/Pixpipe/pixpipejs
 * Lab       MCIN - Montreal Neurological Institute
 */
 
@@ -23291,7 +28540,7 @@ class ForEachPixelImageFilter extends ImageToImageFilter {
 /*
 * Author   Jonathan Lurie - http://me.jonahanlurie.fr
 * License  MIT
-* Link      https://github.com/jonathanlurie/pixpipejs
+* Link      https://github.com/Pixpipe/pixpipejs
 * Lab       MCIN - Montreal Neurological Institute
 */
 
@@ -24673,7 +29922,7 @@ return parser;
 /*
 * Author   Jonathan Lurie - http://me.jonahanlurie.fr
 * License  MIT
-* Link      https://github.com/jonathanlurie/pixpipejs
+* Link      https://github.com/Pixpipe/pixpipejs
 * Lab       MCIN - Montreal Neurological Institute
 */
 
@@ -24757,7 +30006,7 @@ class ImageBlendExpressionFilter extends ImageToImageFilter {
 /*
 * Author   Jonathan Lurie - http://me.jonahanlurie.fr
 * License  MIT
-* Link      https://github.com/jonathanlurie/pixpipejs
+* Link      https://github.com/Pixpipe/pixpipejs
 * Lab       MCIN - Montreal Neurological Institute
 */
 
@@ -24881,7 +30130,7 @@ class SpatialConvolutionFilter extends ImageToImageFilter {
 /*
 * Author   Jonathan Lurie - http://me.jonahanlurie.fr
 * License  MIT
-* Link      https://github.com/jonathanlurie/pixpipejs
+* Link      https://github.com/Pixpipe/pixpipejs
 * Lab       MCIN - Montreal Neurological Institute
 */
 
@@ -24944,7 +30193,7 @@ class MultiplyImageFilter extends ImageToImageFilter {
 /*
 * Author   Jonathan Lurie - http://me.jonahanlurie.fr
 * License  MIT
-* Link      https://github.com/jonathanlurie/pixpipejs
+* Link      https://github.com/Pixpipe/pixpipejs
 * Lab       MCIN - Montreal Neurological Institute
 */
 
@@ -25049,7 +30298,7 @@ class SimpleThresholdFilter extends ImageToImageFilter {
 /*
 * Author   Jonathan Lurie - http://me.jonahanlurie.fr
 * License  MIT
-* Link      https://github.com/jonathanlurie/pixpipejs
+* Link      https://github.com/Pixpipe/pixpipejs
 * Lab       MCIN - Montreal Neurological Institute
 */
 
@@ -25117,7 +30366,7 @@ class ImageDerivativeFilter extends ImageToImageFilter {
 /*
 * Author   Jonathan Lurie - http://me.jonahanlurie.fr
 * License  MIT
-* Link      https://github.com/jonathanlurie/pixpipejs
+* Link      https://github.com/Pixpipe/pixpipejs
 * Lab       MCIN - Montreal Neurological Institute
 */
 
@@ -25197,7 +30446,7 @@ class GradientImageFilter extends ImageToImageFilter {
 /*
 * Author   Jonathan Lurie - http://me.jonahanlurie.fr
 * License  MIT
-* Link      https://github.com/jonathanlurie/pixpipejs
+* Link      https://github.com/Pixpipe/pixpipejs
 * Lab       MCIN - Montreal Neurological Institute
 */
 
@@ -25253,7 +30502,7 @@ class NormalizeImageFilter extends ImageToImageFilter {
 /*
 * Author   Jonathan Lurie - http://me.jonahanlurie.fr
 * License  MIT
-* Link      https://github.com/jonathanlurie/pixpipejs
+* Link      https://github.com/Pixpipe/pixpipejs
 * Lab       MCIN - Montreal Neurological Institute
 */
 
@@ -25489,7 +30738,7 @@ class ContourImage2DFilter extends Filter {
 /*
 * Author   Jonathan Lurie - http://me.jonahanlurie.fr
 * License  MIT
-* Link      https://github.com/jonathanlurie/pixpipejs
+* Link      https://github.com/Pixpipe/pixpipejs
 * Lab       MCIN - Montreal Neurological Institute
 */
 
@@ -25680,7 +30929,7 @@ class FloodFillImageFilter extends ImageToImageFilter {
 /*
 * Author   Jonathan Lurie - http://me.jonahanlurie.fr
 * License  MIT
-* Link      https://github.com/jonathanlurie/pixpipejs
+* Link      https://github.com/Pixpipe/pixpipejs
 * Lab       MCIN - Montreal Neurological Institute
 */
 
@@ -25779,7 +31028,7 @@ class ContourHolesImage2DFilter extends Filter {
 /*
 * Author   Jonathan Lurie - http://me.jonahanlurie.fr
 * License  MIT
-* Link      https://github.com/jonathanlurie/pixpipejs
+* Link      https://github.com/Pixpipe/pixpipejs
 * Lab       MCIN - Montreal Neurological Institute
 */
 
@@ -25794,7 +31043,7 @@ class ContourHolesImage2DFilter extends Filter {
 * created ( because the filter ForEachPixelImageFilter creates an output with same number of band.)
 *
 * **Usage**
-* - [the filter TerrainRgbToElevationImageFilter](https://github.com/jonathanlurie/pixpipejs/blob/master/src/filter/TerrainRgbToElevationImageFilter.js)
+* - [the filter TerrainRgbToElevationImageFilter](https://github.com/Pixpipe/pixpipejs/blob/master/src/filter/TerrainRgbToElevationImageFilter.js)
 *
 */
 class ForEachPixelReadOnlyFilter extends Filter {
@@ -25838,7 +31087,7 @@ class ForEachPixelReadOnlyFilter extends Filter {
 /*
 * Author   Jonathan Lurie - http://me.jonahanlurie.fr
 * License  MIT
-* Link      https://github.com/jonathanlurie/pixpipejs
+* Link      https://github.com/Pixpipe/pixpipejs
 * Lab       MCIN - Montreal Neurological Institute
 */
 
@@ -25901,7 +31150,7 @@ class TerrainRgbToElevationImageFilter extends ImageToImageFilter {
 * Author    Jonathan Lurie - http://me.jonahanlurie.fr
 *
 * License   MIT
-* Link      https://github.com/jonathanlurie/pixpipejs
+* Link      https://github.com/Pixpipe/pixpipejs
 * Lab       MCIN - Montreal Neurological Institute
 */
 
@@ -25984,7 +31233,7 @@ class NearestNeighborSparseInterpolationImageFilter extends Filter {
 * Author    Jonathan Lurie - http://me.jonahanlurie.fr
 *
 * License   MIT
-* Link      https://github.com/jonathanlurie/pixpipejs
+* Link      https://github.com/Pixpipe/pixpipejs
 * Lab       MCIN - Montreal Neurological Institute
 */
 
@@ -26329,7 +31578,7 @@ var Delaunay;
 * Author    Jonathan Lurie - http://me.jonahanlurie.fr
 *
 * License   MIT
-* Link      https://github.com/jonathanlurie/pixpipejs
+* Link      https://github.com/Pixpipe/pixpipejs
 * Lab       MCIN - Montreal Neurological Institute
 */
 
@@ -26488,7 +31737,285 @@ class TriangulationSparseInterpolationImageFilter extends Filter {
 /*
 * Author   Jonathan Lurie - http://me.jonahanlurie.fr
 * License  MIT
-* Link      https://github.com/jonathanlurie/pixpipejs
+* Link      https://github.com/Pixpipe/pixpipejs
+* Lab       MCIN - Montreal Neurological Institute
+*/
+
+/**
+* An instance of CropImageFilter is used to crop an `Image2D`. This filter accepts
+* a single input, using `.addInput( myImage )`, then, it requires a top left point
+* that must be set with `.setMetadata( "x", Number)` and `.setMetadata( "y", Number)`.
+* In addition, you must specify the width and heigth of the output using 
+* `.setMetadata( "w", Number)` and `.setMetadata( "h", Number)`.
+*
+* **Usage**
+* - [examples/cropImage2D.html](../examples/cropImage2D.html)
+*
+*/
+class CropImageFilter extends ImageToImageFilter {
+  constructor(){
+    super();
+    this.addInputValidator(0, Image2D);
+    
+    this.setMetadata( "x", 0 );
+    this.setMetadata( "y", 0 );
+    this.setMetadata( "w", 0 );
+    this.setMetadata( "h", 0 );
+  }
+  
+  
+  _run(){
+    if( ! this.hasValidInput()){
+      console.warn("A filter of type CropImageFilter requires 1 input of category '0' (Image2D)");
+      return;
+    }
+    
+    var startX = Math.round( this.getMetadata( "x" ) );
+    var startY = Math.round(this.getMetadata( "y" ) );
+    var outW = Math.round(this.getMetadata( "w" ) );
+    var outH = Math.round(this.getMetadata( "h" ) );
+    var endX = startX + outW;
+    var endY = startY + outH;
+    
+    var inputImage = this._getInput( 0 );
+    var inputWidth = inputImage.getWidth();
+    var inputHeight = inputImage.getHeight();
+    var ncpp = inputImage.getNcpp();
+    
+    if( startX < 0 || startY < 0 || startX >= inputWidth || startY >= inputHeight ||
+        endX < 0 || endY < 0 || endX >= inputWidth || endY >= inputHeight){
+      console.warn("The query area is out of bound");
+      return;
+    }
+    
+    var inputData = inputImage.getData();
+    
+    var outputImage = new Image2D({ 
+      width  : outW,
+      height : outH,
+      color  : new inputData.constructor( ncpp )
+    });
+    
+    for( var i=0; i<outW; i++){
+      for( var j=0; j<outH; j++){
+        var inputColor = inputImage.getPixel({ x: i+startX, y: j+startY});
+        outputImage.setPixel(
+          {x: i, y: j},
+          inputColor
+        );
+      }
+    }
+    
+    this._output[ 0 ] = outputImage;
+  }
+  
+  
+} /* END of class CropImageFilter */
+
+var simplify = createCommonjsModule(function (module) {
+/*
+ (c) 2013, Vladimir Agafonkin
+ Simplify.js, a high-performance JS polyline simplification library
+ mourner.github.io/simplify-js
+*/
+
+(function () { 'use strict';
+
+// to suit your point format, run search/replace for '.x' and '.y';
+// for 3D version, see 3d branch (configurability would draw significant performance overhead)
+
+// square distance between 2 points
+function getSqDist(p1, p2) {
+
+    var dx = p1.x - p2.x,
+        dy = p1.y - p2.y;
+
+    return dx * dx + dy * dy;
+}
+
+// square distance from a point to a segment
+function getSqSegDist(p, p1, p2) {
+
+    var x = p1.x,
+        y = p1.y,
+        dx = p2.x - x,
+        dy = p2.y - y;
+
+    if (dx !== 0 || dy !== 0) {
+
+        var t = ((p.x - x) * dx + (p.y - y) * dy) / (dx * dx + dy * dy);
+
+        if (t > 1) {
+            x = p2.x;
+            y = p2.y;
+
+        } else if (t > 0) {
+            x += dx * t;
+            y += dy * t;
+        }
+    }
+
+    dx = p.x - x;
+    dy = p.y - y;
+
+    return dx * dx + dy * dy;
+}
+// rest of the code doesn't care about point format
+
+// basic distance-based simplification
+function simplifyRadialDist(points, sqTolerance) {
+
+    var prevPoint = points[0],
+        newPoints = [prevPoint],
+        point;
+
+    for (var i = 1, len = points.length; i < len; i++) {
+        point = points[i];
+
+        if (getSqDist(point, prevPoint) > sqTolerance) {
+            newPoints.push(point);
+            prevPoint = point;
+        }
+    }
+
+    if (prevPoint !== point) newPoints.push(point);
+
+    return newPoints;
+}
+
+// simplification using optimized Douglas-Peucker algorithm with recursion elimination
+function simplifyDouglasPeucker(points, sqTolerance) {
+
+    var len = points.length,
+        MarkerArray = typeof Uint8Array !== 'undefined' ? Uint8Array : Array,
+        markers = new MarkerArray(len),
+        first = 0,
+        last = len - 1,
+        stack = [],
+        newPoints = [],
+        i, maxSqDist, sqDist, index;
+
+    markers[first] = markers[last] = 1;
+
+    while (last) {
+
+        maxSqDist = 0;
+
+        for (i = first + 1; i < last; i++) {
+            sqDist = getSqSegDist(points[i], points[first], points[last]);
+
+            if (sqDist > maxSqDist) {
+                index = i;
+                maxSqDist = sqDist;
+            }
+        }
+
+        if (maxSqDist > sqTolerance) {
+            markers[index] = 1;
+            stack.push(first, index, index, last);
+        }
+
+        last = stack.pop();
+        first = stack.pop();
+    }
+
+    for (i = 0; i < len; i++) {
+        if (markers[i]) newPoints.push(points[i]);
+    }
+
+    return newPoints;
+}
+
+// both algorithms combined for awesome performance
+function simplify(points, tolerance, highestQuality) {
+
+    var sqTolerance = tolerance !== undefined ? tolerance * tolerance : 1;
+
+    points = highestQuality ? points : simplifyRadialDist(points, sqTolerance);
+    points = simplifyDouglasPeucker(points, sqTolerance);
+
+    return points;
+}
+
+// export as AMD module / Node module / browser or worker variable
+if (typeof undefined === 'function' && undefined.amd) undefined(function() { return simplify; });
+else module.exports = simplify;
+
+})();
+});
+
+/*
+* Author   Jonathan Lurie - http://me.jonahanlurie.fr
+* License  MIT
+* Link     https://github.com/Pixpipe/pixpipejs
+* Lab      MCIN - Montreal Neurological Institute
+*/
+
+/**
+* An instance of SimplifyLineStringFilter takes a LineString and simplifies upon
+* a given tolerance distance (in pixel, possibly being sub-pixel).
+* This filter outputs another LineString with a fewer amount of points.
+*
+* **Usage**
+* - [examples/contourSimplifiedImage2D.html](../examples/contourSimplifiedImage2D.html)
+*/
+class SimplifyLineStringFilter extends Filter {
+  
+  constructor(){
+    super();
+    this.addInputValidator(0, LineString);
+    this.setMetadata( "tolerance", 0.1 );
+  }
+  
+  
+  _run(){
+    
+    if( ! this.hasValidInput()){
+      console.warn("A filter of type SimplifyLineStringFilter requires 1 input of category '0' (LineString)");
+      return;
+    }
+    
+    var inputString = this._getInput( 0 );
+    var nod = inputString.getNod();
+    var inputPoints = inputString.getData();
+    var tolerance = this.getMetadata( "tolerance" );
+    
+    if( nod != 2){
+      console.warn("SimplifyLineStringFilter is only for 2D LineStrings.");
+      return;
+    }
+    
+    // points need to be group in an array of {x: Number, y: Number}
+    var groupedStringData = new Array( inputPoints.length / 2 );
+    
+    for(var i=0; i<groupedStringData.length; i++){
+      groupedStringData[ i ] = {x: inputPoints[i*2], y: inputPoints[i*2 + 1]};
+    }
+    
+    // simplifying the linestring
+    var simplified = simplify(groupedStringData, tolerance, true);
+    
+    // putting back the data as a big array
+    var linearStringData = new Array( simplified.length * 2 );
+    
+    for(var i=0; i<simplified.length-1; i++){
+      linearStringData[i*2] = simplified[i].x;
+      linearStringData[i*2 + 1] = simplified[i+1].y;
+    }
+    
+    var outputLineString = new LineString();
+    outputLineString.setData( linearStringData, nod );
+    outputLineString.copyMetadataFrom( inputString );
+    
+    this._output[0] = outputLineString;
+  }
+  
+} /* END of class SimplifyLineStringFilter */
+
+/*
+* Author   Jonathan Lurie - http://me.jonahanlurie.fr
+* License  MIT
+* Link      https://github.com/Pixpipe/pixpipejs
 * Lab       MCIN - Montreal Neurological Institute
 */
 
@@ -26629,7 +32156,7 @@ class AngleToHueWheelHelper extends ImageToImageFilter {
 /*
 * Author   Jonathan Lurie - http://me.jonahanlurie.fr
 * License  MIT
-* Link      https://github.com/jonathanlurie/pixpipejs
+* Link      https://github.com/Pixpipe/pixpipejs
 * Lab       MCIN - Montreal Neurological Institute
 */
 
@@ -26813,7 +32340,7 @@ var ColorScales = {
 /*
 * Author   Jonathan Lurie - http://me.jonahanlurie.fr
 * License  MIT
-* Link      https://github.com/jonathanlurie/pixpipejs
+* Link      https://github.com/Pixpipe/pixpipejs
 * Lab       MCIN - Montreal Neurological Institute
 */
 
@@ -27179,7 +32706,7 @@ class Colormap extends PixpipeObject {
 /*
 * Author   Jonathan Lurie - http://me.jonahanlurie.fr
 * License  MIT
-* Link      https://github.com/jonathanlurie/pixpipejs
+* Link      https://github.com/Pixpipe/pixpipejs
 * Lab       MCIN - Montreal Neurological Institute
 */
 
@@ -27351,6 +32878,7 @@ class Image3DToMosaicFilter extends Filter{
 
 } /* END of class Image3DToMosaicFilter */
 
+exports.CoreTypes = CoreTypes;
 exports.PixpipeObject = PixpipeObject;
 exports.Filter = Filter;
 exports.Signal1D = Signal1D;
@@ -27364,6 +32892,7 @@ exports.UrlImageReader = UrlImageReader;
 exports.FileImageReader = FileImageReader;
 exports.FileToArrayBufferReader = FileToArrayBufferReader;
 exports.UrlToArrayBufferReader = UrlToArrayBufferReader;
+exports.BrowserDownloadBuffer = BrowserDownloadBuffer;
 exports.Minc2Decoder = Minc2Decoder;
 exports.NiftiDecoder = NiftiDecoder;
 exports.PixpEncoder = PixpEncoder;
@@ -27372,10 +32901,17 @@ exports.Image3DGenericDecoder = Image3DGenericDecoder;
 exports.TiffDecoder = TiffDecoder;
 exports.MghDecoder = MghDecoder;
 exports.EegModDecoder = EegModDecoder;
-exports.PixBinEncoder = PixBinEncoder;
-exports.PixBinDecoder = PixBinDecoder;
+exports.PixBinEncoder = PixBinEncoder$$1;
+exports.PixBinDecoder = PixBinDecoder$1;
+exports.JpegDecoder = JpegDecoder;
+exports.PngDecoder = PngDecoder;
+exports.Image2DGenericDecoder = Image2DGenericDecoder;
+exports.ComponentProjectionImage2DFilter = ComponentProjectionImage2DFilter;
+exports.ComponentMergeImage2DFilter = ComponentMergeImage2DFilter;
 exports.ForwardFourierSignalFilter = ForwardFourierSignalFilter;
-exports.InverseFourerSignalFilter = InverseFourerSignalFilter;
+exports.InverseFourierSignalFilter = InverseFourierSignalFilter;
+exports.ForwardFourierImageFilter = ForwardFourierImageFilter;
+exports.InverseFourierImageFilter = InverseFourierImageFilter;
 exports.ForEachPixelImageFilter = ForEachPixelImageFilter;
 exports.SpectralScaleImageFilter = SpectralScaleImageFilter;
 exports.ImageBlendExpressionFilter = ImageBlendExpressionFilter;
@@ -27393,6 +32929,8 @@ exports.TerrainRgbToElevationImageFilter = TerrainRgbToElevationImageFilter;
 exports.NearestNeighborSparseInterpolationImageFilter = NearestNeighborSparseInterpolationImageFilter;
 exports.IDWSparseInterpolationImageFilter = IDWSparseInterpolationImageFilter;
 exports.TriangulationSparseInterpolationImageFilter = TriangulationSparseInterpolationImageFilter;
+exports.CropImageFilter = CropImageFilter;
+exports.SimplifyLineStringFilter = SimplifyLineStringFilter;
 exports.AngleToHueWheelHelper = AngleToHueWheelHelper;
 exports.LineStringPrinterOnImage2DHelper = LineStringPrinterOnImage2DHelper;
 exports.Colormap = Colormap;
