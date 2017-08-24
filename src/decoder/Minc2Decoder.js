@@ -3,7 +3,7 @@
 *           Robert D. Vincent
 *
 * License   MIT
-* Link      https://github.com/jonathanlurie/pixpipejs
+* Link      https://github.com/Pixpipe/pixpipejs
 * Lab       MCIN - Montreal Neurological Institute
 */
 

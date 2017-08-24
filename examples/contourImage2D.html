@@ -9,7 +9,7 @@
 
 </head>
 <body>
-  <h1><a href="https://github.com/jonathanlurie/pixpipejs"><span style="color: #ff91d7">Pixpipe</span><span style="color: #FFFFFF">js</span></a></h1>
+  <h1><a href="https://github.com/Pixpipe/pixpipejs"><span style="color: #ff91d7">Pixpipe</span><span style="color: #FFFFFF">js</span></a></h1>
   <p>
   This does the following :
   <ul>
@@ -42,7 +42,7 @@
     var contourDetector = new pixpipe.ContourImage2DFilter();
     contourDetector.addInput( loadedImage );
     contourDetector.setMetadata("connexity", 8);
-    contourDetector.setMetadata("seed", [179, 243]);
+    contourDetector.setMetadata("seed", [220, 143]);
     contourDetector.update();
     
     var contours = contourDetector.getOutput();

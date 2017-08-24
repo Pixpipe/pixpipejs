@@ -1,7 +1,7 @@
 /*
 * Author   Jonathan Lurie - http://me.jonahanlurie.fr
 * License  MIT
-* Link      https://github.com/jonathanlurie/pixpipejs
+* Link      https://github.com/Pixpipe/pixpipejs
 * Lab       MCIN - Montreal Neurological Institute
 */
 
@@ -20,7 +20,7 @@ import { Image2D } from '../core/Image2D.js';
 * Info: Tiff 6.0 specification http://www.npes.org/pdf/TIFF-v6.pdf
 *
 * **Usage**
-* - [examples/savePixpFile.html](../examples/fileToTiff.html)
+* - [examples/fileToTiff.html](../examples/fileToTiff.html)
 *
 */
 class TiffDecoder extends Filter {
@@ -40,23 +40,27 @@ class TiffDecoder extends Filter {
     
     var success = false;
     
-    var tiffData = geotiff.parse(inputBuffer);
-    var tiffImage = tiffData.getImage();
-    
-    var data = tiffImage.readRasters( {interleave: true} );
-    var width = tiffImage.getWidth();
-    var height = tiffImage.getHeight();
-    var ncpp = tiffImage.getSamplesPerPixel();
-    
-    if(ncpp == (data.length / (width*height))){
-      success = true;
-    }
-    
-    if( success ){
-      var outputImg = this._addOutput( Image2D );
-      outputImg.setData( data, width, height, ncpp);
-    }else{
-      console.warn("Tiff support is experimental and this file is not compatible.");
+    try{
+      var tiffData = geotiff.parse(inputBuffer);
+      var tiffImage = tiffData.getImage();
+      
+      var data = tiffImage.readRasters( {interleave: true} );
+      var width = tiffImage.getWidth();
+      var height = tiffImage.getHeight();
+      var ncpp = tiffImage.getSamplesPerPixel();
+      
+      if(ncpp == (data.length / (width*height))){
+        success = true;
+      }
+      
+      if( success ){
+        var outputImg = this._addOutput( Image2D );
+        outputImg.setData( data, width, height, ncpp);
+      }else{
+        console.warn("Tiff support is experimental and this file is not compatible.");
+      }
+    }catch(e){
+      console.warn("This buffer is not from a TIFF file.");
     }
     
   }

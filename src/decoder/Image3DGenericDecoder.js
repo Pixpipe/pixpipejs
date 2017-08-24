@@ -2,7 +2,7 @@
 * Author    Jonathan Lurie - http://me.jonahanlurie.fr
 *
 * License   MIT
-* Link      https://github.com/jonathanlurie/pixpipejs
+* Link      https://github.com/Pixpipe/pixpipejs
 * Lab       MCIN - Montreal Neurological Institute
 */
 
@@ -15,7 +15,7 @@ import { Minc2Decoder } from './Minc2Decoder.js';
 import { NiftiDecoder } from './NiftiDecoder.js';
 import { MghDecoder } from './MghDecoder.js';
 import { PixpDecoder } from './PixpDecoder.js';
-import { PixBinDecoder } from './PixBinDecoder.js';
+//import { PixBinDecoder } from './PixBinDecoder.js';
 
 
 /**
@@ -40,7 +40,7 @@ class Image3DGenericDecoder extends Filter {
       NiftiDecoder,
       MghDecoder,
       PixpDecoder,
-      PixBinDecoder
+      //PixBinDecoder
     ];
   }
   

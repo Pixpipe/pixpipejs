@@ -1,4 +1,4 @@
-[![Pixpipe.js](images/pixpipe256.png)](https://github.com/jonathanlurie/pixpipejs)
+[![Pixpipe.js](images/pixpipe256.png)](https://github.com/Pixpipe/pixpipejs)
 
 
 # Cookbook
@@ -15,6 +15,7 @@ This cookbook will help you to become familiar with the architecture of **Pixpip
   - [Image2D](#image2d)
   - [Image3D](#image3d)
   - [MniVolume](#mnivolume)
+  - [Signal1D](#signal1d)
   - [Filter](#filter)
   - [ImageToImageFilter](#imagetoimagefilter)
 - [Building Pixpipe](#building-pixpipe)
@@ -62,19 +63,21 @@ Sometimes, it's just not worth reinventing the wheel. Here are the libraries Pix
 - [js-md5](https://github.com/emn178/js-md5), to generate a unique checksum for each loaded files
 - [geotiff](https://github.com/constantinius/geotiff.js) to decode Tiff and BigTiff images
 - [delaunay](https://github.com/ironwallaby/delaunay) Delaunay triangulation
+- [jpeg-js](https://github.com/eugeneware/jpeg-js) a pure JS jpeg decoder
+- [UPNG.js](https://github.com/photopea/UPNG.js) a pure JS png decoder
 
 
 # Sample data
-[HERE](https://github.com/jonathanlurie/pixpipeData) is the repo where some sample data are stored (mainly to avoid this repos to be too fat).
+[HERE](https://github.com/Pixpipe/pixpipeData) is the repo where some sample data are stored (mainly to avoid this repos to be too fat).
 
 
 # Core architecture
-Pixpipe is strongly *object oriented* and relies a lot on inheritance. As said in the `readme`, it was inspired by *ITK* for its genericity because it makes the pipeline scalable and modular.  
-Everything you can find in `src/core` is the **core**. Easy. Let's see how it looks like:  
+Pixpipe is strongly *object oriented* and relies a lot on inheritance. As said in the `readme`, it was inspired by *ITK* for its genericity because it makes the pipeline scalable and modular.
+Everything you can find in `src/core` is the **core**. Easy. Let's see what it looks like:
 
 [![Pixpipe core](images/pixpipeCore.png)](images/pixpipeCore.png)
 
-As you can see, the core elements can be described like that: **containers** on one side and **processors** on the other.
+As you can see, the core elements can be described like this: **containers** on one side and **processors** on the other.
 
 
 ## Core elements in detail
@@ -113,6 +116,10 @@ The equivalent of `Image2D` for 3d datasets. Unlike 2D datasets, 3D ones have a 
 *container*  
 This object is motivated by the medical dataset used internally in the [Montreal Neurological Institute](http://www.mcgill.ca/neuro/about): [NIfTI](https://nifti.nimh.nih.gov/), [Minc2](http://journal.frontiersin.org/article/10.3389/fninf.2016.00035/full) and [MGH/MGZ](https://surfer.nmr.mgh.harvard.edu/fswiki/FsTutorial/MghFormat). They are respectively created by `NiftiDecoder` and `Minc2Decoder`. Keep in mind `MniVolumes` are `Image3D` and uses the same methods.
 
+
+### Signal1D
+*container*
+Like `Image2D` stores a 2D signal, the `Signal1D` is intended to store single dimensional signals.
 
 ### Filter
 *processor interface*  
@@ -163,7 +170,7 @@ Pixpipejs uses [DocumentationJS](http://documentation.js.org/) to generate a HTM
 $ npm run doc
 ```
 
-Then, the documentation is accessible in the `doc` folder or can be directly read [here](http://me.jonathanlurie.fr/pixpipejs/doc/).
+Then, the documentation is accessible in the `doc` folder or can be directly read [here](http://pixpipe.github.io/pixpipejs/doc/).
 
 
 # Learning with examples
@@ -173,60 +180,74 @@ Before starting, remember these two things:
 - When it comes to metadata (particular setting, overwriting a default algorithm value, etc.), the filter method `.setMetadata(...)` must be called.
 
 Processing images usually take a bit of time but there is not always a graphic feedback. Open your javascript console so that you can see the filter feedback in the log.  
-All the following examples are in the [example folder](https://github.com/jonathanlurie/pixpipejs/tree/master/examples).
+All the following examples are in the [example folder](https://github.com/Pixpipe/pixpipejs/tree/master/examples).
 
 
 ## basics
 Here, we will learn what is an `Image2D`, how to display it in a canvas using `CanvasImageWriter`. In addition, we have two different ways to load an existing image: from its URL (using a `UrlImageReader`) or with a file dialog (using a `FileImageReader`).
-- [Create an Image2D and display it](http://me.jonathanlurie.fr/pixpipejs/examples/image2DToCanvas.html) | [source](https://github.com/jonathanlurie/pixpipejs/tree/master/examples/image2DToCanvas.html)
-- [Create an Image2D from an image URL and display it](http://me.jonathanlurie.fr/pixpipejs/examples/urlToImage2D.html) | [source](https://github.com/jonathanlurie/pixpipejs/tree/master/examples/urlToImage2D.html)
-- [Same but with multiple images](http://me.jonathanlurie.fr/pixpipejs/examples/urlToImage2D_multiple.html) | [source](https://github.com/jonathanlurie/pixpipejs/tree/master/examples/urlToImage2D_multiple.html)
-- [Create an Image2D from a local file and display it](http://me.jonathanlurie.fr/pixpipejs/examples/fileToImage2D.html) | [source](https://github.com/jonathanlurie/pixpipejs/tree/master/examples/fileToImage2D.html)
-- [Open a Tiff and make it an Image2D](http://me.jonathanlurie.fr/pixpipejs/examples/fileToTiff.html) | [source](https://github.com/jonathanlurie/pixpipejs/tree/master/examples/fileToTiff.html)
-- [Sample pixel along a line](http://me.jonathanlurie.fr/pixpipejs/examples/SegmentSampleImage2D.html) | [source](https://github.com/jonathanlurie/pixpipejs/tree/master/examples/SegmentSampleImage2D.html)
-- - [Create a colormap and display it](http://me.jonathanlurie.fr/pixpipejs/examples/colormap.html) | [source](https://github.com/jonathanlurie/pixpipejs/tree/master/examples/colormap.html)
+- [Create an Image2D and display it](http://pixpipe.github.io/pixpipejs/examples/image2DToCanvas.html) | [source](https://github.com/Pixpipe/pixpipejs/tree/master/examples/image2DToCanvas.html)
+- [Create an Image2D from an image URL and display it](http://pixpipe.github.io/pixpipejs/examples/urlToImage2D.html) | [source](https://github.com/Pixpipe/pixpipejs/tree/master/examples/urlToImage2D.html)
+- [Same but with multiple images](http://pixpipe.github.io/pixpipejs/examples/urlToImage2D_multiple.html) | [source](https://github.com/Pixpipe/pixpipejs/tree/master/examples/urlToImage2D_multiple.html)
+- [Create an Image2D from a local file and display it](http://pixpipe.github.io/pixpipejs/examples/fileToImage2D.html) | [source](https://github.com/Pixpipe/pixpipejs/tree/master/examples/fileToImage2D.html)
+- [Open a Tiff and make it an Image2D](http://pixpipe.github.io/pixpipejs/examples/fileToTiff.html) | [source](https://github.com/Pixpipe/pixpipejs/tree/master/examples/fileToTiff.html)
+- [Sample pixel along a line](http://pixpipe.github.io/pixpipejs/examples/SegmentSampleImage2D.html) | [source](https://github.com/Pixpipe/pixpipejs/tree/master/examples/SegmentSampleImage2D.html)
+- [Create a colormap and display it](http://pixpipe.github.io/pixpipejs/examples/colormap.html) | [source](https://github.com/Pixpipe/pixpipejs/tree/master/examples/colormap.html)
+- [Decode a JPEG image in pure Javascript](http://pixpipe.github.io/pixpipejs/examples/fileToJpeg.html) | [source](https://github.com/Pixpipe/pixpipejs/tree/master/examples/fileToJpeg.html)
+- [Decode a JPEG image in pure Javascript](http://pixpipe.github.io/pixpipejs/examples/fileToJpeg.html) | [source](https://github.com/Pixpipe/pixpipejs/tree/master/examples/fileToJpeg.html)
+- [Decode a PNG image in pure Javascript](http://pixpipe.github.io/pixpipejs/examples/fileToPng.html) | [source](https://github.com/Pixpipe/pixpipejs/tree/master/examples/fileToPng.html)
+- [Decode a PNG/TIFF/JPEG with a single generic filter](http://pixpipe.github.io/pixpipejs/examples/fileToGenericImage2D.html) | [source](https://github.com/Pixpipe/pixpipejs/tree/master/examples/fileToGenericImage2D.html)
+- [Decode a PNG/TIFF/JPEG with a single generic filter, open multiple images at once](http://pixpipe.github.io/pixpipejs/examples/multiFileToMultiImage2D.html) | [source](https://github.com/Pixpipe/pixpipejs/tree/master/examples/multiFileToMultiImage2D.html)
 
+
+## Signal filters for Signal1D
+- [Compute the 1D fourier transform or inverse transform on a signal](https://github.com/Pixpipe/pixpipejs/tree/master/examples/fftSignal1D.html) | [source](https://github.com/Pixpipe/pixpipejs/tree/master/examples/fftSignal1D.html)
 
 ## Simple filters for Image2D
 See a `Filter` as a *box* that takes one or more input and produces one or more output. If some parameters are needed to make the filter work properly, this must happen using `setMetadata()`. To ask the filter to do its job, just call `update()`.  
 A `Filter` should **NEVER** modify the input data.
-- [Threshold an image](http://me.jonathanlurie.fr/pixpipejs/examples/imageThresholding.html) | [source](https://github.com/jonathanlurie/pixpipejs/tree/master/examples/imageThresholding.html)
-- [The filter that lets you apply a treatment at a pixel level](http://me.jonathanlurie.fr/pixpipejs/examples/forEachPixel.html) | [source](https://github.com/jonathanlurie/pixpipejs/tree/master/examples/forEachPixel.html)
-- [A pixel-wise filter that uses pixel position to adapt its behaviour](http://me.jonathanlurie.fr/pixpipejs/examples/forEachPixelGradient.html) | [source](https://github.com/jonathanlurie/pixpipejs/tree/master/examples/forEachPixelGradient.html)
-- [Use a math expression evaluator to blend an image and a mask](http://me.jonathanlurie.fr/pixpipejs/examples/imageBlending.html) | [source](https://github.com/jonathanlurie/pixpipejs/tree/master/examples/imageBlending.html)
-- [Use a math expression evaluator to blend two images](http://me.jonathanlurie.fr/pixpipejs/examples/imageBlending2.html) | [source](https://github.com/jonathanlurie/pixpipejs/tree/master/examples/imageBlending2.html)
-- [Create a pattern and blend it with an image using a math expression evaluator](http://me.jonathanlurie.fr/pixpipejs/examples/forEachPixelGradientBlend.html) | [source](https://github.com/jonathanlurie/pixpipejs/tree/master/examples/forEachPixelGradientBlend.html)
-- [Save a Image2D to a `*.pixp` file](http://me.jonathanlurie.fr/pixpipejs/examples/savePixpFile.html) | [source](https://github.com/jonathanlurie/pixpipejs/tree/master/examples/savePixpFile.html)
-- [Load a `*.pixp` file that contains an Image2D and display it](http://me.jonathanlurie.fr/pixpipejs/examples/pixpFileToImage2D.html) | [source](https://github.com/jonathanlurie/pixpipejs/tree/master/examples/pixpFileToImage2D.html)
-- [Multiply an image by another](http://me.jonathanlurie.fr/pixpipejs/examples/multiplyImage2D.html) | [source](https://github.com/jonathanlurie/pixpipejs/tree/master/examples/multiplyImage2D.html)
-- [Open a Tiff and display its pixel values in csv format](http://me.jonathanlurie.fr/pixpipejs/examples/tiffPixelData.html) | [source](https://github.com/jonathanlurie/pixpipejs/tree/master/examples/tiffPixelData.html)
-- [Compute the dx and dy derivatives of an image](http://me.jonathanlurie.fr/pixpipejs/examples/derivativeImage2D.html) | [source](https://github.com/jonathanlurie/pixpipejs/tree/master/examples/derivativeImage2D.html)
-- [Compute the gradient direction and magnitude of an image](http://me.jonathanlurie.fr/pixpipejs/examples/gradientImage2D.html) | [source](https://github.com/jonathanlurie/pixpipejs/tree/master/examples/gradientImage2D.html)
-- [Compute all gradient info](http://me.jonathanlurie.fr/pixpipejs/examples/gradientHueWheelImage2D.html) | [source](https://github.com/jonathanlurie/pixpipejs/tree/master/examples/gradientHueWheelImage2D.html)
-- [Compute elevation map from Mapbox TerrainRGB format](http://me.jonathanlurie.fr/pixpipejs/examples/terrainRgbToElevation.html) | [source](https://github.com/jonathanlurie/pixpipejs/tree/master/examples/terrainRgbToElevation.html)
+- [Threshold an image](http://pixpipe.github.io/pixpipejs/examples/imageThresholding.html) | [source](https://github.com/Pixpipe/pixpipejs/tree/master/examples/imageThresholding.html)
+- [Crop an image](http://pixpipe.github.io/pixpipejs/examples/cropImage2D.html) | [source](https://github.com/Pixpipe/pixpipejs/tree/master/examples/cropImage2D.html)
+- [The filter that lets you apply a treatment at a pixel level](http://pixpipe.github.io/pixpipejs/examples/forEachPixel.html) | [source](https://github.com/Pixpipe/pixpipejs/tree/master/examples/forEachPixel.html)
+- [A pixel-wise filter that uses pixel position to adapt its behaviour](http://pixpipe.github.io/pixpipejs/examples/forEachPixelGradient.html) | [source](https://github.com/Pixpipe/pixpipejs/tree/master/examples/forEachPixelGradient.html)
+- [Use a math expression evaluator to blend an image and a mask](http://pixpipe.github.io/pixpipejs/examples/imageBlending.html) | [source](https://github.com/Pixpipe/pixpipejs/tree/master/examples/imageBlending.html)
+- [Use a math expression evaluator to blend two images](http://pixpipe.github.io/pixpipejs/examples/imageBlending2.html) | [source](https://github.com/Pixpipe/pixpipejs/tree/master/examples/imageBlending2.html)
+- [Create a pattern and blend it with an image using a math expression evaluator](http://pixpipe.github.io/pixpipejs/examples/forEachPixelGradientBlend.html) | [source](https://github.com/Pixpipe/pixpipejs/tree/master/examples/forEachPixelGradientBlend.html)
+- [Save a Image2D to a `*.pixp` file](http://pixpipe.github.io/pixpipejs/examples/savePixpFile.html) | [source](https://github.com/Pixpipe/pixpipejs/tree/master/examples/savePixpFile.html)
+- [Load a `*.pixp` file that contains an Image2D and display it](http://pixpipe.github.io/pixpipejs/examples/pixpFileToImage2D.html) | [source](https://github.com/Pixpipe/pixpipejs/tree/master/examples/pixpFileToImage2D.html)
+- [Multiply an image by another](http://pixpipe.github.io/pixpipejs/examples/multiplyImage2D.html) | [source](https://github.com/Pixpipe/pixpipejs/tree/master/examples/multiplyImage2D.html)
+- [Open a Tiff and display its pixel values in csv format](http://pixpipe.github.io/pixpipejs/examples/tiffPixelData.html) | [source](https://github.com/Pixpipe/pixpipejs/tree/master/examples/tiffPixelData.html)
+- [Compute the dx and dy derivatives of an image](http://pixpipe.github.io/pixpipejs/examples/derivativeImage2D.html) | [source](https://github.com/Pixpipe/pixpipejs/tree/master/examples/derivativeImage2D.html)
+- [Compute the gradient direction and magnitude of an image](http://pixpipe.github.io/pixpipejs/examples/gradientImage2D.html) | [source](https://github.com/Pixpipe/pixpipejs/tree/master/examples/gradientImage2D.html)
+- [Compute all gradient info](http://pixpipe.github.io/pixpipejs/examples/gradientHueWheelImage2D.html) | [source](https://github.com/Pixpipe/pixpipejs/tree/master/examples/gradientHueWheelImage2D.html)
+- [Compute elevation map from Mapbox TerrainRGB format](http://pixpipe.github.io/pixpipejs/examples/terrainRgbToElevation.html) | [source](https://github.com/Pixpipe/pixpipejs/tree/master/examples/terrainRgbToElevation.html)
+- [Compute the 2D fourier transform or inverse transform on a single channel image](https://github.com/Pixpipe/pixpipejs/tree/master/examples/fftImage2D.html) | [source](https://github.com/Pixpipe/pixpipejs/tree/master/examples/fftImage2D.html)
+- [Extract single channels of an image or merge the channels of multiple images](https://github.com/Pixpipe/pixpipejs/tree/master/examples/imageProjectMerge.html) | [source](https://github.com/Pixpipe/pixpipejs/tree/master/examples/imageProjectMerge.html)
 
 ## Playing with 3D medical dataset
-- [Open a local Minc2 file, extract 3 orthogonal slices and display in canvas](http://me.jonathanlurie.fr/pixpipejs/examples/fileToMinc2.html) | [source](https://github.com/jonathanlurie/pixpipejs/tree/master/examples/fileToMinc2.html)
-- [Open a local  NIfTI file, extract 3 orthogonal slices and display in canvas](http://me.jonathanlurie.fr/pixpipejs/examples/fileToNifti.html) | [source](https://github.com/jonathanlurie/pixpipejs/tree/master/examples/fileToNifti.html)
-- [Open a local  MGH file, extract 3 orthogonal slices and display in canvas](http://me.jonathanlurie.fr/pixpipejs/examples/fileToMgh.html) | [source](https://github.com/jonathanlurie/pixpipejs/tree/master/examples/fileToMgh.html)
-- [Open a `*.pixp` containing an Image3D file and display 3 otho slices](http://me.jonathanlurie.fr/pixpipejs/examples/fileToPixp.html) | [source](https://github.com/jonathanlurie/pixpipejs/tree/master/examples/fileToPixp.html)
-- [Convert a NIfTI/MINC/MGH file to a pixp file](http://me.jonathanlurie.fr/pixpipejs/examples/Image3DToPixpConverter.html) | [source](https://github.com/jonathanlurie/pixpipejs/tree/master/examples/Image3DToPixpConverter.html)
+- [Open a local Minc2 file, extract 3 orthogonal slices and display in canvas](http://pixpipe.github.io/pixpipejs/examples/fileToMinc2.html) | [source](https://github.com/Pixpipe/pixpipejs/tree/master/examples/fileToMinc2.html)
+- [Open a local  NIfTI file, extract 3 orthogonal slices and display in canvas](http://pixpipe.github.io/pixpipejs/examples/fileToNifti.html) | [source](https://github.com/Pixpipe/pixpipejs/tree/master/examples/fileToNifti.html)
+- [Open a local  MGH file, extract 3 orthogonal slices and display in canvas](http://pixpipe.github.io/pixpipejs/examples/fileToMgh.html) | [source](https://github.com/Pixpipe/pixpipejs/tree/master/examples/fileToMgh.html)
+- [Open a `*.pixp` containing an Image3D file and display 3 otho slices](http://pixpipe.github.io/pixpipejs/examples/fileToPixp.html) | [source](https://github.com/Pixpipe/pixpipejs/tree/master/examples/fileToPixp.html)
+- [Convert a NIfTI/MINC/MGH file to a pixp file](http://pixpipe.github.io/pixpipejs/examples/Image3DToPixpConverter.html) | [source](https://github.com/Pixpipe/pixpipejs/tree/master/examples/Image3DToPixpConverter.html)
 
 
 ## Playing with vectors
-- [Detect contours (of a segmented Image2D) as a LineString](http://me.jonathanlurie.fr/pixpipejs/examples/contourImage2D.html) | [source](https://github.com/jonathanlurie/pixpipejs/tree/master/examples/contourImage2D.html)
-- [Detect contours and internal polygons](http://me.jonathanlurie.fr/pixpipejs/examples/contourHolesImage2D.html) | [source](https://github.com/jonathanlurie/pixpipejs/tree/master/examples/contourHolesImage2D.html)
-- [Flood fill an Image2D](http://me.jonathanlurie.fr/pixpipejs/examples/floodFillImage2D.html) | [source](https://github.com/jonathanlurie/pixpipejs/tree/master/examples/floodFillImage2D.html)
+- [Detect contours (of a segmented Image2D) as a LineString](http://pixpipe.github.io/pixpipejs/examples/contourImage2D.html) | [source](https://github.com/Pixpipe/pixpipejs/tree/master/examples/contourImage2D.html)
+- [Detect contours and internal polygons](http://pixpipe.github.io/pixpipejs/examples/contourHolesImage2D.html) | [source](https://github.com/Pixpipe/pixpipejs/tree/master/examples/contourHolesImage2D.html)
+- [Flood fill an Image2D](http://pixpipe.github.io/pixpipejs/examples/floodFillImage2D.html) | [source](https://github.com/Pixpipe/pixpipejs/tree/master/examples/floodFillImage2D.html)
+- [Simplifying a LineString](http://pixpipe.github.io/pixpipejs/examples/contourSimplifiedImage2D.html) | [source](https://github.com/Pixpipe/pixpipejs/tree/master/examples/contourSimplifiedImage2D.html)
 
 ## Interpolation
-- [2D sparse dataset inverse distance weighting](http://me.jonathanlurie.fr/pixpipejs/examples/IDWSparseInterpolation.html) | [source](https://github.com/jonathanlurie/pixpipejs/tree/master/examples/IDWSparseInterpolation.html)
-- [2D sparse dataset triangulation](http://me.jonathanlurie.fr/pixpipejs/examples/TriangleSparseInterpolation.html) | [source](https://github.com/jonathanlurie/pixpipejs/tree/master/examples/TriangleSparseInterpolation.html)
+- [2D sparse dataset inverse distance weighting](http://pixpipe.github.io/pixpipejs/examples/IDWSparseInterpolation.html) | [source](https://github.com/Pixpipe/pixpipejs/tree/master/examples/IDWSparseInterpolation.html)
+- [2D sparse dataset triangulation](http://pixpipe.github.io/pixpipejs/examples/TriangleSparseInterpolation.html) | [source](https://github.com/Pixpipe/pixpipejs/tree/master/examples/TriangleSparseInterpolation.html)
 
 ## Advanced
-- [Open a local file as an ArrayBuffer](http://me.jonathanlurie.fr/pixpipejs/examples/fileToArrayBuffer.html) | [source](https://github.com/jonathanlurie/pixpipejs/tree/master/examples/fileToArrayBuffer.html). Actually very simple but a good starting point to create a new binary file parser
-- [Open a local  NIfTI/MINC/MGH file and display a mosaic of all the slices, with time series if any](http://me.jonathanlurie.fr/pixpipejs/examples/Image3DToMosaic.html) | [source](https://github.com/jonathanlurie/pixpipejs/tree/master/examples/Image3DToMosaic.html)
-- [Open  a local  NIfTI/MINC/MGH file, build a 3D texture and display volume with obliques, show a slider for time series if any](http://me.jonathanlurie.fr/pixpipejs/examples/volume3DNavigatorTime.html) | [source](https://github.com/jonathanlurie/pixpipejs/tree/master/examples/volume3DNavigatorTime.html)
-- [Open  a local  NIfTI/MINC/MGH file, build a 3D texture and display volume with obliques, show a slider for time series if any, and adjust contrast with a curve widget](http://me.jonathanlurie.fr/pixpipejs/examples/volume3DNavigatorTimeCurve.html) | [source](https://github.com/jonathanlurie/pixpipejs/tree/master/examples/volume3DNavigatorTimeCurve.html)
+- [Open a local file as an ArrayBuffer](http://pixpipe.github.io/pixpipejs/examples/fileToArrayBuffer.html) | [source](https://github.com/Pixpipe/pixpipejs/tree/master/examples/fileToArrayBuffer.html). Actually very simple but a good starting point to create a new binary file parser
+- [Open a local  NIfTI/MINC/MGH file and display a mosaic of all the slices, with time series if any](http://pixpipe.github.io/pixpipejs/examples/Image3DToMosaic.html) | [source](https://github.com/Pixpipe/pixpipejs/tree/master/examples/Image3DToMosaic.html)
+- [Open  a local  NIfTI/MINC/MGH file, build a 3D texture and display volume with obliques, show a slider for time series if any](http://pixpipe.github.io/pixpipejs/examples/volume3DNavigatorTime.html) | [source](https://github.com/Pixpipe/pixpipejs/tree/master/examples/volume3DNavigatorTime.html)
+- [Open  a local  NIfTI/MINC/MGH file, build a 3D texture and display volume with obliques, show a slider for time series if any, and adjust contrast with a curve widget](http://pixpipe.github.io/pixpipejs/examples/volume3DNavigatorTimeCurve.html) | [source](https://github.com/Pixpipe/pixpipejs/tree/master/examples/volume3DNavigatorTimeCurve.html)
+- [Encode an Pixpipe object into a PixBin file](http://pixpipe.github.io/pixpipejs/examples/encodePixBin.html) | [source](https://github.com/Pixpipe/pixpipejs/tree/master/examples/encodePixBin.html)
+- [Decode a PixBin file into one or more Pixpipe data structures](http://pixpipe.github.io/pixpipejs/examples/decodePixBin.html) | [source](https://github.com/Pixpipe/pixpipejs/tree/master/examples/decodePixBin.html)
 
 # Create your own custom filter
 As mentioned earlier, a filter must take at least one input et retrieve at least one output, in between the method `.update()` must be called. The only exception to that are `io` filters which are opening or writing from/to a file or an HTML5 canvas.  
