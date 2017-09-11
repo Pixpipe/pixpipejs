@@ -22,6 +22,7 @@ export { BrowserDownloadBuffer } from './io/BrowserDownloadBuffer.js';
 // decoders
 export { Minc2Decoder } from './decoder/Minc2Decoder.js';
 export { NiftiDecoder } from './decoder/NiftiDecoder.js';
+export { NiftiDecoderAlt } from './decoder/NiftiDecoderAlt.js';
 export { PixpEncoder } from './decoder/PixpEncoder.js';
 export { PixpDecoder } from './decoder/PixpDecoder.js';
 export { Image3DGenericDecoder } from './decoder/Image3DGenericDecoder.js';

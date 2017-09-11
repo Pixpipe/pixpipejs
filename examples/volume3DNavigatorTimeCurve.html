@@ -448,7 +448,9 @@
         console.log(mniVolume);
 
         var mosaicFilter = new pixpipe.Image3DToMosaicFilter();
-
+        //mosaicFilter.setMetadata("maxWidth", 16000);
+        //mosaicFilter.setMetadata("maxHeight", 16000);
+        
         // genericDecoder ouputs a pixpipe.MniVolume, which iherit pixpipe.Image3D
         // making it compatible with pixpipe.Image3DToMosaicFilter
         mosaicFilter.addInput( mniVolume );
@@ -477,6 +479,7 @@
         // display the output in multiple canvas if needed
         for(var nbOut=0; nbOut<mosaicFilter.getNumberOfOutputs(); nbOut++){
           var outputMosaic = mosaicFilter.getOutput(nbOut);
+          console.log( outputMosaic );
           outputMosaic.setMetadata("min", mniVolume.getMetadata("voxel_min"));
           outputMosaic.setMetadata("max", mniVolume.getMetadata("voxel_max"));
 

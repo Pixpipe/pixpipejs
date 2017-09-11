@@ -15996,6 +15996,1891 @@ class NiftiDecoder extends Filter {
 
 } /* END class NiftiDecoder */
 
+var utilities = createCommonjsModule(function (module) {
+/*jslint browser: true, node: true */
+/*global require, module */
+
+"use strict";
+
+/*** Imports ***/
+
+var nifti = nifti || {};
+nifti.Utils = nifti.Utils || {};
+
+
+
+/*** Static Pseudo-constants ***/
+
+nifti.Utils.crcTable = null;
+nifti.Utils.GUNZIP_MAGIC_COOKIE1 = 31;
+nifti.Utils.GUNZIP_MAGIC_COOKIE2 = 139;
+
+
+
+/*** Static methods ***/
+
+nifti.Utils.getStringAt = function (data, start, end) {
+    var str = "", ctr, ch;
+
+    for (ctr = start; ctr < end; ctr += 1) {
+        ch = data.getUint8(ctr);
+
+        if (ch !== 0) {
+            str += String.fromCharCode(ch);
+        }
+    }
+
+    return str;
+};
+
+
+
+nifti.Utils.getByteAt = function (data, start) {
+    return data.getInt8(start);
+};
+
+
+
+nifti.Utils.getShortAt = function (data, start, littleEndian) {
+    return data.getInt16(start, littleEndian);
+};
+
+
+
+nifti.Utils.getIntAt = function (data, start, littleEndian) {
+    return data.getInt32(start, littleEndian);
+};
+
+
+
+nifti.Utils.getFloatAt = function (data, start, littleEndian) {
+    return data.getFloat32(start, littleEndian);
+};
+
+
+
+nifti.Utils.getDoubleAt = function (data, start, littleEndian) {
+    return data.getFloat64(start, littleEndian);
+};
+
+
+
+nifti.Utils.getLongAt = function (data, start, littleEndian) {
+    var ctr, array = [], value = 0;
+
+    for (ctr = 0; ctr < 8; ctr += 1) {
+        array[ctr] = nifti.Utils.getByteAt(data, start + ctr, littleEndian);
+    }
+
+    for (ctr = array.length - 1; ctr >= 0; ctr--) {
+        value = (value * 256) + array[ctr];
+    }
+
+    return value;
+};
+
+
+
+nifti.Utils.toArrayBuffer = function (buffer) {
+    var ab, view, i;
+
+    ab = new ArrayBuffer(buffer.length);
+    view = new Uint8Array(ab);
+    for (i = 0; i < buffer.length; i += 1) {
+        view[i] = buffer[i];
+    }
+    return ab;
+};
+
+
+
+nifti.Utils.isString = function (obj) {
+    return (typeof obj === "string" || obj instanceof String);
+};
+
+
+nifti.Utils.formatNumber = function (num, shortFormat) {
+    var val = 0;
+
+    if (nifti.Utils.isString(num)) {
+        val = Number(num);
+    } else {
+        val = num;
+    }
+
+    if (shortFormat) {
+        val = val.toPrecision(5);
+    } else {
+        val = val.toPrecision(7);
+    }
+
+    return parseFloat(val);
+};
+
+
+
+// http://stackoverflow.com/questions/18638900/javascript-crc32
+nifti.Utils.makeCRCTable = function(){
+    var c;
+    var crcTable = [];
+    for(var n =0; n < 256; n++){
+        c = n;
+        for(var k =0; k < 8; k++){
+            c = ((c&1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1));
+        }
+        crcTable[n] = c;
+    }
+    return crcTable;
+};
+
+
+
+nifti.Utils.crc32 = function(dataView) {
+    var crcTable = nifti.Utils.crcTable || (nifti.Utils.crcTable = nifti.Utils.makeCRCTable());
+    var crc = 0 ^ (-1);
+
+    for (var i = 0; i < dataView.byteLength; i++ ) {
+        crc = (crc >>> 8) ^ crcTable[(crc ^ dataView.getUint8(i)) & 0xFF];
+    }
+
+    return (crc ^ (-1)) >>> 0;
+};
+
+
+
+/*** Exports ***/
+
+var moduleType = 'object';
+if ((moduleType !== 'undefined') && module.exports) {
+    module.exports = nifti.Utils;
+}
+});
+
+var nifti1 = createCommonjsModule(function (module) {
+/*jslint browser: true, node: true */
+/*global */
+
+"use strict";
+
+/*** Imports ***/
+
+var nifti = nifti || {};
+nifti.Utils = nifti.Utils || ((typeof commonjsRequire !== 'undefined') ? utilities : null);
+
+
+
+/*** Constructor ***/
+
+/**
+ * The NIFTI1 constructor.
+ * @constructor
+ * @property {boolean} littleEndian
+ * @property {number} dim_info
+ * @property {number[]} dims - image dimensions
+ * @property {number} intent_p1
+ * @property {number} intent_p2
+ * @property {number} intent_p3
+ * @property {number} intent_code
+ * @property {number} datatypeCode
+ * @property {number} numBitsPerVoxel
+ * @property {number} slice_start
+ * @property {number} slice_end
+ * @property {number} slice_code
+ * @property {number[]} pixDims - voxel dimensions
+ * @property {number} vox_offset
+ * @property {number} scl_slope
+ * @property {number} scl_inter
+ * @property {number} xyzt_units
+ * @property {number} cal_max
+ * @property {number} cal_min
+ * @property {number} slice_duration
+ * @property {number} toffset
+ * @property {string} description
+ * @property {string} aux_file
+ * @property {string} intent_name
+ * @property {number} qform_code
+ * @property {number} sform_code
+ * @property {number} quatern_b
+ * @property {number} quatern_c
+ * @property {number} quatern_d
+ * @property {number} quatern_x
+ * @property {number} quatern_y
+ * @property {number} quatern_z
+ * @property {Array.<Array.<number>>} affine
+ * @property {string} magic
+ * @property {boolean} isHDR - if hdr/img format
+ * @property {number[]} extensionFlag
+ * @property {number} extensionSize
+ * @property {number} extensionCode
+ * @type {Function}
+ */
+nifti.NIFTI1 = nifti.NIFTI1 || function () {
+    this.littleEndian = false;
+    this.dim_info = 0;
+    this.dims = [];
+    this.intent_p1 = 0;
+    this.intent_p2 = 0;
+    this.intent_p3 = 0;
+    this.intent_code = 0;
+    this.datatypeCode = 0;
+    this.numBitsPerVoxel = 0;
+    this.slice_start = 0;
+    this.slice_end = 0;
+    this.slice_code = 0;
+    this.pixDims = [];
+    this.vox_offset = 0;
+    this.scl_slope = 1;
+    this.scl_inter = 0;
+    this.xyzt_units = 0;
+    this.cal_max = 0;
+    this.cal_min = 0;
+    this.slice_duration = 0;
+    this.toffset = 0;
+    this.description = "";
+    this.aux_file = "";
+    this.intent_name = "";
+    this.qform_code = 0;
+    this.sform_code = 0;
+    this.quatern_b = 0;
+    this.quatern_c = 0;
+    this.quatern_d = 0;
+    this.qoffset_x = 0;
+    this.qoffset_y = 0;
+    this.qoffset_z = 0;
+    this.affine = [[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]];
+    this.magic = 0;
+    this.isHDR = false;
+    this.extensionFlag = [0, 0, 0, 0];
+    this.extensionSize = 0;
+    this.extensionCode = 0;
+};
+
+
+
+/*** Static Pseudo-constants ***/
+
+// datatype codes
+nifti.NIFTI1.TYPE_NONE            = 0;
+nifti.NIFTI1.TYPE_BINARY          = 1;
+nifti.NIFTI1.TYPE_UINT8           = 2;
+nifti.NIFTI1.TYPE_INT16           = 4;
+nifti.NIFTI1.TYPE_INT32           = 8;
+nifti.NIFTI1.TYPE_FLOAT32        = 16;
+nifti.NIFTI1.TYPE_COMPLEX64      = 32;
+nifti.NIFTI1.TYPE_FLOAT64        = 64;
+nifti.NIFTI1.TYPE_RGB24         = 128;
+nifti.NIFTI1.TYPE_INT8          = 256;
+nifti.NIFTI1.TYPE_UINT16        = 512;
+nifti.NIFTI1.TYPE_UINT32        = 768;
+nifti.NIFTI1.TYPE_INT64        = 1024;
+nifti.NIFTI1.TYPE_UINT64       = 1280;
+nifti.NIFTI1.TYPE_FLOAT128     = 1536;
+nifti.NIFTI1.TYPE_COMPLEX128   = 1792;
+nifti.NIFTI1.TYPE_COMPLEX256   = 2048;
+
+// transform codes
+nifti.NIFTI1.XFORM_UNKNOWN        = 0;
+nifti.NIFTI1.XFORM_SCANNER_ANAT   = 1;
+nifti.NIFTI1.XFORM_ALIGNED_ANAT   = 2;
+nifti.NIFTI1.XFORM_TALAIRACH      = 3;
+nifti.NIFTI1.XFORM_MNI_152        = 4;
+
+// unit codes
+nifti.NIFTI1.SPATIAL_UNITS_MASK = 0x07;
+nifti.NIFTI1.TEMPORAL_UNITS_MASK = 0x38;
+nifti.NIFTI1.UNITS_UNKNOWN        = 0;
+nifti.NIFTI1.UNITS_METER          = 1;
+nifti.NIFTI1.UNITS_MM             = 2;
+nifti.NIFTI1.UNITS_MICRON         = 3;
+nifti.NIFTI1.UNITS_SEC            = 8;
+nifti.NIFTI1.UNITS_MSEC          = 16;
+nifti.NIFTI1.UNITS_USEC          = 24;
+nifti.NIFTI1.UNITS_HZ            = 32;
+nifti.NIFTI1.UNITS_PPM           = 40;
+nifti.NIFTI1.UNITS_RADS          = 48;
+
+// nifti1 codes
+nifti.NIFTI1.MAGIC_COOKIE = 348;
+nifti.NIFTI1.STANDARD_HEADER_SIZE = 348;
+nifti.NIFTI1.MAGIC_NUMBER_LOCATION = 344;
+nifti.NIFTI1.MAGIC_NUMBER = [0x6E, 0x2B, 0x31];  // n+1 (.nii)
+nifti.NIFTI1.MAGIC_NUMBER2 = [0x6E, 0x69, 0x31];  // ni1 (.hdr/.img)
+nifti.NIFTI1.EXTENSION_HEADER_SIZE = 8;
+
+
+/*** Prototype Methods ***/
+
+/**
+ * Reads the header data.
+ * @param {ArrayBuffer} data
+ */
+nifti.NIFTI1.prototype.readHeader = function (data) {
+    var rawData = new DataView(data),
+        magicCookieVal = nifti.Utils.getIntAt(rawData, 0, this.littleEndian),
+        ctr,
+        ctrOut,
+        ctrIn,
+        index;
+
+    if (magicCookieVal !== nifti.NIFTI1.MAGIC_COOKIE) {  // try as little endian
+        this.littleEndian = true;
+        magicCookieVal = nifti.Utils.getIntAt(rawData, 0, this.littleEndian);
+    }
+
+    if (magicCookieVal !== nifti.NIFTI1.MAGIC_COOKIE) {
+        throw new Error("This does not appear to be a NIFTI file!");
+    }
+
+    this.dim_info = nifti.Utils.getByteAt(rawData, 39);
+
+    for (ctr = 0; ctr < 8; ctr += 1) {
+        index = 40 + (ctr * 2);
+        this.dims[ctr] = nifti.Utils.getShortAt(rawData, index, this.littleEndian);
+    }
+
+    this.intent_p1 = nifti.Utils.getFloatAt(rawData, 56, this.littleEndian);
+    this.intent_p2 = nifti.Utils.getFloatAt(rawData, 60, this.littleEndian);
+    this.intent_p3 = nifti.Utils.getFloatAt(rawData, 64, this.littleEndian);
+    this.intent_code = nifti.Utils.getShortAt(rawData, 68, this.littleEndian);
+
+    this.datatypeCode = nifti.Utils.getShortAt(rawData, 70, this.littleEndian);
+    this.numBitsPerVoxel = nifti.Utils.getShortAt(rawData, 72, this.littleEndian);
+
+    this.slice_start = nifti.Utils.getShortAt(rawData, 74, this.littleEndian);
+
+    for (ctr = 0; ctr < 8; ctr += 1) {
+        index = 76 + (ctr * 4);
+        this.pixDims[ctr] = nifti.Utils.getFloatAt(rawData, index, this.littleEndian);
+    }
+
+    this.vox_offset = nifti.Utils.getFloatAt(rawData, 108, this.littleEndian);
+
+    this.scl_slope = nifti.Utils.getFloatAt(rawData, 112, this.littleEndian);
+    this.scl_inter = nifti.Utils.getFloatAt(rawData, 116, this.littleEndian);
+
+    this.slice_end = nifti.Utils.getShortAt(rawData, 120, this.littleEndian);
+    this.slice_code = nifti.Utils.getByteAt(rawData, 122);
+
+    this.xyzt_units = nifti.Utils.getByteAt(rawData, 123);
+
+    this.cal_max = nifti.Utils.getFloatAt(rawData, 124, this.littleEndian);
+    this.cal_min = nifti.Utils.getFloatAt(rawData, 128, this.littleEndian);
+
+    this.slice_duration = nifti.Utils.getFloatAt(rawData, 132, this.littleEndian);
+    this.toffset = nifti.Utils.getFloatAt(rawData, 136, this.littleEndian);
+
+    this.description = nifti.Utils.getStringAt(rawData, 148, 228);
+    this.aux_file = nifti.Utils.getStringAt(rawData, 228, 252);
+
+    this.qform_code = nifti.Utils.getShortAt(rawData, 252, this.littleEndian);
+    this.sform_code = nifti.Utils.getShortAt(rawData, 254, this.littleEndian);
+
+    this.quatern_b = nifti.Utils.getFloatAt(rawData, 256, this.littleEndian);
+    this.quatern_c = nifti.Utils.getFloatAt(rawData, 260, this.littleEndian);
+    this.quatern_d = nifti.Utils.getFloatAt(rawData, 264, this.littleEndian);
+    this.qoffset_x = nifti.Utils.getFloatAt(rawData, 268, this.littleEndian);
+    this.qoffset_y = nifti.Utils.getFloatAt(rawData, 272, this.littleEndian);
+    this.qoffset_z = nifti.Utils.getFloatAt(rawData, 276, this.littleEndian);
+
+    for (ctrOut = 0; ctrOut < 3; ctrOut += 1) {
+        for (ctrIn = 0; ctrIn < 4; ctrIn += 1) {
+            index = 280 + (((ctrOut * 4) + ctrIn) * 4);
+            this.affine[ctrOut][ctrIn] = nifti.Utils.getFloatAt(rawData, index, this.littleEndian);
+        }
+    }
+
+    this.affine[3][0] = 0;
+    this.affine[3][1] = 0;
+    this.affine[3][2] = 0;
+    this.affine[3][3] = 1;
+
+    this.intent_name = nifti.Utils.getStringAt(rawData, 328, 344);
+    this.magic = nifti.Utils.getStringAt(rawData, 344, 348);
+
+    this.isHDR = (this.magic === nifti.NIFTI1.MAGIC_NUMBER2);
+
+    if (rawData.byteLength > nifti.NIFTI1.MAGIC_COOKIE) {
+        this.extensionFlag[0] = nifti.Utils.getByteAt(rawData, 348);
+        this.extensionFlag[1] = nifti.Utils.getByteAt(rawData, 348 + 1);
+        this.extensionFlag[2] = nifti.Utils.getByteAt(rawData, 348 + 2);
+        this.extensionFlag[3] = nifti.Utils.getByteAt(rawData, 348 + 3);
+
+        if (this.extensionFlag[0]) {
+            this.extensionSize = this.getExtensionSize(rawData);
+            this.extensionCode = this.getExtensionCode(rawData);
+        }
+    }
+};
+
+
+/**
+ * Returns a formatted string of header fields.
+ * @returns {string}
+ */
+nifti.NIFTI1.prototype.toFormattedString = function () {
+    var fmt = nifti.Utils.formatNumber,
+        string = "";
+
+    string += ("Dim Info = " + this.dim_info + "\n");
+
+    string += ("Image Dimensions (1-8): " +
+        this.dims[0] + ", " +
+        this.dims[1] + ", " +
+        this.dims[2] + ", " +
+        this.dims[3] + ", " +
+        this.dims[4] + ", " +
+        this.dims[5] + ", " +
+        this.dims[6] + ", " +
+        this.dims[7] + "\n");
+
+    string += ("Intent Parameters (1-3): " +
+        this.intent_p1 + ", " +
+        this.intent_p2 + ", " +
+        this.intent_p3) + "\n";
+
+    string += ("Intent Code = " + this.intent_code + "\n");
+    string += ("Datatype = " + this.datatypeCode +  " (" + this.getDatatypeCodeString(this.datatypeCode) + ")\n");
+    string += ("Bits Per Voxel = " + this.numBitsPerVoxel + "\n");
+    string += ("Slice Start = " + this.slice_start + "\n");
+    string += ("Voxel Dimensions (1-8): " +
+        fmt(this.pixDims[0]) + ", " +
+        fmt(this.pixDims[1]) + ", " +
+        fmt(this.pixDims[2]) + ", " +
+        fmt(this.pixDims[3]) + ", " +
+        fmt(this.pixDims[4]) + ", " +
+        fmt(this.pixDims[5]) + ", " +
+        fmt(this.pixDims[6]) + ", " +
+        fmt(this.pixDims[7]) + "\n");
+
+    string += ("Image Offset = " + this.vox_offset + "\n");
+    string += ("Data Scale:  Slope = " + fmt(this.scl_slope) + "  Intercept = " + fmt(this.scl_inter) + "\n");
+    string += ("Slice End = " + this.slice_end + "\n");
+    string += ("Slice Code = " + this.slice_code + "\n");
+    string += ("Units Code = " + this.xyzt_units + " (" + this.getUnitsCodeString(nifti.NIFTI1.SPATIAL_UNITS_MASK & this.xyzt_units) + ", " + this.getUnitsCodeString(nifti.NIFTI1.TEMPORAL_UNITS_MASK & this.xyzt_units) + ")\n");
+    string += ("Display Range:  Max = " + fmt(this.cal_max) + "  Min = " + fmt(this.cal_min) + "\n");
+    string += ("Slice Duration = " + this.slice_duration + "\n");
+    string += ("Time Axis Shift = " + this.toffset + "\n");
+    string += ("Description: \"" + this.description + "\"\n");
+    string += ("Auxiliary File: \"" + this.aux_file + "\"\n");
+    string += ("Q-Form Code = " + this.qform_code + " (" + this.getTransformCodeString(this.qform_code) + ")\n");
+    string += ("S-Form Code = " + this.sform_code + " (" + this.getTransformCodeString(this.sform_code) + ")\n");
+    string += ("Quaternion Parameters:  " +
+        "b = " + fmt(this.quatern_b) + "  " +
+        "c = " + fmt(this.quatern_c) + "  " +
+        "d = " + fmt(this.quatern_d) + "\n");
+
+    string += ("Quaternion Offsets:  " +
+        "x = " + this.qoffset_x + "  " +
+        "y = " + this.qoffset_y + "  " +
+        "z = " + this.qoffset_z + "\n");
+
+    string += ("S-Form Parameters X: " +
+        fmt(this.affine[0][0]) + ", " +
+        fmt(this.affine[0][1]) + ", " +
+        fmt(this.affine[0][2]) + ", " +
+        fmt(this.affine[0][3]) + "\n");
+
+    string += ("S-Form Parameters Y: " +
+        fmt(this.affine[1][0]) + ", " +
+        fmt(this.affine[1][1]) + ", " +
+        fmt(this.affine[1][2]) + ", " +
+        fmt(this.affine[1][3]) + "\n");
+
+    string += ("S-Form Parameters Z: " +
+        fmt(this.affine[2][0]) + ", " +
+        fmt(this.affine[2][1]) + ", " +
+        fmt(this.affine[2][2]) + ", " +
+        fmt(this.affine[2][3]) + "\n");
+
+    string += ("Intent Name: \"" + this.intent_name + "\"\n");
+
+    if (this.extensionFlag[0]) {
+        string += ("Extension: Size = " + this.extensionSize + "  Code = " + this.extensionCode + "\n");
+
+    }
+
+    return string;
+};
+
+
+/**
+ * Returns a human-readable string of datatype.
+ * @param {number} code
+ * @returns {string}
+ */
+nifti.NIFTI1.prototype.getDatatypeCodeString = function (code) {
+    if (code === nifti.NIFTI1.TYPE_UINT8) {
+        return "1-Byte Unsigned Integer";
+    } else if (code === nifti.NIFTI1.TYPE_INT16) {
+        return "2-Byte Signed Integer";
+    } else if (code === nifti.NIFTI1.TYPE_INT32) {
+        return "4-Byte Signed Integer";
+    } else if (code === nifti.NIFTI1.TYPE_FLOAT32) {
+        return "4-Byte Float";
+    } else if (code === nifti.NIFTI1.TYPE_FLOAT64) {
+        return "8-Byte Float";
+    } else if (code === nifti.NIFTI1.TYPE_RGB24) {
+        return "RGB";
+    } else if (code === nifti.NIFTI1.TYPE_INT8) {
+        return "1-Byte Signed Integer";
+    } else if (code === nifti.NIFTI1.TYPE_UINT16) {
+        return "2-Byte Unsigned Integer";
+    } else if (code === nifti.NIFTI1.TYPE_UINT32) {
+        return "4-Byte Unsigned Integer";
+    } else if (code === nifti.NIFTI1.TYPE_INT64) {
+        return "8-Byte Signed Integer";
+    } else if (code === nifti.NIFTI1.TYPE_UINT64) {
+        return "8-Byte Unsigned Integer";
+    } else {
+        return "Unknown";
+    }
+};
+
+
+/**
+ * Returns a human-readable string of transform type.
+ * @param {number} code
+ * @returns {string}
+ */
+nifti.NIFTI1.prototype.getTransformCodeString = function (code) {
+    if (code === nifti.NIFTI1.XFORM_SCANNER_ANAT) {
+        return "Scanner";
+    } else if (code === nifti.NIFTI1.XFORM_ALIGNED_ANAT) {
+        return "Aligned";
+    } else if (code === nifti.NIFTI1.XFORM_TALAIRACH) {
+        return "Talairach";
+    } else if (code === nifti.NIFTI1.XFORM_MNI_152) {
+        return "MNI";
+    } else {
+        return "Unknown";
+    }
+};
+
+
+/**
+ * Returns a human-readable string of spatial and temporal units.
+ * @param {number} code
+ * @returns {string}
+ */
+nifti.NIFTI1.prototype.getUnitsCodeString = function (code) {
+    if (code === nifti.NIFTI1.UNITS_METER) {
+        return "Meters";
+    } else if (code === nifti.NIFTI1.UNITS_MM) {
+        return "Millimeters";
+    } else if (code === nifti.NIFTI1.UNITS_MICRON) {
+        return "Microns";
+    } else if (code === nifti.NIFTI1.UNITS_SEC) {
+        return "Seconds";
+    } else if (code === nifti.NIFTI1.UNITS_MSEC) {
+        return "Milliseconds";
+    } else if (code === nifti.NIFTI1.UNITS_USEC) {
+        return "Microseconds";
+    } else if (code === nifti.NIFTI1.UNITS_HZ) {
+        return "Hz";
+    } else if (code === nifti.NIFTI1.UNITS_PPM) {
+        return "PPM";
+    } else if (code === nifti.NIFTI1.UNITS_RADS) {
+        return "Rads";
+    } else {
+        return "Unknown";
+    }
+};
+
+
+/**
+ * Returns the qform matrix.
+ * @returns {Array.<Array.<number>>}
+ */
+nifti.NIFTI1.prototype.getQformMat = function () {
+    return this.convertNiftiQFormToNiftiSForm(this.quatern_b, this.quatern_c, this.quatern_d, this.qoffset_x,
+        this.qoffset_y, this.qoffset_z, this.pixDims[1], this.pixDims[2], this.pixDims[3], this.pixDims[0]);
+};
+
+
+
+/**
+ * Converts qform to an affine.  (See http://nifti.nimh.nih.gov/pub/dist/src/niftilib/nifti1_io.c)
+ * @param {number} qb
+ * @param {number} qc
+ * @param {number} qd
+ * @param {number} qx
+ * @param {number} qy
+ * @param {number} qz
+ * @param {number} dx
+ * @param {number} dy
+ * @param {number} dz
+ * @param {number} qfac
+ * @returns {Array.<Array.<number>>}
+ */
+nifti.NIFTI1.prototype.convertNiftiQFormToNiftiSForm = function (qb, qc, qd, qx, qy, qz, dx, dy, dz,
+                                                qfac) {
+    var R = [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]],
+        a,
+        b = qb,
+        c = qc,
+        d = qd,
+        xd,
+        yd,
+        zd;
+
+    // last row is always [ 0 0 0 1 ]
+    R[3][0] = R[3][1] = R[3][2] = 0.0;
+    R[3][3] = 1.0;
+
+    // compute a parameter from b,c,d
+    a = 1.0 - (b * b + c * c + d * d);
+    if (a < 0.0000001) {                   /* special case */
+
+        a = 1.0 / Math.sqrt(b * b + c * c + d * d);
+        b *= a;
+        c *= a;
+        d *= a;        /* normalize (b,c,d) vector */
+        a = 0.0;                        /* a = 0 ==> 180 degree rotation */
+    } else {
+
+        a = Math.sqrt(a);                     /* angle = 2*arccos(a) */
+    }
+
+    // load rotation matrix, including scaling factors for voxel sizes
+    xd = (dx > 0.0) ? dx : 1.0;       /* make sure are positive */
+    yd = (dy > 0.0) ? dy : 1.0;
+    zd = (dz > 0.0) ? dz : 1.0;
+
+    if (qfac < 0.0) {
+        zd = -zd;         /* left handedness? */
+    }
+
+    R[0][0] =       (a * a + b * b - c * c - d * d) * xd;
+    R[0][1] = 2.0 * (b * c - a * d) * yd;
+    R[0][2] = 2.0 * (b * d + a * c) * zd;
+    R[1][0] = 2.0 * (b * c + a * d) * xd;
+    R[1][1] =       (a * a + c * c - b * b - d * d) * yd;
+    R[1][2] = 2.0 * (c * d - a * b) * zd;
+    R[2][0] = 2.0 * (b * d - a * c) * xd;
+    R[2][1] = 2.0 * (c * d + a * b) * yd;
+    R[2][2] =       (a * a + d * d - c * c - b * b) * zd;
+
+    // load offsets
+    R[0][3] = qx;
+    R[1][3] = qy;
+    R[2][3] = qz;
+
+    return R;
+};
+
+
+
+/**
+ * Converts sform to an orientation string (e.g., XYZ+--).  (See http://nifti.nimh.nih.gov/pub/dist/src/niftilib/nifti1_io.c)
+ * @param {Array.<Array.<number>>} R
+ * @returns {string}
+ */
+nifti.NIFTI1.prototype.convertNiftiSFormToNEMA = function (R) {
+    var xi, xj, xk, yi, yj, yk, zi, zj, zk, val, detQ, detP, i, j, k, p, q, r, ibest, jbest, kbest, pbest, qbest, rbest,
+        M, vbest, Q, P, iChar, jChar, kChar, iSense, jSense, kSense;
+    k = 0;
+
+    Q = [[0, 0, 0], [0, 0, 0], [0, 0, 0]];
+    P = [[0, 0, 0], [0, 0, 0], [0, 0, 0]];
+
+    //if( icod == NULL || jcod == NULL || kcod == NULL ) return ; /* bad */
+
+    //*icod = *jcod = *kcod = 0 ; /* this.errorMessage returns, if sh*t happens */
+
+    /* load column vectors for each (i,j,k) direction from matrix */
+
+    /*-- i axis --*/ /*-- j axis --*/ /*-- k axis --*/
+
+    xi = R[0][0];
+    xj = R[0][1];
+    xk = R[0][2];
+
+    yi = R[1][0];
+    yj = R[1][1];
+    yk = R[1][2];
+
+    zi = R[2][0];
+    zj = R[2][1];
+    zk = R[2][2];
+
+    /* normalize column vectors to get unit vectors along each ijk-axis */
+
+    /* normalize i axis */
+    val = Math.sqrt(xi * xi + yi * yi + zi * zi);
+    if (val === 0.0) {  /* stupid input */
+        return null;
+    }
+
+    xi /= val;
+    yi /= val;
+    zi /= val;
+
+    /* normalize j axis */
+    val = Math.sqrt(xj * xj + yj * yj + zj * zj);
+    if (val === 0.0) {  /* stupid input */
+        return null;
+    }
+
+    xj /= val;
+    yj /= val;
+    zj /= val;
+
+    /* orthogonalize j axis to i axis, if needed */
+    val = xi * xj + yi * yj + zi * zj;    /* dot product between i and j */
+    if (Math.abs(val) > 1.E-4) {
+        xj -= val * xi;
+        yj -= val * yi;
+        zj -= val * zi;
+        val = Math.sqrt(xj * xj + yj * yj + zj * zj);  /* must renormalize */
+        if (val === 0.0) {              /* j was parallel to i? */
+            return null;
+        }
+        xj /= val;
+        yj /= val;
+        zj /= val;
+    }
+
+    /* normalize k axis; if it is zero, make it the cross product i x j */
+    val = Math.sqrt(xk * xk + yk * yk + zk * zk);
+    if (val === 0.0) {
+        xk = yi * zj - zi * yj;
+        yk = zi * xj - zj * xi;
+        zk = xi * yj - yi * xj;
+    } else {
+        xk /= val;
+        yk /= val;
+        zk /= val;
+    }
+
+    /* orthogonalize k to i */
+    val = xi * xk + yi * yk + zi * zk;    /* dot product between i and k */
+    if (Math.abs(val) > 1.E-4) {
+        xk -= val * xi;
+        yk -= val * yi;
+        zk -= val * zi;
+        val = Math.sqrt(xk * xk + yk * yk + zk * zk);
+        if (val === 0.0) {    /* bad */
+            return null;
+        }
+        xk /= val;
+        yk /= val;
+        zk /= val;
+    }
+
+    /* orthogonalize k to j */
+    val = xj * xk + yj * yk + zj * zk;    /* dot product between j and k */
+    if (Math.abs(val) > 1.e-4) {
+        xk -= val * xj;
+        yk -= val * yj;
+        zk -= val * zj;
+        val = Math.sqrt(xk * xk + yk * yk + zk * zk);
+        if (val === 0.0) {     /* bad */
+            return null;
+        }
+        xk /= val;
+        yk /= val;
+        zk /= val;
+    }
+
+    Q[0][0] = xi;
+    Q[0][1] = xj;
+    Q[0][2] = xk;
+    Q[1][0] = yi;
+    Q[1][1] = yj;
+    Q[1][2] = yk;
+    Q[2][0] = zi;
+    Q[2][1] = zj;
+    Q[2][2] = zk;
+
+    /* at this point, Q is the rotation matrix from the (i,j,k) to (x,y,z) axes */
+
+    detQ = this.nifti_mat33_determ(Q);
+    if (detQ === 0.0) { /* shouldn't happen unless user is a DUFIS */
+        return null;
+    }
+
+    /* Build and test all possible +1/-1 coordinate permutation matrices P;
+     then find the P such that the rotation matrix M=PQ is closest to the
+     identity, in the sense of M having the smallest total rotation angle. */
+
+    /* Despite the formidable looking 6 nested loops, there are
+     only 3*3*3*2*2*2 = 216 passes, which will run very quickly. */
+
+    vbest = -666.0;
+    ibest = pbest = qbest = rbest = 1;
+    jbest = 2;
+    kbest = 3;
+
+    for (i = 1; i <= 3; i += 1) {     /* i = column number to use for row #1 */
+        for (j = 1; j <= 3; j += 1) {    /* j = column number to use for row #2 */
+            if (i !== j) {
+                for (k = 1; k <= 3; k += 1) {  /* k = column number to use for row #3 */
+                    if (!(i === k || j === k)) {
+                        P[0][0] = P[0][1] = P[0][2] = P[1][0] = P[1][1] = P[1][2] = P[2][0] = P[2][1] = P[2][2] = 0.0;
+                        for (p = -1; p <= 1; p += 2) {    /* p,q,r are -1 or +1      */
+                            for (q = -1; q <= 1; q += 2) {   /* and go into rows #1,2,3 */
+                                for (r = -1; r <= 1; r += 2) {
+                                    P[0][i - 1] = p;
+                                    P[1][j - 1] = q;
+                                    P[2][k - 1] = r;
+                                    detP = this.nifti_mat33_determ(P);           /* sign of permutation */
+                                    if ((detP * detQ) > 0.0) {
+                                        M = this.nifti_mat33_mul(P, Q);
+
+                                        /* angle of M rotation = 2.0*acos(0.5*sqrt(1.0+trace(M)))       */
+                                        /* we want largest trace(M) == smallest angle == M nearest to I */
+
+                                        val = M[0][0] + M[1][1] + M[2][2]; /* trace */
+                                        if (val > vbest) {
+                                            vbest = val;
+                                            ibest = i;
+                                            jbest = j;
+                                            kbest = k;
+                                            pbest = p;
+                                            qbest = q;
+                                            rbest = r;
+                                        }
+                                    }  /* doesn't match sign of Q */
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    /* At this point ibest is 1 or 2 or 3; pbest is -1 or +1; etc.
+
+     The matrix P that corresponds is the best permutation approximation
+     to Q-inverse; that is, P (approximately) takes (x,y,z) coordinates
+     to the (i,j,k) axes.
+
+     For example, the first row of P (which contains pbest in column ibest)
+     determines the way the i axis points relative to the anatomical
+     (x,y,z) axes.  If ibest is 2, then the i axis is along the y axis,
+     which is direction P2A (if pbest > 0) or A2P (if pbest < 0).
+
+     So, using ibest and pbest, we can assign the output code for
+     the i axis.  Mutatis mutandis for the j and k axes, of course. */
+
+    iChar = jChar = kChar = iSense = jSense = kSense = 0;
+
+    switch (ibest * pbest) {
+        case 1: /*i = NIFTI_L2R*/
+            iChar = 'X';
+            iSense = '+';
+            break;
+        case -1: /*i = NIFTI_R2L*/
+            iChar = 'X';
+            iSense = '-';
+            break;
+        case 2: /*i = NIFTI_P2A*/
+            iChar = 'Y';
+            iSense = '+';
+            break;
+        case -2: /*i = NIFTI_A2P*/
+            iChar = 'Y';
+            iSense = '-';
+            break;
+        case 3: /*i = NIFTI_I2S*/
+            iChar = 'Z';
+            iSense = '+';
+            break;
+        case -3: /*i = NIFTI_S2I*/
+            iChar = 'Z';
+            iSense = '-';
+            break;
+    }
+
+    switch (jbest * qbest) {
+        case 1: /*j = NIFTI_L2R*/
+            jChar = 'X';
+            jSense = '+';
+            break;
+        case -1: /*j = NIFTI_R2L*/
+            jChar = 'X';
+            jSense = '-';
+            break;
+        case 2: /*j = NIFTI_P2A*/
+            jChar = 'Y';
+            jSense = '+';
+            break;
+        case -2: /*j = NIFTI_A2P*/
+            jChar = 'Y';
+            jSense = '-';
+            break;
+        case 3: /*j = NIFTI_I2S*/
+            jChar = 'Z';
+            jSense = '+';
+            break;
+        case -3: /*j = NIFTI_S2I*/
+            jChar = 'Z';
+            jSense = '-';
+            break;
+    }
+
+    switch (kbest * rbest) {
+        case 1: /*k = NIFTI_L2R*/
+            kChar = 'X';
+            kSense = '+';
+            break;
+        case -1: /*k = NIFTI_R2L*/
+            kChar = 'X';
+            kSense = '-';
+            break;
+        case 2: /*k = NIFTI_P2A*/
+            kChar = 'Y';
+            kSense = '+';
+            break;
+        case -2: /*k = NIFTI_A2P*/
+            kChar = 'Y';
+            kSense = '-';
+            break;
+        case 3: /*k = NIFTI_I2S*/
+            kChar = 'Z';
+            kSense = '+';
+            break;
+        case -3: /*k = NIFTI_S2I*/
+            kChar = 'Z';
+            kSense = '-';
+            break;
+    }
+
+    return (iChar + jChar + kChar + iSense + jSense + kSense);
+};
+
+
+
+nifti.NIFTI1.prototype.nifti_mat33_mul = function (A, B) {
+    var C = [[0, 0, 0], [0, 0, 0], [0, 0, 0]],
+        i,
+        j;
+
+    for (i = 0; i < 3; i += 1) {
+        for (j = 0; j < 3; j += 1) {
+            C[i][j] =  A[i][0] * B[0][j]  + A[i][1] * B[1][j] + A[i][2] * B[2][j];
+        }
+    }
+
+    return C;
+};
+
+
+
+nifti.NIFTI1.prototype.nifti_mat33_determ = function (R) {
+    var r11, r12, r13, r21, r22, r23, r31, r32, r33;
+    /*  INPUT MATRIX:  */
+    r11 = R[0][0];
+    r12 = R[0][1];
+    r13 = R[0][2];
+    r21 = R[1][0];
+    r22 = R[1][1];
+    r23 = R[1][2];
+    r31 = R[2][0];
+    r32 = R[2][1];
+    r33 = R[2][2];
+
+    return (r11 * r22 * r33 - r11 * r32 * r23 - r21 * r12 * r33 + r21 * r32 * r13 + r31 * r12 * r23 - r31 * r22 * r13);
+};
+
+
+/**
+ * Returns the byte index of the extension.
+ * @returns {number}
+ */
+nifti.NIFTI1.prototype.getExtensionLocation = function() {
+    return nifti.NIFTI1.MAGIC_COOKIE + 4;
+};
+
+
+/**
+ * Returns the extension size.
+ * @param {DataView} data
+ * @returns {number}
+ */
+nifti.NIFTI1.prototype.getExtensionSize = function(data) {
+    return nifti.Utils.getIntAt(data, this.getExtensionLocation(), this.littleEndian);
+};
+
+
+
+/**
+ * Returns the extension code.
+ * @param {DataView} data
+ * @returns {number}
+ */
+nifti.NIFTI1.prototype.getExtensionCode = function(data) {
+    return nifti.Utils.getIntAt(data, this.getExtensionLocation() + 4, this.littleEndian);
+};
+
+
+
+/*** Exports ***/
+
+var moduleType = 'object';
+if ((moduleType !== 'undefined') && module.exports) {
+    module.exports = nifti.NIFTI1;
+}
+});
+
+var nifti2 = createCommonjsModule(function (module) {
+/*jslint browser: true, node: true */
+/*global */
+
+"use strict";
+
+/*** Imports ***/
+
+var nifti = nifti || {};
+nifti.Utils = nifti.Utils || ((typeof commonjsRequire !== 'undefined') ? utilities : null);
+nifti.NIFTI1 = nifti.NIFTI1 || ((typeof commonjsRequire !== 'undefined') ? nifti1 : null);
+
+
+/*** Constructor ***/
+
+/**
+ * The NIFTI2 constructor.
+ * @constructor
+ * @property {boolean} littleEndian
+ * @property {number} dim_info
+ * @property {number[]} dims - image dimensions
+ * @property {number} intent_p1
+ * @property {number} intent_p2
+ * @property {number} intent_p3
+ * @property {number} intent_code
+ * @property {number} datatypeCode
+ * @property {number} numBitsPerVoxel
+ * @property {number} slice_start
+ * @property {number} slice_end
+ * @property {number} slice_code
+ * @property {number[]} pixDims - voxel dimensions
+ * @property {number} vox_offset
+ * @property {number} scl_slope
+ * @property {number} scl_inter
+ * @property {number} xyzt_units
+ * @property {number} cal_max
+ * @property {number} cal_min
+ * @property {number} slice_duration
+ * @property {number} toffset
+ * @property {string} description
+ * @property {string} aux_file
+ * @property {string} intent_name
+ * @property {number} qform_code
+ * @property {number} sform_code
+ * @property {number} quatern_b
+ * @property {number} quatern_c
+ * @property {number} quatern_d
+ * @property {number} quatern_x
+ * @property {number} quatern_y
+ * @property {number} quatern_z
+ * @property {Array.<Array.<number>>} affine
+ * @property {string} magic
+ * @property {number[]} extensionFlag
+ * @type {Function}
+ */
+nifti.NIFTI2 = nifti.NIFTI2 || function () {
+    this.littleEndian = false;
+    this.dim_info = 0;
+    this.dims = [];
+    this.intent_p1 = 0;
+    this.intent_p2 = 0;
+    this.intent_p3 = 0;
+    this.intent_code = 0;
+    this.datatypeCode = 0;
+    this.numBitsPerVoxel = 0;
+    this.slice_start = 0;
+    this.slice_end = 0;
+    this.slice_code = 0;
+    this.pixDims = [];
+    this.vox_offset = 0;
+    this.scl_slope = 1;
+    this.scl_inter = 0;
+    this.xyzt_units = 0;
+    this.cal_max = 0;
+    this.cal_min = 0;
+    this.slice_duration = 0;
+    this.toffset = 0;
+    this.description = "";
+    this.aux_file = "";
+    this.intent_name = "";
+    this.qform_code = 0;
+    this.sform_code = 0;
+    this.quatern_b = 0;
+    this.quatern_c = 0;
+    this.quatern_d = 0;
+    this.qoffset_x = 0;
+    this.qoffset_y = 0;
+    this.qoffset_z = 0;
+    this.affine = [[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]];
+    this.magic = 0;
+    this.extensionFlag = [0, 0, 0, 0];
+};
+
+
+
+/*** Static Pseudo-constants ***/
+
+nifti.NIFTI2.MAGIC_COOKIE = 540;
+nifti.NIFTI2.MAGIC_NUMBER_LOCATION = 4;
+nifti.NIFTI2.MAGIC_NUMBER = [0x6E, 0x2B, 0x32, 0, 0x0D, 0x0A, 0x1A, 0x0A];  // n+2\0
+
+
+
+/*** Prototype Methods ***/
+
+/**
+ * Reads the header data.
+ * @param {ArrayBuffer} data
+ */
+nifti.NIFTI2.prototype.readHeader = function (data) {
+    var rawData = new DataView(data),
+        magicCookieVal = nifti.Utils.getIntAt(rawData, 0, this.littleEndian),
+        ctr,
+        ctrOut,
+        ctrIn,
+        index,
+        array;
+
+    if (magicCookieVal !== nifti.NIFTI2.MAGIC_COOKIE) {  // try as little endian
+        this.littleEndian = true;
+        magicCookieVal = nifti.Utils.getIntAt(rawData, 0, this.littleEndian);
+    }
+
+    if (magicCookieVal !== nifti.NIFTI2.MAGIC_COOKIE) {
+        throw new Error("This does not appear to be a NIFTI file!");
+    }
+
+    this.datatypeCode = nifti.Utils.getShortAt(rawData, 12, this.littleEndian);
+    this.numBitsPerVoxel = nifti.Utils.getShortAt(rawData, 14, this.littleEndian);
+
+    for (ctr = 0; ctr < 8; ctr += 1) {
+        index = 16 + (ctr * 8);
+        this.dims[ctr] = nifti.Utils.getLongAt(rawData, index, this.littleEndian);
+    }
+
+    this.intent_p1 = nifti.Utils.getDoubleAt(rawData, 80, this.littleEndian);
+    this.intent_p2 = nifti.Utils.getDoubleAt(rawData, 88, this.littleEndian);
+    this.intent_p3 = nifti.Utils.getDoubleAt(rawData, 96, this.littleEndian);
+
+    for (ctr = 0; ctr < 8; ctr += 1) {
+        index = 104 + (ctr * 8);
+        this.pixDims[ctr] = nifti.Utils.getDoubleAt(rawData, index, this.littleEndian);
+    }
+
+    this.vox_offset = nifti.Utils.getLongAt(rawData, 168, this.littleEndian);
+
+    this.scl_slope = nifti.Utils.getDoubleAt(rawData, 176, this.littleEndian);
+    this.scl_inter = nifti.Utils.getDoubleAt(rawData, 184, this.littleEndian);
+
+    this.cal_max = nifti.Utils.getDoubleAt(rawData, 192, this.littleEndian);
+    this.cal_min = nifti.Utils.getDoubleAt(rawData, 200, this.littleEndian);
+
+    this.slice_duration = nifti.Utils.getDoubleAt(rawData, 208, this.littleEndian);
+
+    this.toffset = nifti.Utils.getDoubleAt(rawData, 216, this.littleEndian);
+
+    this.slice_start = nifti.Utils.getLongAt(rawData, 224, this.littleEndian);
+    this.slice_end = nifti.Utils.getLongAt(rawData, 232, this.littleEndian);
+
+    this.description = nifti.Utils.getStringAt(rawData, 240, 240 + 80);
+    this.aux_file = nifti.Utils.getStringAt(rawData, 320, 320 + 24);
+
+    this.qform_code = nifti.Utils.getIntAt(rawData, 344, this.littleEndian);
+    this.sform_code = nifti.Utils.getIntAt(rawData, 348, this.littleEndian);
+
+    this.quatern_b = nifti.Utils.getDoubleAt(rawData, 352, this.littleEndian);
+    this.quatern_c = nifti.Utils.getDoubleAt(rawData, 360, this.littleEndian);
+    this.quatern_d = nifti.Utils.getDoubleAt(rawData, 368, this.littleEndian);
+    this.qoffset_x = nifti.Utils.getDoubleAt(rawData, 376, this.littleEndian);
+    this.qoffset_y = nifti.Utils.getDoubleAt(rawData, 384, this.littleEndian);
+    this.qoffset_z = nifti.Utils.getDoubleAt(rawData, 392, this.littleEndian);
+
+    for (ctrOut = 0; ctrOut < 3; ctrOut += 1) {
+        for (ctrIn = 0; ctrIn < 4; ctrIn += 1) {
+            index = 400 + (((ctrOut * 4) + ctrIn) * 8);
+            this.affine[ctrOut][ctrIn] = nifti.Utils.getDoubleAt(rawData, index, this.littleEndian);
+        }
+    }
+
+    this.affine[3][0] = 0;
+    this.affine[3][1] = 0;
+    this.affine[3][2] = 0;
+    this.affine[3][3] = 1;
+
+    this.slice_code = nifti.Utils.getIntAt(rawData, 496, this.littleEndian);
+    this.xyzt_units = nifti.Utils.getIntAt(rawData, 500, this.littleEndian);
+    this.intent_code = nifti.Utils.getIntAt(rawData, 504, this.littleEndian);
+    this.intent_name = nifti.Utils.getStringAt(rawData, 508, 508 + 16);
+
+    this.dim_info = nifti.Utils.getByteAt(rawData, 524);
+
+    if (rawData.byteLength > nifti.NIFTI2.MAGIC_COOKIE) {
+        this.extensionFlag[0] = nifti.Utils.getByteAt(rawData, 540);
+        this.extensionFlag[1] = nifti.Utils.getByteAt(rawData, 540 + 1);
+        this.extensionFlag[2] = nifti.Utils.getByteAt(rawData, 540 + 2);
+        this.extensionFlag[3] = nifti.Utils.getByteAt(rawData, 540 + 3);
+
+        if (this.extensionFlag[0]) {
+            this.extensionSize = this.getExtensionSize(rawData);
+            this.extensionCode = this.getExtensionCode(rawData);
+        }
+    }
+};
+
+
+
+/**
+ * Returns a formatted string of header fields.
+ * @returns {string}
+ */
+nifti.NIFTI2.prototype.toFormattedString = function () {
+    var fmt = nifti.Utils.formatNumber,
+        string = "";
+
+    string += ("Datatype = " +  + this.datatypeCode + " (" + this.getDatatypeCodeString(this.datatypeCode) + ")\n");
+    string += ("Bits Per Voxel = " + " = " + this.numBitsPerVoxel + "\n");
+    string += ("Image Dimensions" + " (1-8): " +
+        this.dims[0] + ", " +
+        this.dims[1] + ", " +
+        this.dims[2] + ", " +
+        this.dims[3] + ", " +
+        this.dims[4] + ", " +
+        this.dims[5] + ", " +
+        this.dims[6] + ", " +
+        this.dims[7] + "\n");
+
+    string += ("Intent Parameters (1-3): " +
+        this.intent_p1 + ", " +
+        this.intent_p2 + ", " +
+        this.intent_p3) + "\n";
+
+    string += ("Voxel Dimensions (1-8): " +
+        fmt(this.pixDims[0]) + ", " +
+        fmt(this.pixDims[1]) + ", " +
+        fmt(this.pixDims[2]) + ", " +
+        fmt(this.pixDims[3]) + ", " +
+        fmt(this.pixDims[4]) + ", " +
+        fmt(this.pixDims[5]) + ", " +
+        fmt(this.pixDims[6]) + ", " +
+        fmt(this.pixDims[7]) + "\n");
+
+    string += ("Image Offset = " + this.vox_offset + "\n");
+    string += ("Data Scale:  Slope = " + fmt(this.scl_slope) + "  Intercept = " + fmt(this.scl_inter) + "\n");
+    string += ("Display Range:  Max = " + fmt(this.cal_max) + "  Min = " + fmt(this.cal_min) + "\n");
+    string += ("Slice Duration = " + this.slice_duration + "\n");
+    string += ("Time Axis Shift = " + this.toffset + "\n");
+    string += ("Slice Start = " + this.slice_start + "\n");
+    string += ("Slice End = " + this.slice_end + "\n");
+    string += ("Description: \"" + this.description + "\"\n");
+    string += ("Auxiliary File: \"" + this.aux_file + "\"\n");
+    string += ("Q-Form Code = " + this.qform_code + " (" + this.getTransformCodeString(this.qform_code) + ")\n");
+    string += ("S-Form Code = " + this.sform_code + " (" + this.getTransformCodeString(this.sform_code) + ")\n");
+    string += ("Quaternion Parameters:  " +
+    "b = " + fmt(this.quatern_b) + "  " +
+    "c = " + fmt(this.quatern_c) + "  " +
+    "d = " + fmt(this.quatern_d) + "\n");
+
+    string += ("Quaternion Offsets:  " +
+    "x = " + this.qoffset_x + "  " +
+    "y = " + this.qoffset_y + "  " +
+    "z = " + this.qoffset_z + "\n");
+
+    string += ("S-Form Parameters X: " +
+    fmt(this.affine[0][0]) + ", " +
+    fmt(this.affine[0][1]) + ", " +
+    fmt(this.affine[0][2]) + ", " +
+    fmt(this.affine[0][3]) + "\n");
+
+    string += ("S-Form Parameters Y: " +
+    fmt(this.affine[1][0]) + ", " +
+    fmt(this.affine[1][1]) + ", " +
+    fmt(this.affine[1][2]) + ", " +
+    fmt(this.affine[1][3]) + "\n");
+
+    string += ("S-Form Parameters Z: " +
+    fmt(this.affine[2][0]) + ", " +
+    fmt(this.affine[2][1]) + ", " +
+    fmt(this.affine[2][2]) + ", " +
+    fmt(this.affine[2][3]) + "\n");
+
+    string += ("Slice Code = " + this.slice_code + "\n");
+    string += ("Units Code = " + this.xyzt_units + " (" + this.getUnitsCodeString(nifti.NIFTI1.SPATIAL_UNITS_MASK & this.xyzt_units) + ", " + this.getUnitsCodeString(nifti.NIFTI1.TEMPORAL_UNITS_MASK & this.xyzt_units) + ")\n");
+    string += ("Intent Code = " + this.intent_code + "\n");
+    string += ("Intent Name: \"" + this.intent_name + "\"\n");
+
+    string += ("Dim Info = " + this.dim_info + "\n");
+
+    return string;
+};
+
+
+
+/**
+ * Returns the byte index of the extension.
+ * @returns {number}
+ */
+nifti.NIFTI2.prototype.getExtensionLocation = function() {
+    return nifti.NIFTI2.MAGIC_COOKIE + 4;
+};
+
+
+
+/**
+ * Returns the extension size.
+ * @param {DataView} data
+ * @returns {number}
+ */
+nifti.NIFTI2.prototype.getExtensionSize = nifti.NIFTI1.prototype.getExtensionSize;
+
+
+
+/**
+ * Returns the extension code.
+ * @param {DataView} data
+ * @returns {number}
+ */
+nifti.NIFTI2.prototype.getExtensionCode = nifti.NIFTI1.prototype.getExtensionCode;
+
+
+
+/**
+ * Returns a human-readable string of datatype.
+ * @param {number} code
+ * @returns {string}
+ */
+nifti.NIFTI2.prototype.getDatatypeCodeString = nifti.NIFTI1.prototype.getDatatypeCodeString;
+
+
+
+/**
+ * Returns a human-readable string of transform type.
+ * @param {number} code
+ * @returns {string}
+ */
+nifti.NIFTI2.prototype.getTransformCodeString = nifti.NIFTI1.prototype.getTransformCodeString;
+
+
+
+/**
+ * Returns a human-readable string of spatial and temporal units.
+ * @param {number} code
+ * @returns {string}
+ */
+nifti.NIFTI2.prototype.getUnitsCodeString = nifti.NIFTI1.prototype.getUnitsCodeString;
+
+
+
+/**
+ * Returns the qform matrix.
+ * @returns {Array.<Array.<number>>}
+ */
+nifti.NIFTI2.prototype.getQformMat = nifti.NIFTI1.prototype.getQformMat;
+
+
+
+/**
+ * Converts qform to an affine.  (See http://nifti.nimh.nih.gov/pub/dist/src/niftilib/nifti1_io.c)
+ * @param {number} qb
+ * @param {number} qc
+ * @param {number} qd
+ * @param {number} qx
+ * @param {number} qy
+ * @param {number} qz
+ * @param {number} dx
+ * @param {number} dy
+ * @param {number} dz
+ * @param {number} qfac
+ * @returns {Array.<Array.<number>>}
+ */
+nifti.NIFTI2.prototype.convertNiftiQFormToNiftiSForm = nifti.NIFTI1.prototype.convertNiftiQFormToNiftiSForm;
+
+
+
+/**
+ * Converts sform to an orientation string (e.g., XYZ+--).  (See http://nifti.nimh.nih.gov/pub/dist/src/niftilib/nifti1_io.c)
+ * @param {Array.<Array.<number>>} R
+ * @returns {string}
+ */
+nifti.NIFTI2.prototype.convertNiftiSFormToNEMA = nifti.NIFTI1.prototype.convertNiftiSFormToNEMA;
+
+
+
+nifti.NIFTI2.prototype.nifti_mat33_mul = nifti.NIFTI1.prototype.nifti_mat33_mul;
+
+
+
+nifti.NIFTI2.prototype.nifti_mat33_determ = nifti.NIFTI1.prototype.nifti_mat33_determ;
+
+
+
+/*** Exports ***/
+
+var moduleType = 'object';
+if ((moduleType !== 'undefined') && module.exports) {
+    module.exports = nifti.NIFTI2;
+}
+});
+
+var nifti_1 = createCommonjsModule(function (module) {
+/*jslint browser: true, node: true */
+/*global require, module */
+
+"use strict";
+
+/*** Imports ***/
+
+/**
+ * nifti
+ * @type {*|{}}
+ */
+var nifti = nifti || {};
+nifti.NIFTI1 = nifti.NIFTI1 || ((typeof commonjsRequire !== 'undefined') ? nifti1 : null);
+nifti.NIFTI2 = nifti.NIFTI2 || ((typeof commonjsRequire !== 'undefined') ? nifti2 : null);
+nifti.Utils = nifti.Utils || ((typeof commonjsRequire !== 'undefined') ? utilities : null);
+
+var pako = pako || ((typeof commonjsRequire !== 'undefined') ? index$1 : null);
+
+
+
+/*** Static Methods ***/
+
+/**
+ * Returns true if this data represents a NIFTI-1 header.
+ * @param {ArrayBuffer} data
+ * @returns {boolean}
+ */
+nifti.isNIFTI1 = function (data) {
+    var buf, mag1, mag2, mag3;
+
+    if (data.byteLength < nifti.NIFTI1.STANDARD_HEADER_SIZE) {
+        return false;
+    }
+
+    buf = new DataView(data);
+
+    if (buf)
+
+    mag1 = buf.getUint8(nifti.NIFTI1.MAGIC_NUMBER_LOCATION);
+    mag2 = buf.getUint8(nifti.NIFTI1.MAGIC_NUMBER_LOCATION + 1);
+    mag3 = buf.getUint8(nifti.NIFTI1.MAGIC_NUMBER_LOCATION + 2);
+
+    return !!((mag1 === nifti.NIFTI1.MAGIC_NUMBER[0]) && (mag2 === nifti.NIFTI1.MAGIC_NUMBER[1]) &&
+        (mag3 === nifti.NIFTI1.MAGIC_NUMBER[2]));
+};
+
+
+/**
+ * Returns true if this data represents a NIFTI-2 header.
+ * @param {ArrayBuffer} data
+ * @returns {boolean}
+ */
+nifti.isNIFTI2 = function (data) {
+    var buf, mag1, mag2, mag3;
+
+    if (data.byteLength < nifti.NIFTI1.STANDARD_HEADER_SIZE) {
+        return false;
+    }
+
+    buf = new DataView(data);
+    mag1 = buf.getUint8(nifti.NIFTI2.MAGIC_NUMBER_LOCATION);
+    mag2 = buf.getUint8(nifti.NIFTI2.MAGIC_NUMBER_LOCATION + 1);
+    mag3 = buf.getUint8(nifti.NIFTI2.MAGIC_NUMBER_LOCATION + 2);
+
+    return !!((mag1 === nifti.NIFTI2.MAGIC_NUMBER[0]) && (mag2 === nifti.NIFTI2.MAGIC_NUMBER[1]) &&
+    (mag3 === nifti.NIFTI2.MAGIC_NUMBER[2]));
+};
+
+
+
+/**
+ * Returns true if this data represents a NIFTI header.
+ * @param {ArrayBuffer} data
+ * @returns {boolean}
+ */
+nifti.isNIFTI = function (data) {
+    return (nifti.isNIFTI1(data) || nifti.isNIFTI2(data));
+};
+
+
+
+/**
+ * Returns true if this data is GZIP compressed.
+ * @param {ArrayBuffer} data
+ * @returns {boolean}
+ */
+nifti.isCompressed = function (data) {
+    var buf, magicCookie1, magicCookie2;
+
+    if (data) {
+        buf = new DataView(data);
+
+        magicCookie1 = buf.getUint8(0);
+        magicCookie2 = buf.getUint8(1);
+
+        if (magicCookie1 === nifti.Utils.GUNZIP_MAGIC_COOKIE1) {
+            return true;
+        }
+
+        if (magicCookie2 === nifti.Utils.GUNZIP_MAGIC_COOKIE2) {
+            return true;
+        }
+    }
+
+    return false;
+};
+
+
+
+/**
+ * Returns decompressed data.
+ * @param {ArrayBuffer} data
+ * @returns {ArrayBuffer}
+ */
+nifti.decompress = function (data) {
+    return pako.inflate(data).buffer;
+};
+
+
+
+/**
+ * Reads and returns the header object.
+ * @param {ArrayBuffer} data
+ * @returns {nifti.NIFTI1|nifti.NIFTI2|null}
+ */
+nifti.readHeader = function (data) {
+    var header = null;
+
+    if (nifti.isCompressed(data)) {
+        data = nifti.decompress(data);
+    }
+
+    if (nifti.isNIFTI1(data)) {
+        header = new nifti.NIFTI1();
+    } else if (nifti.isNIFTI2(data)) {
+        header = new nifti.NIFTI2();
+    }
+
+    if (header) {
+        header.readHeader(data);
+    } else {
+        console.error("That file does not appear to be NIFTI!");
+    }
+
+    return header;
+};
+
+
+
+/**
+ * Returns true if this header contains an extension.
+ * @param {nifti.NIFTI1|nifti.NIFTI2} header
+ * @returns {boolean}
+ */
+nifti.hasExtension = function (header) {
+    return (header.extensionFlag[0] != 0);
+};
+
+
+
+/**
+ * Returns the image data.
+ * @param {nifti.NIFTI1|nifti.NIFTI2} header
+ * @param {ArrayBuffer} data
+ * @returns {ArrayBuffer}
+ */
+nifti.readImage = function (header, data) {
+    var imageOffset = header.vox_offset,
+        timeDim = 1,
+        statDim = 1;
+
+    if (header.dims[4]) {
+        timeDim = header.dims[4];
+    }
+
+    if (header.dims[5]) {
+        statDim = header.dims[5];
+    }
+
+    var imageSize = header.dims[1] * header.dims[2] * header.dims[3] * timeDim * statDim * (header.numBitsPerVoxel / 8);
+    return data.slice(imageOffset, imageOffset + imageSize);
+};
+
+
+
+/**
+ * Returns the extension data (including extension header).
+ * @param {nifti.NIFTI1|nifti.NIFTI2} header
+ * @param {ArrayBuffer} data
+ * @returns {ArrayBuffer}
+ */
+nifti.readExtension = function (header, data) {
+    var loc = header.getExtensionLocation(),
+        size = header.extensionSize;
+
+    return data.slice(loc, loc + size);
+};
+
+
+
+/**
+ * Returns the extension data.
+ * @param {nifti.NIFTI1|nifti.NIFTI2} header
+ * @param {ArrayBuffer} data
+ * @returns {ArrayBuffer}
+ */
+nifti.readExtensionData = function (header, data) {
+    var loc = header.getExtensionLocation(),
+        size = header.extensionSize;
+
+    return data.slice(loc + 8, loc + size - 8);
+};
+
+
+/*** Exports ***/
+
+var moduleType = 'object';
+if ((moduleType !== 'undefined') && module.exports) {
+    module.exports = nifti;
+}
+});
+
+/*
+* Author    Jonathan Lurie - http://me.jonahanlurie.fr
+*           Robert D. Vincent
+*
+* License   MIT
+* Link      https://github.com/Pixpipe/pixpipejs
+* Lab       MCIN - Montreal Neurological Institute
+*/
+
+/**
+* Info:
+* The official NIfTI header description ( https://nifti.nimh.nih.gov/pub/dist/src/niftilib/nifti1.h )
+* was used to interpret the data.
+*/
+class NiftiDecoderAlt extends Filter {
+  constructor(){
+    super();
+    this.addInputValidator(0, ArrayBuffer);
+  }
+  
+  
+  _run(){
+    var that = this;
+    var inputBuffer = this._getInput(0);
+
+    if(!inputBuffer){
+      console.warn("NiftiDecoderAlt requires an ArrayBuffer as input \"0\". Unable to continue.");
+      return;
+    }
+    
+    console.log( nifti_1 );
+    
+    if(! nifti_1.isNIFTI( inputBuffer )) {
+      console.warn("Not a NIfTI file");
+      return;
+    }
+    
+    var metadata = {};
+    var data = null;
+    
+    var header = nifti_1.readHeader(inputBuffer);
+    var rawData = nifti_1.readImage(header, inputBuffer);
+    
+    console.log( header );
+
+    
+    data = this._fetchDataArray(header, rawData);
+    
+    if( !data ){
+      console.warn("This NIfTI file is valid but does not contain any readable data.");
+      return;
+    }
+    
+    this._scaleData(data, header);
+    
+    // copying all the original metadata into the field "formatSpecific", for the sake of quality.
+    metadata.formatSpecific = header;
+    
+    metadata.ncpp = this._fetchNcpp(header);
+    metadata.description = header.description;
+    metadata.format = "nifti";
+    metadata.numberOfDimensions = header.dims[0];
+    metadata.spatialUnit = header.getUnitsCodeString(nifti_1.NIFTI1.SPATIAL_UNITS_MASK & header.xyzt_units);
+    
+    console.log( data );
+    
+    
+  }
+  
+  
+  /**
+  * [PRIVATE]
+  * The header field `scl_slope` is used to scale the data, thus if non-0,
+  * we should scale the data.
+  * @param {typed array} data - the nifti data array, WILL BE MODIFIED
+  * @param {Object} header - nifti header
+  */
+  _scaleData( data, header ){
+    // the data scaling wont change anything, thus we dont perform it
+    if( header.scl_slope == 1 && header.scl_inter == 0 ){
+      return;
+    }
+    
+    if( header.scl_slope ){
+      for(var i=0; i<data.length; i++){
+        data[i] = data[i] * header.scl_slope + header.scl_inter;
+      }
+    }
+  }
+  
+  
+  /**
+  * [PRIVATE]
+  * Get the number of components per pixel encoded in the Nifti file
+  * @param {Object} header - Nifti header
+  * @return {number} the ncpp
+  */
+  _fetchNcpp( header ){
+    var ncpp = 0;
+    
+    switch ( header.datatypeCode ) {
+      case nifti_1.NIFTI1.TYPE_BINARY:
+        console.warn("The datatype nifti.TYPE_BINARY is not compatible yet.");
+        break;
+      case nifti_1.NIFTI1.TYPE_COMPLEX64:
+        console.warn("The datatype nifti.TYPE_COMPLEX64 is not compatible yet.");
+        break;
+      case nifti_1.NIFTI1.TYPE_COMPLEX128:
+        console.warn("The datatype nifti.TYPE_COMPLEX128 is not compatible yet.");
+        break;
+      case nifti_1.NIFTI1.TYPE_COMPLEX256:
+        console.warn("The datatype nifti.TYPE_COMPLEX256 is not compatible yet.");
+        break;
+      case nifti_1.NIFTI1.TYPE_FLOAT128:
+        console.warn("The datatype nifti.TYPE_FLOAT128 is not compatible yet.");
+        break;
+      case nifti_1.NIFTI1.TYPE_INT64:
+        console.warn("The datatype nifti.TYPE_INT64 is not compatible yet.");
+        break;
+      case nifti_1.NIFTI1.TYPE_NONE:
+        console.warn("The datatype nifti.TYPE_NONE is not compatible.");
+        break;
+      case nifti_1.NIFTI1.TYPE_UINT64:
+        console.warn("The datatype nifti.TYPE_INT64 is not compatible yet.");
+        break;
+        
+      case nifti_1.NIFTI1.TYPE_FLOAT32:
+        ncpp = 1;
+        break;
+      case nifti_1.NIFTI1.TYPE_FLOAT64:
+        ncpp = 1;
+        break;
+      case nifti_1.NIFTI1.TYPE_INT8:
+        ncpp = 1;
+        break;
+      case nifti_1.NIFTI1.TYPE_INT16:
+        ncpp = 1;
+        break;
+      case nifti_1.NIFTI1.TYPE_INT32:
+        ncpp = 1;
+        break;
+      case nifti_1.NIFTI1.TYPE_UINT8:
+        ncpp = 1;
+        break;
+      case nifti_1.NIFTI1.TYPE_UINT16:
+        ncpp = 1;
+        break;
+      case nifti_1.NIFTI1.TYPE_UINT32:
+        ncpp = 1;
+        break;
+      case nifti_1.NIFTI1.TYPE_RGB24:
+        ncpp = 3;
+        break;
+      
+      default:
+        console.warn("The datatype is unknown.");
+    }
+    
+    return ncpp;
+  }
+  
+  
+  /**
+  * [PRIVATE]
+  * Cast the raw ArrayBuffer into the appropriate type. Some Nifti types are not
+  * compatible with Javascript and cannot be used.
+  * @param {Object} header - the nifti header
+  * @param {ArrayBuffer} rawData - the nifti data buffer
+  * @return {typed array} a typed array with the data
+  */
+  _fetchDataArray( header, rawData ){
+    var typedData = null;
+    
+    switch ( header.datatypeCode ) {
+      case nifti_1.NIFTI1.TYPE_BINARY:
+        console.warn("The datatype nifti.TYPE_BINARY is not compatible yet.");
+        break;
+      case nifti_1.NIFTI1.TYPE_COMPLEX64:
+        console.warn("The datatype nifti.TYPE_COMPLEX64 is not compatible yet.");
+        break;
+      case nifti_1.NIFTI1.TYPE_COMPLEX128:
+        console.warn("The datatype nifti.TYPE_COMPLEX128 is not compatible yet.");
+        break;
+      case nifti_1.NIFTI1.TYPE_COMPLEX256:
+        console.warn("The datatype nifti.TYPE_COMPLEX256 is not compatible yet.");
+        break;
+      case nifti_1.NIFTI1.TYPE_FLOAT128:
+        console.warn("The datatype nifti.TYPE_FLOAT128 is not compatible yet.");
+        break;
+      case nifti_1.NIFTI1.TYPE_INT64:
+        console.warn("The datatype nifti.TYPE_INT64 is not compatible yet.");
+        break;
+      case nifti_1.NIFTI1.TYPE_NONE:
+        console.warn("The datatype nifti.TYPE_NONE is not compatible.");
+        break;
+      case nifti_1.NIFTI1.TYPE_UINT64:
+        console.warn("The datatype nifti.TYPE_INT64 is not compatible yet.");
+        break;
+        
+      case nifti_1.NIFTI1.TYPE_FLOAT32:
+        typedData = new Float32Array( rawData );
+        break;
+      case nifti_1.NIFTI1.TYPE_FLOAT64:
+        typedData = new Float64Array( rawData );
+        break;
+      case nifti_1.NIFTI1.TYPE_INT8:
+        typedData = new Int8Array( rawData );
+        break;
+      case nifti_1.NIFTI1.TYPE_INT16:
+        typedData = new Int16Array( rawData );
+        break;
+      case nifti_1.NIFTI1.TYPE_INT32:
+        typedData = new Int32Array( rawData );
+        break;
+      case nifti_1.NIFTI1.TYPE_UINT8:
+        typedData = new Uint8Array( rawData );
+        break;
+      case nifti_1.NIFTI1.TYPE_UINT16:
+        typedData = new Uint16Array( rawData );
+        break;
+      case nifti_1.NIFTI1.TYPE_UINT32:
+        typedData = new Uint32Array( rawData );
+        break;
+      case nifti_1.NIFTI1.TYPE_RGB24:
+        typedData = new Uint8Array( rawData );
+        break;
+      
+      default:
+        console.warn("The datatype is unknown.");
+    }
+    return typedData;
+  }
+  
+  
+} /* END of class NiftiDecoderAlt */
+
 /*
 * Author    Jonathan Lurie - http://me.jonahanlurie.fr
 *
@@ -21276,29 +23161,79 @@ class CodecUtils {
 
   /**
   * convert an ArrayBuffer into a unicode string (2 bytes for each char)
+  * Note: this method was kindly borrowed from Google Closure Compiler:
+  * https://github.com/google/closure-library/blob/master/closure/goog/crypt/crypt.js
   * @param {ArrayBuffer} buf - input ArrayBuffer
   * @return {String} a string compatible with Unicode characters
   */
-  static arrayBufferToString16( buf ) {
-    return String.fromCharCode.apply(null, new Uint16Array(buf));
-  }
+  static arrayBufferToUnicode( buff ) {
+    var buffUint8 = new Uint8Array(buff);
+    var out = [], pos = 0, c = 0;
+    
+    while (pos < buffUint8.length) {
+      var c1 = buffUint8[pos++];
+      if (c1 < 128) {
+        out[c++] = String.fromCharCode(c1);
+      } else if (c1 > 191 && c1 < 224) {
+        var c2 = buffUint8[pos++];
+        out[c++] = String.fromCharCode((c1 & 31) << 6 | c2 & 63);
+      } else if (c1 > 239 && c1 < 365) {
+        // Surrogate Pair
+        var c2 = buffUint8[pos++];
+        var c3 = buffUint8[pos++];
+        var c4 = buffUint8[pos++];
+        var u = ((c1 & 7) << 18 | (c2 & 63) << 12 | (c3 & 63) << 6 | c4 & 63) -
+            0x10000;
+        out[c++] = String.fromCharCode(0xD800 + (u >> 10));
+        out[c++] = String.fromCharCode(0xDC00 + (u & 1023));
+      } else {
+        var c2 = buffUint8[pos++];
+        var c3 = buffUint8[pos++];
+        out[c++] =
+            String.fromCharCode((c1 & 15) << 12 | (c2 & 63) << 6 | c3 & 63);
+      }
+    }
+    return out.join('');
+  };
 
 
   /**
   * convert a unicode string into an ArrayBuffer
   * Note that the str is a regular string but it will be encoded with
-  * 2 bytes per char instead of 1 ( ASCII uses 1 byte/char )
+  * 2 bytes per char instead of 1 ( ASCII uses 1 byte/char ).
+  * Note: this method was kindly borrowed from Google Closure Compiler:
+  * https://github.com/google/closure-library/blob/master/closure/goog/crypt/crypt.js
   * @param {String} str - string to encode
   * @return {ArrayBuffer} the output ArrayBuffer
   */
-  static string16ToArrayBuffer( str ) {
-    var buf = new ArrayBuffer(str.length*2); // 2 bytes for each char
-    var bufView = new Uint16Array(buf);
-    for (var i=0; i < str.length; i++) {
-      bufView[i] = str.charCodeAt(i);
+  static unicodeToArrayBuffer( str ) {
+    var out = [], p = 0;
+    for (var i = 0; i < str.length; i++) {
+      var c = str.charCodeAt(i);
+      if (c < 128) {
+        out[p++] = c;
+      } else if (c < 2048) {
+        out[p++] = (c >> 6) | 192;
+        out[p++] = (c & 63) | 128;
+      } else if (
+          ((c & 0xFC00) == 0xD800) && (i + 1) < str.length &&
+          ((str.charCodeAt(i + 1) & 0xFC00) == 0xDC00)) {
+        // Surrogate Pair
+        c = 0x10000 + ((c & 0x03FF) << 10) + (str.charCodeAt(++i) & 0x03FF);
+        out[p++] = (c >> 18) | 240;
+        out[p++] = ((c >> 12) & 63) | 128;
+        out[p++] = ((c >> 6) & 63) | 128;
+        out[p++] = (c & 63) | 128;
+      } else {
+        out[p++] = (c >> 12) | 224;
+        out[p++] = ((c >> 6) & 63) | 128;
+        out[p++] = (c & 63) | 128;
+      }
     }
-    return buf;
-  }
+
+    // make a buffer out of the array
+    return new Uint8Array(out).buffer;
+  };
 
 
   /**
@@ -21396,7 +23331,7 @@ class CodecUtils {
 
     try{
       var strObj = JSON.stringify( objCleanClone );
-      buff = CodecUtils.string16ToArrayBuffer(strObj);
+      buff = CodecUtils.unicodeToArrayBuffer(strObj);
     }catch(e){
       console.warn(e);
     }
@@ -21415,7 +23350,7 @@ class CodecUtils {
     var obj = null;
 
     try{
-      var strObj = CodecUtils.arrayBufferToString16( buff );
+      var strObj = CodecUtils.arrayBufferToUnicode( buff );
       obj = JSON.parse( strObj );
     }catch(e){
       console.warn(e);
@@ -21584,8 +23519,8 @@ class CodecUtils {
       length: typedArray.length
     }
   }
-  
-  
+
+
   /**
   * Counts the number of typed array obj has as attributes
   * @param {Object} obj - an Object
@@ -21615,8 +23550,8 @@ class CodecUtils {
     });
     return hasCircular;
   }
-  
-  
+
+
   /**
   * Remove circular dependencies from an object and return a circularRef-free version
   * of the object (does not change the original obj), of null if no circular ref was found
@@ -21633,8 +23568,8 @@ class CodecUtils {
     });
     return hasCircular ? noCircRefObj : null;
   }
-  
-  
+
+
   /**
   * Clone the object and replace the typed array attributes by regular Arrays.
   * @param {Object} obj - an object to alter
@@ -21642,14 +23577,14 @@ class CodecUtils {
   */
   static replaceTypedArrayAttributesByArrays( obj ){
     var hasTypedArray = false;
-    
+
     var noTypedArrClone = index$2(obj).map(function (x) {
       if (CodecUtils.isTypedArray(x)){
         // here, we cannot call .length directly because traverse.map already serialized
         // typed arrays into regular objects
         var origSize = Object.keys(x).length;
         var untypedArray = new Array( origSize );
-        
+
         for(var i=0; i<origSize; i++){
           untypedArray[i] = x[i];
         }
@@ -21659,8 +23594,8 @@ class CodecUtils {
     });
     return hasTypedArray ? noTypedArrClone : null;
   }
-  
-  
+
+
   /**
   * Creates a clone, does not alter the original object.
   * Remove circular dependencies and replace typed arrays by regular arrays.
@@ -21671,18 +23606,18 @@ class CodecUtils {
   static makeSerializeFriendly( obj ){
     var newObj = obj;
     var noCircular = CodecUtils.removeCircularReference(newObj);
-    
+
     if( noCircular )
       newObj = noCircular;
-      
+
     var noTypedArr = CodecUtils.replaceTypedArrayAttributesByArrays(newObj);
-    
+
     if( noTypedArr )
       newObj = noTypedArr;
-      
+
     return newObj;
   }
-  
+
 
 } /* END of class CodecUtils */
 
@@ -21971,6 +23906,7 @@ class PixBlockEncoder {
     if( CodecUtils.isTypedArray(subset) ){
       infoObj = CodecUtils.getTypedArrayInfo( subset );
       infoObj.isTypedArray = true;
+      infoObj.compressedByteLength = null;
     }else{
       infoObj = {
         type: subset.constructor.name,
@@ -23464,1986 +25400,6 @@ class PixBinDecoder$1 extends Filter {
 
 } /* END of class PixBinDecoder */
 
-var lookup$1 = [];
-var revLookup$1 = [];
-var Arr$1 = typeof Uint8Array !== 'undefined' ? Uint8Array : Array;
-var inited$1 = false;
-function init$1 () {
-  inited$1 = true;
-  var code = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
-  for (var i = 0, len = code.length; i < len; ++i) {
-    lookup$1[i] = code[i];
-    revLookup$1[code.charCodeAt(i)] = i;
-  }
-
-  revLookup$1['-'.charCodeAt(0)] = 62;
-  revLookup$1['_'.charCodeAt(0)] = 63;
-}
-
-function toByteArray$1 (b64) {
-  if (!inited$1) {
-    init$1();
-  }
-  var i, j, l, tmp, placeHolders, arr;
-  var len = b64.length;
-
-  if (len % 4 > 0) {
-    throw new Error('Invalid string. Length must be a multiple of 4')
-  }
-
-  // the number of equal signs (place holders)
-  // if there are two placeholders, than the two characters before it
-  // represent one byte
-  // if there is only one, then the three characters before it represent 2 bytes
-  // this is just a cheap hack to not do indexOf twice
-  placeHolders = b64[len - 2] === '=' ? 2 : b64[len - 1] === '=' ? 1 : 0;
-
-  // base64 is 4/3 + up to two characters of the original data
-  arr = new Arr$1(len * 3 / 4 - placeHolders);
-
-  // if there are placeholders, only get up to the last complete 4 chars
-  l = placeHolders > 0 ? len - 4 : len;
-
-  var L = 0;
-
-  for (i = 0, j = 0; i < l; i += 4, j += 3) {
-    tmp = (revLookup$1[b64.charCodeAt(i)] << 18) | (revLookup$1[b64.charCodeAt(i + 1)] << 12) | (revLookup$1[b64.charCodeAt(i + 2)] << 6) | revLookup$1[b64.charCodeAt(i + 3)];
-    arr[L++] = (tmp >> 16) & 0xFF;
-    arr[L++] = (tmp >> 8) & 0xFF;
-    arr[L++] = tmp & 0xFF;
-  }
-
-  if (placeHolders === 2) {
-    tmp = (revLookup$1[b64.charCodeAt(i)] << 2) | (revLookup$1[b64.charCodeAt(i + 1)] >> 4);
-    arr[L++] = tmp & 0xFF;
-  } else if (placeHolders === 1) {
-    tmp = (revLookup$1[b64.charCodeAt(i)] << 10) | (revLookup$1[b64.charCodeAt(i + 1)] << 4) | (revLookup$1[b64.charCodeAt(i + 2)] >> 2);
-    arr[L++] = (tmp >> 8) & 0xFF;
-    arr[L++] = tmp & 0xFF;
-  }
-
-  return arr
-}
-
-function tripletToBase64$1 (num) {
-  return lookup$1[num >> 18 & 0x3F] + lookup$1[num >> 12 & 0x3F] + lookup$1[num >> 6 & 0x3F] + lookup$1[num & 0x3F]
-}
-
-function encodeChunk$1 (uint8, start, end) {
-  var tmp;
-  var output = [];
-  for (var i = start; i < end; i += 3) {
-    tmp = (uint8[i] << 16) + (uint8[i + 1] << 8) + (uint8[i + 2]);
-    output.push(tripletToBase64$1(tmp));
-  }
-  return output.join('')
-}
-
-function fromByteArray$1 (uint8) {
-  if (!inited$1) {
-    init$1();
-  }
-  var tmp;
-  var len = uint8.length;
-  var extraBytes = len % 3; // if we have 1 byte left, pad 2 bytes
-  var output = '';
-  var parts = [];
-  var maxChunkLength = 16383; // must be multiple of 3
-
-  // go through the array every three bytes, we'll deal with trailing stuff later
-  for (var i = 0, len2 = len - extraBytes; i < len2; i += maxChunkLength) {
-    parts.push(encodeChunk$1(uint8, i, (i + maxChunkLength) > len2 ? len2 : (i + maxChunkLength)));
-  }
-
-  // pad the end with zeros, but make sure to not forget the extra bytes
-  if (extraBytes === 1) {
-    tmp = uint8[len - 1];
-    output += lookup$1[tmp >> 2];
-    output += lookup$1[(tmp << 4) & 0x3F];
-    output += '==';
-  } else if (extraBytes === 2) {
-    tmp = (uint8[len - 2] << 8) + (uint8[len - 1]);
-    output += lookup$1[tmp >> 10];
-    output += lookup$1[(tmp >> 4) & 0x3F];
-    output += lookup$1[(tmp << 2) & 0x3F];
-    output += '=';
-  }
-
-  parts.push(output);
-
-  return parts.join('')
-}
-
-function read$1 (buffer, offset, isLE, mLen, nBytes) {
-  var e, m;
-  var eLen = nBytes * 8 - mLen - 1;
-  var eMax = (1 << eLen) - 1;
-  var eBias = eMax >> 1;
-  var nBits = -7;
-  var i = isLE ? (nBytes - 1) : 0;
-  var d = isLE ? -1 : 1;
-  var s = buffer[offset + i];
-
-  i += d;
-
-  e = s & ((1 << (-nBits)) - 1);
-  s >>= (-nBits);
-  nBits += eLen;
-  for (; nBits > 0; e = e * 256 + buffer[offset + i], i += d, nBits -= 8) {}
-
-  m = e & ((1 << (-nBits)) - 1);
-  e >>= (-nBits);
-  nBits += mLen;
-  for (; nBits > 0; m = m * 256 + buffer[offset + i], i += d, nBits -= 8) {}
-
-  if (e === 0) {
-    e = 1 - eBias;
-  } else if (e === eMax) {
-    return m ? NaN : ((s ? -1 : 1) * Infinity)
-  } else {
-    m = m + Math.pow(2, mLen);
-    e = e - eBias;
-  }
-  return (s ? -1 : 1) * m * Math.pow(2, e - mLen)
-}
-
-function write$1 (buffer, value, offset, isLE, mLen, nBytes) {
-  var e, m, c;
-  var eLen = nBytes * 8 - mLen - 1;
-  var eMax = (1 << eLen) - 1;
-  var eBias = eMax >> 1;
-  var rt = (mLen === 23 ? Math.pow(2, -24) - Math.pow(2, -77) : 0);
-  var i = isLE ? 0 : (nBytes - 1);
-  var d = isLE ? 1 : -1;
-  var s = value < 0 || (value === 0 && 1 / value < 0) ? 1 : 0;
-
-  value = Math.abs(value);
-
-  if (isNaN(value) || value === Infinity) {
-    m = isNaN(value) ? 1 : 0;
-    e = eMax;
-  } else {
-    e = Math.floor(Math.log(value) / Math.LN2);
-    if (value * (c = Math.pow(2, -e)) < 1) {
-      e--;
-      c *= 2;
-    }
-    if (e + eBias >= 1) {
-      value += rt / c;
-    } else {
-      value += rt * Math.pow(2, 1 - eBias);
-    }
-    if (value * c >= 2) {
-      e++;
-      c /= 2;
-    }
-
-    if (e + eBias >= eMax) {
-      m = 0;
-      e = eMax;
-    } else if (e + eBias >= 1) {
-      m = (value * c - 1) * Math.pow(2, mLen);
-      e = e + eBias;
-    } else {
-      m = value * Math.pow(2, eBias - 1) * Math.pow(2, mLen);
-      e = 0;
-    }
-  }
-
-  for (; mLen >= 8; buffer[offset + i] = m & 0xff, i += d, m /= 256, mLen -= 8) {}
-
-  e = (e << mLen) | m;
-  eLen += mLen;
-  for (; eLen > 0; buffer[offset + i] = e & 0xff, i += d, e /= 256, eLen -= 8) {}
-
-  buffer[offset + i - d] |= s * 128;
-}
-
-var toString$3 = {}.toString;
-
-var isArray$1 = Array.isArray || function (arr) {
-  return toString$3.call(arr) == '[object Array]';
-};
-
-/*!
- * The buffer module from node.js, for the browser.
- *
- * @author   Feross Aboukhadijeh <feross@feross.org> <http://feross.org>
- * @license  MIT
- */
-/* eslint-disable no-proto */
-
-
-var INSPECT_MAX_BYTES$1 = 50;
-
-/**
- * If `Buffer.TYPED_ARRAY_SUPPORT`:
- *   === true    Use Uint8Array implementation (fastest)
- *   === false   Use Object implementation (most compatible, even IE6)
- *
- * Browsers that support typed arrays are IE 10+, Firefox 4+, Chrome 7+, Safari 5.1+,
- * Opera 11.6+, iOS 4.2+.
- *
- * Due to various browser bugs, sometimes the Object implementation will be used even
- * when the browser supports typed arrays.
- *
- * Note:
- *
- *   - Firefox 4-29 lacks support for adding new properties to `Uint8Array` instances,
- *     See: https://bugzilla.mozilla.org/show_bug.cgi?id=695438.
- *
- *   - Chrome 9-10 is missing the `TypedArray.prototype.subarray` function.
- *
- *   - IE10 has a broken `TypedArray.prototype.subarray` function which returns arrays of
- *     incorrect length in some situations.
-
- * We detect these buggy browsers and set `Buffer.TYPED_ARRAY_SUPPORT` to `false` so they
- * get the Object implementation, which is slower but behaves correctly.
- */
-Buffer$1.TYPED_ARRAY_SUPPORT = global$1.TYPED_ARRAY_SUPPORT !== undefined
-  ? global$1.TYPED_ARRAY_SUPPORT
-  : true;
-
-function kMaxLength$1 () {
-  return Buffer$1.TYPED_ARRAY_SUPPORT
-    ? 0x7fffffff
-    : 0x3fffffff
-}
-
-function createBuffer$1 (that, length) {
-  if (kMaxLength$1() < length) {
-    throw new RangeError('Invalid typed array length')
-  }
-  if (Buffer$1.TYPED_ARRAY_SUPPORT) {
-    // Return an augmented `Uint8Array` instance, for best performance
-    that = new Uint8Array(length);
-    that.__proto__ = Buffer$1.prototype;
-  } else {
-    // Fallback: Return an object instance of the Buffer class
-    if (that === null) {
-      that = new Buffer$1(length);
-    }
-    that.length = length;
-  }
-
-  return that
-}
-
-/**
- * The Buffer constructor returns instances of `Uint8Array` that have their
- * prototype changed to `Buffer.prototype`. Furthermore, `Buffer` is a subclass of
- * `Uint8Array`, so the returned instances will have all the node `Buffer` methods
- * and the `Uint8Array` methods. Square bracket notation works as expected -- it
- * returns a single octet.
- *
- * The `Uint8Array` prototype remains unmodified.
- */
-
-function Buffer$1 (arg, encodingOrOffset, length) {
-  if (!Buffer$1.TYPED_ARRAY_SUPPORT && !(this instanceof Buffer$1)) {
-    return new Buffer$1(arg, encodingOrOffset, length)
-  }
-
-  // Common case.
-  if (typeof arg === 'number') {
-    if (typeof encodingOrOffset === 'string') {
-      throw new Error(
-        'If encoding is specified then the first argument must be a string'
-      )
-    }
-    return allocUnsafe$1(this, arg)
-  }
-  return from$1(this, arg, encodingOrOffset, length)
-}
-
-Buffer$1.poolSize = 8192; // not used by this implementation
-
-// TODO: Legacy, not needed anymore. Remove in next major version.
-Buffer$1._augment = function (arr) {
-  arr.__proto__ = Buffer$1.prototype;
-  return arr
-};
-
-function from$1 (that, value, encodingOrOffset, length) {
-  if (typeof value === 'number') {
-    throw new TypeError('"value" argument must not be a number')
-  }
-
-  if (typeof ArrayBuffer !== 'undefined' && value instanceof ArrayBuffer) {
-    return fromArrayBuffer$1(that, value, encodingOrOffset, length)
-  }
-
-  if (typeof value === 'string') {
-    return fromString$1(that, value, encodingOrOffset)
-  }
-
-  return fromObject$1(that, value)
-}
-
-/**
- * Functionally equivalent to Buffer(arg, encoding) but throws a TypeError
- * if value is a number.
- * Buffer.from(str[, encoding])
- * Buffer.from(array)
- * Buffer.from(buffer)
- * Buffer.from(arrayBuffer[, byteOffset[, length]])
- **/
-Buffer$1.from = function (value, encodingOrOffset, length) {
-  return from$1(null, value, encodingOrOffset, length)
-};
-
-if (Buffer$1.TYPED_ARRAY_SUPPORT) {
-  Buffer$1.prototype.__proto__ = Uint8Array.prototype;
-  Buffer$1.__proto__ = Uint8Array;
-  if (typeof Symbol !== 'undefined' && Symbol.species &&
-      Buffer$1[Symbol.species] === Buffer$1) {
-    // Fix subarray() in ES2016. See: https://github.com/feross/buffer/pull/97
-    // Object.defineProperty(Buffer, Symbol.species, {
-    //   value: null,
-    //   configurable: true
-    // })
-  }
-}
-
-function assertSize$1 (size) {
-  if (typeof size !== 'number') {
-    throw new TypeError('"size" argument must be a number')
-  } else if (size < 0) {
-    throw new RangeError('"size" argument must not be negative')
-  }
-}
-
-function alloc$1 (that, size, fill, encoding) {
-  assertSize$1(size);
-  if (size <= 0) {
-    return createBuffer$1(that, size)
-  }
-  if (fill !== undefined) {
-    // Only pay attention to encoding if it's a string. This
-    // prevents accidentally sending in a number that would
-    // be interpretted as a start offset.
-    return typeof encoding === 'string'
-      ? createBuffer$1(that, size).fill(fill, encoding)
-      : createBuffer$1(that, size).fill(fill)
-  }
-  return createBuffer$1(that, size)
-}
-
-/**
- * Creates a new filled Buffer instance.
- * alloc(size[, fill[, encoding]])
- **/
-Buffer$1.alloc = function (size, fill, encoding) {
-  return alloc$1(null, size, fill, encoding)
-};
-
-function allocUnsafe$1 (that, size) {
-  assertSize$1(size);
-  that = createBuffer$1(that, size < 0 ? 0 : checked$1(size) | 0);
-  if (!Buffer$1.TYPED_ARRAY_SUPPORT) {
-    for (var i = 0; i < size; ++i) {
-      that[i] = 0;
-    }
-  }
-  return that
-}
-
-/**
- * Equivalent to Buffer(num), by default creates a non-zero-filled Buffer instance.
- * */
-Buffer$1.allocUnsafe = function (size) {
-  return allocUnsafe$1(null, size)
-};
-/**
- * Equivalent to SlowBuffer(num), by default creates a non-zero-filled Buffer instance.
- */
-Buffer$1.allocUnsafeSlow = function (size) {
-  return allocUnsafe$1(null, size)
-};
-
-function fromString$1 (that, string, encoding) {
-  if (typeof encoding !== 'string' || encoding === '') {
-    encoding = 'utf8';
-  }
-
-  if (!Buffer$1.isEncoding(encoding)) {
-    throw new TypeError('"encoding" must be a valid string encoding')
-  }
-
-  var length = byteLength$1(string, encoding) | 0;
-  that = createBuffer$1(that, length);
-
-  var actual = that.write(string, encoding);
-
-  if (actual !== length) {
-    // Writing a hex string, for example, that contains invalid characters will
-    // cause everything after the first invalid character to be ignored. (e.g.
-    // 'abxxcd' will be treated as 'ab')
-    that = that.slice(0, actual);
-  }
-
-  return that
-}
-
-function fromArrayLike$1 (that, array) {
-  var length = array.length < 0 ? 0 : checked$1(array.length) | 0;
-  that = createBuffer$1(that, length);
-  for (var i = 0; i < length; i += 1) {
-    that[i] = array[i] & 255;
-  }
-  return that
-}
-
-function fromArrayBuffer$1 (that, array, byteOffset, length) {
-  array.byteLength; // this throws if `array` is not a valid ArrayBuffer
-
-  if (byteOffset < 0 || array.byteLength < byteOffset) {
-    throw new RangeError('\'offset\' is out of bounds')
-  }
-
-  if (array.byteLength < byteOffset + (length || 0)) {
-    throw new RangeError('\'length\' is out of bounds')
-  }
-
-  if (byteOffset === undefined && length === undefined) {
-    array = new Uint8Array(array);
-  } else if (length === undefined) {
-    array = new Uint8Array(array, byteOffset);
-  } else {
-    array = new Uint8Array(array, byteOffset, length);
-  }
-
-  if (Buffer$1.TYPED_ARRAY_SUPPORT) {
-    // Return an augmented `Uint8Array` instance, for best performance
-    that = array;
-    that.__proto__ = Buffer$1.prototype;
-  } else {
-    // Fallback: Return an object instance of the Buffer class
-    that = fromArrayLike$1(that, array);
-  }
-  return that
-}
-
-function fromObject$1 (that, obj) {
-  if (internalIsBuffer$1(obj)) {
-    var len = checked$1(obj.length) | 0;
-    that = createBuffer$1(that, len);
-
-    if (that.length === 0) {
-      return that
-    }
-
-    obj.copy(that, 0, 0, len);
-    return that
-  }
-
-  if (obj) {
-    if ((typeof ArrayBuffer !== 'undefined' &&
-        obj.buffer instanceof ArrayBuffer) || 'length' in obj) {
-      if (typeof obj.length !== 'number' || isnan$1(obj.length)) {
-        return createBuffer$1(that, 0)
-      }
-      return fromArrayLike$1(that, obj)
-    }
-
-    if (obj.type === 'Buffer' && isArray$1(obj.data)) {
-      return fromArrayLike$1(that, obj.data)
-    }
-  }
-
-  throw new TypeError('First argument must be a string, Buffer, ArrayBuffer, Array, or array-like object.')
-}
-
-function checked$1 (length) {
-  // Note: cannot use `length < kMaxLength()` here because that fails when
-  // length is NaN (which is otherwise coerced to zero.)
-  if (length >= kMaxLength$1()) {
-    throw new RangeError('Attempt to allocate Buffer larger than maximum ' +
-                         'size: 0x' + kMaxLength$1().toString(16) + ' bytes')
-  }
-  return length | 0
-}
-
-
-Buffer$1.isBuffer = isBuffer$1;
-function internalIsBuffer$1 (b) {
-  return !!(b != null && b._isBuffer)
-}
-
-Buffer$1.compare = function compare (a, b) {
-  if (!internalIsBuffer$1(a) || !internalIsBuffer$1(b)) {
-    throw new TypeError('Arguments must be Buffers')
-  }
-
-  if (a === b) return 0
-
-  var x = a.length;
-  var y = b.length;
-
-  for (var i = 0, len = Math.min(x, y); i < len; ++i) {
-    if (a[i] !== b[i]) {
-      x = a[i];
-      y = b[i];
-      break
-    }
-  }
-
-  if (x < y) return -1
-  if (y < x) return 1
-  return 0
-};
-
-Buffer$1.isEncoding = function isEncoding (encoding) {
-  switch (String(encoding).toLowerCase()) {
-    case 'hex':
-    case 'utf8':
-    case 'utf-8':
-    case 'ascii':
-    case 'latin1':
-    case 'binary':
-    case 'base64':
-    case 'ucs2':
-    case 'ucs-2':
-    case 'utf16le':
-    case 'utf-16le':
-      return true
-    default:
-      return false
-  }
-};
-
-Buffer$1.concat = function concat (list, length) {
-  if (!isArray$1(list)) {
-    throw new TypeError('"list" argument must be an Array of Buffers')
-  }
-
-  if (list.length === 0) {
-    return Buffer$1.alloc(0)
-  }
-
-  var i;
-  if (length === undefined) {
-    length = 0;
-    for (i = 0; i < list.length; ++i) {
-      length += list[i].length;
-    }
-  }
-
-  var buffer = Buffer$1.allocUnsafe(length);
-  var pos = 0;
-  for (i = 0; i < list.length; ++i) {
-    var buf = list[i];
-    if (!internalIsBuffer$1(buf)) {
-      throw new TypeError('"list" argument must be an Array of Buffers')
-    }
-    buf.copy(buffer, pos);
-    pos += buf.length;
-  }
-  return buffer
-};
-
-function byteLength$1 (string, encoding) {
-  if (internalIsBuffer$1(string)) {
-    return string.length
-  }
-  if (typeof ArrayBuffer !== 'undefined' && typeof ArrayBuffer.isView === 'function' &&
-      (ArrayBuffer.isView(string) || string instanceof ArrayBuffer)) {
-    return string.byteLength
-  }
-  if (typeof string !== 'string') {
-    string = '' + string;
-  }
-
-  var len = string.length;
-  if (len === 0) return 0
-
-  // Use a for loop to avoid recursion
-  var loweredCase = false;
-  for (;;) {
-    switch (encoding) {
-      case 'ascii':
-      case 'latin1':
-      case 'binary':
-        return len
-      case 'utf8':
-      case 'utf-8':
-      case undefined:
-        return utf8ToBytes$1(string).length
-      case 'ucs2':
-      case 'ucs-2':
-      case 'utf16le':
-      case 'utf-16le':
-        return len * 2
-      case 'hex':
-        return len >>> 1
-      case 'base64':
-        return base64ToBytes$1(string).length
-      default:
-        if (loweredCase) return utf8ToBytes$1(string).length // assume utf8
-        encoding = ('' + encoding).toLowerCase();
-        loweredCase = true;
-    }
-  }
-}
-Buffer$1.byteLength = byteLength$1;
-
-function slowToString$1 (encoding, start, end) {
-  var loweredCase = false;
-
-  // No need to verify that "this.length <= MAX_UINT32" since it's a read-only
-  // property of a typed array.
-
-  // This behaves neither like String nor Uint8Array in that we set start/end
-  // to their upper/lower bounds if the value passed is out of range.
-  // undefined is handled specially as per ECMA-262 6th Edition,
-  // Section 13.3.3.7 Runtime Semantics: KeyedBindingInitialization.
-  if (start === undefined || start < 0) {
-    start = 0;
-  }
-  // Return early if start > this.length. Done here to prevent potential uint32
-  // coercion fail below.
-  if (start > this.length) {
-    return ''
-  }
-
-  if (end === undefined || end > this.length) {
-    end = this.length;
-  }
-
-  if (end <= 0) {
-    return ''
-  }
-
-  // Force coersion to uint32. This will also coerce falsey/NaN values to 0.
-  end >>>= 0;
-  start >>>= 0;
-
-  if (end <= start) {
-    return ''
-  }
-
-  if (!encoding) encoding = 'utf8';
-
-  while (true) {
-    switch (encoding) {
-      case 'hex':
-        return hexSlice$1(this, start, end)
-
-      case 'utf8':
-      case 'utf-8':
-        return utf8Slice$1(this, start, end)
-
-      case 'ascii':
-        return asciiSlice$1(this, start, end)
-
-      case 'latin1':
-      case 'binary':
-        return latin1Slice$1(this, start, end)
-
-      case 'base64':
-        return base64Slice$1(this, start, end)
-
-      case 'ucs2':
-      case 'ucs-2':
-      case 'utf16le':
-      case 'utf-16le':
-        return utf16leSlice$1(this, start, end)
-
-      default:
-        if (loweredCase) throw new TypeError('Unknown encoding: ' + encoding)
-        encoding = (encoding + '').toLowerCase();
-        loweredCase = true;
-    }
-  }
-}
-
-// The property is used by `Buffer.isBuffer` and `is-buffer` (in Safari 5-7) to detect
-// Buffer instances.
-Buffer$1.prototype._isBuffer = true;
-
-function swap$1 (b, n, m) {
-  var i = b[n];
-  b[n] = b[m];
-  b[m] = i;
-}
-
-Buffer$1.prototype.swap16 = function swap16 () {
-  var len = this.length;
-  if (len % 2 !== 0) {
-    throw new RangeError('Buffer size must be a multiple of 16-bits')
-  }
-  for (var i = 0; i < len; i += 2) {
-    swap$1(this, i, i + 1);
-  }
-  return this
-};
-
-Buffer$1.prototype.swap32 = function swap32 () {
-  var len = this.length;
-  if (len % 4 !== 0) {
-    throw new RangeError('Buffer size must be a multiple of 32-bits')
-  }
-  for (var i = 0; i < len; i += 4) {
-    swap$1(this, i, i + 3);
-    swap$1(this, i + 1, i + 2);
-  }
-  return this
-};
-
-Buffer$1.prototype.swap64 = function swap64 () {
-  var len = this.length;
-  if (len % 8 !== 0) {
-    throw new RangeError('Buffer size must be a multiple of 64-bits')
-  }
-  for (var i = 0; i < len; i += 8) {
-    swap$1(this, i, i + 7);
-    swap$1(this, i + 1, i + 6);
-    swap$1(this, i + 2, i + 5);
-    swap$1(this, i + 3, i + 4);
-  }
-  return this
-};
-
-Buffer$1.prototype.toString = function toString () {
-  var length = this.length | 0;
-  if (length === 0) return ''
-  if (arguments.length === 0) return utf8Slice$1(this, 0, length)
-  return slowToString$1.apply(this, arguments)
-};
-
-Buffer$1.prototype.equals = function equals (b) {
-  if (!internalIsBuffer$1(b)) throw new TypeError('Argument must be a Buffer')
-  if (this === b) return true
-  return Buffer$1.compare(this, b) === 0
-};
-
-Buffer$1.prototype.inspect = function inspect () {
-  var str = '';
-  var max = INSPECT_MAX_BYTES$1;
-  if (this.length > 0) {
-    str = this.toString('hex', 0, max).match(/.{2}/g).join(' ');
-    if (this.length > max) str += ' ... ';
-  }
-  return '<Buffer ' + str + '>'
-};
-
-Buffer$1.prototype.compare = function compare (target, start, end, thisStart, thisEnd) {
-  if (!internalIsBuffer$1(target)) {
-    throw new TypeError('Argument must be a Buffer')
-  }
-
-  if (start === undefined) {
-    start = 0;
-  }
-  if (end === undefined) {
-    end = target ? target.length : 0;
-  }
-  if (thisStart === undefined) {
-    thisStart = 0;
-  }
-  if (thisEnd === undefined) {
-    thisEnd = this.length;
-  }
-
-  if (start < 0 || end > target.length || thisStart < 0 || thisEnd > this.length) {
-    throw new RangeError('out of range index')
-  }
-
-  if (thisStart >= thisEnd && start >= end) {
-    return 0
-  }
-  if (thisStart >= thisEnd) {
-    return -1
-  }
-  if (start >= end) {
-    return 1
-  }
-
-  start >>>= 0;
-  end >>>= 0;
-  thisStart >>>= 0;
-  thisEnd >>>= 0;
-
-  if (this === target) return 0
-
-  var x = thisEnd - thisStart;
-  var y = end - start;
-  var len = Math.min(x, y);
-
-  var thisCopy = this.slice(thisStart, thisEnd);
-  var targetCopy = target.slice(start, end);
-
-  for (var i = 0; i < len; ++i) {
-    if (thisCopy[i] !== targetCopy[i]) {
-      x = thisCopy[i];
-      y = targetCopy[i];
-      break
-    }
-  }
-
-  if (x < y) return -1
-  if (y < x) return 1
-  return 0
-};
-
-// Finds either the first index of `val` in `buffer` at offset >= `byteOffset`,
-// OR the last index of `val` in `buffer` at offset <= `byteOffset`.
-//
-// Arguments:
-// - buffer - a Buffer to search
-// - val - a string, Buffer, or number
-// - byteOffset - an index into `buffer`; will be clamped to an int32
-// - encoding - an optional encoding, relevant is val is a string
-// - dir - true for indexOf, false for lastIndexOf
-function bidirectionalIndexOf$1 (buffer, val, byteOffset, encoding, dir) {
-  // Empty buffer means no match
-  if (buffer.length === 0) return -1
-
-  // Normalize byteOffset
-  if (typeof byteOffset === 'string') {
-    encoding = byteOffset;
-    byteOffset = 0;
-  } else if (byteOffset > 0x7fffffff) {
-    byteOffset = 0x7fffffff;
-  } else if (byteOffset < -0x80000000) {
-    byteOffset = -0x80000000;
-  }
-  byteOffset = +byteOffset;  // Coerce to Number.
-  if (isNaN(byteOffset)) {
-    // byteOffset: it it's undefined, null, NaN, "foo", etc, search whole buffer
-    byteOffset = dir ? 0 : (buffer.length - 1);
-  }
-
-  // Normalize byteOffset: negative offsets start from the end of the buffer
-  if (byteOffset < 0) byteOffset = buffer.length + byteOffset;
-  if (byteOffset >= buffer.length) {
-    if (dir) return -1
-    else byteOffset = buffer.length - 1;
-  } else if (byteOffset < 0) {
-    if (dir) byteOffset = 0;
-    else return -1
-  }
-
-  // Normalize val
-  if (typeof val === 'string') {
-    val = Buffer$1.from(val, encoding);
-  }
-
-  // Finally, search either indexOf (if dir is true) or lastIndexOf
-  if (internalIsBuffer$1(val)) {
-    // Special case: looking for empty string/buffer always fails
-    if (val.length === 0) {
-      return -1
-    }
-    return arrayIndexOf$1(buffer, val, byteOffset, encoding, dir)
-  } else if (typeof val === 'number') {
-    val = val & 0xFF; // Search for a byte value [0-255]
-    if (Buffer$1.TYPED_ARRAY_SUPPORT &&
-        typeof Uint8Array.prototype.indexOf === 'function') {
-      if (dir) {
-        return Uint8Array.prototype.indexOf.call(buffer, val, byteOffset)
-      } else {
-        return Uint8Array.prototype.lastIndexOf.call(buffer, val, byteOffset)
-      }
-    }
-    return arrayIndexOf$1(buffer, [ val ], byteOffset, encoding, dir)
-  }
-
-  throw new TypeError('val must be string, number or Buffer')
-}
-
-function arrayIndexOf$1 (arr, val, byteOffset, encoding, dir) {
-  var indexSize = 1;
-  var arrLength = arr.length;
-  var valLength = val.length;
-
-  if (encoding !== undefined) {
-    encoding = String(encoding).toLowerCase();
-    if (encoding === 'ucs2' || encoding === 'ucs-2' ||
-        encoding === 'utf16le' || encoding === 'utf-16le') {
-      if (arr.length < 2 || val.length < 2) {
-        return -1
-      }
-      indexSize = 2;
-      arrLength /= 2;
-      valLength /= 2;
-      byteOffset /= 2;
-    }
-  }
-
-  function read$$1 (buf, i) {
-    if (indexSize === 1) {
-      return buf[i]
-    } else {
-      return buf.readUInt16BE(i * indexSize)
-    }
-  }
-
-  var i;
-  if (dir) {
-    var foundIndex = -1;
-    for (i = byteOffset; i < arrLength; i++) {
-      if (read$$1(arr, i) === read$$1(val, foundIndex === -1 ? 0 : i - foundIndex)) {
-        if (foundIndex === -1) foundIndex = i;
-        if (i - foundIndex + 1 === valLength) return foundIndex * indexSize
-      } else {
-        if (foundIndex !== -1) i -= i - foundIndex;
-        foundIndex = -1;
-      }
-    }
-  } else {
-    if (byteOffset + valLength > arrLength) byteOffset = arrLength - valLength;
-    for (i = byteOffset; i >= 0; i--) {
-      var found = true;
-      for (var j = 0; j < valLength; j++) {
-        if (read$$1(arr, i + j) !== read$$1(val, j)) {
-          found = false;
-          break
-        }
-      }
-      if (found) return i
-    }
-  }
-
-  return -1
-}
-
-Buffer$1.prototype.includes = function includes (val, byteOffset, encoding) {
-  return this.indexOf(val, byteOffset, encoding) !== -1
-};
-
-Buffer$1.prototype.indexOf = function indexOf (val, byteOffset, encoding) {
-  return bidirectionalIndexOf$1(this, val, byteOffset, encoding, true)
-};
-
-Buffer$1.prototype.lastIndexOf = function lastIndexOf (val, byteOffset, encoding) {
-  return bidirectionalIndexOf$1(this, val, byteOffset, encoding, false)
-};
-
-function hexWrite$1 (buf, string, offset, length) {
-  offset = Number(offset) || 0;
-  var remaining = buf.length - offset;
-  if (!length) {
-    length = remaining;
-  } else {
-    length = Number(length);
-    if (length > remaining) {
-      length = remaining;
-    }
-  }
-
-  // must be an even number of digits
-  var strLen = string.length;
-  if (strLen % 2 !== 0) throw new TypeError('Invalid hex string')
-
-  if (length > strLen / 2) {
-    length = strLen / 2;
-  }
-  for (var i = 0; i < length; ++i) {
-    var parsed = parseInt(string.substr(i * 2, 2), 16);
-    if (isNaN(parsed)) return i
-    buf[offset + i] = parsed;
-  }
-  return i
-}
-
-function utf8Write$1 (buf, string, offset, length) {
-  return blitBuffer$1(utf8ToBytes$1(string, buf.length - offset), buf, offset, length)
-}
-
-function asciiWrite$1 (buf, string, offset, length) {
-  return blitBuffer$1(asciiToBytes$1(string), buf, offset, length)
-}
-
-function latin1Write$1 (buf, string, offset, length) {
-  return asciiWrite$1(buf, string, offset, length)
-}
-
-function base64Write$1 (buf, string, offset, length) {
-  return blitBuffer$1(base64ToBytes$1(string), buf, offset, length)
-}
-
-function ucs2Write$1 (buf, string, offset, length) {
-  return blitBuffer$1(utf16leToBytes$1(string, buf.length - offset), buf, offset, length)
-}
-
-Buffer$1.prototype.write = function write$$1 (string, offset, length, encoding) {
-  // Buffer#write(string)
-  if (offset === undefined) {
-    encoding = 'utf8';
-    length = this.length;
-    offset = 0;
-  // Buffer#write(string, encoding)
-  } else if (length === undefined && typeof offset === 'string') {
-    encoding = offset;
-    length = this.length;
-    offset = 0;
-  // Buffer#write(string, offset[, length][, encoding])
-  } else if (isFinite(offset)) {
-    offset = offset | 0;
-    if (isFinite(length)) {
-      length = length | 0;
-      if (encoding === undefined) encoding = 'utf8';
-    } else {
-      encoding = length;
-      length = undefined;
-    }
-  // legacy write(string, encoding, offset, length) - remove in v0.13
-  } else {
-    throw new Error(
-      'Buffer.write(string, encoding, offset[, length]) is no longer supported'
-    )
-  }
-
-  var remaining = this.length - offset;
-  if (length === undefined || length > remaining) length = remaining;
-
-  if ((string.length > 0 && (length < 0 || offset < 0)) || offset > this.length) {
-    throw new RangeError('Attempt to write outside buffer bounds')
-  }
-
-  if (!encoding) encoding = 'utf8';
-
-  var loweredCase = false;
-  for (;;) {
-    switch (encoding) {
-      case 'hex':
-        return hexWrite$1(this, string, offset, length)
-
-      case 'utf8':
-      case 'utf-8':
-        return utf8Write$1(this, string, offset, length)
-
-      case 'ascii':
-        return asciiWrite$1(this, string, offset, length)
-
-      case 'latin1':
-      case 'binary':
-        return latin1Write$1(this, string, offset, length)
-
-      case 'base64':
-        // Warning: maxLength not taken into account in base64Write
-        return base64Write$1(this, string, offset, length)
-
-      case 'ucs2':
-      case 'ucs-2':
-      case 'utf16le':
-      case 'utf-16le':
-        return ucs2Write$1(this, string, offset, length)
-
-      default:
-        if (loweredCase) throw new TypeError('Unknown encoding: ' + encoding)
-        encoding = ('' + encoding).toLowerCase();
-        loweredCase = true;
-    }
-  }
-};
-
-Buffer$1.prototype.toJSON = function toJSON () {
-  return {
-    type: 'Buffer',
-    data: Array.prototype.slice.call(this._arr || this, 0)
-  }
-};
-
-function base64Slice$1 (buf, start, end) {
-  if (start === 0 && end === buf.length) {
-    return fromByteArray$1(buf)
-  } else {
-    return fromByteArray$1(buf.slice(start, end))
-  }
-}
-
-function utf8Slice$1 (buf, start, end) {
-  end = Math.min(buf.length, end);
-  var res = [];
-
-  var i = start;
-  while (i < end) {
-    var firstByte = buf[i];
-    var codePoint = null;
-    var bytesPerSequence = (firstByte > 0xEF) ? 4
-      : (firstByte > 0xDF) ? 3
-      : (firstByte > 0xBF) ? 2
-      : 1;
-
-    if (i + bytesPerSequence <= end) {
-      var secondByte, thirdByte, fourthByte, tempCodePoint;
-
-      switch (bytesPerSequence) {
-        case 1:
-          if (firstByte < 0x80) {
-            codePoint = firstByte;
-          }
-          break
-        case 2:
-          secondByte = buf[i + 1];
-          if ((secondByte & 0xC0) === 0x80) {
-            tempCodePoint = (firstByte & 0x1F) << 0x6 | (secondByte & 0x3F);
-            if (tempCodePoint > 0x7F) {
-              codePoint = tempCodePoint;
-            }
-          }
-          break
-        case 3:
-          secondByte = buf[i + 1];
-          thirdByte = buf[i + 2];
-          if ((secondByte & 0xC0) === 0x80 && (thirdByte & 0xC0) === 0x80) {
-            tempCodePoint = (firstByte & 0xF) << 0xC | (secondByte & 0x3F) << 0x6 | (thirdByte & 0x3F);
-            if (tempCodePoint > 0x7FF && (tempCodePoint < 0xD800 || tempCodePoint > 0xDFFF)) {
-              codePoint = tempCodePoint;
-            }
-          }
-          break
-        case 4:
-          secondByte = buf[i + 1];
-          thirdByte = buf[i + 2];
-          fourthByte = buf[i + 3];
-          if ((secondByte & 0xC0) === 0x80 && (thirdByte & 0xC0) === 0x80 && (fourthByte & 0xC0) === 0x80) {
-            tempCodePoint = (firstByte & 0xF) << 0x12 | (secondByte & 0x3F) << 0xC | (thirdByte & 0x3F) << 0x6 | (fourthByte & 0x3F);
-            if (tempCodePoint > 0xFFFF && tempCodePoint < 0x110000) {
-              codePoint = tempCodePoint;
-            }
-          }
-      }
-    }
-
-    if (codePoint === null) {
-      // we did not generate a valid codePoint so insert a
-      // replacement char (U+FFFD) and advance only 1 byte
-      codePoint = 0xFFFD;
-      bytesPerSequence = 1;
-    } else if (codePoint > 0xFFFF) {
-      // encode to utf16 (surrogate pair dance)
-      codePoint -= 0x10000;
-      res.push(codePoint >>> 10 & 0x3FF | 0xD800);
-      codePoint = 0xDC00 | codePoint & 0x3FF;
-    }
-
-    res.push(codePoint);
-    i += bytesPerSequence;
-  }
-
-  return decodeCodePointsArray$1(res)
-}
-
-// Based on http://stackoverflow.com/a/22747272/680742, the browser with
-// the lowest limit is Chrome, with 0x10000 args.
-// We go 1 magnitude less, for safety
-var MAX_ARGUMENTS_LENGTH$1 = 0x1000;
-
-function decodeCodePointsArray$1 (codePoints) {
-  var len = codePoints.length;
-  if (len <= MAX_ARGUMENTS_LENGTH$1) {
-    return String.fromCharCode.apply(String, codePoints) // avoid extra slice()
-  }
-
-  // Decode in chunks to avoid "call stack size exceeded".
-  var res = '';
-  var i = 0;
-  while (i < len) {
-    res += String.fromCharCode.apply(
-      String,
-      codePoints.slice(i, i += MAX_ARGUMENTS_LENGTH$1)
-    );
-  }
-  return res
-}
-
-function asciiSlice$1 (buf, start, end) {
-  var ret = '';
-  end = Math.min(buf.length, end);
-
-  for (var i = start; i < end; ++i) {
-    ret += String.fromCharCode(buf[i] & 0x7F);
-  }
-  return ret
-}
-
-function latin1Slice$1 (buf, start, end) {
-  var ret = '';
-  end = Math.min(buf.length, end);
-
-  for (var i = start; i < end; ++i) {
-    ret += String.fromCharCode(buf[i]);
-  }
-  return ret
-}
-
-function hexSlice$1 (buf, start, end) {
-  var len = buf.length;
-
-  if (!start || start < 0) start = 0;
-  if (!end || end < 0 || end > len) end = len;
-
-  var out = '';
-  for (var i = start; i < end; ++i) {
-    out += toHex$1(buf[i]);
-  }
-  return out
-}
-
-function utf16leSlice$1 (buf, start, end) {
-  var bytes = buf.slice(start, end);
-  var res = '';
-  for (var i = 0; i < bytes.length; i += 2) {
-    res += String.fromCharCode(bytes[i] + bytes[i + 1] * 256);
-  }
-  return res
-}
-
-Buffer$1.prototype.slice = function slice (start, end) {
-  var len = this.length;
-  start = ~~start;
-  end = end === undefined ? len : ~~end;
-
-  if (start < 0) {
-    start += len;
-    if (start < 0) start = 0;
-  } else if (start > len) {
-    start = len;
-  }
-
-  if (end < 0) {
-    end += len;
-    if (end < 0) end = 0;
-  } else if (end > len) {
-    end = len;
-  }
-
-  if (end < start) end = start;
-
-  var newBuf;
-  if (Buffer$1.TYPED_ARRAY_SUPPORT) {
-    newBuf = this.subarray(start, end);
-    newBuf.__proto__ = Buffer$1.prototype;
-  } else {
-    var sliceLen = end - start;
-    newBuf = new Buffer$1(sliceLen, undefined);
-    for (var i = 0; i < sliceLen; ++i) {
-      newBuf[i] = this[i + start];
-    }
-  }
-
-  return newBuf
-};
-
-/*
- * Need to make sure that buffer isn't trying to write out of bounds.
- */
-function checkOffset$1 (offset, ext, length) {
-  if ((offset % 1) !== 0 || offset < 0) throw new RangeError('offset is not uint')
-  if (offset + ext > length) throw new RangeError('Trying to access beyond buffer length')
-}
-
-Buffer$1.prototype.readUIntLE = function readUIntLE (offset, byteLength, noAssert) {
-  offset = offset | 0;
-  byteLength = byteLength | 0;
-  if (!noAssert) checkOffset$1(offset, byteLength, this.length);
-
-  var val = this[offset];
-  var mul = 1;
-  var i = 0;
-  while (++i < byteLength && (mul *= 0x100)) {
-    val += this[offset + i] * mul;
-  }
-
-  return val
-};
-
-Buffer$1.prototype.readUIntBE = function readUIntBE (offset, byteLength, noAssert) {
-  offset = offset | 0;
-  byteLength = byteLength | 0;
-  if (!noAssert) {
-    checkOffset$1(offset, byteLength, this.length);
-  }
-
-  var val = this[offset + --byteLength];
-  var mul = 1;
-  while (byteLength > 0 && (mul *= 0x100)) {
-    val += this[offset + --byteLength] * mul;
-  }
-
-  return val
-};
-
-Buffer$1.prototype.readUInt8 = function readUInt8 (offset, noAssert) {
-  if (!noAssert) checkOffset$1(offset, 1, this.length);
-  return this[offset]
-};
-
-Buffer$1.prototype.readUInt16LE = function readUInt16LE (offset, noAssert) {
-  if (!noAssert) checkOffset$1(offset, 2, this.length);
-  return this[offset] | (this[offset + 1] << 8)
-};
-
-Buffer$1.prototype.readUInt16BE = function readUInt16BE (offset, noAssert) {
-  if (!noAssert) checkOffset$1(offset, 2, this.length);
-  return (this[offset] << 8) | this[offset + 1]
-};
-
-Buffer$1.prototype.readUInt32LE = function readUInt32LE (offset, noAssert) {
-  if (!noAssert) checkOffset$1(offset, 4, this.length);
-
-  return ((this[offset]) |
-      (this[offset + 1] << 8) |
-      (this[offset + 2] << 16)) +
-      (this[offset + 3] * 0x1000000)
-};
-
-Buffer$1.prototype.readUInt32BE = function readUInt32BE (offset, noAssert) {
-  if (!noAssert) checkOffset$1(offset, 4, this.length);
-
-  return (this[offset] * 0x1000000) +
-    ((this[offset + 1] << 16) |
-    (this[offset + 2] << 8) |
-    this[offset + 3])
-};
-
-Buffer$1.prototype.readIntLE = function readIntLE (offset, byteLength, noAssert) {
-  offset = offset | 0;
-  byteLength = byteLength | 0;
-  if (!noAssert) checkOffset$1(offset, byteLength, this.length);
-
-  var val = this[offset];
-  var mul = 1;
-  var i = 0;
-  while (++i < byteLength && (mul *= 0x100)) {
-    val += this[offset + i] * mul;
-  }
-  mul *= 0x80;
-
-  if (val >= mul) val -= Math.pow(2, 8 * byteLength);
-
-  return val
-};
-
-Buffer$1.prototype.readIntBE = function readIntBE (offset, byteLength, noAssert) {
-  offset = offset | 0;
-  byteLength = byteLength | 0;
-  if (!noAssert) checkOffset$1(offset, byteLength, this.length);
-
-  var i = byteLength;
-  var mul = 1;
-  var val = this[offset + --i];
-  while (i > 0 && (mul *= 0x100)) {
-    val += this[offset + --i] * mul;
-  }
-  mul *= 0x80;
-
-  if (val >= mul) val -= Math.pow(2, 8 * byteLength);
-
-  return val
-};
-
-Buffer$1.prototype.readInt8 = function readInt8 (offset, noAssert) {
-  if (!noAssert) checkOffset$1(offset, 1, this.length);
-  if (!(this[offset] & 0x80)) return (this[offset])
-  return ((0xff - this[offset] + 1) * -1)
-};
-
-Buffer$1.prototype.readInt16LE = function readInt16LE (offset, noAssert) {
-  if (!noAssert) checkOffset$1(offset, 2, this.length);
-  var val = this[offset] | (this[offset + 1] << 8);
-  return (val & 0x8000) ? val | 0xFFFF0000 : val
-};
-
-Buffer$1.prototype.readInt16BE = function readInt16BE (offset, noAssert) {
-  if (!noAssert) checkOffset$1(offset, 2, this.length);
-  var val = this[offset + 1] | (this[offset] << 8);
-  return (val & 0x8000) ? val | 0xFFFF0000 : val
-};
-
-Buffer$1.prototype.readInt32LE = function readInt32LE (offset, noAssert) {
-  if (!noAssert) checkOffset$1(offset, 4, this.length);
-
-  return (this[offset]) |
-    (this[offset + 1] << 8) |
-    (this[offset + 2] << 16) |
-    (this[offset + 3] << 24)
-};
-
-Buffer$1.prototype.readInt32BE = function readInt32BE (offset, noAssert) {
-  if (!noAssert) checkOffset$1(offset, 4, this.length);
-
-  return (this[offset] << 24) |
-    (this[offset + 1] << 16) |
-    (this[offset + 2] << 8) |
-    (this[offset + 3])
-};
-
-Buffer$1.prototype.readFloatLE = function readFloatLE (offset, noAssert) {
-  if (!noAssert) checkOffset$1(offset, 4, this.length);
-  return read$1(this, offset, true, 23, 4)
-};
-
-Buffer$1.prototype.readFloatBE = function readFloatBE (offset, noAssert) {
-  if (!noAssert) checkOffset$1(offset, 4, this.length);
-  return read$1(this, offset, false, 23, 4)
-};
-
-Buffer$1.prototype.readDoubleLE = function readDoubleLE (offset, noAssert) {
-  if (!noAssert) checkOffset$1(offset, 8, this.length);
-  return read$1(this, offset, true, 52, 8)
-};
-
-Buffer$1.prototype.readDoubleBE = function readDoubleBE (offset, noAssert) {
-  if (!noAssert) checkOffset$1(offset, 8, this.length);
-  return read$1(this, offset, false, 52, 8)
-};
-
-function checkInt$1 (buf, value, offset, ext, max, min) {
-  if (!internalIsBuffer$1(buf)) throw new TypeError('"buffer" argument must be a Buffer instance')
-  if (value > max || value < min) throw new RangeError('"value" argument is out of bounds')
-  if (offset + ext > buf.length) throw new RangeError('Index out of range')
-}
-
-Buffer$1.prototype.writeUIntLE = function writeUIntLE (value, offset, byteLength, noAssert) {
-  value = +value;
-  offset = offset | 0;
-  byteLength = byteLength | 0;
-  if (!noAssert) {
-    var maxBytes = Math.pow(2, 8 * byteLength) - 1;
-    checkInt$1(this, value, offset, byteLength, maxBytes, 0);
-  }
-
-  var mul = 1;
-  var i = 0;
-  this[offset] = value & 0xFF;
-  while (++i < byteLength && (mul *= 0x100)) {
-    this[offset + i] = (value / mul) & 0xFF;
-  }
-
-  return offset + byteLength
-};
-
-Buffer$1.prototype.writeUIntBE = function writeUIntBE (value, offset, byteLength, noAssert) {
-  value = +value;
-  offset = offset | 0;
-  byteLength = byteLength | 0;
-  if (!noAssert) {
-    var maxBytes = Math.pow(2, 8 * byteLength) - 1;
-    checkInt$1(this, value, offset, byteLength, maxBytes, 0);
-  }
-
-  var i = byteLength - 1;
-  var mul = 1;
-  this[offset + i] = value & 0xFF;
-  while (--i >= 0 && (mul *= 0x100)) {
-    this[offset + i] = (value / mul) & 0xFF;
-  }
-
-  return offset + byteLength
-};
-
-Buffer$1.prototype.writeUInt8 = function writeUInt8 (value, offset, noAssert) {
-  value = +value;
-  offset = offset | 0;
-  if (!noAssert) checkInt$1(this, value, offset, 1, 0xff, 0);
-  if (!Buffer$1.TYPED_ARRAY_SUPPORT) value = Math.floor(value);
-  this[offset] = (value & 0xff);
-  return offset + 1
-};
-
-function objectWriteUInt16$1 (buf, value, offset, littleEndian) {
-  if (value < 0) value = 0xffff + value + 1;
-  for (var i = 0, j = Math.min(buf.length - offset, 2); i < j; ++i) {
-    buf[offset + i] = (value & (0xff << (8 * (littleEndian ? i : 1 - i)))) >>>
-      (littleEndian ? i : 1 - i) * 8;
-  }
-}
-
-Buffer$1.prototype.writeUInt16LE = function writeUInt16LE (value, offset, noAssert) {
-  value = +value;
-  offset = offset | 0;
-  if (!noAssert) checkInt$1(this, value, offset, 2, 0xffff, 0);
-  if (Buffer$1.TYPED_ARRAY_SUPPORT) {
-    this[offset] = (value & 0xff);
-    this[offset + 1] = (value >>> 8);
-  } else {
-    objectWriteUInt16$1(this, value, offset, true);
-  }
-  return offset + 2
-};
-
-Buffer$1.prototype.writeUInt16BE = function writeUInt16BE (value, offset, noAssert) {
-  value = +value;
-  offset = offset | 0;
-  if (!noAssert) checkInt$1(this, value, offset, 2, 0xffff, 0);
-  if (Buffer$1.TYPED_ARRAY_SUPPORT) {
-    this[offset] = (value >>> 8);
-    this[offset + 1] = (value & 0xff);
-  } else {
-    objectWriteUInt16$1(this, value, offset, false);
-  }
-  return offset + 2
-};
-
-function objectWriteUInt32$1 (buf, value, offset, littleEndian) {
-  if (value < 0) value = 0xffffffff + value + 1;
-  for (var i = 0, j = Math.min(buf.length - offset, 4); i < j; ++i) {
-    buf[offset + i] = (value >>> (littleEndian ? i : 3 - i) * 8) & 0xff;
-  }
-}
-
-Buffer$1.prototype.writeUInt32LE = function writeUInt32LE (value, offset, noAssert) {
-  value = +value;
-  offset = offset | 0;
-  if (!noAssert) checkInt$1(this, value, offset, 4, 0xffffffff, 0);
-  if (Buffer$1.TYPED_ARRAY_SUPPORT) {
-    this[offset + 3] = (value >>> 24);
-    this[offset + 2] = (value >>> 16);
-    this[offset + 1] = (value >>> 8);
-    this[offset] = (value & 0xff);
-  } else {
-    objectWriteUInt32$1(this, value, offset, true);
-  }
-  return offset + 4
-};
-
-Buffer$1.prototype.writeUInt32BE = function writeUInt32BE (value, offset, noAssert) {
-  value = +value;
-  offset = offset | 0;
-  if (!noAssert) checkInt$1(this, value, offset, 4, 0xffffffff, 0);
-  if (Buffer$1.TYPED_ARRAY_SUPPORT) {
-    this[offset] = (value >>> 24);
-    this[offset + 1] = (value >>> 16);
-    this[offset + 2] = (value >>> 8);
-    this[offset + 3] = (value & 0xff);
-  } else {
-    objectWriteUInt32$1(this, value, offset, false);
-  }
-  return offset + 4
-};
-
-Buffer$1.prototype.writeIntLE = function writeIntLE (value, offset, byteLength, noAssert) {
-  value = +value;
-  offset = offset | 0;
-  if (!noAssert) {
-    var limit = Math.pow(2, 8 * byteLength - 1);
-
-    checkInt$1(this, value, offset, byteLength, limit - 1, -limit);
-  }
-
-  var i = 0;
-  var mul = 1;
-  var sub = 0;
-  this[offset] = value & 0xFF;
-  while (++i < byteLength && (mul *= 0x100)) {
-    if (value < 0 && sub === 0 && this[offset + i - 1] !== 0) {
-      sub = 1;
-    }
-    this[offset + i] = ((value / mul) >> 0) - sub & 0xFF;
-  }
-
-  return offset + byteLength
-};
-
-Buffer$1.prototype.writeIntBE = function writeIntBE (value, offset, byteLength, noAssert) {
-  value = +value;
-  offset = offset | 0;
-  if (!noAssert) {
-    var limit = Math.pow(2, 8 * byteLength - 1);
-
-    checkInt$1(this, value, offset, byteLength, limit - 1, -limit);
-  }
-
-  var i = byteLength - 1;
-  var mul = 1;
-  var sub = 0;
-  this[offset + i] = value & 0xFF;
-  while (--i >= 0 && (mul *= 0x100)) {
-    if (value < 0 && sub === 0 && this[offset + i + 1] !== 0) {
-      sub = 1;
-    }
-    this[offset + i] = ((value / mul) >> 0) - sub & 0xFF;
-  }
-
-  return offset + byteLength
-};
-
-Buffer$1.prototype.writeInt8 = function writeInt8 (value, offset, noAssert) {
-  value = +value;
-  offset = offset | 0;
-  if (!noAssert) checkInt$1(this, value, offset, 1, 0x7f, -0x80);
-  if (!Buffer$1.TYPED_ARRAY_SUPPORT) value = Math.floor(value);
-  if (value < 0) value = 0xff + value + 1;
-  this[offset] = (value & 0xff);
-  return offset + 1
-};
-
-Buffer$1.prototype.writeInt16LE = function writeInt16LE (value, offset, noAssert) {
-  value = +value;
-  offset = offset | 0;
-  if (!noAssert) checkInt$1(this, value, offset, 2, 0x7fff, -0x8000);
-  if (Buffer$1.TYPED_ARRAY_SUPPORT) {
-    this[offset] = (value & 0xff);
-    this[offset + 1] = (value >>> 8);
-  } else {
-    objectWriteUInt16$1(this, value, offset, true);
-  }
-  return offset + 2
-};
-
-Buffer$1.prototype.writeInt16BE = function writeInt16BE (value, offset, noAssert) {
-  value = +value;
-  offset = offset | 0;
-  if (!noAssert) checkInt$1(this, value, offset, 2, 0x7fff, -0x8000);
-  if (Buffer$1.TYPED_ARRAY_SUPPORT) {
-    this[offset] = (value >>> 8);
-    this[offset + 1] = (value & 0xff);
-  } else {
-    objectWriteUInt16$1(this, value, offset, false);
-  }
-  return offset + 2
-};
-
-Buffer$1.prototype.writeInt32LE = function writeInt32LE (value, offset, noAssert) {
-  value = +value;
-  offset = offset | 0;
-  if (!noAssert) checkInt$1(this, value, offset, 4, 0x7fffffff, -0x80000000);
-  if (Buffer$1.TYPED_ARRAY_SUPPORT) {
-    this[offset] = (value & 0xff);
-    this[offset + 1] = (value >>> 8);
-    this[offset + 2] = (value >>> 16);
-    this[offset + 3] = (value >>> 24);
-  } else {
-    objectWriteUInt32$1(this, value, offset, true);
-  }
-  return offset + 4
-};
-
-Buffer$1.prototype.writeInt32BE = function writeInt32BE (value, offset, noAssert) {
-  value = +value;
-  offset = offset | 0;
-  if (!noAssert) checkInt$1(this, value, offset, 4, 0x7fffffff, -0x80000000);
-  if (value < 0) value = 0xffffffff + value + 1;
-  if (Buffer$1.TYPED_ARRAY_SUPPORT) {
-    this[offset] = (value >>> 24);
-    this[offset + 1] = (value >>> 16);
-    this[offset + 2] = (value >>> 8);
-    this[offset + 3] = (value & 0xff);
-  } else {
-    objectWriteUInt32$1(this, value, offset, false);
-  }
-  return offset + 4
-};
-
-function checkIEEE754$1 (buf, value, offset, ext, max, min) {
-  if (offset + ext > buf.length) throw new RangeError('Index out of range')
-  if (offset < 0) throw new RangeError('Index out of range')
-}
-
-function writeFloat$1 (buf, value, offset, littleEndian, noAssert) {
-  if (!noAssert) {
-    checkIEEE754$1(buf, value, offset, 4, 3.4028234663852886e+38, -3.4028234663852886e+38);
-  }
-  write$1(buf, value, offset, littleEndian, 23, 4);
-  return offset + 4
-}
-
-Buffer$1.prototype.writeFloatLE = function writeFloatLE (value, offset, noAssert) {
-  return writeFloat$1(this, value, offset, true, noAssert)
-};
-
-Buffer$1.prototype.writeFloatBE = function writeFloatBE (value, offset, noAssert) {
-  return writeFloat$1(this, value, offset, false, noAssert)
-};
-
-function writeDouble$1 (buf, value, offset, littleEndian, noAssert) {
-  if (!noAssert) {
-    checkIEEE754$1(buf, value, offset, 8, 1.7976931348623157E+308, -1.7976931348623157E+308);
-  }
-  write$1(buf, value, offset, littleEndian, 52, 8);
-  return offset + 8
-}
-
-Buffer$1.prototype.writeDoubleLE = function writeDoubleLE (value, offset, noAssert) {
-  return writeDouble$1(this, value, offset, true, noAssert)
-};
-
-Buffer$1.prototype.writeDoubleBE = function writeDoubleBE (value, offset, noAssert) {
-  return writeDouble$1(this, value, offset, false, noAssert)
-};
-
-// copy(targetBuffer, targetStart=0, sourceStart=0, sourceEnd=buffer.length)
-Buffer$1.prototype.copy = function copy (target, targetStart, start, end) {
-  if (!start) start = 0;
-  if (!end && end !== 0) end = this.length;
-  if (targetStart >= target.length) targetStart = target.length;
-  if (!targetStart) targetStart = 0;
-  if (end > 0 && end < start) end = start;
-
-  // Copy 0 bytes; we're done
-  if (end === start) return 0
-  if (target.length === 0 || this.length === 0) return 0
-
-  // Fatal error conditions
-  if (targetStart < 0) {
-    throw new RangeError('targetStart out of bounds')
-  }
-  if (start < 0 || start >= this.length) throw new RangeError('sourceStart out of bounds')
-  if (end < 0) throw new RangeError('sourceEnd out of bounds')
-
-  // Are we oob?
-  if (end > this.length) end = this.length;
-  if (target.length - targetStart < end - start) {
-    end = target.length - targetStart + start;
-  }
-
-  var len = end - start;
-  var i;
-
-  if (this === target && start < targetStart && targetStart < end) {
-    // descending copy from end
-    for (i = len - 1; i >= 0; --i) {
-      target[i + targetStart] = this[i + start];
-    }
-  } else if (len < 1000 || !Buffer$1.TYPED_ARRAY_SUPPORT) {
-    // ascending copy from start
-    for (i = 0; i < len; ++i) {
-      target[i + targetStart] = this[i + start];
-    }
-  } else {
-    Uint8Array.prototype.set.call(
-      target,
-      this.subarray(start, start + len),
-      targetStart
-    );
-  }
-
-  return len
-};
-
-// Usage:
-//    buffer.fill(number[, offset[, end]])
-//    buffer.fill(buffer[, offset[, end]])
-//    buffer.fill(string[, offset[, end]][, encoding])
-Buffer$1.prototype.fill = function fill (val, start, end, encoding) {
-  // Handle string cases:
-  if (typeof val === 'string') {
-    if (typeof start === 'string') {
-      encoding = start;
-      start = 0;
-      end = this.length;
-    } else if (typeof end === 'string') {
-      encoding = end;
-      end = this.length;
-    }
-    if (val.length === 1) {
-      var code = val.charCodeAt(0);
-      if (code < 256) {
-        val = code;
-      }
-    }
-    if (encoding !== undefined && typeof encoding !== 'string') {
-      throw new TypeError('encoding must be a string')
-    }
-    if (typeof encoding === 'string' && !Buffer$1.isEncoding(encoding)) {
-      throw new TypeError('Unknown encoding: ' + encoding)
-    }
-  } else if (typeof val === 'number') {
-    val = val & 255;
-  }
-
-  // Invalid ranges are not set to a default, so can range check early.
-  if (start < 0 || this.length < start || this.length < end) {
-    throw new RangeError('Out of range index')
-  }
-
-  if (end <= start) {
-    return this
-  }
-
-  start = start >>> 0;
-  end = end === undefined ? this.length : end >>> 0;
-
-  if (!val) val = 0;
-
-  var i;
-  if (typeof val === 'number') {
-    for (i = start; i < end; ++i) {
-      this[i] = val;
-    }
-  } else {
-    var bytes = internalIsBuffer$1(val)
-      ? val
-      : utf8ToBytes$1(new Buffer$1(val, encoding).toString());
-    var len = bytes.length;
-    for (i = 0; i < end - start; ++i) {
-      this[i + start] = bytes[i % len];
-    }
-  }
-
-  return this
-};
-
-// HELPER FUNCTIONS
-// ================
-
-var INVALID_BASE64_RE$1 = /[^+\/0-9A-Za-z-_]/g;
-
-function base64clean$1 (str) {
-  // Node strips out invalid characters like \n and \t from the string, base64-js does not
-  str = stringtrim$1(str).replace(INVALID_BASE64_RE$1, '');
-  // Node converts strings with length < 2 to ''
-  if (str.length < 2) return ''
-  // Node allows for non-padded base64 strings (missing trailing ===), base64-js does not
-  while (str.length % 4 !== 0) {
-    str = str + '=';
-  }
-  return str
-}
-
-function stringtrim$1 (str) {
-  if (str.trim) return str.trim()
-  return str.replace(/^\s+|\s+$/g, '')
-}
-
-function toHex$1 (n) {
-  if (n < 16) return '0' + n.toString(16)
-  return n.toString(16)
-}
-
-function utf8ToBytes$1 (string, units) {
-  units = units || Infinity;
-  var codePoint;
-  var length = string.length;
-  var leadSurrogate = null;
-  var bytes = [];
-
-  for (var i = 0; i < length; ++i) {
-    codePoint = string.charCodeAt(i);
-
-    // is surrogate component
-    if (codePoint > 0xD7FF && codePoint < 0xE000) {
-      // last char was a lead
-      if (!leadSurrogate) {
-        // no lead yet
-        if (codePoint > 0xDBFF) {
-          // unexpected trail
-          if ((units -= 3) > -1) bytes.push(0xEF, 0xBF, 0xBD);
-          continue
-        } else if (i + 1 === length) {
-          // unpaired lead
-          if ((units -= 3) > -1) bytes.push(0xEF, 0xBF, 0xBD);
-          continue
-        }
-
-        // valid lead
-        leadSurrogate = codePoint;
-
-        continue
-      }
-
-      // 2 leads in a row
-      if (codePoint < 0xDC00) {
-        if ((units -= 3) > -1) bytes.push(0xEF, 0xBF, 0xBD);
-        leadSurrogate = codePoint;
-        continue
-      }
-
-      // valid surrogate pair
-      codePoint = (leadSurrogate - 0xD800 << 10 | codePoint - 0xDC00) + 0x10000;
-    } else if (leadSurrogate) {
-      // valid bmp char, but last char was a lead
-      if ((units -= 3) > -1) bytes.push(0xEF, 0xBF, 0xBD);
-    }
-
-    leadSurrogate = null;
-
-    // encode utf8
-    if (codePoint < 0x80) {
-      if ((units -= 1) < 0) break
-      bytes.push(codePoint);
-    } else if (codePoint < 0x800) {
-      if ((units -= 2) < 0) break
-      bytes.push(
-        codePoint >> 0x6 | 0xC0,
-        codePoint & 0x3F | 0x80
-      );
-    } else if (codePoint < 0x10000) {
-      if ((units -= 3) < 0) break
-      bytes.push(
-        codePoint >> 0xC | 0xE0,
-        codePoint >> 0x6 & 0x3F | 0x80,
-        codePoint & 0x3F | 0x80
-      );
-    } else if (codePoint < 0x110000) {
-      if ((units -= 4) < 0) break
-      bytes.push(
-        codePoint >> 0x12 | 0xF0,
-        codePoint >> 0xC & 0x3F | 0x80,
-        codePoint >> 0x6 & 0x3F | 0x80,
-        codePoint & 0x3F | 0x80
-      );
-    } else {
-      throw new Error('Invalid code point')
-    }
-  }
-
-  return bytes
-}
-
-function asciiToBytes$1 (str) {
-  var byteArray = [];
-  for (var i = 0; i < str.length; ++i) {
-    // Node's code seems to be doing this and not & 0x7F..
-    byteArray.push(str.charCodeAt(i) & 0xFF);
-  }
-  return byteArray
-}
-
-function utf16leToBytes$1 (str, units) {
-  var c, hi, lo;
-  var byteArray = [];
-  for (var i = 0; i < str.length; ++i) {
-    if ((units -= 2) < 0) break
-
-    c = str.charCodeAt(i);
-    hi = c >> 8;
-    lo = c % 256;
-    byteArray.push(lo);
-    byteArray.push(hi);
-  }
-
-  return byteArray
-}
-
-
-function base64ToBytes$1 (str) {
-  return toByteArray$1(base64clean$1(str))
-}
-
-function blitBuffer$1 (src, dst, offset, length) {
-  for (var i = 0; i < length; ++i) {
-    if ((i + offset >= dst.length) || (i >= src.length)) break
-    dst[i + offset] = src[i];
-  }
-  return i
-}
-
-function isnan$1 (val) {
-  return val !== val // eslint-disable-line no-self-compare
-}
-
-
-// the following is from is-buffer, also by Feross Aboukhadijeh and with same lisence
-// The _isBuffer check is for Safari 5-7 support, because it's missing
-// Object.prototype.constructor. Remove this eventually
-function isBuffer$1(obj) {
-  return obj != null && (!!obj._isBuffer || isFastBuffer$1(obj) || isSlowBuffer$1(obj))
-}
-
-function isFastBuffer$1 (obj) {
-  return !!obj.constructor && typeof obj.constructor.isBuffer === 'function' && obj.constructor.isBuffer(obj)
-}
-
-// For Node v0.10 support. Remove this eventually.
-function isSlowBuffer$1 (obj) {
-  return typeof obj.readFloatLE === 'function' && typeof obj.slice === 'function' && isFastBuffer$1(obj.slice(0, 0))
-}
-
 /*
   Copyright (c) 2008, Adobe Systems Incorporated
   All rights reserved.
@@ -25482,7 +25438,7 @@ Basic GUI blocking jpeg encoder
 */
 
 var btoa = btoa || function(buf) {
-  return new Buffer$1(buf).toString('base64');
+  return new Buffer(buf).toString('base64');
 };
 
 function JPEGEncoder(quality) {
@@ -26133,7 +26089,7 @@ function JPEGEncoder(quality) {
 			writeWord(0xFFD9); //EOI
 
       //return new Uint8Array(byteout);
-      return new Buffer$1(byteout);
+      return new Buffer(byteout);
 
 			var jpegDataUri = 'data:image/jpeg;base64,' + btoa(byteout.join(''));
 			
@@ -27181,7 +27137,7 @@ function decode(jpegData, useTArray) {
     height: decoder.height,
     data: useTArray ?
       new Uint8Array(decoder.width * decoder.height * 4) :
-      new Buffer$1(decoder.width * decoder.height * 4)
+      new Buffer(decoder.width * decoder.height * 4)
   };
 
   decoder.copyToImageData(image);
@@ -27944,16 +27900,16 @@ var iota_1 = iota;
 // The _isBuffer check is for Safari 5-7 support, because it's missing
 // Object.prototype.constructor. Remove this eventually
 var index$4 = function (obj) {
-  return obj != null && (isBuffer$2(obj) || isSlowBuffer$2(obj) || !!obj._isBuffer)
+  return obj != null && (isBuffer$1(obj) || isSlowBuffer$1(obj) || !!obj._isBuffer)
 };
 
-function isBuffer$2 (obj) {
+function isBuffer$1 (obj) {
   return !!obj.constructor && typeof obj.constructor.isBuffer === 'function' && obj.constructor.isBuffer(obj)
 }
 
 // For Node v0.10 support. Remove this eventually.
-function isSlowBuffer$2 (obj) {
-  return typeof obj.readFloatLE === 'function' && typeof obj.slice === 'function' && isBuffer$2(obj.slice(0, 0))
+function isSlowBuffer$1 (obj) {
+  return typeof obj.readFloatLE === 'function' && typeof obj.slice === 'function' && isBuffer$1(obj.slice(0, 0))
 }
 
 var hasTypedArrays  = ((typeof Float64Array) !== "undefined");
@@ -29811,7 +29767,7 @@ var DATA    = POOL.DATA
   , BUFFER  = POOL.BUFFER;
 
 exports.free = function free(array) {
-  if(isBuffer$1(array)) {
+  if(isBuffer(array)) {
     BUFFER[twiddle.log2(array.length)].push(array);
   } else {
     if(Object.prototype.toString.call(array) !== '[object ArrayBuffer]') {
@@ -29968,7 +29924,7 @@ function mallocBuffer(n) {
   if(cache.length > 0) {
     return cache.pop()
   }
-  return new Buffer$1(n)
+  return new Buffer(n)
 }
 exports.mallocBuffer = mallocBuffer;
 
@@ -30597,7 +30553,7 @@ class SpectralScaleImageFilter extends ImageToImageFilter {
 
 var bundle = createCommonjsModule(function (module, exports) {
 (function (global, factory) {
-  module.exports = factory();
+	module.exports = factory();
 }(commonjsGlobal, (function () { 'use strict';
 
 /*!
@@ -31568,31 +31524,16 @@ TokenStream.prototype.parseError = function (msg) {
   throw new Error('parse error [' + (this.line + 1) + ':' + (this.column + 1) + ']: ' + msg);
 };
 
-var unaryInstructionCache = {};
 function unaryInstruction(value) {
-  var inst = unaryInstructionCache[value];
-  if (!inst) {
-    inst = unaryInstructionCache[value] = new Instruction(IOP1, value);
-  }
-  return inst;
+  return new Instruction(IOP1, value);
 }
 
-var binaryInstructionCache = {};
 function binaryInstruction(value) {
-  var inst = binaryInstructionCache[value];
-  if (!inst) {
-    inst = binaryInstructionCache[value] = new Instruction(IOP2, value);
-  }
-  return inst;
+  return new Instruction(IOP2, value);
 }
 
-var ternaryInstructionCache = {};
 function ternaryInstruction(value) {
-  var inst = ternaryInstructionCache[value];
-  if (!inst) {
-    inst = ternaryInstructionCache[value] = new Instruction(IOP3, value);
-  }
-  return inst;
+  return new Instruction(IOP3, value);
 }
 
 function ParserState(parser, tokenStream) {
@@ -34890,6 +34831,7 @@ exports.UrlToArrayBufferReader = UrlToArrayBufferReader;
 exports.BrowserDownloadBuffer = BrowserDownloadBuffer;
 exports.Minc2Decoder = Minc2Decoder;
 exports.NiftiDecoder = NiftiDecoder;
+exports.NiftiDecoderAlt = NiftiDecoderAlt;
 exports.PixpEncoder = PixpEncoder;
 exports.PixpDecoder = PixpDecoder;
 exports.Image3DGenericDecoder = Image3DGenericDecoder;
