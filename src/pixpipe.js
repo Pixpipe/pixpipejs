@@ -67,3 +67,6 @@ export { Colormap } from './helper/Colormap.js';
 
 // filters - processing of Image3D
 export { Image3DToMosaicFilter } from './filter/Image3DToMosaicFilter.js';
+
+// utils - toolbox for various purposes, usually static methods
+export { Algebra } from './utils/Algebra.js';

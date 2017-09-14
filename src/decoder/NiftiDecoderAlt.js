@@ -9,7 +9,8 @@
 
 import nifti from 'nifti-reader-js'
 import { Filter } from '../core/Filter.js';
-import { MniVolume } from '../core/MniVolume.js';
+import { Algebra } from '../utils/Algebra.js';
+import { Image3D } from '../core/Image3D.js';
 
 
 /**
@@ -122,11 +123,12 @@ class NiftiDecoderAlt extends Filter {
     metadata.niftiTranfoMethod = header.qform_code > 0 ? 2 : 1;
     
     var extendedMatrix = header.getQformMat();
+    console.log( extendedMatrix );
     
     metadata.transformation = {
       voxelDimensions: header.pixDims.slice(1, header.pixDims.length),
       voxelDimensionFactors: [1, 1, header.pixDims[0] < 0 ? -1 : 1], // qfac
-      rotationMatrix: [ extendedMatrix[0].slice(0, 3), extendedMatrix[1].slice(0, 3), extendedMatrix[1].slice(0, 3)],
+      rotationMatrix: Algebra.matrixTranspose([ extendedMatrix[0].slice(0, 3), extendedMatrix[1].slice(0, 3), extendedMatrix[1].slice(0, 3)]),
       offsets: [header.qoffset_x, header.qoffset_y, header.qoffset_z ],
     }
     
