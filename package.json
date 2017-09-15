@@ -35,6 +35,7 @@
     "expr-eval": "^1.0.0",
     "file-saver": "^1.3.3",
     "geotiff": "^0.4.1",
+    "gl-matrix": "github:toji/gl-matrix",
     "jpeg-js": "^0.3.3",
     "js-md5": "^0.4.2",
     "ndarray": "^1.0.18",

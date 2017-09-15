@@ -1,4 +1,147 @@
+/*
+ TODO:
+ - generate 3D transformation matrix with a given translation + rotation
+ - deal with 4x4 matrix
+ - compute inverse of 4x4 matrix
+ 
+ here are some links:
+ https://www.mathsisfun.com/algebra/matrix-inverse-row-operations-gauss-jordan.html
+ http://www.cg.info.hiroshima-cu.ac.jp/~miyazaki/knowledge/teche23.html
+ https://evanw.github.io/lightgl.js/docs/matrix.html
+ 
+ here is a C++ implementation of that:
+ 
+ bool gluInvertMatrix(const double m[16], double invOut[16])
+{
+    double inv[16], det;
+    int i;
 
+    inv[0] = m[5]  * m[10] * m[15] - 
+             m[5]  * m[11] * m[14] - 
+             m[9]  * m[6]  * m[15] + 
+             m[9]  * m[7]  * m[14] +
+             m[13] * m[6]  * m[11] - 
+             m[13] * m[7]  * m[10];
+
+    inv[4] = -m[4]  * m[10] * m[15] + 
+              m[4]  * m[11] * m[14] + 
+              m[8]  * m[6]  * m[15] - 
+              m[8]  * m[7]  * m[14] - 
+              m[12] * m[6]  * m[11] + 
+              m[12] * m[7]  * m[10];
+
+    inv[8] = m[4]  * m[9] * m[15] - 
+             m[4]  * m[11] * m[13] - 
+             m[8]  * m[5] * m[15] + 
+             m[8]  * m[7] * m[13] + 
+             m[12] * m[5] * m[11] - 
+             m[12] * m[7] * m[9];
+
+    inv[12] = -m[4]  * m[9] * m[14] + 
+               m[4]  * m[10] * m[13] +
+               m[8]  * m[5] * m[14] - 
+               m[8]  * m[6] * m[13] - 
+               m[12] * m[5] * m[10] + 
+               m[12] * m[6] * m[9];
+
+    inv[1] = -m[1]  * m[10] * m[15] + 
+              m[1]  * m[11] * m[14] + 
+              m[9]  * m[2] * m[15] - 
+              m[9]  * m[3] * m[14] - 
+              m[13] * m[2] * m[11] + 
+              m[13] * m[3] * m[10];
+
+    inv[5] = m[0]  * m[10] * m[15] - 
+             m[0]  * m[11] * m[14] - 
+             m[8]  * m[2] * m[15] + 
+             m[8]  * m[3] * m[14] + 
+             m[12] * m[2] * m[11] - 
+             m[12] * m[3] * m[10];
+
+    inv[9] = -m[0]  * m[9] * m[15] + 
+              m[0]  * m[11] * m[13] + 
+              m[8]  * m[1] * m[15] - 
+              m[8]  * m[3] * m[13] - 
+              m[12] * m[1] * m[11] + 
+              m[12] * m[3] * m[9];
+
+    inv[13] = m[0]  * m[9] * m[14] - 
+              m[0]  * m[10] * m[13] - 
+              m[8]  * m[1] * m[14] + 
+              m[8]  * m[2] * m[13] + 
+              m[12] * m[1] * m[10] - 
+              m[12] * m[2] * m[9];
+
+    inv[2] = m[1]  * m[6] * m[15] - 
+             m[1]  * m[7] * m[14] - 
+             m[5]  * m[2] * m[15] + 
+             m[5]  * m[3] * m[14] + 
+             m[13] * m[2] * m[7] - 
+             m[13] * m[3] * m[6];
+
+    inv[6] = -m[0]  * m[6] * m[15] + 
+              m[0]  * m[7] * m[14] + 
+              m[4]  * m[2] * m[15] - 
+              m[4]  * m[3] * m[14] - 
+              m[12] * m[2] * m[7] + 
+              m[12] * m[3] * m[6];
+
+    inv[10] = m[0]  * m[5] * m[15] - 
+              m[0]  * m[7] * m[13] - 
+              m[4]  * m[1] * m[15] + 
+              m[4]  * m[3] * m[13] + 
+              m[12] * m[1] * m[7] - 
+              m[12] * m[3] * m[5];
+
+    inv[14] = -m[0]  * m[5] * m[14] + 
+               m[0]  * m[6] * m[13] + 
+               m[4]  * m[1] * m[14] - 
+               m[4]  * m[2] * m[13] - 
+               m[12] * m[1] * m[6] + 
+               m[12] * m[2] * m[5];
+
+    inv[3] = -m[1] * m[6] * m[11] + 
+              m[1] * m[7] * m[10] + 
+              m[5] * m[2] * m[11] - 
+              m[5] * m[3] * m[10] - 
+              m[9] * m[2] * m[7] + 
+              m[9] * m[3] * m[6];
+
+    inv[7] = m[0] * m[6] * m[11] - 
+             m[0] * m[7] * m[10] - 
+             m[4] * m[2] * m[11] + 
+             m[4] * m[3] * m[10] + 
+             m[8] * m[2] * m[7] - 
+             m[8] * m[3] * m[6];
+
+    inv[11] = -m[0] * m[5] * m[11] + 
+               m[0] * m[7] * m[9] + 
+               m[4] * m[1] * m[11] - 
+               m[4] * m[3] * m[9] - 
+               m[8] * m[1] * m[7] + 
+               m[8] * m[3] * m[5];
+
+    inv[15] = m[0] * m[5] * m[10] - 
+              m[0] * m[6] * m[9] - 
+              m[4] * m[1] * m[10] + 
+              m[4] * m[2] * m[9] + 
+              m[8] * m[1] * m[6] - 
+              m[8] * m[2] * m[5];
+
+    det = m[0] * inv[0] + m[1] * inv[4] + m[2] * inv[8] + m[3] * inv[12];
+
+    if (det == 0)
+        return false;
+
+    det = 1.0 / det;
+
+    for (i = 0; i < 16; i++)
+        invOut[i] = inv[i] * det;
+
+    return true;
+}
+
+*/
 
 class Algebra {
   
@@ -73,6 +216,7 @@ class Algebra {
     return newMat;
   }
   
+  
   /**
   * link: http://www.wikihow.com/Find-the-Inverse-of-a-3x3-Matrix
   */
@@ -85,8 +229,6 @@ class Algebra {
     }
 
     var adj = Algebra.matrixAdjoint3x3( m );
-
-    
     var mI = Algebra.matrixMultiplyScalar( adj, 1 / det );
     return mI;
   }
@@ -103,6 +245,64 @@ class Algebra {
     return adj;
   }
   
-}
+  
+  static matrixVectorMutiply( m, v ){
+    var outV = new Array( v.length ).fill(0);    
+    var slowVarySize = m.length;
+    var fastVarySize = m[0].length;
+
+    for(var i=0; i<slowVarySize; i++){
+      for(var j=0; j<fastVarySize; j++){
+        outV[i] += v[j] * m[i][j];
+      }
+    }
+    
+    return outV;
+  }
+  
+  
+  static vectorAdd(v1, v2){
+    if( v1.length != v2.length ){
+      console.warn("Vector must be the same size to add.");
+      return null;
+    }
+    var vOut = new Array(v1.length);
+    
+    for(var i=0; i<v1.length; i++){
+      vOut[i] = v1[i] + v2[i];
+    }
+    return vOut;
+  }
+  
+  
+  /**
+  * Multiply each member to output a new vector
+  * @param {Array} v1 - a vector
+  * @param {Array} v2 - a vector
+  * @return {Array} the output
+  */
+  static vectorMultiplyMembers(v1, v2){
+    if( v1.length != v2.length ){
+      console.warn("Vector must be the same size to add.");
+      return null;
+    }
+    var vOut = new Array(v1.length);
+    
+    for(var i=0; i<v1.length; i++){
+      vOut[i] = v1[i] * v2[i];
+    }
+    return vOut;
+  }
+  
+  static vectorMultiplyScalar( v, s ){
+    var vOut = new Array(v.length);
+    for(var i=0; i<v.length; i++){
+      vOut = v[i] * s;
+    }
+    return vOut;
+  }
+  
+  
+} /* END of class Algebra */
 
 export { Algebra };

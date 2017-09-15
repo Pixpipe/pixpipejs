@@ -41,6 +41,8 @@
   var mat33_2 = [[5, 0, 2], [-2, 3, 0], [1, -1, 7]];
   var mat33_3 = [[1, 0, 5], [2, 1, 6], [3, 4, 0]];
   var mat33_4 = [[7, 0, -3], [2, 3, 4], [1, -1, -2]];
+  var mat33_5 = [[2, 3, 4], [1, 3, 1], [3, 2, 2]];
+  var vec3 = [1, 2, 3];
   
   log("NOTICE: the fastest varying dimesions are the vectical vectors of each matrix.")
   
@@ -90,6 +92,16 @@
   log( mat33_4 );
   log("is ");
   log( matInv2 );
+  log('---');
+  
+  
+  var multMV = Algebra.matrixVectorMutiply(mat33_5, vec3);
+  log( "Mulitplying the matrix" );
+  log( mat33_5 );
+  log("by the vector")
+  log( vec3 )
+  log("gives the vector");
+  log( multMV );
   log('---');
   
   // ---------------------------------------------------------------------------
