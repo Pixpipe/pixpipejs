@@ -10,21 +10,21 @@
 import nifti from 'nifti-reader-js';
 import { glMatrix, mat2, mat2d, mat3, mat4, quat, vec2, vec3, vec4 } from 'gl-matrix';
 import { Filter } from '../core/Filter.js';
-import { Image3D } from '../core/Image3D.js';
+import { Image3DAlt } from '../core/Image3DAlt.js';
 
 
 /**
-* Important information:  
-* NIfTI dataset are using two indexing methods:  
+* Important information:
+* NIfTI dataset are using two indexing methods:
 * - A voxel based system (i, j, k), the most intuitive, where i is the fastest varying dim and k is the sloest varying dim.
 *   Thus for a given (i, j, k) the value is at (i + j*dim[1] + k*dim[1]*dim[2])
 * - A subject based system (x, y, z), where +x is right, +y is anterior, +z is superior (right handed coord system).
-*   This system is CENTER pixel/voxel and is the result of a transformation from (i, j, k) and a scaling given by the size of 
+*   This system is CENTER pixel/voxel and is the result of a transformation from (i, j, k) and a scaling given by the size of
 *   each voxel in a world unit (eg. mm)
 *
 * NIfTI provides three alternatives to characterize this transformation:
-* 
-* METHOD 1 , when header.qform_code = 0  
+*
+* METHOD 1 , when header.qform_code = 0
 * Here, no specific orientation difers in [x, y, z], only spatial scaling based on voxel world dimensions.
 * This method is NOT the default one, neither it is the most common. It is mainly for bacward compatibility
 * to ANALYZE 7.5.
@@ -33,7 +33,7 @@ import { Image3D } from '../core/Image3D.js';
 * y = pixdim[2] * j
 * z = pixdim[3] * k
 *
-* METHOD 2, the "normal" case, when header.qform_code > 0  
+* METHOD 2, the "normal" case, when header.qform_code > 0
 * In this situation, three components are involved in the transformation:
 * 1. voxel dimensions (header.pixDims[]) for the spatial scaling
 * 2. a rotation matrix, for orientation
@@ -51,8 +51,8 @@ class NiftiDecoderAlt extends Filter {
     super();
     this.addInputValidator(0, ArrayBuffer);
   }
-  
-  
+
+
   _run(){
     var that = this;
     var inputBuffer = this._getInput(0);
@@ -61,33 +61,33 @@ class NiftiDecoderAlt extends Filter {
       console.warn("NiftiDecoderAlt requires an ArrayBuffer as input \"0\". Unable to continue.");
       return;
     }
-    
+
     console.log( nifti );
-    
+
     if(! nifti.isNIFTI( inputBuffer )) {
       console.warn("Not a NIfTI file");
       return;
     }
-    
+
     var metadata = {};
     var data = null;
-    
+
     var header = nifti.readHeader(inputBuffer);
     var rawData = nifti.readImage(header, inputBuffer);
-    
+
     console.log( header );
 
-    
+
     data = this._fetchDataArray(header, rawData);
-    
+
     if( !data ){
       console.warn("This NIfTI file is valid but does not contain any readable data.");
       return;
     }
-    
+
     this._scaleData(data, header);
     var numberOfDimensions = header.dims[0];
-    
+
     // copying all the original metadata into the field "formatSpecific", for the sake of quality.
     metadata.formatSpecific = header;
     metadata.ncpp = this._fetchNcpp(header);
@@ -95,46 +95,46 @@ class NiftiDecoderAlt extends Filter {
     metadata.format = "nifti";
     metadata.spatialUnit = header.getUnitsCodeString(nifti.NIFTI1.SPATIAL_UNITS_MASK & header.xyzt_units);
     metadata.temporalUnit = header.getUnitsCodeString(nifti.NIFTI1.TEMPORAL_UNITS_MASK & header.xyzt_units);
-    
+
     // dimensions info ordered from the fastest varying to the slowest varying
     var voxelSpaceNames = ['x', 'y', 'z', 't'];
     var worldSpaceNames = ['i', 'j', 'k', 'l'];
     metadata.dimensions = [];
-    
+
     for(var d=0; d<numberOfDimensions; d++){
       // compute the stride based on the previous dim
       var stride = 1;
       for(var pd=0; pd<d; pd++){
         stride *= header.dims[pd + 1];
       }
-      
+
       var dimension = {
         length: header.dims[d + 1],
         width: -1, // to be filled later
         height: -1, // to be filled later
         nameVoxelSpace: voxelSpaceNames[d],
-        worldSpaceName: worldSpaceNames[d],
+        nameWorldSpace: worldSpaceNames[d],
         worldUnitSize: header.pixDims[d + 1],
         stride: stride
       }
       metadata.dimensions.push( dimension )
     }
-    
+
     if( metadata.dimensions.length >= 3){
       // dim x has for width  y and for heigth z
       metadata.dimensions[0].width = metadata.dimensions[1].length;
       metadata.dimensions[0].height = metadata.dimensions[2].length;
-      
+
       // dim y has for width  x and for heigth z
       metadata.dimensions[1].width = metadata.dimensions[0].length;
       metadata.dimensions[1].height = metadata.dimensions[2].length;
-      
+
       // dim z has for width  x and for heigth y
       metadata.dimensions[2].width = metadata.dimensions[0].length;
       metadata.dimensions[2].height = metadata.dimensions[1].length;
     }
-    
-    // the transformation 
+
+    // the transformation
     var niftiTransfoMatrix = header.getQformMat();
     var v2wMat = mat4.fromValues(niftiTransfoMatrix[0][0], niftiTransfoMatrix[1][0], niftiTransfoMatrix[2][0], niftiTransfoMatrix[3][0],
                                      niftiTransfoMatrix[0][1], niftiTransfoMatrix[1][1], niftiTransfoMatrix[2][1], niftiTransfoMatrix[3][1],
@@ -143,13 +143,13 @@ class NiftiDecoderAlt extends Filter {
 
     var w2vMat = mat4.create();
     mat4.invert( w2vMat, v2wMat );
-    
+
     // register all the transformations available here
     metadata.transformations = {
       v2w: v2wMat,
       w2v w2vMat
     }
-    
+
     console.log( data );
     console.log( metadata );
 
@@ -161,7 +161,7 @@ class NiftiDecoderAlt extends Filter {
     vec4.transformMat4(worldPos, voxPos, transfoMat);
     // from world back to voxel
     vec4.transformMat4(voxPosBack, worldPos, transfoMatInverse);
-    
+
     // original
     console.log( voxPos );
     // world coord
@@ -174,8 +174,8 @@ class NiftiDecoderAlt extends Filter {
     console.log( voxPosBack );
     */
   }
-  
-  
+
+
   /**
   * [PRIVATE]
   * The header field `scl_slope` is used to scale the data, thus if non-0,
@@ -188,20 +188,20 @@ class NiftiDecoderAlt extends Filter {
     if( header.datatypeCode == nifti.NIFTI1.TYPE_RGB24 ){
       return;
     }
-    
+
     // the data scaling wont change anything, thus we dont perform it
     if( header.scl_slope == 1 && header.scl_inter == 0 ){
       return;
     }
-    
+
     if( header.scl_slope ){
       for(var i=0; i<data.length; i++){
         data[i] = data[i] * header.scl_slope + header.scl_inter;
       }
     }
   }
-  
-  
+
+
   /**
   * [PRIVATE]
   * Get the number of components per pixel encoded in the Nifti file
@@ -210,7 +210,7 @@ class NiftiDecoderAlt extends Filter {
   */
   _fetchNcpp( header ){
     var ncpp = 0;
-    
+
     switch ( header.datatypeCode ) {
       case nifti.NIFTI1.TYPE_BINARY:
         console.warn("The datatype nifti.TYPE_BINARY is not compatible yet.");
@@ -236,7 +236,7 @@ class NiftiDecoderAlt extends Filter {
       case nifti.NIFTI1.TYPE_UINT64:
         console.warn("The datatype nifti.TYPE_INT64 is not compatible yet.");
         break;
-        
+
       case nifti.NIFTI1.TYPE_FLOAT32:
         ncpp = 1;
         break;
@@ -264,15 +264,15 @@ class NiftiDecoderAlt extends Filter {
       case nifti.NIFTI1.TYPE_RGB24:
         ncpp = 3;
         break;
-      
+
       default:
         console.warn("The datatype is unknown.");
     }
-    
+
     return ncpp;
   }
-  
-  
+
+
   /**
   * [PRIVATE]
   * Cast the raw ArrayBuffer into the appropriate type. Some Nifti types are not
@@ -283,7 +283,7 @@ class NiftiDecoderAlt extends Filter {
   */
   _fetchDataArray( header, rawData ){
     var typedData = null;
-    
+
     switch ( header.datatypeCode ) {
       case nifti.NIFTI1.TYPE_BINARY:
         console.warn("The datatype nifti.TYPE_BINARY is not compatible yet.");
@@ -309,7 +309,7 @@ class NiftiDecoderAlt extends Filter {
       case nifti.NIFTI1.TYPE_UINT64:
         console.warn("The datatype nifti.TYPE_INT64 is not compatible yet.");
         break;
-        
+
       case nifti.NIFTI1.TYPE_FLOAT32:
         typedData = new Float32Array( rawData );
         break;
@@ -337,18 +337,18 @@ class NiftiDecoderAlt extends Filter {
       case nifti.NIFTI1.TYPE_RGB24:
         typedData = new Uint8Array( rawData );
         break;
-      
+
       default:
         console.warn("The datatype is unknown.");
     }
     return typedData;
   }
-  
-  
+
+
   _computeSubjsctBasedCoord( header ){
-    
+
   }
-  
+
 } /* END of class NiftiDecoderAlt */
 
 export { NiftiDecoderAlt }
