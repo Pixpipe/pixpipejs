@@ -22,35 +22,62 @@ class Image3DAlt extends PixpipeContainer{
   * @param {Object} options - may contain the following:
   *   - options.xSize {Number} space length along x axis
   *   - options.ySize {Number} space length along y axis
-  *   - option.zSize {Number} space length along z axis
-  *   - option.tSize {Number} space length along t axis (time)
+  *   - options.zSize {Number} space length along z axis
+  *   - options.tSize {Number} space length along t axis (time)
   *   - options.ncpp {Number} number of components per pixel. Default = 1
+  *   - options.description {String} a description for this instance
+  * If at least xSize, ySize and zSize are specified, a buffer is automatically initialized with the value 0.
   */
   constructor( options=null ){
     super();
     this._type = Image3DAlt.TYPE();
 
+    var metaStat = {
+      upToDate: true,
+      min: NaN,
+      max: NaN
+    }
+
+    this.setMetadata("statistics", metaStat );
+
+    // no default description, but can be provided
+    this.setMetadata("description", "");
 
     // number of component per pixel, for color OR time series
     this.setMetadata("ncpp", 1);
+
+    // no special unit for space and time
+    this.setMetadata("spatialUnit", "Voxel");
+    this.setMetadata("temporalUnit", "Time");
+
+    // So far, this instance does not come from a file decoding
+    this.setMetadata("format", "generic");
+
+
+    // this field is to hold original metadata from a reader (eg. NIfTI)
+    this.setMetadata("formatSpecific", {});
 
     if( !options ){
       // replacing default value for ncpp
       if("ncpp" in options){
         this.setMetadata("ncpp", options.ncpp);
       }
-      
-      
+
+      if("description" in options){
+        this.setMetadata("description", options.description);
+      }
+
+      // init default ordered dimensions based on the give sizes
       if( "xSize" in options && "xSize" in options && "xSize" in options ){
-      
+
         var dimensions = [
           {
             length: xSize,
             width: ySize,
             height: zSize,
             nameVoxelSpace: "i",
-            worldSpaceName: "x",
-            worldUnitSize: "",
+            nameWorldSpace: "x",
+            worldUnitSize: 1,
             stride: 1
           },
           {
@@ -58,8 +85,8 @@ class Image3DAlt extends PixpipeContainer{
             width: xSize,
             height: zSize,
             nameVoxelSpace: "j",
-            worldSpaceName: "y",
-            worldUnitSize: "",
+            nameWorldSpace: "y",
+            worldUnitSize: 1,
             stride: xSize
           },
           {
@@ -67,14 +94,15 @@ class Image3DAlt extends PixpipeContainer{
             width: xSize,
             height: ySize,
             nameVoxelSpace: "k",
-            worldSpaceName: "z",
-            worldUnitSize: "",
+            nameWorldSpace: "z",
+            worldUnitSize: 1,
             stride: xSize * ySize
           },
         ]
-        
-      
-        
+
+        var bufferSize = xSize * ySize * zSize * this.getMetadata("ncpp");
+
+        // if we get time dimension info, let's add it too
         if( "tSize" in options ){
           var timeDim = {
             length: tSize,
@@ -84,67 +112,25 @@ class Image3DAlt extends PixpipeContainer{
             worldSpaceName: "t",
             worldUnitSize: "",
             stride: xSize * ySize * zSize
-          },
+          }
+
+          dimensions.push( timeDim );
+
+          this.setMetadata("dimensions", dimensions);
+
+          bufferSize *= tSize;
         }
+
+        // Allocating the buffer
+        this._data = new Float32Array( bufferSize );
+        metaStat.min = 0;
+        metaStat.max = 0;
       }
     }
 
-    
+    this._scanDataRange();
+    this._finishHeader();
 
-
-    // dimensionality order
-    if(options && "order" in options){
-      this.setMetadata("order", options.order);
-    }else{
-      this.setMetadata("order", ["zspace", "yspace", "xspace"]);
-    }
-
-    var xspace = {
-      offset: 1,
-      step: 1
-    }
-
-    var yspace = {
-      step: 1
-    }
-
-    var zspace = {
-      step: 1
-    }
-    
-    var time = {
-      offset: 0,
-      space_length: 1
-    }
-
-    this.setMetadata("xspace", xspace);
-    this.setMetadata("yspace", yspace);
-    this.setMetadata("zspace", zspace);
-    this.setMetadata("time", time);
-
-    // replacing default value for ncpp
-    if(options && "ncpp" in options){
-      this.setMetadata("ncpp", options.ncpp);
-    }
-
-    // allocate the array if size is specified
-    if(options && "xSize" in options && "ySize" in options && "zSize" in options){
-
-      if( options.xSize > 0 && options.ySize > 0 && options.zSize > 0 ){
-        xspace.space_length = options.xSize;
-        yspace.space_length = options.ySize;
-        zspace.space_length = options.zSize;
-
-        yspace.offset = xspace.space_length;
-        zspace.offset = xspace.space_length * yspace.space_length;
-
-        this._data = new Float32Array( options.xSize * options.ySize * options.zSize * this.getMetadata("ncpp") );
-        this._data.fill(0);
-
-        this._scanDataRange();
-        this._finishHeader();
-      }
-    }
   }
 
 
@@ -496,7 +482,7 @@ class Image3DAlt extends PixpipeContainer{
 
     //var time_offset = this.hasMetadata( "time" ) ? time * this.getMetadata( "time" ).offset : 0;
     var time_offset = this._metadata.time.offset * time;
-    
+
     var xyzt_offset = (
       x * this._metadata.xspace.offset +
       y * this._metadata.yspace.offset +
@@ -506,7 +492,7 @@ class Image3DAlt extends PixpipeContainer{
     return this._data[xyzt_offset];
   }
 
-  
+
   /**
   * Get the number of samples over time
   */
@@ -525,7 +511,7 @@ class Image3DAlt extends PixpipeContainer{
              pos.y < 0 || pos.y >= this._metadata.yspace.space_length ||
              pos.z < 0 || pos.z >= this._metadata.zspace.space_length)
   }
-  
+
 
   /**
   * Sample the color along a segment
@@ -553,28 +539,28 @@ class Image3DAlt extends PixpipeContainer{
     // both position must be inside the image
     if( !this.isInside(posFrom) || !this.isInside(posTo) )
       return null;
-      
+
     var dx = posTo.x - posFrom.x;
     var dy = posTo.y - posFrom.y;
     var dz = posTo.z - posFrom.z;
     var euclidianDistance = Math.sqrt( Math.pow(dx , 2) + Math.pow(dy , 2) + Math.pow(dz , 2) );
     var numberOfSamples = Math.floor( euclidianDistance + 1 );
-    
+
     // we want to sample every unit distance along the segment
     var stepX = dx / euclidianDistance;
     var stepY = dy / euclidianDistance;
     var stepZ = dz / euclidianDistance;
-    
+
     var ncpp = this._metadata.ncpp;
     var positions = new Array(numberOfSamples).fill(0);
     var colors = new Array(ncpp).fill(0);
     var labels = new Array(numberOfSamples).fill(0);
-    
+
     // creating empty arrays for colors
     for(var c=0; c<ncpp; c++){
       colors[c] = new Array(numberOfSamples).fill(0);
     }
-    
+
     // walk along the segment, from posFrom to posTo
     for(var i=0; i<numberOfSamples; i++){
       var currentPos = {
@@ -582,25 +568,25 @@ class Image3DAlt extends PixpipeContainer{
         y: Math.round(posFrom.y + i*stepY),
         z: Math.round(posFrom.z + i*stepZ)
       };
-      
+
       positions[i] = currentPos;
       labels[i] = "(" + currentPos.x + ", " + currentPos.y + ", " + currentPos.z + ")";
-      
+
       var pixValue = [this.getIntensity_xyz( currentPos.x, currentPos.y, currentPos.z )];
-      
+
       // each channel is dispatched in its array
       for(var c=0; c<ncpp; c++){
         colors[c][i] = pixValue[c];
       }
     }
-    
+
     return {
       positions: positions,
       labels: labels,
       colors: colors
     }
   } /* END of method getLineSample */
-  
+
 
 } /* END of class Image3DAlt */
 
