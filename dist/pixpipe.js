@@ -18628,7 +18628,26 @@ THE SOFTWARE. */
  *
  * @returns {mat4} a new 4x4 matrix
  */
-
+function create$3() {
+  let out = new ARRAY_TYPE(16);
+  out[0] = 1;
+  out[1] = 0;
+  out[2] = 0;
+  out[3] = 0;
+  out[4] = 0;
+  out[5] = 1;
+  out[6] = 0;
+  out[7] = 0;
+  out[8] = 0;
+  out[9] = 0;
+  out[10] = 1;
+  out[11] = 0;
+  out[12] = 0;
+  out[13] = 0;
+  out[14] = 0;
+  out[15] = 1;
+  return out;
+}
 
 /**
  * Creates a new mat4 initialized with values from an existing matrix
@@ -18738,7 +18757,52 @@ function fromValues$3(m00, m01, m02, m03, m10, m11, m12, m13, m20, m21, m22, m23
  * @param {mat4} a the source matrix
  * @returns {mat4} out
  */
+function invert$3(out, a) {
+  let a00 = a[0], a01 = a[1], a02 = a[2], a03 = a[3];
+  let a10 = a[4], a11 = a[5], a12 = a[6], a13 = a[7];
+  let a20 = a[8], a21 = a[9], a22 = a[10], a23 = a[11];
+  let a30 = a[12], a31 = a[13], a32 = a[14], a33 = a[15];
 
+  let b00 = a00 * a11 - a01 * a10;
+  let b01 = a00 * a12 - a02 * a10;
+  let b02 = a00 * a13 - a03 * a10;
+  let b03 = a01 * a12 - a02 * a11;
+  let b04 = a01 * a13 - a03 * a11;
+  let b05 = a02 * a13 - a03 * a12;
+  let b06 = a20 * a31 - a21 * a30;
+  let b07 = a20 * a32 - a22 * a30;
+  let b08 = a20 * a33 - a23 * a30;
+  let b09 = a21 * a32 - a22 * a31;
+  let b10 = a21 * a33 - a23 * a31;
+  let b11 = a22 * a33 - a23 * a32;
+
+  // Calculate the determinant
+  let det = b00 * b11 - b01 * b10 + b02 * b09 + b03 * b08 - b04 * b07 + b05 * b06;
+
+  if (!det) {
+    return null;
+  }
+  det = 1.0 / det;
+
+  out[0] = (a11 * b11 - a12 * b10 + a13 * b09) * det;
+  out[1] = (a02 * b10 - a01 * b11 - a03 * b09) * det;
+  out[2] = (a31 * b05 - a32 * b04 + a33 * b03) * det;
+  out[3] = (a22 * b04 - a21 * b05 - a23 * b03) * det;
+  out[4] = (a12 * b08 - a10 * b11 - a13 * b07) * det;
+  out[5] = (a00 * b11 - a02 * b08 + a03 * b07) * det;
+  out[6] = (a32 * b02 - a30 * b05 - a33 * b01) * det;
+  out[7] = (a20 * b05 - a22 * b02 + a23 * b01) * det;
+  out[8] = (a10 * b10 - a11 * b08 + a13 * b06) * det;
+  out[9] = (a01 * b08 - a00 * b10 - a03 * b06) * det;
+  out[10] = (a30 * b04 - a31 * b02 + a33 * b00) * det;
+  out[11] = (a21 * b02 - a20 * b04 - a23 * b00) * det;
+  out[12] = (a11 * b07 - a10 * b09 - a12 * b06) * det;
+  out[13] = (a00 * b09 - a01 * b07 + a02 * b06) * det;
+  out[14] = (a31 * b01 - a30 * b03 - a32 * b00) * det;
+  out[15] = (a20 * b03 - a21 * b01 + a22 * b00) * det;
+
+  return out;
+}
 
 /**
  * Calculates the adjugate of a mat4
@@ -19748,14 +19812,7 @@ function create$6() {
  * @param {Number} w W component
  * @returns {vec4} a new 4D vector
  */
-function fromValues$6(x, y, z, w) {
-  let out = new ARRAY_TYPE(4);
-  out[0] = x;
-  out[1] = y;
-  out[2] = z;
-  out[3] = w;
-  return out;
-}
+
 
 /**
  * Copy the values from one vec4 to another
@@ -19998,14 +20055,7 @@ function normalize$2(out, a) {
  * @param {mat4} m matrix to transform with
  * @returns {vec4} out
  */
-function transformMat4$1(out, a, m) {
-  let x = a[0], y = a[1], z = a[2], w = a[3];
-  out[0] = m[0] * x + m[4] * y + m[8] * z + m[12] * w;
-  out[1] = m[1] * x + m[5] * y + m[9] * z + m[13] * w;
-  out[2] = m[2] * x + m[6] * y + m[10] * z + m[14] * w;
-  out[3] = m[3] * x + m[7] * y + m[11] * z + m[15] * w;
-  return out;
-}
+
 
 /**
  * Transforms the vec4 with a quat
@@ -21503,86 +21553,76 @@ class NiftiDecoderAlt extends Filter {
     
     // dimensions info ordered from the fastest varying to the slowest varying
     var voxelSpaceNames = ['x', 'y', 'z', 't'];
-    var subjectSpaceNames = ['i', 'j', 'k', 'l'];
+    var worldSpaceNames = ['i', 'j', 'k', 'l'];
     metadata.dimensions = [];
     for(var d=0; d<metadata.numberOfDimensions; d++){
-      // compute the offset based on the previous dim (aka. stride)
-      var offset = 1;
+      // compute the stride based on the previous dim
+      var stride = 1;
       for(var pd=0; pd<d; pd++){
-        offset *= header.dims[pd + 1];
+        stride *= header.dims[pd + 1];
       }
       
       var dimensions = {
         length: header.dims[d + 1],
         nameVoxelSpace: voxelSpaceNames[d],
-        subjectSpaceName: subjectSpaceNames[d],
-        voxelSize: header.pixDims[d + 1],
-        offset: offset
+        worldSpaceName: worldSpaceNames[d],
+        worldUnitSize: header.pixDims[d + 1],
+        stride: stride
       };
       
       metadata.dimensions.push( dimensions );
     }
     
-    // Tranformation method to lookup [x, y, z] when we know [i, j, k], aka. kno subject based from voxel based
-    metadata.niftiTranfoMethod = header.qform_code > 0 ? 2 : 1;
-    
-    var extendedMatrix = header.getQformMat();
-    console.log( extendedMatrix );
+    // the transformation 
+    var niftiTransfoMatrix = header.getQformMat();
+    var v2wMat = fromValues$3(niftiTransfoMatrix[0][0], niftiTransfoMatrix[1][0], niftiTransfoMatrix[2][0], niftiTransfoMatrix[3][0],
+                                     niftiTransfoMatrix[0][1], niftiTransfoMatrix[1][1], niftiTransfoMatrix[2][1], niftiTransfoMatrix[3][1],
+                                     niftiTransfoMatrix[0][2], niftiTransfoMatrix[1][2], niftiTransfoMatrix[2][2], niftiTransfoMatrix[3][2],
+                                     niftiTransfoMatrix[0][3], niftiTransfoMatrix[1][3], niftiTransfoMatrix[2][3], niftiTransfoMatrix[3][3] );
+                                     
+    var w2vMat = create$3();
+    invert$3( w2vMat, v2wMat );
     
     metadata.transformation = {
-      voxelDimensions: header.pixDims.slice(1, header.dims[0] + 1),
-      voxelDimensionFactors: [1, 1, header.pixDims[0] < 0 ? -1 : 1], // qfac
-      rotationMatrix: Algebra.matrixTranspose([ extendedMatrix[0].slice(0, 3), extendedMatrix[1].slice(0, 3), extendedMatrix[1].slice(0, 3)]),
-      offsets: [header.qoffset_x, header.qoffset_y, header.qoffset_z ],
+      forward: {
+        name: "v2w",
+        matrix: v2wMat
+      },
+      backward: {
+        name: "w2v",
+        matrix: w2vMat
+      }
     };
     
-    
-    var voxelToWorld = function(i, j, k){
-      var rotationMatrix = metadata.transformation.rotationMatrix;
-      var voxelDimensions = metadata.transformation.voxelDimensions;
-      var voxelDimensionFactors = metadata.transformation.voxelDimensionFactors;
-      var offsets = metadata.transformation.offsets;
-      
-      var pixDimsWeighted = Algebra.vectorMultiplyMembers(voxelDimensions, voxelDimensionFactors);
-      var unRotatedPos = Algebra.vectorMultiplyMembers(pixDimsWeighted, [i, j, k] );
-      
-      var xyzNoOffset = Algebra.matrixVectorMutiply(rotationMatrix, unRotatedPos );
-      var xyz = Algebra.vectorAdd(xyzNoOffset, offsets);
-      
-      return xyz;
-    };
 
     
     console.log( data );
     console.log( metadata );
-    //var xyz000 = voxelToWorld(0, 0, 0);
-    //console.log( xyz000 );
 
-    /*
-    var extT = Algebra.matrixTranspose( extendedMatrix );
-    var worldPos = Algebra.matrixVectorMutiply( extendedMatrix, [0, 0, 0, 1]);
-    console.log( worldPos );
-    */
-    /*
-    var transfoMat = mat4.fromValues(extendedMatrix[0][0], extendedMatrix[0][1], extendedMatrix[0][2], extendedMatrix[0][3],
-                                     extendedMatrix[1][0], extendedMatrix[1][1], extendedMatrix[1][2], extendedMatrix[1][3],
-                                     extendedMatrix[2][0], extendedMatrix[2][1], extendedMatrix[2][2], extendedMatrix[2][3],
-                                     extendedMatrix[3][0], extendedMatrix[3][1], extendedMatrix[3][2], extendedMatrix[3][3] );
-      */
-      
-      
-    var transfoMat = fromValues$3(extendedMatrix[0][0], extendedMatrix[1][0], extendedMatrix[2][0], extendedMatrix[3][0],
-                                     extendedMatrix[0][1], extendedMatrix[1][1], extendedMatrix[2][1], extendedMatrix[3][1],
-                                     extendedMatrix[0][2], extendedMatrix[1][2], extendedMatrix[2][2], extendedMatrix[3][2],
-                                     extendedMatrix[0][3], extendedMatrix[1][3], extendedMatrix[2][3], extendedMatrix[3][3] );
-      
-                                       
-    var voxPos = fromValues$6(0, 0, 0, 1);
-    var worldPos = fromValues$6(0, 0, 0, 0);
-    transformMat4$1(worldPos, voxPos, transfoMat);
+
     
+    
+    /*
+                                       
+    var voxPos = vec4.fromValues(0, 0, 0, 1);
+    var worldPos = vec4.create();
+    var voxPosBack = vec4.create();
+    // from voxel to world
+    vec4.transformMat4(worldPos, voxPos, transfoMat);
+    // from world back to voxel
+    vec4.transformMat4(voxPosBack, worldPos, transfoMatInverse);
+    
+    // original
+    console.log( voxPos );
+    // world coord
     console.log( worldPos );
+    // transfo matrix from voxel to world
     console.log( transfoMat );
+    // inverse transfo matrix: from world to voxel
+    console.log( transfoMatInverse);
+    // voxel coord from world coord
+    console.log( voxPosBack );
+    */
   }
   
   
