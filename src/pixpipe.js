@@ -10,6 +10,7 @@ export { Image3D } from './core/Image3D.js';
 export { ImageToImageFilter } from './core/ImageToImageFilter.js';
 export { MniVolume } from './core/MniVolume.js';
 export { LineString } from './core/LineString.js';
+export { Image3DAlt } from './core/Image3DAlt.js';
 
 // io - Readers and writers
 export { CanvasImageWriter } from './io/CanvasImageWriter.js';

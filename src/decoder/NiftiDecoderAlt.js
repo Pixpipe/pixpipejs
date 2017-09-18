@@ -10,7 +10,6 @@
 import nifti from 'nifti-reader-js';
 import { glMatrix, mat2, mat2d, mat3, mat4, quat, vec2, vec3, vec4 } from 'gl-matrix';
 import { Filter } from '../core/Filter.js';
-import { Algebra } from '../utils/Algebra.js';
 import { Image3D } from '../core/Image3D.js';
 
 
@@ -87,99 +86,93 @@ class NiftiDecoderAlt extends Filter {
     }
     
     this._scaleData(data, header);
+    var numberOfDimensions = header.dims[0];
     
     // copying all the original metadata into the field "formatSpecific", for the sake of quality.
     metadata.formatSpecific = header;
-    
     metadata.ncpp = this._fetchNcpp(header);
     metadata.description = header.description;
     metadata.format = "nifti";
-    metadata.numberOfDimensions = header.dims[0];
     metadata.spatialUnit = header.getUnitsCodeString(nifti.NIFTI1.SPATIAL_UNITS_MASK & header.xyzt_units);
     metadata.temporalUnit = header.getUnitsCodeString(nifti.NIFTI1.TEMPORAL_UNITS_MASK & header.xyzt_units);
     
     // dimensions info ordered from the fastest varying to the slowest varying
     var voxelSpaceNames = ['x', 'y', 'z', 't'];
-    var subjectSpaceNames = ['i', 'j', 'k', 'l'];
+    var worldSpaceNames = ['i', 'j', 'k', 'l'];
     metadata.dimensions = [];
-    for(var d=0; d<metadata.numberOfDimensions; d++){
-      // compute the offset based on the previous dim (aka. stride)
-      var offset = 1;
+    
+    for(var d=0; d<numberOfDimensions; d++){
+      // compute the stride based on the previous dim
+      var stride = 1;
       for(var pd=0; pd<d; pd++){
-        offset *= header.dims[pd + 1];
+        stride *= header.dims[pd + 1];
       }
       
-      var dimensions = {
+      var dimension = {
         length: header.dims[d + 1],
+        width: -1, // to be filled later
+        height: -1, // to be filled later
         nameVoxelSpace: voxelSpaceNames[d],
-        subjectSpaceName: subjectSpaceNames[d],
-        voxelSize: header.pixDims[d + 1],
-        offset: offset
+        worldSpaceName: worldSpaceNames[d],
+        worldUnitSize: header.pixDims[d + 1],
+        stride: stride
       }
-      
-      metadata.dimensions.push( dimensions )
+      metadata.dimensions.push( dimension )
     }
     
-    // Tranformation method to lookup [x, y, z] when we know [i, j, k], aka. kno subject based from voxel based
-    metadata.niftiTranfoMethod = header.qform_code > 0 ? 2 : 1;
-    
-    var extendedMatrix = header.getQformMat();
-    console.log( extendedMatrix );
-    
-    metadata.transformation = {
-      voxelDimensions: header.pixDims.slice(1, header.dims[0] + 1),
-      voxelDimensionFactors: [1, 1, header.pixDims[0] < 0 ? -1 : 1], // qfac
-      rotationMatrix: Algebra.matrixTranspose([ extendedMatrix[0].slice(0, 3), extendedMatrix[1].slice(0, 3), extendedMatrix[1].slice(0, 3)]),
-      offsets: [header.qoffset_x, header.qoffset_y, header.qoffset_z ],
+    if( metadata.dimensions.length >= 3){
+      // dim x has for width  y and for heigth z
+      metadata.dimensions[0].width = metadata.dimensions[1].length;
+      metadata.dimensions[0].height = metadata.dimensions[2].length;
+      
+      // dim y has for width  x and for heigth z
+      metadata.dimensions[1].width = metadata.dimensions[0].length;
+      metadata.dimensions[1].height = metadata.dimensions[2].length;
+      
+      // dim z has for width  x and for heigth y
+      metadata.dimensions[2].width = metadata.dimensions[0].length;
+      metadata.dimensions[2].height = metadata.dimensions[1].length;
     }
     
-    
-    var voxelToWorld = function(i, j, k){
-      var rotationMatrix = metadata.transformation.rotationMatrix;
-      var voxelDimensions = metadata.transformation.voxelDimensions;
-      var voxelDimensionFactors = metadata.transformation.voxelDimensionFactors;
-      var offsets = metadata.transformation.offsets;
-      
-      var pixDimsWeighted = Algebra.vectorMultiplyMembers(voxelDimensions, voxelDimensionFactors);
-      var unRotatedPos = Algebra.vectorMultiplyMembers(pixDimsWeighted, [i, j, k] );
-      
-      var xyzNoOffset = Algebra.matrixVectorMutiply(rotationMatrix, unRotatedPos );
-      var xyz = Algebra.vectorAdd(xyzNoOffset, offsets);
-      
-      return xyz;
-    }
+    // the transformation 
+    var niftiTransfoMatrix = header.getQformMat();
+    var v2wMat = mat4.fromValues(niftiTransfoMatrix[0][0], niftiTransfoMatrix[1][0], niftiTransfoMatrix[2][0], niftiTransfoMatrix[3][0],
+                                     niftiTransfoMatrix[0][1], niftiTransfoMatrix[1][1], niftiTransfoMatrix[2][1], niftiTransfoMatrix[3][1],
+                                     niftiTransfoMatrix[0][2], niftiTransfoMatrix[1][2], niftiTransfoMatrix[2][2], niftiTransfoMatrix[3][2],
+                                     niftiTransfoMatrix[0][3], niftiTransfoMatrix[1][3], niftiTransfoMatrix[2][3], niftiTransfoMatrix[3][3] );
 
+    var w2vMat = mat4.create();
+    mat4.invert( w2vMat, v2wMat );
+    
+    // register all the transformations available here
+    metadata.transformations = {
+      v2w: v2wMat,
+      w2v w2vMat
+    }
     
     console.log( data );
     console.log( metadata );
-    //var xyz000 = voxelToWorld(0, 0, 0);
-    //console.log( xyz000 );
 
     /*
-    var extT = Algebra.matrixTranspose( extendedMatrix );
-    var worldPos = Algebra.matrixVectorMutiply( extendedMatrix, [0, 0, 0, 1]);
-    console.log( worldPos );
-    */
-    /*
-    var transfoMat = mat4.fromValues(extendedMatrix[0][0], extendedMatrix[0][1], extendedMatrix[0][2], extendedMatrix[0][3],
-                                     extendedMatrix[1][0], extendedMatrix[1][1], extendedMatrix[1][2], extendedMatrix[1][3],
-                                     extendedMatrix[2][0], extendedMatrix[2][1], extendedMatrix[2][2], extendedMatrix[2][3],
-                                     extendedMatrix[3][0], extendedMatrix[3][1], extendedMatrix[3][2], extendedMatrix[3][3] );
-      */
-      
-      
-    var transfoMat = mat4.fromValues(extendedMatrix[0][0], extendedMatrix[1][0], extendedMatrix[2][0], extendedMatrix[3][0],
-                                     extendedMatrix[0][1], extendedMatrix[1][1], extendedMatrix[2][1], extendedMatrix[3][1],
-                                     extendedMatrix[0][2], extendedMatrix[1][2], extendedMatrix[2][2], extendedMatrix[3][2],
-                                     extendedMatrix[0][3], extendedMatrix[1][3], extendedMatrix[2][3], extendedMatrix[3][3] );
-      
-                                       
     var voxPos = vec4.fromValues(0, 0, 0, 1);
-    var worldPos = vec4.fromValues(0, 0, 0, 0);
+    var worldPos = vec4.create();
+    var voxPosBack = vec4.create();
+    // from voxel to world
     vec4.transformMat4(worldPos, voxPos, transfoMat);
+    // from world back to voxel
+    vec4.transformMat4(voxPosBack, worldPos, transfoMatInverse);
     
+    // original
+    console.log( voxPos );
+    // world coord
     console.log( worldPos );
+    // transfo matrix from voxel to world
     console.log( transfoMat );
+    // inverse transfo matrix: from world to voxel
+    console.log( transfoMatInverse);
+    // voxel coord from world coord
+    console.log( voxPosBack );
+    */
   }
   
   
