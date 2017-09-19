@@ -1,6 +1,5 @@
 /*
 * Author    Jonathan Lurie - http://me.jonahanlurie.fr
-*           Robert D. Vincent
 *
 * License   MIT
 * Link      https://github.com/Pixpipe/pixpipejs
@@ -96,9 +95,17 @@ class NiftiDecoderAlt extends Filter {
     metadata.spatialUnit = header.getUnitsCodeString(nifti.NIFTI1.SPATIAL_UNITS_MASK & header.xyzt_units);
     metadata.temporalUnit = header.getUnitsCodeString(nifti.NIFTI1.TEMPORAL_UNITS_MASK & header.xyzt_units);
 
+    // the transformation
+    //console.log("header.getQformMat()");
+    //console.log(header.getQformMat());
+    var niftiTransfoMatrix = header.getQformMat(); // the default case (METHOD2)
+    if( header.qform_code == 0){  // though sometimes qform_code is 0, then we have to use affine (METHOD3)
+      niftiTransfoMatrix = header.affine;
+    }
+    
     // dimensions info ordered from the fastest varying to the slowest varying
     var voxelSpaceNames = ['x', 'y', 'z', 't'];
-    var worldSpaceNames = ['i', 'j', 'k', 'l'];
+    var worldSpaceNames = ['i', 'j', 'k', 't'];
     metadata.dimensions = [];
 
     for(var d=0; d<numberOfDimensions; d++){
@@ -110,32 +117,40 @@ class NiftiDecoderAlt extends Filter {
 
       var dimension = {
         length: header.dims[d + 1],
-        width: -1, // to be filled later
-        height: -1, // to be filled later
+        widthDimension: -1, // to be filled later
+        heightDimension: -1, // to be filled later
         nameVoxelSpace: voxelSpaceNames[d],
         nameWorldSpace: worldSpaceNames[d],
         worldUnitSize: header.pixDims[d + 1],
-        stride: stride
+        stride: stride,
+        direction: niftiTransfoMatrix[d][d] < 0 ? -1 : 1
       }
       metadata.dimensions.push( dimension )
     }
 
     if( metadata.dimensions.length >= 3){
       // dim x has for width  y and for heigth z
-      metadata.dimensions[0].width = metadata.dimensions[1].length;
-      metadata.dimensions[0].height = metadata.dimensions[2].length;
+      metadata.dimensions[0].widthDimension = 1
+      metadata.dimensions[0].heightDimension = 2;
 
       // dim y has for width  x and for heigth z
-      metadata.dimensions[1].width = metadata.dimensions[0].length;
-      metadata.dimensions[1].height = metadata.dimensions[2].length;
+      metadata.dimensions[1].widthDimension = 0;
+      metadata.dimensions[1].heightDimension = 2;
 
       // dim z has for width  x and for heigth y
-      metadata.dimensions[2].width = metadata.dimensions[0].length;
-      metadata.dimensions[2].height = metadata.dimensions[1].length;
+      metadata.dimensions[2].widthDimension = 0;
+      metadata.dimensions[2].heightDimension = 1;
     }
 
-    // the transformation
-    var niftiTransfoMatrix = header.getQformMat();
+    //glMatrix.setMatrixArrayType( Array );
+
+    
+    
+    
+    if( niftiTransfoMatrix[0][0] < 0 ){
+      
+    }
+    
     var v2wMat = mat4.fromValues(niftiTransfoMatrix[0][0], niftiTransfoMatrix[1][0], niftiTransfoMatrix[2][0], niftiTransfoMatrix[3][0],
                                      niftiTransfoMatrix[0][1], niftiTransfoMatrix[1][1], niftiTransfoMatrix[2][1], niftiTransfoMatrix[3][1],
                                      niftiTransfoMatrix[0][2], niftiTransfoMatrix[1][2], niftiTransfoMatrix[2][2], niftiTransfoMatrix[3][2],
@@ -144,14 +159,24 @@ class NiftiDecoderAlt extends Filter {
     var w2vMat = mat4.create();
     mat4.invert( w2vMat, v2wMat );
 
+
+
     // register all the transformations available here
     metadata.transformations = {
       v2w: v2wMat,
-      w2v w2vMat
+      w2v: w2vMat
     }
 
     console.log( data );
     console.log( metadata );
+
+    var output = new Image3DAlt();
+    output.setRawData( data );
+    output.setRawMetadata( metadata );
+    output.scanDataRange();
+    
+    
+    this._output[0] = output;
 
     /*
     var voxPos = vec4.fromValues(0, 0, 0, 1);
