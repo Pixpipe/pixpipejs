@@ -46,15 +46,13 @@ var metadata = {
 
       // {Number}
       // If this dimension is time, leave it to -1.
-      // Otherwise, is the length of one of the two dimension that is spatially orthogonal to
-      // the current one.
-      width: 256,
+      // Otherwise, this is the index of the orthogonal dimension chosen as width.
+      widthDimension: 1,
 
       // {Number}
       // If this dimension is time, leave it to -1.
-      // Otherwise, is the length of one of the two dimension that is spatially orthogonal to
-      // the current one (the one that was not used for the "width" value)
-      height: 256,
+      // // Otherwise, this is the index of the orthogonal dimension chosen as height.
+      heightDimension: 2,
 
       // {String}
       // Name of this dimension in voxel space. This is not of big importance unless the dataset
@@ -78,7 +76,12 @@ var metadata = {
       // to get the next consecutive element of this same dimensions.
       // Notice: this is computed by a parser if the dataset comes from one, or computed by the Image3DAlt's
       // constructor if initialized with dimensions.
-      stride: 1
+      stride: 1,
+      
+      // {Number}
+      // If using a different coordinate system, this value (-1 or 1) tells in what direction the dimension should
+      // go to follow the 'world/subject/natural' axis.
+      direction: 1
     },
 
     // A second dimension

@@ -25,7 +25,6 @@ class Image3DAlt extends PixpipeContainer{
   *   - options.zSize {Number} space length along z axis
   *   - options.tSize {Number} space length along t axis (time)
   *   - options.ncpp {Number} number of components per pixel. Default = 1
-  *   - options.description {String} a description for this instance
   * If at least xSize, ySize and zSize are specified, a buffer is automatically initialized with the value 0.
   */
   constructor( options=null ){
@@ -53,84 +52,11 @@ class Image3DAlt extends PixpipeContainer{
     // So far, this instance does not come from a file decoding
     this.setMetadata("format", "generic");
 
-
     // this field is to hold original metadata from a reader (eg. NIfTI)
     this.setMetadata("formatSpecific", {});
 
-    if( !options ){
-      // replacing default value for ncpp
-      if("ncpp" in options){
-        this.setMetadata("ncpp", options.ncpp);
-      }
-
-      if("description" in options){
-        this.setMetadata("description", options.description);
-      }
-
-      // init default ordered dimensions based on the give sizes
-      if( "xSize" in options && "xSize" in options && "xSize" in options ){
-
-        var dimensions = [
-          {
-            length: xSize,
-            width: ySize,
-            height: zSize,
-            nameVoxelSpace: "i",
-            nameWorldSpace: "x",
-            worldUnitSize: 1,
-            stride: 1
-          },
-          {
-            length: ySize,
-            width: xSize,
-            height: zSize,
-            nameVoxelSpace: "j",
-            nameWorldSpace: "y",
-            worldUnitSize: 1,
-            stride: xSize
-          },
-          {
-            length: zSize,
-            width: xSize,
-            height: ySize,
-            nameVoxelSpace: "k",
-            nameWorldSpace: "z",
-            worldUnitSize: 1,
-            stride: xSize * ySize
-          },
-        ]
-
-        var bufferSize = xSize * ySize * zSize * this.getMetadata("ncpp");
-
-        // if we get time dimension info, let's add it too
-        if( "tSize" in options ){
-          var timeDim = {
-            length: tSize,
-            width: -1, // could remove
-            height: -1,
-            nameVoxelSpace: "l",
-            worldSpaceName: "t",
-            worldUnitSize: "",
-            stride: xSize * ySize * zSize
-          }
-
-          dimensions.push( timeDim );
-
-          this.setMetadata("dimensions", dimensions);
-
-          bufferSize *= tSize;
-        }
-
-        // Allocating the buffer
-        this._data = new Float32Array( bufferSize );
-        metaStat.min = 0;
-        metaStat.max = 0;
-      }
-    }
-
-    this._scanDataRange();
-    this._finishHeader();
-
+    // allocate data if the propers options are given
+    this._initData( options );
   }
 
 
@@ -147,112 +73,128 @@ class Image3DAlt extends PixpipeContainer{
   */
   clone(){
     var cpImg = new Image3DAlt();
-
-    cpImg.setData(
-      this._data,
-      this.getMetadata("xspace").space_length,
-      this.getMetadata("yspace").space_length,
-      this.getMetadata("zspace").space_length,
-      {
-        ncpp: this.getMetadata("ncpp"),
-        order: this.getMetadata("order").slice(),
-        deepCopy: true,
-      }
-    );
-
+    cpImg.setRawData( new this._data.constructor( this._data ) );
     cpImg.copyMetadataFrom( this );
-
     return cpImg;
   }
 
 
   /**
-  *  Set the data to this Image3DAlt.
-  * @param {Float32Array} array - 1D array of raw data stored as RGBARGBA...
-  * @param {Number} xSize - length along x dimension of the Image3DAlt
-  * @param {Number} ySize - length along y dimension of the Image3DAlt
-  * @param {Number} zSize - length along z dimension of the Image3DAlt
-  * @param {Number} ncpp - number of components per pixel (default: 4)
-  * @param {Boolean} deepCopy - if true, a copy of the data is given, if false we jsut give the pointer
-  * @param {Object} options, among them:
-  *   - ncpp {Number} number of components per pixel. Default = 1
-  *   - order {Array} dimensionality order. Default = ["zspace", "yspace", "xspace"]
-  *   - deepCopy {Boolean} copy the whole array if true, or just the pointer if false. Default = false
-  *
+  * Initialize _this_ with some data and appropriate size
+  * @param {Float32Array} buffer - the raw data
+  * @param {Object} options - may contain the following:
+  *   - options.xSize {Number} space length along x axis
+  *   - options.ySize {Number} space length along y axis
+  *   - options.zSize {Number} space length along z axis
+  *   - options.tSize {Number} space length along t axis (time)
+  *   - options.ncpp {Number} number of components per pixel. Default = 1
+  *   - options.deepCopy {Boolean} perform a deep copy if true. Simple association if false
   */
-  setData( array, xSize, ySize, zSize, options){
-    var ncpp = 1;
-
-    // number of components per pixel
-    if(options && "ncpp" in options){
-      ncpp = options.ncpp;
-    }
-
-    if( array.length != xSize*ySize*zSize*ncpp){
-      console.warn("The array size does not match the width and height. Cannot init the Image3DAlt.");
-      return;
-    }
-
-    // number of components per pixel
-    if(options && "ncpp" in options){
-      this.setMetadata("ncpp", options.ncpp);
-    }
-
-    // dimensionality order
-    if(options && "order" in options){
-      this.setMetadata("order", options.order);
-    }
-
-    // deep of shallow copy
-    if(options && "deepCopy" in options && options.deepCopy){
-      this._data = new array.constructor( array );
-    }else{
-      this._data = array;
-    }
-
-    var xspace = this.getMetadata("xspace");
-    var yspace = this.getMetadata("yspace");
-    var zspace = this.getMetadata("zspace");
-
-    xspace.space_length = xSize;
-    yspace.space_length = ySize;
-    zspace.space_length = zSize;
-
-    yspace.offset = xspace.space_length;
-    zspace.offset = xspace.space_length * yspace.space_length;
-
-    this._scanDataRange();
-    this._finishHeader();
+  setData( buffer, options){
+    this._initData( options, buffer)
+    this.scanDataRange();
   }
 
 
   /**
   * [PRIVATE]
-  * Creates common fields all headers must contain.
+  * Called from the constructor or the setData method
   */
-  _finishHeader() {
-    var xspace = this.getMetadata("xspace");
-    var yspace = this.getMetadata("yspace");
-    var zspace = this.getMetadata("zspace");
+  _initData( options, buffer = null ){
+    if( options ){
+      // replacing default value for ncpp
+      if("ncpp" in options){
+        this.setMetadata("ncpp", options.ncpp);
+      }
 
-    xspace.name = "xspace";
-    yspace.name = "yspace";
-    zspace.name = "zspace";
 
-    xspace.width_space  = JSON.parse( JSON.stringify( yspace ) );//yspace;
-    xspace.width        = yspace.space_length;
-    xspace.height_space = JSON.parse( JSON.stringify( zspace ) );//zspace;
-    xspace.height       = zspace.space_length;
+      // init default ordered dimensions based on the give sizes
+      if( "xSize" in options && "xSize" in options && "xSize" in options ){
 
-    yspace.width_space  = JSON.parse( JSON.stringify( xspace ) );//xspace;
-    yspace.width        = xspace.space_length;
-    yspace.height_space = JSON.parse( JSON.stringify( zspace ) );//zspace;
-    yspace.height       = zspace.space_length;
+        var dimensions = [
+          {
+            length: xSize,
+            widthDimension: 1,
+            heightDimension: 2,
+            nameVoxelSpace: "i",
+            nameWorldSpace: "x",
+            worldUnitSize: 1,
+            stride: 1
+          },
+          {
+            length: ySize,
+            widthDimension: 0,
+            heightDimension: 2,
+            nameVoxelSpace: "j",
+            nameWorldSpace: "y",
+            worldUnitSize: 1,
+            stride: xSize
+          },
+          {
+            length: zSize,
+            widthDimension: 0,
+            heightDimension: 1,
+            nameVoxelSpace: "k",
+            nameWorldSpace: "z",
+            worldUnitSize: 1,
+            stride: xSize * ySize
+          },
+        ]
 
-    zspace.width_space  = JSON.parse( JSON.stringify( xspace ) );//xspace;
-    zspace.width        = xspace.space_length;
-    zspace.height_space = JSON.parse( JSON.stringify( yspace ) );//yspace;
-    zspace.height       = yspace.space_length;
+        var bufferSize = xSize * ySize * zSize * this.getMetadata("ncpp");
+
+        // if we get time dimension info, let's add it too
+        if( "tSize" in options ){
+          var timeDim = {
+            length: tSize,
+            widthDimension: -1, // could remove
+            heightDimension: -1,
+            nameVoxelSpace: "l",
+            worldSpaceName: "t",
+            worldUnitSize: "",
+            stride: xSize * ySize * zSize,
+            direction: 1
+          }
+          bufferSize *= tSize;
+          
+          dimensions.push( timeDim );
+          this.setMetadata("dimensions", dimensions);
+        }
+
+        // if a buffer is provided, we perform a size-check
+        if( buffer ){
+          if( buffer.length == bufferSize){
+            
+            // perform a deep copy
+            if("deepCopy" in options && options.deepCopy){
+              this._data = new buffer.constructor( buffer );
+            }
+            // perform a simple association
+            else{
+              this._data = buffer;
+            }
+            
+          }else{
+            console.warn("The buffer provided has a wrong size.");
+            return false;
+          }
+        }else{
+          // Allocating the buffer
+          this._data = new Float32Array( bufferSize );
+          var metaStat = this.getMetadata("statistics");
+          metaStat.min = 0;
+          metaStat.max = 0;
+        }
+        
+        return true;
+      }else{
+        console.warn("The necessary options xSize, ySize and zSize were not provided.");
+        return false;
+      }
+    }else{
+      console.warn("The 'options' argument is empty.");
+      return false;
+    }
   }
 
 
@@ -260,7 +202,7 @@ class Image3DAlt extends PixpipeContainer{
   * [PRIVATE]
   * Look for min and max on the dataset and add them to the header metadata
   */
-  _scanDataRange(){
+  scanDataRange(){
     var min = +Infinity;
     var max = -Infinity;
 
@@ -269,43 +211,66 @@ class Image3DAlt extends PixpipeContainer{
       max = Math.max(max, this._data[i]);
     }
 
-    this.setMetadata("voxel_min", min);
-    this.setMetadata("voxel_max", max);
+    var metaStat = this.getMetadata("statistics");
+    if(!metaStat){
+      this.setMetadata("statistics", {})
+      metaStat = this.getMetadata("statistics");
+    }
+    metaStat.min = min;
+    metaStat.max = max;
   }
 
 
   /**
-  * Modify the color of a given pixel.
-  * @param {Object} position - 3D position in the form {x, y, z}
-  * @param {Array} color - color, must have the same number of components per pixel than the image
+  * Get the voxel value from a voxel position (aka. not world position)
+  * @param {Number} i - position along I axis (the fastest varying dimension)
+  * @param {Number} j - position along J axis
+  * @param {Number} k - position along K axis (the slowest varying dimension, unless there is a time dim)
+  * @param {Number} t - position along T axis (time dim, the very slowest varying dim when present)
   */
-  setPixel( position, color ){
-    // TODO: to implement using order offset
+  getVoxel( i, j, k, t=0 ){
+    var dimensions = this._metadata.dimensions;
+    
+    if(i<0 || j<0 || k<0 || t<0 || 
+       i>=dimensions[0].length  ||
+       j>=dimensions[1].length  ||
+       k>=dimensions[2].length  ||
+       ( dimensions.length>3 && t>=dimensions[3].length) )
+    {
+      console.warn("Voxel query is out of bound.");
+      return null;
+    }
+    
+    var ncpp = this._metadata.ncpp;
+    var positionBuffer = i * dimensions[0].stride +
+                         j * dimensions[1].stride +
+                         k * dimensions[2].stride +
+                         dimensions.length > 3 ? t * dimensions[3].stride : 0;
+    positionBuffer *= ncpp;
+    return this._data[ positionBuffer ];
   }
 
 
   /**
-  * Same as getIntensity_xyz, get a pixel/voxel value using (x, y, z) position
-  * @param {Object} position - 3D position like {x, y, z}
-  * @return {Array} the color of the given pixel.
+  * Get the size of a dimension in the voxel-based coord system
+  * @param {Number|String} dimIndex - can be 0, 1, 2, 3 or "i", "j", "k", "t"
+  * @return {Number} the length of this dimension
   */
-  getPixel( position ){
-    return this.getIntensity_xyz( position.x, position.y, position.z );
-  }
-
-
-  /**
-  * @param {String} space - "xspace", "yspace" or "zspace"
-  * @return {Number} the size of the Image3DAlt along the given space
-  */
-  getSize( space ){
-    if( this.hasMetadata( space )){
-      return this.getMetadata( space ).space_length;
+  getDimensionSize( dimIndex ){
+    var index = dimIndex;
+    var indexer = { "i": 0, "j": 1, "k": 2, "t": 3};
+    if( typeof dimIndex === "string" )
+      index = indexer[ dimIndex ];
+      
+    var dimensions = this._metadata.dimensions;
+    if( index < dimensions.length ){
+      return dimensions[ index ].length;
     }else{
-      console.warn("The space must be \"xspace\", \"yspace\" or \"zspace\".");
+      console.warn("A dimensions of such index does not exist.");
       return null;
     }
   }
+
 
 
   /**
@@ -326,16 +291,66 @@ class Image3DAlt extends PixpipeContainer{
 
 
   /**
-  * Compute the 1D index within the data buffer from a 3D position {x, y, z}.
-  * This has nothing to do with the number of components per pixel.
-  * @param {Object} position - 3D coord like {x, y, z}
-  * @return {Number} the 1D position within the buffer
+  * Get a slice from the dataset
+  * @param {Number|String} dimIndex - can be 0, 1, 2 or "i", "j", "k"
+  * @param {Number} normalAxis - the index of the slice (default: 0)
+  * @param {Number} time - time position (default:0 , only relevant in a 3D + t dataset)
+  * @return {image2D} the slice
   */
-  get1dIndexFrom3dPosition( position ){
-    //return (position.x + position.y*this._width);
-    //return this._xSize * this._ySize * position.z + this._xSize * position.y + position.x;
-    // TODO: to implement using order offset
+  getSlice( normalAxis, sliceIndex=0, time=0 ){
+    var dimIndex = normalAxis;
+    var indexer = { "i": 0, "j": 1, "k": 2, "t": 3};
+    if( typeof normalAxis === "string" )
+      dimIndex = indexer[ normalAxis ];
+      
+    var dimensions = this._metadata.dimensions;
+    
+    // The dimension of the normalAxis must exist (and not be time)
+    if( dimIndex > 2 ){
+      console.warn("The dimension of a slice should be lower than 3.");
+      return null;
+    }
+    
+    // the final slice image has for normal vector the sliceDimension.
+    // In other words, the width and height of the slice will be the "lenght" of
+    // the sliceDimension.widthDimension and sliceDimension.heightDimension respectively
+    var sliceDimension = dimensions[dimIndex];
+    var widthDimension = dimensions[sliceDimension.widthDimension];
+    var heightDimension = dimensions[sliceDimension.heightDimension];
+    
+    // Slice index checking
+    if( sliceIndex < 0 || sliceIndex >= sliceDimension.length ){
+      console.warn("The slice required is out of bound.");
+      return null;
+    }
+    
+    var Img2dData = new this._data.constructor( widthDimension.length * heightDimension.length );
+    var timeOffset = dimensions.length > 3 ? time*dimensions[3].stride : 0;
+    //var sliceOffset = sliceDimension.stride * sliceIndex;
+    var sliceOffset = (sliceDimension.direction < 0 ? sliceDimension.length - sliceIndex - 1 : sliceIndex) * sliceDimension.stride;
+    
+    var pixelCounter = 0;
+    for (var r = heightDimension.length - 1; r >= 0; r--) {
+      var heighDimOffset = (heightDimension.direction < 0 ? heightDimension.length - r -1 : r) * heightDimension.stride; 
+      
+      for(var c=0; c<widthDimension.length; c++){
+        //var widthDimOffset = c * widthDimension.stride;
+        var widthDimOffset = (widthDimension.direction < 0 ?  widthDimension.length - c -1 : c) * widthDimension.stride; 
+        
+        var offset = sliceOffset + timeOffset + 
+                     heighDimOffset + 
+                     widthDimOffset;
+
+        Img2dData[pixelCounter] = this._data[ offset ];
+        pixelCounter ++;
+      }
+    }
+    
+    var outputImage = new Image2D();
+    outputImage.setData(  Img2dData, widthDimension.length, heightDimension.length, 1);
+    return outputImage;
   }
+
 
 
   /**
@@ -344,15 +359,16 @@ class Image3DAlt extends PixpipeContainer{
   * along with some relative data (slice size, step, etc.)
   * args:
   * @param {String} axis - "xspace", "yspace" or zspace (mandatory)
-  * @param {Number} slice_num - index of the slice [0; length-1] (optional, default: length-1)
+  * @param {Number} sliceIndex - index of the slice [0; length-1] (optional, default: length-1)
   * @param {Number} time - index of time (optional, default: 0)
   * TODO: add some method to a slice (get value) because it's a 1D array... and compare with Python
   */
-  getSlice(axis, slice_num = 0, time = 0) {
+  getSliceORIG(axis, sliceIndex = 0, time = 0) {
     if( !this.hasMetadata(axis) ){
       console.warn("The axis " + axis + " does not exist.");
       return null;
     }
+  
 
     var time_offset = this.hasMetadata("time") ? time * this.getMetadata("time").offset : 0;
 
@@ -399,7 +415,7 @@ class Image3DAlt extends PixpipeContainer{
 
     var maxOfVolume = this.getMetadata("voxel_max");
 
-    z = z_positive ? slice_num : axis_space.space_length - slice_num - 1;
+    z = z_positive ? sliceIndex : axis_space.space_length - sliceIndex - 1;
     if (z >= 0 && z < axis_space.space_length) {
       tz_offset = time_offset + z * axis_space_offset;
 

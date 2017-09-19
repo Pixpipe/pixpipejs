@@ -1,5 +1,10 @@
 'use strict'
 
+// defines the type of array to be used by glMatrix. Default would be Float32Array
+// but typed arrays cause issue when serialized, this is why we'd rather use regular Array.
+import { glMatrix } from 'gl-matrix';
+glMatrix.setMatrixArrayType( Array );
+
 // core classes
 export { CoreTypes } from './core/CoreTypes.js';
 export { PixpipeObject } from './core/PixpipeObject.js';
@@ -68,6 +73,3 @@ export { Colormap } from './helper/Colormap.js';
 
 // filters - processing of Image3D
 export { Image3DToMosaicFilter } from './filter/Image3DToMosaicFilter.js';
-
-// utils - toolbox for various purposes, usually static methods
-export { Algebra } from './utils/Algebra.js';
