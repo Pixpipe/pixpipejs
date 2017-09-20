@@ -222,11 +222,14 @@ class Image3DAlt extends PixpipeContainer{
 
 
   /**
-  * Get the voxel value from a voxel position (aka. not world position)
+  * Get the voxel value from a voxel position (in a voxel-coordinate sytem) with NO
+  * regards towards how the data is supposed to be read. In other word, dimension.direction
+  * is ignored.
   * @param {Number} i - position along I axis (the fastest varying dimension)
   * @param {Number} j - position along J axis
   * @param {Number} k - position along K axis (the slowest varying dimension, unless there is a time dim)
   * @param {Number} t - position along T axis (time dim, the very slowest varying dim when present)
+  * @return {Number} the value at a given position.
   */
   getVoxel( i, j, k, t=0 ){
     var dimensions = this._metadata.dimensions;
@@ -247,6 +250,37 @@ class Image3DAlt extends PixpipeContainer{
                          k * dimensions[2].stride +
                          dimensions.length > 3 ? t * dimensions[3].stride : 0;
     positionBuffer *= ncpp;
+    return this._data[ positionBuffer ];
+  }
+  
+  
+  /**
+  * Get a voxel value at a given position with regards of the direction the data are
+  * supposed to be read. In other word, dimension.direction is taken into account.
+  * @param {Number} i - position along I axis (the fastest varying dimension)
+  * @param {Number} j - position along J axis
+  * @param {Number} k - position along K axis (the slowest varying dimension, unless there is a time dim)
+  * @param {Number} t - position along T axis (time dim, the very slowest varying dim when present)
+  */
+  getVoxelSafe( i, j, k, t=0){
+    var dimensions = this._metadata.dimensions;
+    
+    if(i<0 || j<0 || k<0 || t<0 || 
+       i>=dimensions[0].length  ||
+       j>=dimensions[1].length  ||
+       k>=dimensions[2].length  ||
+       ( dimensions.length>3 && t>=dimensions[3].length) )
+    {
+      console.warn("Voxel query is out of bound.");
+      return null;
+    }
+    
+    var tOffset = dimensions.length > 3 ? time*dimensions[3].stride * time : 0;
+    var iOffset = (dimensions[0].direction < 0 ?  dimensions[0].length - i -1 : i) * dimensions[0].stride;
+    var jOffset = (dimensions[1].direction < 0 ?  dimensions[1].length - j -1 : j) * dimensions[1].stride;
+    var kOffset = (dimensions[2].direction < 0 ?  dimensions[2].length - k -1 : k) * dimensions[2].stride;
+    
+    var positionBuffer = tOffset + iOffset + jOffset + kOffset;
     return this._data[ positionBuffer ];
   }
 
@@ -290,6 +324,38 @@ class Image3DAlt extends PixpipeContainer{
   }
 
 
+  getSliceDim0( sliceIndex, time=0 ){
+    var dimensions = this._metadata.dimensions;
+    var width = dimensions[dimensions[0].widthDimension].length;
+    var height = dimensions[dimensions[0].heightDimension].length;
+    
+    var Img2dData = new this._data.constructor( width * height );
+    var pixelCounter = 0;
+    
+    if( dimensions[0].widthDimension == 1){
+      for (var r = height - 1; r >= 0; r--) {
+      //for(var r=0; r<height; r++){
+        for(var c=0; c<width; c++){
+          Img2dData[pixelCounter] = this.getVoxelSafe( sliceIndex, c, r, time);
+          pixelCounter++;
+        }
+      }
+    }else{
+      for (var r = height - 1; r >= 0; r--) {
+      //for(var r=0; r<height; r++){
+        for(var c=0; c<width; c++){
+          Img2dData[pixelCounter] = this.getVoxelSafe( sliceIndex, r, c, time);
+          pixelCounter++;
+        }
+      }
+    }
+    
+    var outputImage = new Image2D();
+    outputImage.setData(  Img2dData, width, height, 1);
+    return outputImage;
+  }
+
+
   /**
   * Get a slice from the dataset
   * @param {Number|String} dimIndex - can be 0, 1, 2 or "i", "j", "k"
@@ -325,16 +391,15 @@ class Image3DAlt extends PixpipeContainer{
     }
     
     var Img2dData = new this._data.constructor( widthDimension.length * heightDimension.length );
-    var timeOffset = dimensions.length > 3 ? time*dimensions[3].stride : 0;
-    //var sliceOffset = sliceDimension.stride * sliceIndex;
+    var timeOffset = dimensions.length > 3 ? time*dimensions[3].stride * time : 0;
     var sliceOffset = (sliceDimension.direction < 0 ? sliceDimension.length - sliceIndex - 1 : sliceIndex) * sliceDimension.stride;
     
     var pixelCounter = 0;
+    // this axis is always fliped by default (not sure why)
     for (var r = heightDimension.length - 1; r >= 0; r--) {
       var heighDimOffset = (heightDimension.direction < 0 ? heightDimension.length - r -1 : r) * heightDimension.stride; 
       
       for(var c=0; c<widthDimension.length; c++){
-        //var widthDimOffset = c * widthDimension.stride;
         var widthDimOffset = (widthDimension.direction < 0 ?  widthDimension.length - c -1 : c) * widthDimension.stride; 
         
         var offset = sliceOffset + timeOffset + 

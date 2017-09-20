@@ -3592,6 +3592,10 @@ class PixpipeObject {
     this._metadata = {};
 
     this._type = PixpipeObject.TYPE();
+    
+    // to leasure time. The 2 default values are added by _beforeRun and _afterRun
+    // under the name of "begin" and "end"
+    this._timer = {};
   }
 
 
@@ -3735,6 +3739,34 @@ class PixpipeObject {
     return false;
   }
 
+
+  /**
+  * Set a time measurement (from an arbitrary starting point)
+  * @param {String} recordName - name of the record
+  */
+  addTimeRecord( recordName ){
+    this._timer[ recordName ] = performance.now();
+  }
+
+
+  /**
+  * @return {Number} the elapsed time in ms between fromRecord and toRecord.
+  * Return -1 if one or both time record
+  */
+  getTime(fromRecord, toRecord, print=false){
+    if( fromRecord in this._timer && toRecord in this._timer ){
+      var t = Math.abs(this._timer[toRecord] - this._timer[fromRecord]);
+
+      if(print){
+        console.log("> Time: [" + fromRecord + " , " + toRecord + "] is " + t + " millisec.");
+      }
+
+      return t;
+    }else{
+      console.warn("The two given record name must exist in the time record table.");
+      return -1;
+    }
+  }
 }
 
 /*
@@ -3778,14 +3810,8 @@ class Filter extends PixpipeObject {
       //"0" : []
     };
 
-    // to leasure time. The 2 default values are added by _beforeRun and _afterRun
-    // under the name of "begin" and "end"
-    this._timer = {};
-
     this._isOutputReady = false;
-
     this.setMetadata("time", true);
-
   }
 
 
@@ -4067,35 +4093,6 @@ class Filter extends PixpipeObject {
   */
   _run(){
     console.error("The update() method has not been written, this filter is not valid.");
-  }
-
-
-  /**
-  * Set a time measurement (from an arbitrary starting point)
-  * @param {String} recordName - name of the record
-  */
-  addTimeRecord( recordName ){
-    this._timer[ recordName ] = performance.now();
-  }
-
-
-  /**
-  * @return {Number} the elapsed time in ms between fromRecord and toRecord.
-  * Return -1 if one or both time record
-  */
-  getTime(fromRecord, toRecord, print=false){
-    if( fromRecord in this._timer && toRecord in this._timer ){
-      var t = Math.abs(this._timer[toRecord] - this._timer[fromRecord]);
-
-      if(print){
-        console.log("> Time: [" + fromRecord + " , " + toRecord + "] is " + t + " millisec.");
-      }
-
-      return t;
-    }else{
-      console.warn("The two given record name must exist in the time record table.");
-      return -1;
-    }
   }
 
 
@@ -6063,11 +6060,14 @@ class Image3DAlt extends PixpipeContainer{
 
 
   /**
-  * Get the voxel value from a voxel position (aka. not world position)
+  * Get the voxel value from a voxel position (in a voxel-coordinate sytem) with NO
+  * regards towards how the data is supposed to be read. In other word, dimension.direction
+  * is ignored.
   * @param {Number} i - position along I axis (the fastest varying dimension)
   * @param {Number} j - position along J axis
   * @param {Number} k - position along K axis (the slowest varying dimension, unless there is a time dim)
   * @param {Number} t - position along T axis (time dim, the very slowest varying dim when present)
+  * @return {Number} the value at a given position.
   */
   getVoxel( i, j, k, t=0 ){
     var dimensions = this._metadata.dimensions;
@@ -6088,6 +6088,37 @@ class Image3DAlt extends PixpipeContainer{
                          k * dimensions[2].stride +
                          dimensions.length > 3 ? t * dimensions[3].stride : 0;
     positionBuffer *= ncpp;
+    return this._data[ positionBuffer ];
+  }
+  
+  
+  /**
+  * Get a voxel value at a given position with regards of the direction the data are
+  * supposed to be read. In other word, dimension.direction is taken into account.
+  * @param {Number} i - position along I axis (the fastest varying dimension)
+  * @param {Number} j - position along J axis
+  * @param {Number} k - position along K axis (the slowest varying dimension, unless there is a time dim)
+  * @param {Number} t - position along T axis (time dim, the very slowest varying dim when present)
+  */
+  getVoxelSafe( i, j, k, t=0){
+    var dimensions = this._metadata.dimensions;
+    
+    if(i<0 || j<0 || k<0 || t<0 || 
+       i>=dimensions[0].length  ||
+       j>=dimensions[1].length  ||
+       k>=dimensions[2].length  ||
+       ( dimensions.length>3 && t>=dimensions[3].length) )
+    {
+      console.warn("Voxel query is out of bound.");
+      return null;
+    }
+    
+    var tOffset = dimensions.length > 3 ? time*dimensions[3].stride * time : 0;
+    var iOffset = (dimensions[0].direction < 0 ?  dimensions[0].length - i -1 : i) * dimensions[0].stride;
+    var jOffset = (dimensions[1].direction < 0 ?  dimensions[1].length - j -1 : j) * dimensions[1].stride;
+    var kOffset = (dimensions[2].direction < 0 ?  dimensions[2].length - k -1 : k) * dimensions[2].stride;
+    
+    var positionBuffer = tOffset + iOffset + jOffset + kOffset;
     return this._data[ positionBuffer ];
   }
 
@@ -6131,6 +6162,41 @@ class Image3DAlt extends PixpipeContainer{
   }
 
 
+  getSliceDim0( sliceIndex, time=0 ){
+    this.addTimeRecord("prefilter");
+    var dimensions = this._metadata.dimensions;
+    var width = dimensions[dimensions[0].widthDimension].length;
+    var height = dimensions[dimensions[0].heightDimension].length;
+    
+    var Img2dData = new this._data.constructor( width * height );
+    var pixelCounter = 0;
+    
+    if( dimensions[0].widthDimension == 1){
+      for (var r = height - 1; r >= 0; r--) {
+      //for(var r=0; r<height; r++){
+        for(var c=0; c<width; c++){
+          Img2dData[pixelCounter] = this.getVoxelSafe( sliceIndex, c, r, time);
+          pixelCounter++;
+        }
+      }
+    }else{
+      for (var r = height - 1; r >= 0; r--) {
+      //for(var r=0; r<height; r++){
+        for(var c=0; c<width; c++){
+          Img2dData[pixelCounter] = this.getVoxelSafe( sliceIndex, r, c, time);
+          pixelCounter++;
+        }
+      }
+    }
+    
+    var outputImage = new Image2D();
+    outputImage.setData(  Img2dData, width, height, 1);
+    this.addTimeRecord("postfilter");
+    this.getTime("prefilter", "postfilter", true);
+    return outputImage;
+  }
+
+
   /**
   * Get a slice from the dataset
   * @param {Number|String} dimIndex - can be 0, 1, 2 or "i", "j", "k"
@@ -6139,6 +6205,7 @@ class Image3DAlt extends PixpipeContainer{
   * @return {image2D} the slice
   */
   getSlice( normalAxis, sliceIndex=0, time=0 ){
+    this.addTimeRecord("prefilter");
     var dimIndex = normalAxis;
     var indexer = { "i": 0, "j": 1, "k": 2, "t": 3};
     if( typeof normalAxis === "string" )
@@ -6166,16 +6233,15 @@ class Image3DAlt extends PixpipeContainer{
     }
     
     var Img2dData = new this._data.constructor( widthDimension.length * heightDimension.length );
-    var timeOffset = dimensions.length > 3 ? time*dimensions[3].stride : 0;
-    //var sliceOffset = sliceDimension.stride * sliceIndex;
+    var timeOffset = dimensions.length > 3 ? time*dimensions[3].stride * time : 0;
     var sliceOffset = (sliceDimension.direction < 0 ? sliceDimension.length - sliceIndex - 1 : sliceIndex) * sliceDimension.stride;
     
     var pixelCounter = 0;
+    // this axis is always fliped by default (not sure why)
     for (var r = heightDimension.length - 1; r >= 0; r--) {
       var heighDimOffset = (heightDimension.direction < 0 ? heightDimension.length - r -1 : r) * heightDimension.stride; 
       
       for(var c=0; c<widthDimension.length; c++){
-        //var widthDimOffset = c * widthDimension.stride;
         var widthDimOffset = (widthDimension.direction < 0 ?  widthDimension.length - c -1 : c) * widthDimension.stride; 
         
         var offset = sliceOffset + timeOffset + 
@@ -6189,6 +6255,8 @@ class Image3DAlt extends PixpipeContainer{
     
     var outputImage = new Image2D();
     outputImage.setData(  Img2dData, widthDimension.length, heightDimension.length, 1);
+    this.addTimeRecord("postfilter");
+    this.getTime("prefilter", "postfilter", true);
     return outputImage;
   }
 

@@ -63,6 +63,7 @@
         // display sagital
         imageToCanvasFilter.setMetadata( "parentDivID", "myDiv_x" );
         imageToCanvasFilter.addInput( mniVolume.getSlice(0, Math.round(mniVolume.getDimensionSize(0)/3 )) );
+        //imageToCanvasFilter.addInput( mniVolume.getSliceDim0( Math.round(mniVolume.getDimensionSize(0)/3 )) );
         imageToCanvasFilter.update();
 
         // display coronal
