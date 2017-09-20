@@ -25,6 +25,10 @@ class PixpipeObject {
     this._metadata = {};
 
     this._type = PixpipeObject.TYPE();
+    
+    // to leasure time. The 2 default values are added by _beforeRun and _afterRun
+    // under the name of "begin" and "end"
+    this._timer = {};
   }
 
 
@@ -168,6 +172,34 @@ class PixpipeObject {
     return false;
   }
 
+
+  /**
+  * Set a time measurement (from an arbitrary starting point)
+  * @param {String} recordName - name of the record
+  */
+  addTimeRecord( recordName ){
+    this._timer[ recordName ] = performance.now();
+  }
+
+
+  /**
+  * @return {Number} the elapsed time in ms between fromRecord and toRecord.
+  * Return -1 if one or both time record
+  */
+  getTime(fromRecord, toRecord, print=false){
+    if( fromRecord in this._timer && toRecord in this._timer ){
+      var t = Math.abs(this._timer[toRecord] - this._timer[fromRecord])
+
+      if(print){
+        console.log("> Time: [" + fromRecord + " , " + toRecord + "] is " + t + " millisec.");
+      }
+
+      return t;
+    }else{
+      console.warn("The two given record name must exist in the time record table.");
+      return -1;
+    }
+  }
 }
 
 export { PixpipeObject }
