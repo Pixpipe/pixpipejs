@@ -155,8 +155,19 @@ class PixpipeObject {
   */
   setRawMetadata( m ){
     this._metadata = m;
+    this._metadataRawCopied();
   }
   
+  
+  /**
+  * Called just after metadata were raw-copied. Useful to perform checkings and pre processing.
+  * To be overwriten
+  */
+  _metadataRawCopied(){
+    /*
+          *** TO BE OVERWRITTEN ***
+    */
+  }
   
   /**
   * [PRIVATE]
@@ -219,10 +230,16 @@ class PixpipeObject {
   
   
   /**
-  * Build the joi validation schema for the _metadata object
+  * Build the joi validation schema for the _metadata object.
+  * This method has to be overwriten and return a proper validation object, though
+  * this metadata check is optional.
+  * If not overwriten, metadata will always be considered valid
   * @return {Object} the joi schema
   */
   _buildMetadataSchema(){
+    /*
+          *** TO BE OVERWRITTEN ***
+    */
     return null;
   }
   

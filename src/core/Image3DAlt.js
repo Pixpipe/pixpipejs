@@ -7,6 +7,7 @@
 
 
 import joi from 'joi-browser';
+import { glMatrix, mat2, mat2d, mat3, mat4, quat, vec2, vec3, vec4 } from 'gl-matrix';
 import { CoreTypes } from './CoreTypes.js';
 import { PixpipeContainer } from './PixpipeContainer.js';
 import { Image2D } from './Image2D.js';
@@ -31,27 +32,13 @@ class Image3DAlt extends PixpipeContainer{
     super();
     this._type = Image3DAlt.TYPE();
 
-    var metaStat = { upToDate: true, min: NaN, max: NaN };
-
-    this.setMetadata("description", "");
-
-    this.setMetadata("statistics", metaStat );
-
-    // number of component per pixel, for color OR time series
-    this.setMetadata("ncpp", 1);
-
-    // no special unit for space and time
-    this.setMetadata("spatialUnit", "Voxel");
-    this.setMetadata("temporalUnit", "Time");
-
-    // So far, this instance does not come from a file decoding
-    this.setMetadata("format", "generic");
-
-    // this field is to hold original metadata from a reader (eg. NIfTI)
-    this.setMetadata("formatSpecific", {});
+    // default metadata values
+    this._initMetadata();
     
-    // possibly contains no transformations
-    this.setMetadata("transformations", {});
+    // since dimensions from metadata is an array (where order matters),
+    // we also build LUTs where the key is are dimension's names
+    this._dimensionsWorldLUT= {}
+    this._dimensionsVoxelLUT = {}
 
     // allocate data if the propers options are given
     this._initData( options );
@@ -67,7 +54,7 @@ class Image3DAlt extends PixpipeContainer{
   
   
   /**
-  * [SUPER OVERLOAD - PipxpipeObject]
+  * [SUPER OVERWRITE - PipxpipeObject]
   * [PRIVATE]
   */
   _buildMetadataSchema(){
@@ -120,7 +107,77 @@ class Image3DAlt extends PixpipeContainer{
     return metadataSchema;
   }
   
+  
+  /**
+  * [SUPER OVERWRITE - PipxpipeObject]
+  * [PRIVATE]
+  * This method is called at the end of setRawMetadata
+  */
+  _metadataRawCopied(){
+    this._buildDimensionsLUT();
+  }
+  
+  
+  /**
+  * [PRIVATE]
+  * Build the LUT to fetch dimensions easier = using their name as index rather than just a their index
+  */
+  _buildDimensionsLUT(){
+    this._dimensionsWorldLUT= {};
+    this._dimensionsVoxelLUT = {};
+    var dimensions = this._metadata.dimensions;
+    
+    for(var i=0; i<dimensions.length; i++){
+      this._dimensionsWorldLUT[ dimensions[i].nameWorldSpace ] = i;
+      this._dimensionsVoxelLUT[ dimensions[i].nameVoxelSpace ] = i;
+    }
+  }
+  
+  
+  /**
+  * Get the index of a dimension, given its name.
+  * Looks up in the world dim and then in the voxel-based coord
+  * @param {String} name - Name of a dimension
+  * @return {Number} index or the dim. -1 if not found
+  */
+  getDimensionIndexFromName( name ){
+    if( name in this._dimensionsWorldLUT ){
+      return this._dimensionsWorldLUT[ name ];
+    }else if( name in this._dimensionsVoxelLUT ){
+      return this._dimensionsVoxelLUT[ name ];
+    }else{
+      return -1;
+    }
+  }
+  
+  /**
+  * [PRIVATE]
+  * initialize some defualt values for metadata
+  */
+  _initMetadata(){
+    var metaStat = { upToDate: true, min: NaN, max: NaN };
 
+    this.setMetadata("description", "");
+
+    this.setMetadata("statistics", metaStat );
+
+    // number of component per pixel, for color OR time series
+    this.setMetadata("ncpp", 1);
+
+    // no special unit for space and time
+    this.setMetadata("spatialUnit", "Voxel");
+    this.setMetadata("temporalUnit", "Time");
+
+    // So far, this instance does not come from a file decoding
+    this.setMetadata("format", "generic");
+
+    // this field is to hold original metadata from a reader (eg. NIfTI)
+    this.setMetadata("formatSpecific", {});
+    
+    // possibly contains no transformations
+    this.setMetadata("transformations", {});
+  }
+  
   /**
   * @return {Image3DAlt} a deep copy instance of this Image3DAlt
   */
@@ -149,11 +206,6 @@ class Image3DAlt extends PixpipeContainer{
   }
 
 
-  static validateDimensionObject( dimensions ){
-    
-  }
-
-
   /**
   * [PRIVATE]
   * Called from the constructor or the setData method
@@ -165,9 +217,8 @@ class Image3DAlt extends PixpipeContainer{
         this.setMetadata("ncpp", options.ncpp);
       }
 
-
       // init default ordered dimensions based on the give sizes
-      if( "xSize" in options && "xSize" in options && "xSize" in options ){
+      if( "xSize" in options && "ySize" in options && "zSize" in options ){
 
         var dimensions = [
           {
@@ -244,7 +295,8 @@ class Image3DAlt extends PixpipeContainer{
           metaStat.max = 0;
         }
         
-        return true;
+        this._buildDimensionsLUT();
+        return this.metadataIntegrityCheck();
       }else{
         console.warn("The necessary options xSize, ySize and zSize were not provided.");
         return false;
@@ -282,20 +334,22 @@ class Image3DAlt extends PixpipeContainer{
   * Get the voxel value from a voxel position (in a voxel-coordinate sytem) with NO
   * regards towards how the data is supposed to be read. In other word, dimension.direction
   * is ignored.
-  * @param {Number} i - position along I axis (the fastest varying dimension)
-  * @param {Number} j - position along J axis
-  * @param {Number} k - position along K axis (the slowest varying dimension, unless there is a time dim)
-  * @param {Number} t - position along T axis (time dim, the very slowest varying dim when present)
+  * @param {Object} position - 3D position like {i, j, k}, i being the fastest varying, k being the slowest varying
+  * @param {Number} time - position along T axis (time dim, the very slowest varying dim when present)
+  
   * @return {Number} the value at a given position.
   */
-  getVoxel( i, j, k, t=0 ){
+  getVoxel( position, time=0 ){
     var dimensions = this._metadata.dimensions;
+    var i = position.i;
+    var j = position.j;
+    var k = position.k;
     
-    if(i<0 || j<0 || k<0 || t<0 || 
+    if(i<0 || j<0 || k<0 || time<0 || 
        i>=dimensions[0].length  ||
        j>=dimensions[1].length  ||
        k>=dimensions[2].length  ||
-       ( dimensions.length>3 && t>=dimensions[3].length) )
+       ( dimensions.length>3 && time>=dimensions[3].length) )
     {
       console.warn("Voxel query is out of bound.");
       return null;
@@ -305,7 +359,7 @@ class Image3DAlt extends PixpipeContainer{
     var positionBuffer = i * dimensions[0].stride +
                          j * dimensions[1].stride +
                          k * dimensions[2].stride +
-                         dimensions.length > 3 ? t * dimensions[3].stride : 0;
+                         dimensions.length > 3 ? time * dimensions[3].stride : 0;
     positionBuffer *= ncpp;
     return this._data[ positionBuffer ];
   }
@@ -314,19 +368,20 @@ class Image3DAlt extends PixpipeContainer{
   /**
   * Get a voxel value at a given position with regards of the direction the data are
   * supposed to be read. In other word, dimension.direction is taken into account.
-  * @param {Number} i - position along I axis (the fastest varying dimension)
-  * @param {Number} j - position along J axis
-  * @param {Number} k - position along K axis (the slowest varying dimension, unless there is a time dim)
-  * @param {Number} t - position along T axis (time dim, the very slowest varying dim when present)
+  * @param {Object} position - 3D position like {i, j, k}, i being the fastest varying, k being the slowest varying
+  * @param {Number} time - position along T axis (time dim, the very slowest varying dim when present)
   */
-  getVoxelSafe( i, j, k, t=0){
+  getVoxelSafe( position, time=0){
     var dimensions = this._metadata.dimensions;
+    var i = position.i;
+    var j = position.j;
+    var k = position.k;
     
-    if(i<0 || j<0 || k<0 || t<0 || 
+    if(i<0 || j<0 || k<0 || time<0 || 
        i>=dimensions[0].length  ||
        j>=dimensions[1].length  ||
        k>=dimensions[2].length  ||
-       ( dimensions.length>3 && t>=dimensions[3].length) )
+       ( dimensions.length>3 && time>=dimensions[3].length) )
     {
       console.warn("Voxel query is out of bound.");
       return null;
@@ -350,8 +405,13 @@ class Image3DAlt extends PixpipeContainer{
   getDimensionSize( dimIndex ){
     var index = dimIndex;
     var indexer = { "i": 0, "j": 1, "k": 2, "t": 3};
-    if( typeof dimIndex === "string" )
-      index = indexer[ dimIndex ];
+    
+    
+    if( typeof dimIndex === "string" ){
+      //index = indexer[ dimIndex ];
+    
+    }
+      
       
     var dimensions = this._metadata.dimensions;
     if( index < dimensions.length ){
@@ -361,7 +421,6 @@ class Image3DAlt extends PixpipeContainer{
       return null;
     }
   }
-
 
 
   /**
@@ -381,35 +440,46 @@ class Image3DAlt extends PixpipeContainer{
   }
 
 
-  getSliceDim0( sliceIndex, time=0 ){
-    var dimensions = this._metadata.dimensions;
-    var width = dimensions[dimensions[0].widthDimension].length;
-    var height = dimensions[dimensions[0].heightDimension].length;
+  /**
+  * Given a voxel-based coordinate {x, y, z} and a transform name, return another {x, y, z}.
+  * Notice: the input is called {x, y, z} instead of of 
+  * after a transformation.
+  * @param {Object} position - 3D position like {x, y, z}, i being the fastest varying, k being the slowest varying
+  * @param {String} transformName - name of the transformation registered in the metadata
+  * @return {Object} coordinate as an Object {x: Number, y: Number, z: Number}
+  */
+  getTransformedPosition( position, transformName ){
+    var transformations = this._metadata.transformations;
     
-    var Img2dData = new this._data.constructor( width * height );
-    var pixelCounter = 0;
-    
-    if( dimensions[0].widthDimension == 1){
-      for (var r = height - 1; r >= 0; r--) {
-      //for(var r=0; r<height; r++){
-        for(var c=0; c<width; c++){
-          Img2dData[pixelCounter] = this.getVoxelSafe( sliceIndex, c, r, time);
-          pixelCounter++;
-        }
-      }
-    }else{
-      for (var r = height - 1; r >= 0; r--) {
-      //for(var r=0; r<height; r++){
-        for(var c=0; c<width; c++){
-          Img2dData[pixelCounter] = this.getVoxelSafe( sliceIndex, r, c, time);
-          pixelCounter++;
-        }
-      }
+    if( !(transformName in transformations) ){
+      console.warn("No transform named " + transformName );
+      return null;
     }
     
-    var outputImage = new Image2D();
-    outputImage.setData(  Img2dData, width, height, 1);
-    return outputImage;
+    var transform = transformations[ transformName ];
+    var origPos = vec4.fromValues(position.x, position.x, position.z, 1);
+    var transPos = vec4.create();
+    vec4.transformMat4(transPos, origPos, transform);
+    return {x: transPos[0], y: transPos[1], z: transPos[2] };
+  }
+
+  
+  /**
+  * Add a transformation to the collection
+  * @param {Array} transform - a 4x4 matrix in a shape of a 1D array of size 16 column-major
+  * @param {String} name - Name to give to this transformation
+  */
+  addTransformation( transform, name ){
+    var transformations = this._metadata.transformations;
+    
+    var schema = joi.array().length(16).items(joi.number())
+    var isValid = joi.validate( transform , schema );
+    
+    if( isValid.error ){
+      console.warn("Invalid transformation: " + isValid.error );
+      return;
+    }
+    transformations[ name ] = transform;
   }
 
 
@@ -421,15 +491,19 @@ class Image3DAlt extends PixpipeContainer{
   * @return {image2D} the slice
   */
   getSlice( normalAxis, sliceIndex=0, time=0 ){
-    var dimIndex = normalAxis;
-    var indexer = { "i": 0, "j": 1, "k": 2, "t": 3};
-    if( typeof normalAxis === "string" )
-      dimIndex = indexer[ normalAxis ];
+    if( typeof normalAxis === "string" ){
+      // if string/name replace by its equivalent numerical index
+      normalAxis = this.getDimensionIndexFromName( normalAxis );
+      if(normalAxis == -1){
+        console.warn("dimensions " + normalAxis + " does not exist.");
+        return;
+      }
+    }
       
     var dimensions = this._metadata.dimensions;
     
     // The dimension of the normalAxis must exist (and not be time)
-    if( dimIndex > 2 ){
+    if( normalAxis > 2 ){
       console.warn("The dimension of a slice should be lower than 3.");
       return null;
     }
@@ -437,7 +511,7 @@ class Image3DAlt extends PixpipeContainer{
     // the final slice image has for normal vector the sliceDimension.
     // In other words, the width and height of the slice will be the "lenght" of
     // the sliceDimension.widthDimension and sliceDimension.heightDimension respectively
-    var sliceDimension = dimensions[dimIndex];
+    var sliceDimension = dimensions[normalAxis];
     var widthDimension = dimensions[sliceDimension.widthDimension];
     var heightDimension = dimensions[sliceDimension.heightDimension];
     
@@ -474,168 +548,13 @@ class Image3DAlt extends PixpipeContainer{
   }
 
 
-
-  /**
-  * [PRIVATE]
-  * Return a slice from the minc cube as a 1D typed array,
-  * along with some relative data (slice size, step, etc.)
-  * args:
-  * @param {String} axis - "xspace", "yspace" or zspace (mandatory)
-  * @param {Number} sliceIndex - index of the slice [0; length-1] (optional, default: length-1)
-  * @param {Number} time - index of time (optional, default: 0)
-  * TODO: add some method to a slice (get value) because it's a 1D array... and compare with Python
-  */
-  getSliceORIG(axis, sliceIndex = 0, time = 0) {
-    if( !this.hasMetadata(axis) ){
-      console.warn("The axis " + axis + " does not exist.");
-      return null;
-    }
-  
-
-    var time_offset = this.hasMetadata("time") ? time * this.getMetadata("time").offset : 0;
-
-    var axis_space = this.getMetadata(axis);
-    var width_space = axis_space.width_space;
-    var height_space = axis_space.height_space;
-
-    var width = axis_space.width;
-    var height = axis_space.height;
-
-    var axis_space_offset = axis_space.offset;
-    var width_space_offset = width_space.offset;
-    var height_space_offset = height_space.offset;
-
-    // Calling the volume data's constructor guarantees that the
-    // slice data buffer has the same type as the volume.
-    //
-    //var slice_data = new this._data.constructor(width * height);
-    var slice_data = new this._data.constructor(width * height);
-
-    // Rows and colums of the result slice.
-    var row, col;
-
-    // Indexes into the volume, relative to the slice.
-    // NOT xspace, yspace, zspace coordinates!!!
-    var x, y, z;
-
-    // Linear offsets into volume considering an
-    // increasing number of axes: (t) time,
-    // (z) z-axis, (y) y-axis, (x) x-axis.
-    var tz_offset, tzy_offset, tzyx_offset;
-
-    // Whether the dimension steps positively or negatively.
-    var x_positive = width_space.step  > 0;
-    var y_positive = height_space.step > 0;
-    var z_positive = axis_space.step   > 0;
-
-    // iterator for the result slice.
-    var i = 0;
-    var intensity = 0;
-    var intensitySum = 0;
-    var min = Infinity;
-    var max = -Infinity;
-
-    var maxOfVolume = this.getMetadata("voxel_max");
-
-    z = z_positive ? sliceIndex : axis_space.space_length - sliceIndex - 1;
-    if (z >= 0 && z < axis_space.space_length) {
-      tz_offset = time_offset + z * axis_space_offset;
-
-      for (row = height - 1; row >= 0; row--) {
-        y = y_positive ? row : height - row - 1;
-        tzy_offset = tz_offset + y * height_space_offset;
-
-        for (col = 0; col < width; col++) {
-          x = x_positive ? col : width - col - 1;
-          tzyx_offset = tzy_offset + x * width_space_offset;
-
-          intensity = this._data[tzyx_offset];
-
-          min = Math.min(min, intensity);
-          max = Math.max(max, intensity);
-          intensitySum += intensity;
-
-          slice_data[i++] = intensity;
-        }
-      }
-    }
-
-    var outputImage = new Image2D();
-    outputImage.setData(  slice_data, width, height, 1);
-    outputImage.setMetadata("min", min);
-    outputImage.setMetadata("max", max);
-    outputImage.setMetadata("avg", intensitySum / (i-1) );
-    return outputImage;
-
-  }
-
-
-  /**
-  * Get the intensity of a given voxel, addressed by dimensionality order.
-  * In case of doubt, use getIntensity_xyz instead.
-  * @param {Number} i - Position within the biggest dimensionality order
-  * @param {Number} j - Position within the in-the-middle dimensionality order
-  * @param {Number} k - Position within the smallest dimensionality order
-  */
-  getIntensity_ijk(i, j, k, time = 0) {
-    var order = this.getMetadata("order");
-
-    if (i < 0 || i >= this.getMetadata( order[0] ).space_length ||
-        j < 0 || j >= this.getMetadata( order[1] ).space_length ||
-        k < 0 || k >= this.getMetadata( order[2] ).space_length)
-    {
-        console.warn("getIntensity_ijk position is out of range.");
-        return 0;
-    }
-
-    //var time_offset = this.hasMetadata( "time" ) ? time * this.getMetadata( "time" ).offset : 0;
-    var time_offset = this._metadata.time.offset * time;
-
-    var xyzt_offset = (
-      i * this.getMetadata( order[0] ).offset +
-      j * this.getMetadata( order[1] ).offset +
-      k * this.getMetadata( order[2] ).offset +
-      time_offset);
-
-    return this._data[xyzt_offset];
-  }
-
-
-  /**
-  * Get the intensity of a given voxel, addressed by dimension names.
-  * @param {Number} x - position within xspace
-  * @param {Number} y - position within yspace
-  * @param {Number} z - position within zspace
-  * @param {Number} time - position in time (optional)
-  */
-  getIntensity_xyz(x, y, z, time = 0) {
-
-    if (x < 0 || x >= this._metadata.xspace.space_length ||
-        y < 0 || y >= this._metadata.yspace.space_length ||
-        z < 0 || z >= this._metadata.zspace.space_length)
-    {
-        console.warn("getIntensity_xyz position is out of range.");
-        return 0;
-    }
-
-    //var time_offset = this.hasMetadata( "time" ) ? time * this.getMetadata( "time" ).offset : 0;
-    var time_offset = this._metadata.time.offset * time;
-
-    var xyzt_offset = (
-      x * this._metadata.xspace.offset +
-      y * this._metadata.yspace.offset +
-      z * this._metadata.zspace.offset +
-      time_offset);
-
-    return this._data[xyzt_offset];
-  }
-
-
   /**
   * Get the number of samples over time
+  * @return {number} the number of time samples
   */
   getTimeLength(){
-    return ( this.hasMetadata("time") ? this.getMetadata("time").space_length : 1 );
+    var dimensions = this._metadata.dimensions;
+    return ( dimensions.length == 4 ? dimensions[3].length : 1 );
   }
 
 
@@ -645,9 +564,10 @@ class Image3DAlt extends PixpipeContainer{
   * @return {Boolean} true for inside, false for outside
   */
   isInside( pos ){
-    return !(pos.x < 0 || pos.x >= this._metadata.xspace.space_length ||
-             pos.y < 0 || pos.y >= this._metadata.yspace.space_length ||
-             pos.z < 0 || pos.z >= this._metadata.zspace.space_length)
+    var dimensions = this._metadata.dimensions;
+    return !(pos.x < 0 || pos.x >= dimensions[0].length ||
+             pos.y < 0 || pos.y >= dimensions[1].length ||
+             pos.z < 0 || pos.z >= dimensions[2].length)
   }
 
 
@@ -710,8 +630,8 @@ class Image3DAlt extends PixpipeContainer{
       positions[i] = currentPos;
       labels[i] = "(" + currentPos.x + ", " + currentPos.y + ", " + currentPos.z + ")";
 
-      var pixValue = [this.getIntensity_xyz( currentPos.x, currentPos.y, currentPos.z )];
-
+      var pixValue = [this.getVoxel( currentPos.x, currentPos.y, currentPos.z, time )];
+      
       // each channel is dispatched in its array
       for(var c=0; c<ncpp; c++){
         colors[c][i] = pixValue[c];

@@ -54,6 +54,9 @@
       var mniVolume = niftiDecoder.getOutput();
 
       if(mniVolume){
+        var voxelOrigInWorld = mniVolume.getTransformedPosition({i:0, j:0, k:0}, "v2w");
+        console.log( voxelOrigInWorld );
+        
         // create a filter to write the image into a canvas
         var imageToCanvasFilter = new pixpipe.CanvasImageWriter( );
         // replace the default min max values of [0, 255]
@@ -62,7 +65,7 @@
 
         // display sagital
         imageToCanvasFilter.setMetadata( "parentDivID", "myDiv_x" );
-        imageToCanvasFilter.addInput( mniVolume.getSlice(0, Math.round(mniVolume.getDimensionSize(0)/3 )) );
+        imageToCanvasFilter.addInput( mniVolume.getSlice("i", Math.round(mniVolume.getDimensionSize(0)/3 )) );
         //imageToCanvasFilter.addInput( mniVolume.getSliceDim0( Math.round(mniVolume.getDimensionSize(0)/3 )) );
         imageToCanvasFilter.update();
 
