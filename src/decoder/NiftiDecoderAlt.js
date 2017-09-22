@@ -89,23 +89,22 @@ class NiftiDecoderAlt extends Filter {
 
     // copying all the original metadata into the field "formatSpecific", for the sake of quality.
     metadata.formatSpecific = header;
+    metadata.statistics = { upToDate: true, min: "sdfsdf", max: NaN };
     metadata.ncpp = this._fetchNcpp(header);
     metadata.description = header.description;
     metadata.format = "nifti";
     metadata.spatialUnit = header.getUnitsCodeString(nifti.NIFTI1.SPATIAL_UNITS_MASK & header.xyzt_units);
     metadata.temporalUnit = header.getUnitsCodeString(nifti.NIFTI1.TEMPORAL_UNITS_MASK & header.xyzt_units);
-
+    
     // the transformation
-    //console.log("header.getQformMat()");
-    //console.log(header.getQformMat());
     var niftiTransfoMatrix = header.getQformMat(); // the default case (METHOD2)
     if( header.qform_code == 0){  // though sometimes qform_code is 0, then we have to use affine (METHOD3)
       niftiTransfoMatrix = header.affine;
     }
     
     // dimensions info ordered from the fastest varying to the slowest varying
-    var voxelSpaceNames = ['x', 'y', 'z', 't'];
-    var worldSpaceNames = ['i', 'j', 'k', 't'];
+    var voxelSpaceNames = ['i', 'j', 'k', 't'];
+    var worldSpaceNames = ['x', 'y', 'z', 't'];
     metadata.dimensions = [];
 
     for(var d=0; d<numberOfDimensions; d++){
@@ -123,7 +122,7 @@ class NiftiDecoderAlt extends Filter {
         nameWorldSpace: worldSpaceNames[d],
         worldUnitSize: header.pixDims[d + 1],
         stride: stride,
-        direction: niftiTransfoMatrix[d][d] < 0 ? -1 : 1
+        direction: niftiTransfoMatrix[d][d] < 0 ? -1 : 1,
       }
       metadata.dimensions.push( dimension )
     }
@@ -141,15 +140,6 @@ class NiftiDecoderAlt extends Filter {
       metadata.dimensions[2].widthDimension = 0;
       metadata.dimensions[2].heightDimension = 1;
     }
-
-    //glMatrix.setMatrixArrayType( Array );
-
-    
-    
-    
-    if( niftiTransfoMatrix[0][0] < 0 ){
-      
-    }
     
     var v2wMat = mat4.fromValues(niftiTransfoMatrix[0][0], niftiTransfoMatrix[1][0], niftiTransfoMatrix[2][0], niftiTransfoMatrix[3][0],
                                      niftiTransfoMatrix[0][1], niftiTransfoMatrix[1][1], niftiTransfoMatrix[2][1], niftiTransfoMatrix[3][1],
@@ -158,8 +148,6 @@ class NiftiDecoderAlt extends Filter {
 
     var w2vMat = mat4.create();
     mat4.invert( w2vMat, v2wMat );
-
-
 
     // register all the transformations available here
     metadata.transformations = {
@@ -170,34 +158,17 @@ class NiftiDecoderAlt extends Filter {
     console.log( data );
     console.log( metadata );
 
+    //var isMetadataValid = Image3DAlt.validateMetadataSchema(metadata);
+    //console.log("is valid: " + isMetadataValid );
+
     var output = new Image3DAlt();
     output.setRawData( data );
     output.setRawMetadata( metadata );
     output.scanDataRange();
     
-    
-    this._output[0] = output;
-
-    /*
-    var voxPos = vec4.fromValues(0, 0, 0, 1);
-    var worldPos = vec4.create();
-    var voxPosBack = vec4.create();
-    // from voxel to world
-    vec4.transformMat4(worldPos, voxPos, transfoMat);
-    // from world back to voxel
-    vec4.transformMat4(voxPosBack, worldPos, transfoMatInverse);
-
-    // original
-    console.log( voxPos );
-    // world coord
-    console.log( worldPos );
-    // transfo matrix from voxel to world
-    console.log( transfoMat );
-    // inverse transfo matrix: from world to voxel
-    console.log( transfoMatInverse);
-    // voxel coord from world coord
-    console.log( voxPosBack );
-    */
+    if(output.metadataIntegrityCheck()){
+      this._output[0] = output;
+    }
   }
 
 

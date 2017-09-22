@@ -5,6 +5,8 @@
 * Lab       MCIN - Montreal Neurological Institute
 */
 
+
+import joi from 'joi-browser';
 import { CoreTypes } from './CoreTypes.js';
 import { PixpipeContainer } from './PixpipeContainer.js';
 import { Image2D } from './Image2D.js';
@@ -15,8 +17,6 @@ import { Image2D } from './Image2D.js';
 * typed array.
 */
 class Image3DAlt extends PixpipeContainer{
-
-
   /**
   * Constructor of an Image3DAlt instance. If no options, no array is allocated.
   * @param {Object} options - may contain the following:
@@ -31,16 +31,11 @@ class Image3DAlt extends PixpipeContainer{
     super();
     this._type = Image3DAlt.TYPE();
 
-    var metaStat = {
-      upToDate: true,
-      min: NaN,
-      max: NaN
-    }
+    var metaStat = { upToDate: true, min: NaN, max: NaN };
+
+    this.setMetadata("description", "");
 
     this.setMetadata("statistics", metaStat );
-
-    // no default description, but can be provided
-    this.setMetadata("description", "");
 
     // number of component per pixel, for color OR time series
     this.setMetadata("ncpp", 1);
@@ -54,6 +49,9 @@ class Image3DAlt extends PixpipeContainer{
 
     // this field is to hold original metadata from a reader (eg. NIfTI)
     this.setMetadata("formatSpecific", {});
+    
+    // possibly contains no transformations
+    this.setMetadata("transformations", {});
 
     // allocate data if the propers options are given
     this._initData( options );
@@ -66,7 +64,62 @@ class Image3DAlt extends PixpipeContainer{
   static TYPE(){
     return "IMAGE3DALT";
   }
-
+  
+  
+  /**
+  * [SUPER OVERLOAD - PipxpipeObject]
+  * [PRIVATE]
+  */
+  _buildMetadataSchema(){
+    var metadataSchema = joi.object({
+      
+      // required
+      ncpp: joi.number().integer().min(1).required(), 
+      
+      // required
+      dimensions: joi.array().min(3).max(4).items(
+        joi.object({
+          length: joi.number().integer().min(1).required(),
+          widthDimension: joi.number().integer().min(0).max(2).required(),
+          heightDimension: joi.number().integer().min(0).max(2).required(),
+          nameVoxelSpace: joi.string().regex(/(i|j|k|t)/).required(),
+          nameWorldSpace: joi.string().regex(/(x|y|z|t)/).required(),
+          worldUnitSize: joi.number().required(),
+          stride: joi.number().integer().min(1).required(),
+          direction: joi.number().integer().valid([-1, 1]).required()
+        }
+      ).unknown()),
+      
+      // required, some prop can be added to the list
+      statistics: joi.object({
+        upToDate: joi.boolean().required(),
+        min: joi.number().required(),
+        max: joi.number().required()
+      }).required().unknown(), // = we can have more stats but min/max are necessary
+      
+      // required but can be an empty object
+      transformations: joi.object().unknown().pattern(/.+/, joi.array().length(16).items(joi.number())).required(),
+      
+      // optional
+      description: joi.string().allow(''),
+      
+      // optional
+      spatialUnit: joi.string().allow(''),
+      
+      // optional
+      temporalUnit: joi.string().allow(''),
+      
+      // optional
+      format: joi.string().allow(''),
+      
+      // optional, some prop can be added to the list
+      formatSpecific: joi.object().unknown(),  
+    })
+    .unknown(); // = we can add other properties
+    
+    return metadataSchema;
+  }
+  
 
   /**
   * @return {Image3DAlt} a deep copy instance of this Image3DAlt
@@ -93,6 +146,11 @@ class Image3DAlt extends PixpipeContainer{
   setData( buffer, options){
     this._initData( options, buffer)
     this.scanDataRange();
+  }
+
+
+  static validateDimensionObject( dimensions ){
+    
   }
 
 
@@ -192,7 +250,6 @@ class Image3DAlt extends PixpipeContainer{
         return false;
       }
     }else{
-      console.warn("The 'options' argument is empty.");
       return false;
     }
   }
