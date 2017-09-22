@@ -5,6 +5,8 @@
 * Lab       MCIN - Montreal Neurological Institute
 */
 
+// Object schema validation
+import joi from 'joi-browser';
 
 /**
 * PixpipeObject is the base object of all. It creates a uuid and has few
@@ -23,6 +25,10 @@ class PixpipeObject {
     // Metadata can be anything, a name, an ID, a description, a DOM element.
     // everything that is not an input but rather a setting
     this._metadata = {};
+    
+    // a joi schema to validate the _metadata integrity. If null, integrity not validated.
+    // I has to be overloaded when a class inherits from PixpipeObject
+    this._metadataSchema = this._buildMetadataSchema();
 
     this._type = PixpipeObject.TYPE();
     
@@ -135,10 +141,20 @@ class PixpipeObject {
 
 
   /**
+  * Get a copy of the metadata object using a serialization middle step (no reference shared).
   * @return {Object} a copy of local metadata
   */
   getMetadataCopy(){
     return JSON.parse( JSON.stringify( this._metadata ) );
+  }
+  
+  
+  /**
+  * Associate the internal metadata object with the one in args.
+  * @param {Object} m - metadata. Should NOT contain TypedArray
+  */
+  setRawMetadata( m ){
+    this._metadata = m;
   }
   
   
@@ -200,6 +216,41 @@ class PixpipeObject {
       return -1;
     }
   }
+  
+  
+  /**
+  * Build the joi validation schema for the _metadata object
+  * @return {Object} the joi schema
+  */
+  _buildMetadataSchema(){
+    return null;
+  }
+  
+  
+  /**
+  * Performs an inetgrity check of a metadata object. If none is given in argument,
+  * integrity check is performed on this._metadata.
+  * @param {Object} a metadata object to perform the integrity check on.
+  * @return {Boolean} true if metadata obj is valid, false if not.
+  */
+  metadataIntegrityCheck( metadataObj = null ){
+    if( metadataObj == null ){
+      metadataObj = this._metadata;
+    }
+    
+    if( metadataObj ){
+      var validationResults = joi.validate( metadataObj, this._metadataSchema );
+      if(validationResults.error){
+        console.warn("SCHEMA VALIDATION: " + validationResults.error );
+        return false;
+      }
+      return true;
+    }else{
+      console.warn("Validation schema not available. Metadata considered to be valid.");
+      return true;
+    }
+  }
+  
 }
 
 export { PixpipeObject }
