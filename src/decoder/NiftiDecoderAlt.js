@@ -105,7 +105,7 @@ class NiftiDecoderAlt extends Filter {
     // dimensions info ordered from the fastest varying to the slowest varying
     var voxelSpaceNames = ['i', 'j', 'k', 't'];
     var worldSpaceNames = ['x', 'y', 'z', 't'];
-    metadata.dimensions = [];
+    var dimensions = [];
 
     for(var d=0; d<numberOfDimensions; d++){
       // compute the stride based on the previous dim
@@ -124,27 +124,124 @@ class NiftiDecoderAlt extends Filter {
         stride: stride,
         direction: niftiTransfoMatrix[d][d] < 0 ? -1 : 1,
       }
-      metadata.dimensions.push( dimension )
+      dimensions.push( dimension )
     }
 
-    if( metadata.dimensions.length >= 3){
+    if( dimensions.length >= 3){
       // dim x has for width  y and for heigth z
-      metadata.dimensions[0].widthDimension = 1
-      metadata.dimensions[0].heightDimension = 2;
+      dimensions[0].widthDimension = 1
+      dimensions[0].heightDimension = 2;
 
       // dim y has for width  x and for heigth z
-      metadata.dimensions[1].widthDimension = 0;
-      metadata.dimensions[1].heightDimension = 2;
+      dimensions[1].widthDimension = 0;
+      dimensions[1].heightDimension = 2;
 
       // dim z has for width  x and for heigth y
-      metadata.dimensions[2].widthDimension = 0;
-      metadata.dimensions[2].heightDimension = 1;
+      dimensions[2].widthDimension = 0;
+      dimensions[2].heightDimension = 1;
     }
     
-    var v2wMat = mat4.fromValues(niftiTransfoMatrix[0][0], niftiTransfoMatrix[1][0], niftiTransfoMatrix[2][0], niftiTransfoMatrix[3][0],
-                                     niftiTransfoMatrix[0][1], niftiTransfoMatrix[1][1], niftiTransfoMatrix[2][1], niftiTransfoMatrix[3][1],
-                                     niftiTransfoMatrix[0][2], niftiTransfoMatrix[1][2], niftiTransfoMatrix[2][2], niftiTransfoMatrix[3][2],
-                                     niftiTransfoMatrix[0][3], niftiTransfoMatrix[1][3], niftiTransfoMatrix[2][3], niftiTransfoMatrix[3][3] );
+    /*
+    swaping dimensions:
+    In some cases, a NIfTI does not respect the orientation from the specfication.
+    In order to get the proper orientation, we have to swap some dimensions as 
+    well as the corresponding rows in the v2w matrix.
+    The criterion to find what dim is suposed to come first, what is supposed to
+    be last is direction cosine fron the matrix:
+    - the 1st row should be the one with the highest absolute value from all 1st columns
+    - the 2nd row should be the one with the highest absolute value from all 2nd columns
+    - the 3rd row should be the one with the highest absolute value from all 3rd columns
+    */
+    
+    function whichRowHasHighestCol( arrOfArr, col){
+      var r0 = Math.abs(arrOfArr[0][col]);
+      var r1 = Math.abs(arrOfArr[1][col]);
+      var r2 = Math.abs(arrOfArr[2][col]);
+      
+      if( r0 > r1 && r0 > r2){
+        return 0;
+      }else if(r1 > r0 && r1 > r2){
+        return 1;
+      }else{
+        return 2
+      }
+    }
+    
+    var shouldBeRow0 = whichRowHasHighestCol(niftiTransfoMatrix, 0);
+    var shouldBeRow1 = whichRowHasHighestCol(niftiTransfoMatrix, 1);
+    var shouldBeRow2 = whichRowHasHighestCol(niftiTransfoMatrix, 2);
+    
+    var shouldBe = [ shouldBeRow0, shouldBeRow1, shouldBeRow2 ];
+    
+    var transfoMatrixToUse = niftiTransfoMatrix;
+    var dimensionsToUse = dimensions;
+    
+    // if so, the dimension list and the matrix need swapping
+    if( shouldBe[0] != 0 || shouldBe[1] != 1 || shouldBe[2] != 2){
+      // swap the matrix rows
+      transfoMatrixToUse = [
+       [niftiTransfoMatrix[shouldBe[0]][0], niftiTransfoMatrix[shouldBe[0]][1], niftiTransfoMatrix[shouldBe[0]][2], niftiTransfoMatrix[shouldBe[0]][3]],
+       [niftiTransfoMatrix[shouldBe[1]][0], niftiTransfoMatrix[shouldBe[1]][1], niftiTransfoMatrix[shouldBe[1]][2], niftiTransfoMatrix[shouldBe[1]][3]],
+       [niftiTransfoMatrix[shouldBe[2]][0], niftiTransfoMatrix[shouldBe[2]][1], niftiTransfoMatrix[shouldBe[2]][2], niftiTransfoMatrix[shouldBe[2]][3]],
+       [niftiTransfoMatrix[3][0], niftiTransfoMatrix[3][1], niftiTransfoMatrix[3][2], niftiTransfoMatrix[3][3]],
+     ]
+     
+     var tempDimensions = new Array( dimensions.length );
+     
+     for(var i=0; i<dimensions.length; i++){
+       tempDimensions[i] = dimensions[ shouldBe[i] ];
+     }
+     
+     tempDimensions[shouldBe[0]].nameVoxelSpace = "i";
+     tempDimensions[shouldBe[1]].nameVoxelSpace = "j";
+     tempDimensions[shouldBe[2]].nameVoxelSpace = "k";
+     
+     tempDimensions[shouldBe[0]].nameWorldSpace = "x";
+     tempDimensions[shouldBe[1]].nameWorldSpace = "y";
+     tempDimensions[shouldBe[2]].nameWorldSpace = "z";
+     
+     
+     for(var i=0; i<dimensions.length; i++){
+       /*
+       tempDimensions[i].widthDimension = shouldBe[tempDimensions[i].widthDimension];
+       tempDimensions[i].heightDimension = shouldBe[tempDimensions[i].heightDimension];
+       */
+       
+       tempDimensions[i].widthDimension = shouldBe.indexOf( tempDimensions[i].widthDimension );
+       tempDimensions[i].heightDimension = shouldBe.indexOf( tempDimensions[i].heightDimension );
+     }
+     
+     
+     /*
+     tempDimensions[0] = dimensions[ shouldBe[0] ];
+     tempDimensions[1] = dimensions[ shouldBe[1] ];
+     tempDimensions[2] = dimensions[ shouldBe[2] ];
+     */
+     
+     if( dimensions.length == 4){
+       tempDimensions[3] = dimensions[ 3 ];
+     }
+     
+     dimensionsToUse = tempDimensions;
+    }
+    
+    
+
+     
+    
+    console.log( niftiTransfoMatrix );
+    console.log( transfoMatrixToUse );
+    console.log( dimensions );
+    console.log( dimensionsToUse );
+    
+    // END of swapping
+    
+    metadata.dimensions = dimensionsToUse;
+    
+    var v2wMat = mat4.fromValues(transfoMatrixToUse[0][0], transfoMatrixToUse[1][0], transfoMatrixToUse[2][0], transfoMatrixToUse[3][0],
+                                 transfoMatrixToUse[0][1], transfoMatrixToUse[1][1], transfoMatrixToUse[2][1], transfoMatrixToUse[3][1],
+                                 transfoMatrixToUse[0][2], transfoMatrixToUse[1][2], transfoMatrixToUse[2][2], transfoMatrixToUse[3][2],
+                                 transfoMatrixToUse[0][3], transfoMatrixToUse[1][3], transfoMatrixToUse[2][3], transfoMatrixToUse[3][3] );
 
     var w2vMat = mat4.create();
     mat4.invert( w2vMat, v2wMat );

@@ -15496,19 +15496,18 @@ class Image3DAlt extends PixpipeContainer{
   * @return {Number} the length of this dimension
   */
   getDimensionSize( dimIndex ){
-    var index = dimIndex;
-    var indexer = { "i": 0, "j": 1, "k": 2, "t": 3};
-    
-    
     if( typeof dimIndex === "string" ){
-      //index = indexer[ dimIndex ];
-    
+      // if string/name replace by its equivalent numerical index
+      dimIndex = this.getDimensionIndexFromName( dimIndex );
+      if(dimIndex == -1){
+        console.warn("dimensions " + dimIndex + " does not exist.");
+        return;
+      }
     }
-      
-      
+
     var dimensions = this._metadata.dimensions;
-    if( index < dimensions.length ){
-      return dimensions[ index ].length;
+    if( dimIndex < dimensions.length ){
+      return dimensions[ dimIndex ].length;
     }else{
       console.warn("A dimensions of such index does not exist.");
       return null;
@@ -29082,7 +29081,7 @@ class NiftiDecoder extends Filter {
   */
   parseNifti1Header(raw_data) {
     var header = {
-      order: ["zspace", "yspace", "xspace"],
+      order: [],
       xspace: {},
       yspace: {},
       zspace: {}
@@ -29141,7 +29140,7 @@ class NiftiDecoder extends Filter {
     var qform_code = dview.getUint16(252, littleEndian);
     var sform_code = dview.getUint16(254, littleEndian);
 
-    var transform = [
+    var nifti_xfm = [
       [1, 0, 0, 0],
       [0, 1, 0, 0],
       [0, 0, 1, 0],
@@ -29154,7 +29153,6 @@ class NiftiDecoder extends Filter {
       header.time.step = tstep;
       header.time.start = 0;
       header.time.name = "time";
-      header.order = ["time", "zspace", "yspace", "xspace"];
     }
 
     /* Record the number of bytes per voxel, and note whether we need
@@ -29168,18 +29166,18 @@ class NiftiDecoder extends Filter {
        * generally assumed to correspond to some standard coordinate
        * space (e.g. Talairach).
        */
-      transform[0][0] = dview.getFloat32(280, littleEndian);
-      transform[0][1] = dview.getFloat32(284, littleEndian);
-      transform[0][2] = dview.getFloat32(288, littleEndian);
-      transform[0][3] = dview.getFloat32(292, littleEndian);
-      transform[1][0] = dview.getFloat32(296, littleEndian);
-      transform[1][1] = dview.getFloat32(300, littleEndian);
-      transform[1][2] = dview.getFloat32(304, littleEndian);
-      transform[1][3] = dview.getFloat32(308, littleEndian);
-      transform[2][0] = dview.getFloat32(312, littleEndian);
-      transform[2][1] = dview.getFloat32(316, littleEndian);
-      transform[2][2] = dview.getFloat32(320, littleEndian);
-      transform[2][3] = dview.getFloat32(324, littleEndian);
+      nifti_xfm[0][0] = dview.getFloat32(280, littleEndian);
+      nifti_xfm[0][1] = dview.getFloat32(284, littleEndian);
+      nifti_xfm[0][2] = dview.getFloat32(288, littleEndian);
+      nifti_xfm[0][3] = dview.getFloat32(292, littleEndian);
+      nifti_xfm[1][0] = dview.getFloat32(296, littleEndian);
+      nifti_xfm[1][1] = dview.getFloat32(300, littleEndian);
+      nifti_xfm[1][2] = dview.getFloat32(304, littleEndian);
+      nifti_xfm[1][3] = dview.getFloat32(308, littleEndian);
+      nifti_xfm[2][0] = dview.getFloat32(312, littleEndian);
+      nifti_xfm[2][1] = dview.getFloat32(316, littleEndian);
+      nifti_xfm[2][2] = dview.getFloat32(320, littleEndian);
+      nifti_xfm[2][3] = dview.getFloat32(324, littleEndian);
     }
     else if (qform_code > 0) {
       /* The "Qform", if present, defines a quaternion which specifies
@@ -29193,17 +29191,66 @@ class NiftiDecoder extends Filter {
       var qoffset_z = dview.getFloat32(276, littleEndian);
       var qfac = (dview.getFloat32(76, littleEndian) < 0) ? -1.0 : 1.0;
 
-      transform = this.niftiQuaternToMat44(quatern_b, quatern_c, quatern_d,
+      nifti_xfm = this.niftiQuaternToMat44(quatern_b, quatern_c, quatern_d,
                                            qoffset_x, qoffset_y, qoffset_z,
                                            xstep,     ystep,     zstep,     qfac);
     }
     else {
-      transform[0][0] = xstep;
-      transform[1][1] = ystep;
-      transform[2][2] = zstep;
+      nifti_xfm[0][0] = xstep;
+      nifti_xfm[1][1] = ystep;
+      nifti_xfm[2][2] = zstep;
     }
 
+
+    var i, j;
+    var axis_index_from_file = [0, 1, 2];
+    var transform = [[0, 0, 0, 0],
+                     [0, 0, 0, 0],
+                     [0, 0, 0, 0],
+                     [0, 0, 0, 1]];
+                     
+    for (i = 0; i < 3; i++) {
+      var c_x = Math.abs(nifti_xfm[0][i]);
+      var c_y = Math.abs(nifti_xfm[1][i]);
+      var c_z = Math.abs(nifti_xfm[2][i]);
+      
+      if (c_x > c_y && c_x > c_z) {
+        header.order[2 - i] = "xspace";
+        axis_index_from_file[i] = 0;
+      }
+      else if (c_y > c_x && c_y > c_z) {
+        header.order[2 - i] = "yspace";
+        axis_index_from_file[i] = 1;
+      }
+      else {
+        header.order[2 - i] = "zspace";
+        axis_index_from_file[i] = 2;
+      }
+    }
+    
+    for (i = 0; i < 3; i++) {
+      for (j = 0; j < 4; j++) {
+        var volume_axis = j;
+        if (j < 3) {
+          volume_axis = axis_index_from_file[j];
+        }
+        transform[i][volume_axis] = nifti_xfm[i][j];
+      }
+    }
+
+
+
+
     MniVolume.transformToMinc(transform, header);
+
+    header[header.order[2]].space_length = dview.getUint16(42, littleEndian);
+    header[header.order[1]].space_length = dview.getUint16(44, littleEndian);
+    header[header.order[0]].space_length = dview.getUint16(46, littleEndian);
+     
+    if (tlength >= 1) {
+       header.order.unshift("time");
+    }
+
 
     header.datatype = datatype;
     header.vox_offset = vox_offset;
@@ -31143,7 +31190,7 @@ class NiftiDecoderAlt extends Filter {
     // dimensions info ordered from the fastest varying to the slowest varying
     var voxelSpaceNames = ['i', 'j', 'k', 't'];
     var worldSpaceNames = ['x', 'y', 'z', 't'];
-    metadata.dimensions = [];
+    var dimensions = [];
 
     for(var d=0; d<numberOfDimensions; d++){
       // compute the stride based on the previous dim
@@ -31162,27 +31209,124 @@ class NiftiDecoderAlt extends Filter {
         stride: stride,
         direction: niftiTransfoMatrix[d][d] < 0 ? -1 : 1,
       };
-      metadata.dimensions.push( dimension );
+      dimensions.push( dimension );
     }
 
-    if( metadata.dimensions.length >= 3){
+    if( dimensions.length >= 3){
       // dim x has for width  y and for heigth z
-      metadata.dimensions[0].widthDimension = 1;
-      metadata.dimensions[0].heightDimension = 2;
+      dimensions[0].widthDimension = 1;
+      dimensions[0].heightDimension = 2;
 
       // dim y has for width  x and for heigth z
-      metadata.dimensions[1].widthDimension = 0;
-      metadata.dimensions[1].heightDimension = 2;
+      dimensions[1].widthDimension = 0;
+      dimensions[1].heightDimension = 2;
 
       // dim z has for width  x and for heigth y
-      metadata.dimensions[2].widthDimension = 0;
-      metadata.dimensions[2].heightDimension = 1;
+      dimensions[2].widthDimension = 0;
+      dimensions[2].heightDimension = 1;
     }
     
-    var v2wMat = fromValues$3(niftiTransfoMatrix[0][0], niftiTransfoMatrix[1][0], niftiTransfoMatrix[2][0], niftiTransfoMatrix[3][0],
-                                     niftiTransfoMatrix[0][1], niftiTransfoMatrix[1][1], niftiTransfoMatrix[2][1], niftiTransfoMatrix[3][1],
-                                     niftiTransfoMatrix[0][2], niftiTransfoMatrix[1][2], niftiTransfoMatrix[2][2], niftiTransfoMatrix[3][2],
-                                     niftiTransfoMatrix[0][3], niftiTransfoMatrix[1][3], niftiTransfoMatrix[2][3], niftiTransfoMatrix[3][3] );
+    /*
+    swaping dimensions:
+    In some cases, a NIfTI does not respect the orientation from the specfication.
+    In order to get the proper orientation, we have to swap some dimensions as 
+    well as the corresponding rows in the v2w matrix.
+    The criterion to find what dim is suposed to come first, what is supposed to
+    be last is direction cosine fron the matrix:
+    - the 1st row should be the one with the highest absolute value from all 1st columns
+    - the 2nd row should be the one with the highest absolute value from all 2nd columns
+    - the 3rd row should be the one with the highest absolute value from all 3rd columns
+    */
+    
+    function whichRowHasHighestCol( arrOfArr, col){
+      var r0 = Math.abs(arrOfArr[0][col]);
+      var r1 = Math.abs(arrOfArr[1][col]);
+      var r2 = Math.abs(arrOfArr[2][col]);
+      
+      if( r0 > r1 && r0 > r2){
+        return 0;
+      }else if(r1 > r0 && r1 > r2){
+        return 1;
+      }else{
+        return 2
+      }
+    }
+    
+    var shouldBeRow0 = whichRowHasHighestCol(niftiTransfoMatrix, 0);
+    var shouldBeRow1 = whichRowHasHighestCol(niftiTransfoMatrix, 1);
+    var shouldBeRow2 = whichRowHasHighestCol(niftiTransfoMatrix, 2);
+    
+    var shouldBe = [ shouldBeRow0, shouldBeRow1, shouldBeRow2 ];
+    
+    var transfoMatrixToUse = niftiTransfoMatrix;
+    var dimensionsToUse = dimensions;
+    
+    // if so, the dimension list and the matrix need swapping
+    if( shouldBe[0] != 0 || shouldBe[1] != 1 || shouldBe[2] != 2){
+      // swap the matrix rows
+      transfoMatrixToUse = [
+       [niftiTransfoMatrix[shouldBe[0]][0], niftiTransfoMatrix[shouldBe[0]][1], niftiTransfoMatrix[shouldBe[0]][2], niftiTransfoMatrix[shouldBe[0]][3]],
+       [niftiTransfoMatrix[shouldBe[1]][0], niftiTransfoMatrix[shouldBe[1]][1], niftiTransfoMatrix[shouldBe[1]][2], niftiTransfoMatrix[shouldBe[1]][3]],
+       [niftiTransfoMatrix[shouldBe[2]][0], niftiTransfoMatrix[shouldBe[2]][1], niftiTransfoMatrix[shouldBe[2]][2], niftiTransfoMatrix[shouldBe[2]][3]],
+       [niftiTransfoMatrix[3][0], niftiTransfoMatrix[3][1], niftiTransfoMatrix[3][2], niftiTransfoMatrix[3][3]],
+     ];
+     
+     var tempDimensions = new Array( dimensions.length );
+     
+     for(var i=0; i<dimensions.length; i++){
+       tempDimensions[i] = dimensions[ shouldBe[i] ];
+     }
+     
+     tempDimensions[shouldBe[0]].nameVoxelSpace = "i";
+     tempDimensions[shouldBe[1]].nameVoxelSpace = "j";
+     tempDimensions[shouldBe[2]].nameVoxelSpace = "k";
+     
+     tempDimensions[shouldBe[0]].nameWorldSpace = "x";
+     tempDimensions[shouldBe[1]].nameWorldSpace = "y";
+     tempDimensions[shouldBe[2]].nameWorldSpace = "z";
+     
+     
+     for(var i=0; i<dimensions.length; i++){
+       /*
+       tempDimensions[i].widthDimension = shouldBe[tempDimensions[i].widthDimension];
+       tempDimensions[i].heightDimension = shouldBe[tempDimensions[i].heightDimension];
+       */
+       
+       tempDimensions[i].widthDimension = shouldBe.indexOf( tempDimensions[i].widthDimension );
+       tempDimensions[i].heightDimension = shouldBe.indexOf( tempDimensions[i].heightDimension );
+     }
+     
+     
+     /*
+     tempDimensions[0] = dimensions[ shouldBe[0] ];
+     tempDimensions[1] = dimensions[ shouldBe[1] ];
+     tempDimensions[2] = dimensions[ shouldBe[2] ];
+     */
+     
+     if( dimensions.length == 4){
+       tempDimensions[3] = dimensions[ 3 ];
+     }
+     
+     dimensionsToUse = tempDimensions;
+    }
+    
+    
+
+     
+    
+    console.log( niftiTransfoMatrix );
+    console.log( transfoMatrixToUse );
+    console.log( dimensions );
+    console.log( dimensionsToUse );
+    
+    // END of swapping
+    
+    metadata.dimensions = dimensionsToUse;
+    
+    var v2wMat = fromValues$3(transfoMatrixToUse[0][0], transfoMatrixToUse[1][0], transfoMatrixToUse[2][0], transfoMatrixToUse[3][0],
+                                 transfoMatrixToUse[0][1], transfoMatrixToUse[1][1], transfoMatrixToUse[2][1], transfoMatrixToUse[3][1],
+                                 transfoMatrixToUse[0][2], transfoMatrixToUse[1][2], transfoMatrixToUse[2][2], transfoMatrixToUse[3][2],
+                                 transfoMatrixToUse[0][3], transfoMatrixToUse[1][3], transfoMatrixToUse[2][3], transfoMatrixToUse[3][3] );
 
     var w2vMat = create$3();
     invert$3( w2vMat, v2wMat );
