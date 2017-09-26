@@ -403,19 +403,18 @@ class Image3DAlt extends PixpipeContainer{
   * @return {Number} the length of this dimension
   */
   getDimensionSize( dimIndex ){
-    var index = dimIndex;
-    var indexer = { "i": 0, "j": 1, "k": 2, "t": 3};
-    
-    
     if( typeof dimIndex === "string" ){
-      //index = indexer[ dimIndex ];
-    
+      // if string/name replace by its equivalent numerical index
+      dimIndex = this.getDimensionIndexFromName( dimIndex );
+      if(dimIndex == -1){
+        console.warn("dimensions " + dimIndex + " does not exist.");
+        return;
+      }
     }
-      
-      
+
     var dimensions = this._metadata.dimensions;
-    if( index < dimensions.length ){
-      return dimensions[ index ].length;
+    if( dimIndex < dimensions.length ){
+      return dimensions[ dimIndex ].length;
     }else{
       console.warn("A dimensions of such index does not exist.");
       return null;
