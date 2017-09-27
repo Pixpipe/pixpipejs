@@ -1,5 +1,10 @@
 'use strict'
 
+// defines the type of array to be used by glMatrix. Default would be Float32Array
+// but typed arrays cause issue when serialized, this is why we'd rather use regular Array.
+import { glMatrix } from 'gl-matrix';
+glMatrix.setMatrixArrayType( Array );
+
 // core classes
 export { CoreTypes } from './core/CoreTypes.js';
 export { PixpipeObject } from './core/PixpipeObject.js';
@@ -10,6 +15,7 @@ export { Image3D } from './core/Image3D.js';
 export { ImageToImageFilter } from './core/ImageToImageFilter.js';
 export { MniVolume } from './core/MniVolume.js';
 export { LineString } from './core/LineString.js';
+export { Image3DAlt } from './core/Image3DAlt.js';
 
 // io - Readers and writers
 export { CanvasImageWriter } from './io/CanvasImageWriter.js';
@@ -22,6 +28,7 @@ export { BrowserDownloadBuffer } from './io/BrowserDownloadBuffer.js';
 // decoders
 export { Minc2Decoder } from './decoder/Minc2Decoder.js';
 export { NiftiDecoder } from './decoder/NiftiDecoder.js';
+export { NiftiDecoderAlt } from './decoder/NiftiDecoderAlt.js';
 export { PixpEncoder } from './decoder/PixpEncoder.js';
 export { PixpDecoder } from './decoder/PixpDecoder.js';
 export { Image3DGenericDecoder } from './decoder/Image3DGenericDecoder.js';
