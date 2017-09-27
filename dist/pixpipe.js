@@ -15166,7 +15166,7 @@ class Image3DAlt extends PixpipeContainer{
           nameWorldSpace: joiBrowser.string().regex(/(x|y|z|t)/).required(),
           worldUnitSize: joiBrowser.number().required(),
           stride: joiBrowser.number().integer().min(1).required(),
-          direction: joiBrowser.number().integer().valid([-1, 1]).required()
+          step: joiBrowser.number().required()
         }
       ).unknown()),
       
@@ -15355,7 +15355,7 @@ class Image3DAlt extends PixpipeContainer{
             worldSpaceName: "t",
             worldUnitSize: "",
             stride: xSize * ySize * zSize,
-            direction: 1
+            step: 1
           };
           bufferSize *= tSize;
           
@@ -15460,7 +15460,7 @@ class Image3DAlt extends PixpipeContainer{
   
   /**
   * Get a voxel value at a given position with regards of the direction the data are
-  * supposed to be read. In other word, dimension.direction is taken into account.
+  * supposed to be read. In other word, dimension.step is taken into account.
   * @param {Object} position - 3D position like {i, j, k}, i being the fastest varying, k being the slowest varying
   * @param {Number} time - position along T axis (time dim, the very slowest varying dim when present)
   */
@@ -15481,9 +15481,9 @@ class Image3DAlt extends PixpipeContainer{
     }
     
     var tOffset = dimensions.length > 3 ? time*dimensions[3].stride * time : 0;
-    var iOffset = (dimensions[0].direction < 0 ?  dimensions[0].length - i -1 : i) * dimensions[0].stride;
-    var jOffset = (dimensions[1].direction < 0 ?  dimensions[1].length - j -1 : j) * dimensions[1].stride;
-    var kOffset = (dimensions[2].direction < 0 ?  dimensions[2].length - k -1 : k) * dimensions[2].stride;
+    var iOffset = (dimensions[0].step < 0 ?  dimensions[0].length - i -1 : i) * dimensions[0].stride;
+    var jOffset = (dimensions[1].step < 0 ?  dimensions[1].length - j -1 : j) * dimensions[1].stride;
+    var kOffset = (dimensions[2].step < 0 ?  dimensions[2].length - k -1 : k) * dimensions[2].stride;
     
     var positionBuffer = tOffset + iOffset + jOffset + kOffset;
     return this._data[ positionBuffer ];
@@ -15615,15 +15615,15 @@ class Image3DAlt extends PixpipeContainer{
     
     var Img2dData = new this._data.constructor( widthDimension.length * heightDimension.length );
     var timeOffset = dimensions.length > 3 ? time*dimensions[3].stride * time : 0;
-    var sliceOffset = (sliceDimension.direction < 0 ? sliceDimension.length - sliceIndex - 1 : sliceIndex) * sliceDimension.stride;
+    var sliceOffset = (sliceDimension.step < 0 ? sliceDimension.length - sliceIndex - 1 : sliceIndex) * sliceDimension.stride;
     
     var pixelCounter = 0;
     // this axis is always fliped by default (not sure why)
     for (var r = heightDimension.length - 1; r >= 0; r--) {
-      var heighDimOffset = (heightDimension.direction < 0 ? heightDimension.length - r -1 : r) * heightDimension.stride; 
+      var heighDimOffset = (heightDimension.step < 0 ? heightDimension.length - r -1 : r) * heightDimension.stride; 
       
       for(var c=0; c<widthDimension.length; c++){
-        var widthDimOffset = (widthDimension.direction < 0 ?  widthDimension.length - c -1 : c) * widthDimension.stride; 
+        var widthDimOffset = (widthDimension.step < 0 ?  widthDimension.length - c -1 : c) * widthDimension.stride; 
         
         var offset = sliceOffset + timeOffset + 
                      heighDimOffset + 
@@ -31207,7 +31207,7 @@ class NiftiDecoderAlt extends Filter {
         nameWorldSpace: worldSpaceNames[d],
         worldUnitSize: header.pixDims[d + 1],
         stride: stride,
-        direction: niftiTransfoMatrix[d][d] < 0 ? -1 : 1,
+        //direction: niftiTransfoMatrix[d][d] < 0 ? -1 : 1, // to be filled later
       };
       dimensions.push( dimension );
     }
@@ -31252,74 +31252,67 @@ class NiftiDecoderAlt extends Filter {
       }
     }
     
+    function getMagnitude( arr ){
+      return Math.sqrt( arr[0]*arr[0] + arr[1]*arr[1] + arr[2]*arr[2] );
+    }
+    
     var shouldBeRow0 = whichRowHasHighestCol(niftiTransfoMatrix, 0);
     var shouldBeRow1 = whichRowHasHighestCol(niftiTransfoMatrix, 1);
     var shouldBeRow2 = whichRowHasHighestCol(niftiTransfoMatrix, 2);
     
-    var shouldBe = [ shouldBeRow0, shouldBeRow1, shouldBeRow2 ];
+    // when we have shouldBeRow[ n ] = m it means that the current original row m 
+    // of transfo-matrix should move to the position n
+    var shouldBeRow = [ shouldBeRow0, shouldBeRow1, shouldBeRow2 ];
+    // this is the inverse lookup of shouldBeRow
+    var wasRow = [ shouldBeRow.indexOf(0), shouldBeRow.indexOf(1), shouldBeRow.indexOf(2) ];
     
     var transfoMatrixToUse = niftiTransfoMatrix;
     var dimensionsToUse = dimensions;
     
+    // ******************* BEGIN TO SWAP ***************************************
+    
     // if so, the dimension list and the matrix need swapping
-    if( shouldBe[0] != 0 || shouldBe[1] != 1 || shouldBe[2] != 2){
+    if( shouldBeRow[0] != 0 || shouldBeRow[1] != 1 || shouldBeRow[2] != 2){
       // swap the matrix rows
       transfoMatrixToUse = [
-       [niftiTransfoMatrix[shouldBe[0]][0], niftiTransfoMatrix[shouldBe[0]][1], niftiTransfoMatrix[shouldBe[0]][2], niftiTransfoMatrix[shouldBe[0]][3]],
-       [niftiTransfoMatrix[shouldBe[1]][0], niftiTransfoMatrix[shouldBe[1]][1], niftiTransfoMatrix[shouldBe[1]][2], niftiTransfoMatrix[shouldBe[1]][3]],
-       [niftiTransfoMatrix[shouldBe[2]][0], niftiTransfoMatrix[shouldBe[2]][1], niftiTransfoMatrix[shouldBe[2]][2], niftiTransfoMatrix[shouldBe[2]][3]],
-       [niftiTransfoMatrix[3][0], niftiTransfoMatrix[3][1], niftiTransfoMatrix[3][2], niftiTransfoMatrix[3][3]],
-     ];
-     
-     var tempDimensions = new Array( dimensions.length );
-     
-     for(var i=0; i<dimensions.length; i++){
-       tempDimensions[i] = dimensions[ shouldBe[i] ];
-     }
-     
-     tempDimensions[shouldBe[0]].nameVoxelSpace = "i";
-     tempDimensions[shouldBe[1]].nameVoxelSpace = "j";
-     tempDimensions[shouldBe[2]].nameVoxelSpace = "k";
-     
-     tempDimensions[shouldBe[0]].nameWorldSpace = "x";
-     tempDimensions[shouldBe[1]].nameWorldSpace = "y";
-     tempDimensions[shouldBe[2]].nameWorldSpace = "z";
-     
-     
-     for(var i=0; i<dimensions.length; i++){
-       /*
-       tempDimensions[i].widthDimension = shouldBe[tempDimensions[i].widthDimension];
-       tempDimensions[i].heightDimension = shouldBe[tempDimensions[i].heightDimension];
-       */
-       
-       tempDimensions[i].widthDimension = shouldBe.indexOf( tempDimensions[i].widthDimension );
-       tempDimensions[i].heightDimension = shouldBe.indexOf( tempDimensions[i].heightDimension );
-     }
-     
-     
-     /*
-     tempDimensions[0] = dimensions[ shouldBe[0] ];
-     tempDimensions[1] = dimensions[ shouldBe[1] ];
-     tempDimensions[2] = dimensions[ shouldBe[2] ];
-     */
-     
-     if( dimensions.length == 4){
-       tempDimensions[3] = dimensions[ 3 ];
-     }
-     
-     dimensionsToUse = tempDimensions;
-    }
-    
-    
+        [niftiTransfoMatrix[shouldBeRow[0]][0], niftiTransfoMatrix[shouldBeRow[0]][1], niftiTransfoMatrix[shouldBeRow[0]][2], niftiTransfoMatrix[shouldBeRow[0]][3]],
+        [niftiTransfoMatrix[shouldBeRow[1]][0], niftiTransfoMatrix[shouldBeRow[1]][1], niftiTransfoMatrix[shouldBeRow[1]][2], niftiTransfoMatrix[shouldBeRow[1]][3]],
+        [niftiTransfoMatrix[shouldBeRow[2]][0], niftiTransfoMatrix[shouldBeRow[2]][1], niftiTransfoMatrix[shouldBeRow[2]][2], niftiTransfoMatrix[shouldBeRow[2]][3]],
+        [niftiTransfoMatrix[3][0], niftiTransfoMatrix[3][1], niftiTransfoMatrix[3][2], niftiTransfoMatrix[3][3]],
+      ];
+  
+      // just making a safe copy
+      var dimensionsCp = JSON.parse(JSON.stringify(dimensions));
 
-     
+      // renaming it. Then it seems to already be in the correct order. Not sure why?? TODO: see why!
+      dimensionsCp[wasRow[0]].nameVoxelSpace = "i";
+      dimensionsCp[wasRow[1]].nameVoxelSpace = "j";
+      dimensionsCp[wasRow[2]].nameVoxelSpace = "k";
+      dimensionsCp[wasRow[0]].nameWorldSpace = "x";
+      dimensionsCp[wasRow[1]].nameWorldSpace = "y";
+      dimensionsCp[wasRow[2]].nameWorldSpace = "z";
+
+      // associating width and height
+      dimensionsCp[wasRow[0]].widthDimension = wasRow[1];
+      dimensionsCp[wasRow[0]].heightDimension = wasRow[2];
+      dimensionsCp[wasRow[1]].widthDimension = wasRow[0];
+      dimensionsCp[wasRow[1]].heightDimension = wasRow[2];
+      dimensionsCp[wasRow[2]].widthDimension = wasRow[0];
+      dimensionsCp[wasRow[2]].heightDimension = wasRow[1];
+
+      
+
+      dimensionsToUse = dimensionsCp;
+    }
+    // ******************* END OF SWAPING **************************************
     
-    console.log( niftiTransfoMatrix );
-    console.log( transfoMatrixToUse );
-    console.log( dimensions );
-    console.log( dimensionsToUse );
     
-    // END of swapping
+    // set the directions
+    for(var i=0; i<3; i++){
+      var stepSize = getMagnitude( transfoMatrixToUse[i] );
+      var directionSign = Math.sign( transfoMatrixToUse[i][i]);
+      dimensionsToUse[i].step = stepSize * directionSign;
+    }
     
     metadata.dimensions = dimensionsToUse;
     
@@ -31337,18 +31330,13 @@ class NiftiDecoderAlt extends Filter {
       w2v: w2vMat
     };
 
-    console.log( data );
-    console.log( metadata );
-
-    //var isMetadataValid = Image3DAlt.validateMetadataSchema(metadata);
-    //console.log("is valid: " + isMetadataValid );
-
     var output = new Image3DAlt();
     output.setRawData( data );
     output.setRawMetadata( metadata );
     output.scanDataRange();
     
     if(output.metadataIntegrityCheck()){
+      console.log( output );
       this._output[0] = output;
     }
   }

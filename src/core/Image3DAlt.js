@@ -73,7 +73,7 @@ class Image3DAlt extends PixpipeContainer{
           nameWorldSpace: joi.string().regex(/(x|y|z|t)/).required(),
           worldUnitSize: joi.number().required(),
           stride: joi.number().integer().min(1).required(),
-          direction: joi.number().integer().valid([-1, 1]).required()
+          step: joi.number().required()
         }
       ).unknown()),
       
@@ -262,7 +262,7 @@ class Image3DAlt extends PixpipeContainer{
             worldSpaceName: "t",
             worldUnitSize: "",
             stride: xSize * ySize * zSize,
-            direction: 1
+            step: 1
           }
           bufferSize *= tSize;
           
@@ -367,7 +367,7 @@ class Image3DAlt extends PixpipeContainer{
   
   /**
   * Get a voxel value at a given position with regards of the direction the data are
-  * supposed to be read. In other word, dimension.direction is taken into account.
+  * supposed to be read. In other word, dimension.step is taken into account.
   * @param {Object} position - 3D position like {i, j, k}, i being the fastest varying, k being the slowest varying
   * @param {Number} time - position along T axis (time dim, the very slowest varying dim when present)
   */
@@ -388,9 +388,9 @@ class Image3DAlt extends PixpipeContainer{
     }
     
     var tOffset = dimensions.length > 3 ? time*dimensions[3].stride * time : 0;
-    var iOffset = (dimensions[0].direction < 0 ?  dimensions[0].length - i -1 : i) * dimensions[0].stride;
-    var jOffset = (dimensions[1].direction < 0 ?  dimensions[1].length - j -1 : j) * dimensions[1].stride;
-    var kOffset = (dimensions[2].direction < 0 ?  dimensions[2].length - k -1 : k) * dimensions[2].stride;
+    var iOffset = (dimensions[0].step < 0 ?  dimensions[0].length - i -1 : i) * dimensions[0].stride;
+    var jOffset = (dimensions[1].step < 0 ?  dimensions[1].length - j -1 : j) * dimensions[1].stride;
+    var kOffset = (dimensions[2].step < 0 ?  dimensions[2].length - k -1 : k) * dimensions[2].stride;
     
     var positionBuffer = tOffset + iOffset + jOffset + kOffset;
     return this._data[ positionBuffer ];
@@ -522,15 +522,15 @@ class Image3DAlt extends PixpipeContainer{
     
     var Img2dData = new this._data.constructor( widthDimension.length * heightDimension.length );
     var timeOffset = dimensions.length > 3 ? time*dimensions[3].stride * time : 0;
-    var sliceOffset = (sliceDimension.direction < 0 ? sliceDimension.length - sliceIndex - 1 : sliceIndex) * sliceDimension.stride;
+    var sliceOffset = (sliceDimension.step < 0 ? sliceDimension.length - sliceIndex - 1 : sliceIndex) * sliceDimension.stride;
     
     var pixelCounter = 0;
     // this axis is always fliped by default (not sure why)
     for (var r = heightDimension.length - 1; r >= 0; r--) {
-      var heighDimOffset = (heightDimension.direction < 0 ? heightDimension.length - r -1 : r) * heightDimension.stride; 
+      var heighDimOffset = (heightDimension.step < 0 ? heightDimension.length - r -1 : r) * heightDimension.stride; 
       
       for(var c=0; c<widthDimension.length; c++){
-        var widthDimOffset = (widthDimension.direction < 0 ?  widthDimension.length - c -1 : c) * widthDimension.stride; 
+        var widthDimOffset = (widthDimension.step < 0 ?  widthDimension.length - c -1 : c) * widthDimension.stride; 
         
         var offset = sliceOffset + timeOffset + 
                      heighDimOffset + 
