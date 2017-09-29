@@ -103,7 +103,7 @@ class NiftiDecoderAlt extends Filter {
     }
     
     // dimensions info ordered from the fastest varying to the slowest varying
-    var voxelSpaceNames = ['i', 'j', 'k', 't'];
+    var voxelSpaceNames = ['k', 'j', 'i', 't'];
     var worldSpaceNames = ['x', 'y', 'z', 't'];
     var dimensions = [];
 
@@ -200,9 +200,9 @@ class NiftiDecoderAlt extends Filter {
       var dimensionsCp = JSON.parse(JSON.stringify(dimensions))
 
       // renaming it. Then it seems to already be in the correct order. Not sure why?? TODO: see why!
-      dimensionsCp[wasRow[0]].nameVoxelSpace = "i";
-      dimensionsCp[wasRow[1]].nameVoxelSpace = "j";
-      dimensionsCp[wasRow[2]].nameVoxelSpace = "k";
+      dimensionsCp[0].nameVoxelSpace = "k";
+      dimensionsCp[1].nameVoxelSpace = "j";
+      dimensionsCp[2].nameVoxelSpace = "i";
       dimensionsCp[wasRow[0]].nameWorldSpace = "x";
       dimensionsCp[wasRow[1]].nameWorldSpace = "y";
       dimensionsCp[wasRow[2]].nameWorldSpace = "z";

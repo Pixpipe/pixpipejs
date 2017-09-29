@@ -456,7 +456,7 @@ class Image3DAlt extends PixpipeContainer{
     }
     
     var transform = transformations[ transformName ];
-    var origPos = vec4.fromValues(position.x, position.x, position.z, 1);
+    var origPos = vec4.fromValues(position.x, position.y, position.z, 1);
     var transPos = vec4.create();
     vec4.transformMat4(transPos, origPos, transform);
     return {x: transPos[0], y: transPos[1], z: transPos[2] };
@@ -643,6 +643,7 @@ class Image3DAlt extends PixpipeContainer{
       colors: colors
     }
   } /* END of method getLineSample */
+
 
 
 } /* END of class Image3DAlt */
