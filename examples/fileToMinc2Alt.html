@@ -1,6 +1,6 @@
 <html>
 <head>
-  <title>File to Nifti</title>
+  <title>File to Minc2</title>
 
   <script src="../dist/pixpipe.js"></script>
   <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700,900" rel="stylesheet">
@@ -11,8 +11,8 @@
   <p>
   This does the following :
   <ul>
-    <li>open a local NIfTI file, using <code>pixpipe.FileToArrayBufferReader</code></li>
-    <li>redirect the file buffer into a <code>pixpipe.NiftiDecoder</code> to extract NIfTI dataset and metadata</li>
+    <li>open a local Minc2 file, using <code>pixpipe.FileToArrayBufferReader</code></li>
+    <li>redirect the file buffer into a <code>pixpipe.Minc2Decoder</code> to extract Minc dataset and metadata</li>
     <li>get the output as a generique <code>pixpipe.MniVolume</code> object</li>
     <li><code>slice()</code> the volume 3 times, along 3 given axis to get 3 <code>pixpipe.Image2D</code> objects</li>
     <li>display the images in separate canvas using a single instance of <code>pixpipe.CanvasImageWriter</code></li>
@@ -41,45 +41,50 @@
 
     // the image is loaded...
     // here, this = url2ImgFilter
-    file2Buff.on("ready", function(){
+    file2Buff.on("ready", function( ){
 
       var filenames = this.getMetadata("filenames");
 
-      var niftiBuff = this.getOutput();
+      var mincBuff = this.getOutput();
 
-      var niftiDecoder = new pixpipe.NiftiDecoderAlt();
-      niftiDecoder.addInput( niftiBuff );
-      niftiDecoder.update();
+      var minc2Decoder = new pixpipe.Minc2DecoderAlt();
+      minc2Decoder.addInput( mincBuff );
+      minc2Decoder.update();
 
-      var mniVolume = niftiDecoder.getOutput();
+      var mniVolume = minc2Decoder.getOutput();
+
+      return;
 
       if(mniVolume){
-        var voxelOrigInWorld = mniVolume.getTransformedPosition({x:20, y:10, z:30}, "v2w");
-        console.log( voxelOrigInWorld );
-        
         // create a filter to write the image into a canvas
         var imageToCanvasFilter = new pixpipe.CanvasImageWriter( );
         // replace the default min max values of [0, 255]
-        imageToCanvasFilter.setMetadata("min", mniVolume.getMetadata("statistics").min);
-        imageToCanvasFilter.setMetadata("max", mniVolume.getMetadata("statistics").max);
+        imageToCanvasFilter.setMetadata("min", mniVolume.getMetadata("voxel_min"));
+        imageToCanvasFilter.setMetadata("max", mniVolume.getMetadata("voxel_max"));
 
-        // display sagital
         imageToCanvasFilter.setMetadata( "parentDivID", "myDiv_x" );
-        imageToCanvasFilter.addInput( mniVolume.getSlice('x', Math.round(mniVolume.getDimensionSize('x')/5 )) );
-        //imageToCanvasFilter.addInput( mniVolume.getSliceDim0( Math.round(mniVolume.getDimensionSize(0)/3 )) );
+        imageToCanvasFilter.addInput(
+          mniVolume.getSlice("xspace", Math.floor(mniVolume.getMetadata("xspace").space_length / 2) )
+        );
+
         imageToCanvasFilter.update();
 
-        // display coronal
         imageToCanvasFilter.setMetadata( "parentDivID", "myDiv_y" );
-        imageToCanvasFilter.addInput( mniVolume.getSlice('y', Math.round(mniVolume.getDimensionSize('y')/5 )) );
+        imageToCanvasFilter.addInput(
+          mniVolume.getSlice("yspace", Math.floor(mniVolume.getMetadata("yspace").space_length / 2))
+        );
+
         imageToCanvasFilter.update();
 
-        // display axial
         imageToCanvasFilter.setMetadata( "parentDivID", "myDiv_z" );
-        imageToCanvasFilter.addInput( mniVolume.getSlice('z', Math.round(mniVolume.getDimensionSize('z')/5 )) );
+        imageToCanvasFilter.addInput(
+          mniVolume.getSlice("zspace", Math.floor(mniVolume.getMetadata("zspace").space_length / 2))
+        );
+
         imageToCanvasFilter.update();
+
       }else{
-        console.warn("Non-existant output for niftiDecoder.");
+        console.warn("Non-existant output for minc2Decoder.");
       }
     });
 

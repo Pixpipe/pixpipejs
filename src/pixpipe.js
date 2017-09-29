@@ -40,6 +40,7 @@ export { PixBinDecoder } from './decoder/PixBinDecoder.js';
 export { JpegDecoder } from './decoder/JpegDecoder.js';
 export { PngDecoder } from './decoder/PngDecoder.js';
 export { Image2DGenericDecoder } from './decoder/Image2DGenericDecoder.js';
+export { Minc2DecoderAlt } from './decoder/Minc2DecoderAlt.js';
 
 // filters - processing of Images2D and Signal1D
 export { ComponentProjectionImage2DFilter } from './filter/ComponentProjectionImage2DFilter';
@@ -73,3 +74,7 @@ export { Colormap } from './helper/Colormap.js';
 
 // filters - processing of Image3D
 export { Image3DToMosaicFilter } from './filter/Image3DToMosaicFilter.js';
+
+
+// utils
+export { Image3DMetadataConverter } from './utils/Image3DMetadataConverter.js';
