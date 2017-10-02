@@ -54,8 +54,15 @@
       var mniVolume = niftiDecoder.getOutput();
 
       if(mniVolume){
-        var voxelOrigInWorld = mniVolume.getTransformedPosition({x:20, y:10, z:30}, "v2w");
-        console.log( voxelOrigInWorld );
+        //var voxelOrigInWorld = mniVolume.getPositionFromVoxelSpaceToTransfoSpace({i:20, j:30, k:10}, "v2w");
+        //console.log( voxelOrigInWorld );
+        
+        var voxelOrigInWorld = mniVolume.getPositionFromTransfoSpaceToVoxelSpace({x:20, y:30, z:10}, "w2v");
+        //console.log( voxelOrigInWorld );
+        
+        //console.log( "safe: " + mniVolume.getVoxelSafe({i:25, j:35, k: 15}));
+        console.log( "unsafe: " + mniVolume.getVoxel({i:80, j:120, k: 150}));
+        
         
         // create a filter to write the image into a canvas
         var imageToCanvasFilter = new pixpipe.CanvasImageWriter( );

@@ -131,6 +131,17 @@ class Image3DAlt extends PixpipeContainer{
       this._dimensionsWorldLUT[ dimensions[i].nameWorldSpace ] = i;
       this._dimensionsVoxelLUT[ dimensions[i].nameVoxelSpace ] = i;
     }
+    
+    
+
+    /*
+    function positionOf( dimName ){
+      return dimensions[0].nameWorldSpace === dimName ? 0 : dimensions[1].nameWorldSpace === dimName ? 1 : dimensions[2].nameWorldSpace === dimName ? 2 : -1;
+    }
+    
+    var posOfX = positionOf("x");
+    var posOfY = positionOf("y");
+    var posOfZ = positionOf("z");*/
   }
   
   
@@ -356,10 +367,13 @@ class Image3DAlt extends PixpipeContainer{
     }
     
     var ncpp = this._metadata.ncpp;
-    var positionBuffer = i * dimensions[0].stride +
-                         j * dimensions[1].stride +
-                         k * dimensions[2].stride +
-                         dimensions.length > 3 ? time * dimensions[3].stride : 0;
+    
+    var tOffset = dimensions.length > 3 ? time*dimensions[3].stride * time : 0;
+    var iOffset = i * dimensions[2].stride;
+    var jOffset = j * dimensions[1].stride;
+    var kOffset = k * dimensions[0].stride;
+    
+    var positionBuffer = tOffset + iOffset + jOffset + kOffset;
     positionBuffer *= ncpp;
     return this._data[ positionBuffer ];
   }
@@ -388,9 +402,9 @@ class Image3DAlt extends PixpipeContainer{
     }
     
     var tOffset = dimensions.length > 3 ? time*dimensions[3].stride * time : 0;
-    var iOffset = (dimensions[0].step < 0 ?  dimensions[0].length - i -1 : i) * dimensions[0].stride;
+    var iOffset = (dimensions[2].step < 0 ?  dimensions[2].length - i -1 : i) * dimensions[2].stride;
     var jOffset = (dimensions[1].step < 0 ?  dimensions[1].length - j -1 : j) * dimensions[1].stride;
-    var kOffset = (dimensions[2].step < 0 ?  dimensions[2].length - k -1 : k) * dimensions[2].stride;
+    var kOffset = (dimensions[0].step < 0 ?  dimensions[0].length - k -1 : k) * dimensions[0].stride;
     
     var positionBuffer = tOffset + iOffset + jOffset + kOffset;
     return this._data[ positionBuffer ];
@@ -440,14 +454,15 @@ class Image3DAlt extends PixpipeContainer{
 
 
   /**
-  * Given a voxel-based coordinate {x, y, z} and a transform name, return another {x, y, z}.
-  * Notice: the input is called {x, y, z} instead of of 
-  * after a transformation.
-  * @param {Object} position - 3D position like {x, y, z}, i being the fastest varying, k being the slowest varying
+  * [PRIVATE]
+  * Convert a position from a coordinate system to another. Should be called by a method that makes sure of the
+  * order of the dimensions.
+  * @param {Array} positionArr - 3D position, could be [x, y, z] or in voxel coord not necessary ordered [i, j, k]
+  * because this depends on the orders of the dimension.
   * @param {String} transformName - name of the transformation registered in the metadata
-  * @return {Object} coordinate as an Object {x: Number, y: Number, z: Number}
+  * @return {Array} coordinate
   */
-  getTransformedPosition( position, transformName ){
+  _getTransformedPosition( positionArr, transformName ){
     var transformations = this._metadata.transformations;
     
     if( !(transformName in transformations) ){
@@ -456,12 +471,74 @@ class Image3DAlt extends PixpipeContainer{
     }
     
     var transform = transformations[ transformName ];
-    var origPos = vec4.fromValues(position.x, position.y, position.z, 1);
+    var origPos = vec4.fromValues(positionArr[0], positionArr[1], positionArr[2], 1);
     var transPos = vec4.create();
     vec4.transformMat4(transPos, origPos, transform);
-    return {x: transPos[0], y: transPos[1], z: transPos[2] };
+    return transPos;
   }
 
+
+  /**
+  * Convert a position from voxel coordinates to another space
+  * @param {Object} voxelPosition - voxel coordinates like {i: Number, j: Number, k: Number} where i is the slowest varying and k is the fastest varying
+  * @param {String} transformName - name of a transformation registered in the metadata as a child property of "transformations"
+  * @return {Object} coordinates {x: Number, y: Number, z: Number} in the space coorinate given in argument
+  */
+  getPositionFromVoxelSpaceToTransfoSpace( voxelPosition, transformName ){
+    var transPosUnordered = this._getTransformedPosition( [voxelPosition.k, voxelPosition.j, voxelPosition.i], transformName);
+    
+    // the given position is (possibly) not ordered as (x, y, z) are ordered in the dimension metadata object.
+    // we have to reorder them.
+    
+    var dimensions = this._metadata.dimensions;
+    
+    function positionOf( dimName ){
+      return dimensions[0].nameWorldSpace === dimName ? 0 : dimensions[1].nameWorldSpace === dimName ? 1 : dimensions[2].nameWorldSpace === dimName ? 2 : -1;
+    }
+    
+    var posOfX = positionOf("x");
+    var posOfY = positionOf("y");
+    var posOfZ = positionOf("z");
+    
+    return [
+      transPosUnordered[ posOfX ],
+      transPosUnordered[ posOfY ],
+      transPosUnordered[ posOfZ ]
+    ]
+  }
+  
+  
+  /**
+  * Convert coordinates from a a given (non-voxel based) position into a voxel based coord
+  * @param {Object} spacePosition - a non-voxel based coordinate as {x, y, z}
+  * @param {String} transformName - name of the transformation to use
+  */
+  getPositionFromTransfoSpaceToVoxelSpace( spacePosition , transformName ){
+    var dimensions = this._metadata.dimensions;
+    var inputPosArray = [spacePosition.x, spacePosition.y, spacePosition.z];
+    
+    var spaceDimNames = ['x', 'y', 'z'];
+    var spaceDimOrder = [
+      spaceDimNames.indexOf( dimensions[0].nameWorldSpace ),
+      spaceDimNames.indexOf( dimensions[1].nameWorldSpace ),
+      spaceDimNames.indexOf( dimensions[2].nameWorldSpace )
+    ]
+
+    var reOrderedInput = [
+      inputPosArray[ spaceDimOrder[0] ],
+      inputPosArray[ spaceDimOrder[1] ],
+      inputPosArray[ spaceDimOrder[2] ]
+    ]
+    
+    var transPosUnordered = this._getTransformedPosition( reOrderedInput, transformName);
+    
+    return [
+      Math.round(transPosUnordered[2]),
+      Math.round(transPosUnordered[1]),
+      Math.round(transPosUnordered[0])
+    ];
+  }
+  
   
   /**
   * Add a transformation to the collection
