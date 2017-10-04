@@ -2834,7 +2834,10 @@ class Minc2DecoderAlt extends Filter{
       new_abuf = this.scaleVoxels(image, image_min, image_max, valid_range, this.getMetadata("debug"));
     }
 
+    
+
     var minc_header = this.parseHeader( JSON.stringify(header) );
+    minc_header.format = "minc2";
     var dataArray = this.createMincData(minc_header, new_abuf)
 
     /*
@@ -2845,7 +2848,17 @@ class Minc2DecoderAlt extends Filter{
     mniVol.setMetadata("format", "minc2");
     */
     
-    Image3DMetadataConverter.convertImage3DMetadata( minc_header );
+    var metadata = Image3DMetadataConverter.convertImage3DMetadata( minc_header );
+    
+    var output = new Image3DAlt();
+    output.setRawData( dataArray );
+    output.setRawMetadata( metadata );
+    output.scanDataRange();
+    
+    if(output.metadataIntegrityCheck()){
+      console.log( output );
+      this._output[0] = output;
+    }
   }
 
 

@@ -125,23 +125,40 @@ class Image3DAlt extends PixpipeContainer{
   _buildDimensionsLUT(){
     this._dimensionsWorldLUT= {};
     this._dimensionsVoxelLUT = {};
+    var worldAxisNames = ["x", "y", "z"];
     var dimensions = this._metadata.dimensions;
     
-    for(var i=0; i<dimensions.length; i++){
-      this._dimensionsWorldLUT[ dimensions[i].nameWorldSpace ] = i;
-      this._dimensionsVoxelLUT[ dimensions[i].nameVoxelSpace ] = i;
-    }
+    // At what position are "x", "y" and "z" in the array of dimensions?
+    // e.g. if we have nameWorldSpace in dimensions that are [y z x], then this array
+    // would be [2, 0, 1]
+    this._worldPositionIndex = Array(3);
     
+    // what is the order of the nameWorldSpace in dimensions when compare to the ordered dimname ["x", "y", "z"]?
+    // e.g. if we have nameWorldSpace in dimensions that are [y z x], then this array
+    // would be [1, 2, 0]
+    this._worldPositionOrder = Array(3);
     
-
-    /*
     function positionOf( dimName ){
       return dimensions[0].nameWorldSpace === dimName ? 0 : dimensions[1].nameWorldSpace === dimName ? 1 : dimensions[2].nameWorldSpace === dimName ? 2 : -1;
     }
     
-    var posOfX = positionOf("x");
-    var posOfY = positionOf("y");
-    var posOfZ = positionOf("z");*/
+    var correctOrder = [0, 1, 2];
+    this._hasNativeCorrectOrder = true;
+    
+    for(var i=0; i<dimensions.length; i++){
+      this._dimensionsWorldLUT[ dimensions[i].nameWorldSpace ] = i;
+      this._dimensionsVoxelLUT[ dimensions[i].nameVoxelSpace ] = i;
+      
+      this._worldPositionIndex[i] = positionOf( worldAxisNames[i] );
+      this._worldPositionOrder[i] = worldAxisNames.indexOf( dimensions[i].nameWorldSpace );
+      
+      this._hasNativeCorrectOrder = this._hasNativeCorrectOrder && (this._worldPositionIndex[i] === correctOrder[i] );
+    }
+
+    console.log( '_worldPositionIndex' );
+    console.log( this._worldPositionIndex );
+    console.log( '_worldPositionOrder' );
+    console.log( this._worldPositionOrder );
   }
   
   
@@ -485,25 +502,22 @@ class Image3DAlt extends PixpipeContainer{
   * @return {Object} coordinates {x: Number, y: Number, z: Number} in the space coorinate given in argument
   */
   getPositionFromVoxelSpaceToTransfoSpace( voxelPosition, transformName ){
+    /*
     var transPosUnordered = this._getTransformedPosition( [voxelPosition.k, voxelPosition.j, voxelPosition.i], transformName);
     
-    // the given position is (possibly) not ordered as (x, y, z) are ordered in the dimension metadata object.
-    // we have to reorder them.
+    return [
+      transPosUnordered[ this._worldPositionIndex[0] ],
+      transPosUnordered[ this._worldPositionIndex[1] ],
+      transPosUnordered[ this._worldPositionIndex[2] ]
+    ]
+    */
     
-    var dimensions = this._metadata.dimensions;
-    
-    function positionOf( dimName ){
-      return dimensions[0].nameWorldSpace === dimName ? 0 : dimensions[1].nameWorldSpace === dimName ? 1 : dimensions[2].nameWorldSpace === dimName ? 2 : -1;
-    }
-    
-    var posOfX = positionOf("x");
-    var posOfY = positionOf("y");
-    var posOfZ = positionOf("z");
+    var transPosUnordered = this._getTransformedPosition( [voxelPosition.k, voxelPosition.j, voxelPosition.i], transformName);
     
     return [
-      transPosUnordered[ posOfX ],
-      transPosUnordered[ posOfY ],
-      transPosUnordered[ posOfZ ]
+      transPosUnordered[ this._worldPositionIndex[0] ],
+      transPosUnordered[ this._worldPositionIndex[1] ],
+      transPosUnordered[ this._worldPositionIndex[2] ]
     ]
   }
   
@@ -514,29 +528,50 @@ class Image3DAlt extends PixpipeContainer{
   * @param {String} transformName - name of the transformation to use
   */
   getPositionFromTransfoSpaceToVoxelSpace( spacePosition , transformName ){
-    var dimensions = this._metadata.dimensions;
     var inputPosArray = [spacePosition.x, spacePosition.y, spacePosition.z];
     
-    var spaceDimNames = ['x', 'y', 'z'];
-    var spaceDimOrder = [
-      spaceDimNames.indexOf( dimensions[0].nameWorldSpace ),
-      spaceDimNames.indexOf( dimensions[1].nameWorldSpace ),
-      spaceDimNames.indexOf( dimensions[2].nameWorldSpace )
-    ]
-
     var reOrderedInput = [
-      inputPosArray[ spaceDimOrder[0] ],
-      inputPosArray[ spaceDimOrder[1] ],
-      inputPosArray[ spaceDimOrder[2] ]
+      inputPosArray[ this._worldPositionOrder[0] ],
+      inputPosArray[ this._worldPositionOrder[1] ],
+      inputPosArray[ this._worldPositionOrder[2] ]
     ]
     
     var transPosUnordered = this._getTransformedPosition( reOrderedInput, transformName);
-    
+    /*
     return [
       Math.round(transPosUnordered[2]),
       Math.round(transPosUnordered[1]),
       Math.round(transPosUnordered[0])
     ];
+    */
+    return [
+      transPosUnordered[2],
+      transPosUnordered[1],
+      transPosUnordered[0]
+    ];
+  }
+  
+  
+  
+  getPositionFromVoxelSpaceToTransfoSpaceEXP1(  voxelPosition, transformName ){
+    //console.log( "_hasNativeCorrectOrder" )
+    //console.log( this._hasNativeCorrectOrder );
+    
+    var inputPosArray = [voxelPosition.i, voxelPosition.j, voxelPosition.k];
+      
+    var reOrderedInput = [
+      inputPosArray[ this._worldPositionOrder[2] ],
+      inputPosArray[ this._worldPositionOrder[1] ],
+      inputPosArray[ this._worldPositionOrder[0] ]
+    ]
+      
+    //console.log( reOrderedInput );
+      
+    var transPosUnordered = this._getTransformedPosition( reOrderedInput, transformName);
+      
+    //console.log( transPosUnordered );
+      
+    return transPosUnordered.slice(0, 3);
   }
   
   

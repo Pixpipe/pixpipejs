@@ -1856,7 +1856,8 @@ class Minc2Decoder extends Filter{
     if (!this.checkSignature("OHDR")) {
       throw new Error('Bad or missing OHDR signature');
     }
-
+    
+    var that = this;
     var ver = this.getU8();
     var flags = this.getU8();
 
