@@ -15251,12 +15251,40 @@ class Image3DAlt extends PixpipeContainer{
   _buildDimensionsLUT(){
     this._dimensionsWorldLUT= {};
     this._dimensionsVoxelLUT = {};
+    var worldAxisNames = ["x", "y", "z"];
     var dimensions = this._metadata.dimensions;
+    
+    // At what position are "x", "y" and "z" in the array of dimensions?
+    // e.g. if we have nameWorldSpace in dimensions that are [y z x], then this array
+    // would be [2, 0, 1]
+    this._worldPositionIndex = Array(3);
+    
+    // what is the order of the nameWorldSpace in dimensions when compare to the ordered dimname ["x", "y", "z"]?
+    // e.g. if we have nameWorldSpace in dimensions that are [y z x], then this array
+    // would be [1, 2, 0]
+    this._worldPositionOrder = Array(3);
+    
+    function positionOf( dimName ){
+      return dimensions[0].nameWorldSpace === dimName ? 0 : dimensions[1].nameWorldSpace === dimName ? 1 : dimensions[2].nameWorldSpace === dimName ? 2 : -1;
+    }
+    
+    var correctOrder = [0, 1, 2];
+    this._hasNativeCorrectOrder = true;
     
     for(var i=0; i<dimensions.length; i++){
       this._dimensionsWorldLUT[ dimensions[i].nameWorldSpace ] = i;
       this._dimensionsVoxelLUT[ dimensions[i].nameVoxelSpace ] = i;
+      
+      this._worldPositionIndex[i] = positionOf( worldAxisNames[i] );
+      this._worldPositionOrder[i] = worldAxisNames.indexOf( dimensions[i].nameWorldSpace );
+      
+      this._hasNativeCorrectOrder = this._hasNativeCorrectOrder && (this._worldPositionIndex[i] === correctOrder[i] );
     }
+
+    console.log( '_worldPositionIndex' );
+    console.log( this._worldPositionIndex );
+    console.log( '_worldPositionOrder' );
+    console.log( this._worldPositionOrder );
   }
   
   
@@ -15600,25 +15628,22 @@ class Image3DAlt extends PixpipeContainer{
   * @return {Object} coordinates {x: Number, y: Number, z: Number} in the space coorinate given in argument
   */
   getPositionFromVoxelSpaceToTransfoSpace( voxelPosition, transformName ){
+    /*
     var transPosUnordered = this._getTransformedPosition( [voxelPosition.k, voxelPosition.j, voxelPosition.i], transformName);
     
-    // the given position is (possibly) not ordered as (x, y, z) are ordered in the dimension metadata object.
-    // we have to reorder them.
+    return [
+      transPosUnordered[ this._worldPositionIndex[0] ],
+      transPosUnordered[ this._worldPositionIndex[1] ],
+      transPosUnordered[ this._worldPositionIndex[2] ]
+    ]
+    */
     
-    var dimensions = this._metadata.dimensions;
-    
-    function positionOf( dimName ){
-      return dimensions[0].nameWorldSpace === dimName ? 0 : dimensions[1].nameWorldSpace === dimName ? 1 : dimensions[2].nameWorldSpace === dimName ? 2 : -1;
-    }
-    
-    var posOfX = positionOf("x");
-    var posOfY = positionOf("y");
-    var posOfZ = positionOf("z");
+    var transPosUnordered = this._getTransformedPosition( [voxelPosition.k, voxelPosition.j, voxelPosition.i], transformName);
     
     return [
-      transPosUnordered[ posOfX ],
-      transPosUnordered[ posOfY ],
-      transPosUnordered[ posOfZ ]
+      transPosUnordered[ this._worldPositionIndex[0] ],
+      transPosUnordered[ this._worldPositionIndex[1] ],
+      transPosUnordered[ this._worldPositionIndex[2] ]
     ]
   }
   
@@ -15629,29 +15654,50 @@ class Image3DAlt extends PixpipeContainer{
   * @param {String} transformName - name of the transformation to use
   */
   getPositionFromTransfoSpaceToVoxelSpace( spacePosition , transformName ){
-    var dimensions = this._metadata.dimensions;
     var inputPosArray = [spacePosition.x, spacePosition.y, spacePosition.z];
     
-    var spaceDimNames = ['x', 'y', 'z'];
-    var spaceDimOrder = [
-      spaceDimNames.indexOf( dimensions[0].nameWorldSpace ),
-      spaceDimNames.indexOf( dimensions[1].nameWorldSpace ),
-      spaceDimNames.indexOf( dimensions[2].nameWorldSpace )
-    ];
-
     var reOrderedInput = [
-      inputPosArray[ spaceDimOrder[0] ],
-      inputPosArray[ spaceDimOrder[1] ],
-      inputPosArray[ spaceDimOrder[2] ]
+      inputPosArray[ this._worldPositionOrder[0] ],
+      inputPosArray[ this._worldPositionOrder[1] ],
+      inputPosArray[ this._worldPositionOrder[2] ]
     ];
     
     var transPosUnordered = this._getTransformedPosition( reOrderedInput, transformName);
-    
+    /*
     return [
       Math.round(transPosUnordered[2]),
       Math.round(transPosUnordered[1]),
       Math.round(transPosUnordered[0])
     ];
+    */
+    return [
+      transPosUnordered[2],
+      transPosUnordered[1],
+      transPosUnordered[0]
+    ];
+  }
+  
+  
+  
+  getPositionFromVoxelSpaceToTransfoSpaceEXP1(  voxelPosition, transformName ){
+    //console.log( "_hasNativeCorrectOrder" )
+    //console.log( this._hasNativeCorrectOrder );
+    
+    var inputPosArray = [voxelPosition.i, voxelPosition.j, voxelPosition.k];
+      
+    var reOrderedInput = [
+      inputPosArray[ this._worldPositionOrder[2] ],
+      inputPosArray[ this._worldPositionOrder[1] ],
+      inputPosArray[ this._worldPositionOrder[0] ]
+    ];
+      
+    //console.log( reOrderedInput );
+      
+    var transPosUnordered = this._getTransformedPosition( reOrderedInput, transformName);
+      
+    //console.log( transPosUnordered );
+      
+    return transPosUnordered.slice(0, 3);
   }
   
   
@@ -28161,7 +28207,8 @@ class Minc2Decoder extends Filter{
     if (!this.checkSignature("OHDR")) {
       throw new Error('Bad or missing OHDR signature');
     }
-
+    
+    var that = this;
     var ver = this.getU8();
     var flags = this.getU8();
 
@@ -31338,49 +31385,61 @@ class NiftiDecoderAlt extends Filter {
     - the 3rd row should be the one with the highest absolute value from all 3rd columns
     */
     
-    function whichRowHasHighestCol( arrOfArr, col){
-      var r0 = Math.abs(arrOfArr[0][col]);
-      var r1 = Math.abs(arrOfArr[1][col]);
-      var r2 = Math.abs(arrOfArr[2][col]);
+    // give the index of the row that has the highest value among a given col
+    function whichRowHasHighestValueFromGivenCol( arrOfArr, col){
+      var cx = Math.abs(arrOfArr[0][col]);
+      var cy = Math.abs(arrOfArr[1][col]);
+      var cz = Math.abs(arrOfArr[2][col]);
       
-      if( r0 > r1 && r0 > r2){
+      if( cx > cy && cx > cz){
         return 0;
-      }else if(r1 > r0 && r1 > r2){
+      }else if(cy > cx && cy > cz){
         return 1;
       }else{
         return 2
       }
     }
+     
+    
     
     function getMagnitude( arr ){
       return Math.sqrt( arr[0]*arr[0] + arr[1]*arr[1] + arr[2]*arr[2] );
     }
     
-    var shouldBeRow0 = whichRowHasHighestCol(niftiTransfoMatrix, 0);
-    var shouldBeRow1 = whichRowHasHighestCol(niftiTransfoMatrix, 1);
-    var shouldBeRow2 = whichRowHasHighestCol(niftiTransfoMatrix, 2);
+    var shouldBeCol0 = whichRowHasHighestValueFromGivenCol(niftiTransfoMatrix, 0);
+    var shouldBeCol1 = whichRowHasHighestValueFromGivenCol(niftiTransfoMatrix, 1);
+    var shouldBeCol2 = whichRowHasHighestValueFromGivenCol(niftiTransfoMatrix, 2);
     
-    // when we have shouldBeRow[ n ] = m it means that the current original row m 
+    // when we have shouldBeCol[ n ] = m it means that the current original row m 
     // of transfo-matrix should move to the position n
-    var shouldBeRow = [ shouldBeRow0, shouldBeRow1, shouldBeRow2 ];
-    // this is the inverse lookup of shouldBeRow
-    var wasRow = [ shouldBeRow.indexOf(0), shouldBeRow.indexOf(1), shouldBeRow.indexOf(2) ];
+    var shouldBeCol = [ shouldBeCol0, shouldBeCol1, shouldBeCol2 ];
+    // this is the inverse lookup of shouldBeCol
+    var wasCol = [ shouldBeCol.indexOf(0), shouldBeCol.indexOf(1), shouldBeCol.indexOf(2) ];
     
-    var transfoMatrixToUse = niftiTransfoMatrix;
+    console.log("shouldBeCol");
+    console.log(shouldBeCol);
+    console.log( "wasCol");
+    console.log(wasCol);
+    
+    var transfoMatrixToUse = JSON.parse(JSON.stringify(niftiTransfoMatrix));
     var dimensionsToUse = dimensions;
     
     // ******************* BEGIN TO SWAP ***************************************
     
     // if so, the dimension list and the matrix need swapping
-    if( shouldBeRow[0] != 0 || shouldBeRow[1] != 1 || shouldBeRow[2] != 2){
-      // swap the matrix rows
-      transfoMatrixToUse = [
-        [niftiTransfoMatrix[shouldBeRow[0]][0], niftiTransfoMatrix[shouldBeRow[0]][1], niftiTransfoMatrix[shouldBeRow[0]][2], niftiTransfoMatrix[shouldBeRow[0]][3]],
-        [niftiTransfoMatrix[shouldBeRow[1]][0], niftiTransfoMatrix[shouldBeRow[1]][1], niftiTransfoMatrix[shouldBeRow[1]][2], niftiTransfoMatrix[shouldBeRow[1]][3]],
-        [niftiTransfoMatrix[shouldBeRow[2]][0], niftiTransfoMatrix[shouldBeRow[2]][1], niftiTransfoMatrix[shouldBeRow[2]][2], niftiTransfoMatrix[shouldBeRow[2]][3]],
-        [niftiTransfoMatrix[3][0], niftiTransfoMatrix[3][1], niftiTransfoMatrix[3][2], niftiTransfoMatrix[3][3]],
-      ];
-  
+    if( shouldBeCol[0] != 0 || shouldBeCol[1] != 1 || shouldBeCol[2] != 2){
+      
+      // swap the matrix cols
+      for (var i = 0; i < 3; i++) {
+        for (var j = 0; j < 4; j++) {
+          var volumeAxis = j;
+          if (j < 3) {
+            volumeAxis = shouldBeCol[j];
+          }
+          transfoMatrixToUse[i][volumeAxis] = niftiTransfoMatrix[i][j];
+        }
+      }
+      
       // just making a safe copy
       var dimensionsCp = JSON.parse(JSON.stringify(dimensions));
 
@@ -31388,18 +31447,21 @@ class NiftiDecoderAlt extends Filter {
       dimensionsCp[0].nameVoxelSpace = "k";
       dimensionsCp[1].nameVoxelSpace = "j";
       dimensionsCp[2].nameVoxelSpace = "i";
-      dimensionsCp[wasRow[0]].nameWorldSpace = "x";
-      dimensionsCp[wasRow[1]].nameWorldSpace = "y";
-      dimensionsCp[wasRow[2]].nameWorldSpace = "z";
+      
+      dimensionsCp[wasCol[0]].nameWorldSpace = "x";
+      dimensionsCp[wasCol[1]].nameWorldSpace = "y";
+      dimensionsCp[wasCol[2]].nameWorldSpace = "z";
 
+      
+      
       // associating width and height
-      dimensionsCp[wasRow[0]].widthDimension = wasRow[1];
-      dimensionsCp[wasRow[0]].heightDimension = wasRow[2];
-      dimensionsCp[wasRow[1]].widthDimension = wasRow[0];
-      dimensionsCp[wasRow[1]].heightDimension = wasRow[2];
-      dimensionsCp[wasRow[2]].widthDimension = wasRow[0];
-      dimensionsCp[wasRow[2]].heightDimension = wasRow[1];
-
+      dimensionsCp[wasCol[0]].widthDimension = wasCol[1];
+      dimensionsCp[wasCol[0]].heightDimension = wasCol[2];
+      dimensionsCp[wasCol[1]].widthDimension = wasCol[0];
+      dimensionsCp[wasCol[1]].heightDimension = wasCol[2];
+      dimensionsCp[wasCol[2]].widthDimension = wasCol[0];
+      dimensionsCp[wasCol[2]].heightDimension = wasCol[1];
+      
       
 
       dimensionsToUse = dimensionsCp;
@@ -41625,16 +41687,18 @@ class Image3DMetadataConverter {
     newMeta.ncpp = 1;
     newMeta.dimensions = [];
     
-    var spacenameLUT = {x: "i", y: "j", z: "k", t: "t"};
+    //var spacenameLUT = {x: "i", y: "j", z: "k", t: "t"};
+    var voxelSpaceNames = ["k", "j", "i", "t"];
     var spacePosition = {};
     
     for(var i=0; i<oldMeta.order.length; i++){
       var oldDim = oldMeta[ oldMeta.order[i] ];
       var dimension = {};
-      dimension.length = oldDim.length;
+      dimension.length = oldDim.space_length;
       dimension.nameWorldSpace = oldMeta.order[i][0];
+      dimension.nameVoxelSpace = ''; //voxelSpaceNames[i]; //spacenameLUT[ dimension.nameWorldSpace ];
       spacePosition[ dimension.nameWorldSpace ] = i;
-      dimension.nameVoxelSpace = spacenameLUT[ dimension.nameWorldSpace ];
+      
       dimension.worldUnitSize = Math.abs(oldDim.step);
       dimension.step = oldDim.step;
       dimension.worldStep = oldDim.step;
@@ -41642,6 +41706,47 @@ class Image3DMetadataConverter {
       newMeta.dimensions.push( dimension );
     }
     
+    
+    newMeta.dimensions.sort( function(a, b){
+      return a.stride > b.stride;
+    });
+    
+    
+    for(var i=0; i<oldMeta.order.length; i++){
+      newMeta.dimensions[i].nameVoxelSpace = voxelSpaceNames[i];
+    }
+    
+    // return the index of a dimension based on the given world axis name
+    function getIndexOfWorld( axisName ){
+      for(var i=0; i<newMeta.dimensions.length; i++){
+        if(newMeta.dimensions[i].nameWorldSpace === axisName){
+          return i;
+        }
+      }
+      return -1;
+    }
+    
+    // given a world axis name, return the the name of the world axis that goes as width
+    function getWidthAxisFrom( axisName ){
+      return axisName === "x" ? "y" : axisName === "y" ? "x" : axisName === "z" ? "x" : null;
+    }
+    
+    
+    // given a world axis name, return the the name of the world axis that goes as heigth
+    function getHeightAxisFrom( axisName ){
+      return axisName === "x" ? "z" : axisName === "y" ? "z" : axisName === "z" ? "y" : null;
+    }
+    
+    
+    for(var i=0; i<newMeta.dimensions.length; i++){
+      var axisName = newMeta.dimensions[i].nameWorldSpace;
+      newMeta.dimensions[i].widthDimension = getIndexOfWorld( getWidthAxisFrom( axisName ) );
+      newMeta.dimensions[i].heightDimension = getIndexOfWorld( getHeightAxisFrom( axisName ) );
+    }
+    
+    console.log( newMeta.dimensions );
+    
+    /*
     function getWidthHeighDimIndex(dim){
       switch (dim.nameWorldSpace) {
         case 'x':
@@ -41669,18 +41774,18 @@ class Image3DMetadataConverter {
       }
     }
     
-    var dim0Sides = getWidthHeighDimIndex( dimension[0] );
-    dimension[0].widthDimension = dim0Sides.w;
-    dimension[0].heightDimension = dim0Sides.h;
+    var dim0Sides = getWidthHeighDimIndex( newMeta.dimensions[0] );
+    newMeta.dimensions[0].widthDimension = dim0Sides.w;
+    newMeta.dimensions[0].heightDimension = dim0Sides.h;
     
-    var dim1Sides = getWidthHeighDimIndex( dimension[1] );
-    dimension[1].widthDimension = dim1Sides.w;
-    dimension[1].heightDimension = dim1Sides.h;
+    var dim1Sides = getWidthHeighDimIndex( newMeta.dimensions[1] );
+    newMeta.dimensions[1].widthDimension = dim1Sides.w;
+    newMeta.dimensions[1].heightDimension = dim1Sides.h;
     
-    var dim2Sides = getWidthHeighDimIndex( dimension[2] );
-    dimension[2].widthDimension = dim2Sides.w;
-    dimension[2].heightDimension = dim2Sides.h;
-    
+    var dim2Sides = getWidthHeighDimIndex( newMeta.dimensions[2] );
+    newMeta.dimensions[2].widthDimension = dim2Sides.w;
+    newMeta.dimensions[2].heightDimension = dim2Sides.h;
+    */
     
     newMeta.statistics = {
       upToDate: false,
@@ -41691,18 +41796,30 @@ class Image3DMetadataConverter {
     newMeta.description = "";
     newMeta.spatialUnit = "";
     newMeta.temporalUnit = "";
-    newMeta.format = ("format" in oldMetaObj) ? oldMetaObj.format : "generic";
-    
-    
-    newMeta.transformations = {};
-    
-    var v2wMat = fromValues$3(transfoMatrixToUse[0][0], transfoMatrixToUse[1][0], transfoMatrixToUse[2][0], transfoMatrixToUse[3][0],
+    newMeta.format = ("format" in oldMeta) ? oldMeta.format : "generic";
+
+    /*
+    var v2wMat = mat4.fromValues(transfoMatrixToUse[0][0], transfoMatrixToUse[1][0], transfoMatrixToUse[2][0], transfoMatrixToUse[3][0],
                                  transfoMatrixToUse[0][1], transfoMatrixToUse[1][1], transfoMatrixToUse[2][1], transfoMatrixToUse[3][1],
                                  transfoMatrixToUse[0][2], transfoMatrixToUse[1][2], transfoMatrixToUse[2][2], transfoMatrixToUse[3][2],
                                  transfoMatrixToUse[0][3], transfoMatrixToUse[1][3], transfoMatrixToUse[2][3], transfoMatrixToUse[3][3] );
+    */
+    
+    var w2vMat = fromValues$3(oldMeta.w2v[0][0], oldMeta.w2v[1][0], oldMeta.w2v[2][0], 0,
+                                 oldMeta.w2v[0][1], oldMeta.w2v[1][1], oldMeta.w2v[2][1], 0,
+                                 oldMeta.w2v[0][2], oldMeta.w2v[1][2], oldMeta.w2v[2][2], 0,
+                                 oldMeta.w2v[0][3], oldMeta.w2v[1][3], oldMeta.w2v[2][3], 1 );
 
-    var w2vMat = create$3();
-    invert$3( w2vMat, v2wMat );
+
+    var v2wMat = create$3();
+    invert$3( v2wMat, w2vMat );
+    
+    newMeta.transformations = {
+      "v2w": v2wMat,
+      "w2v": w2vMat
+    };
+    
+    return newMeta;
   }
   
   
@@ -41711,12 +41828,12 @@ class Image3DMetadataConverter {
   * Converts the original Image3D metadata into the new
   * 
   */
-  static convertImage3DMetadata( oldMetaObj ){
+  static convertImage3DMetadata( oldMeta ){
+    Image3DMetadataConverter.completeHeader( oldMeta );
+    var newMetaObj = Image3DMetadataConverter.convertOld2New( oldMeta );
     
-    
-    
-    Image3DMetadataConverter.completeHeader( oldMetaObj );
-    console.log( oldMetaObj );
+    console.log( oldMeta );
+    return newMetaObj;
   }
   
   
@@ -41753,6 +41870,34 @@ class Image3DMetadataConverter {
       [cy[0] / stepy, cy[1] / stepy, cy[2] / stepy, ty],
       [cz[0] / stepz, cz[1] / stepz, cz[2] / stepz, tz]
     ];
+    
+    /*
+    x: x * cx[0] * stepx + y * cy[0] * stepy + z * cz[0] * stepz + o.x,
+    y: x * cx[1] * stepx + y * cy[1] * stepy + z * cz[1] * stepz + o.y,
+    z: x * cx[2] * stepx + y * cy[2] * stepy + z * cz[2] * stepz + o.z
+    */
+    
+    var v2w =  [
+      cx[0] * stepx,
+      cx[1] * stepx,
+      cx[2] * stepx,
+      0,
+      cy[0] * stepy,
+      cy[1] * stepy,
+      cy[2] * stepy,
+      0,
+      cz[0] * stepz,
+      cz[1] * stepz,
+      cz[2] * stepz,
+      0,
+      o.x,
+      o.y,
+      o.z,
+      1
+    ];
+    
+    console.log("computed v2w:");
+    console.log( v2w );
 
     oldMetaObj.w2v = w2v;
 
@@ -41770,6 +41915,8 @@ class Image3DMetadataConverter {
     zspace.width        = xspace.space_length;
     zspace.height_space = JSON.parse( JSON.stringify( yspace ) );//yspace;
     zspace.height       = yspace.space_length;
+    
+    console.log( oldMetaObj );
   }
   
 }
@@ -44604,7 +44751,10 @@ class Minc2DecoderAlt extends Filter{
       new_abuf = this.scaleVoxels(image, image_min, image_max, valid_range, this.getMetadata("debug"));
     }
 
+    
+
     var minc_header = this.parseHeader( JSON.stringify(header) );
+    minc_header.format = "minc2";
     var dataArray = this.createMincData(minc_header, new_abuf);
 
     /*
@@ -44615,7 +44765,17 @@ class Minc2DecoderAlt extends Filter{
     mniVol.setMetadata("format", "minc2");
     */
     
-    Image3DMetadataConverter.convertImage3DMetadata( minc_header );
+    var metadata = Image3DMetadataConverter.convertImage3DMetadata( minc_header );
+    
+    var output = new Image3DAlt();
+    output.setRawData( dataArray );
+    output.setRawMetadata( metadata );
+    output.scanDataRange();
+    
+    if(output.metadataIntegrityCheck()){
+      console.log( output );
+      this._output[0] = output;
+    }
   }
 
 
