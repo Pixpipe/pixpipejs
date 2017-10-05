@@ -7,7 +7,7 @@
 */
 
 import nifti from 'nifti-reader-js';
-import { glMatrix, mat2, mat2d, mat3, mat4, quat, ver2, vec3, vec4 } from 'gl-matrix';
+import { glMatrix, mat2, mat2d, mat3, mat4, quat, vec2, vec3, vec4 } from 'gl-matrix';
 import { Filter } from '../core/Filter.js';
 import { Image3DAlt } from '../core/Image3DAlt.js';
 
@@ -236,13 +236,27 @@ class NiftiDecoderAlt extends Filter {
     }
     // ******************* END OF SWAPING **************************************
     
+    // return the dimsniosn object given its world name ('x', 'y' or 'z')
+    function getDimensionByWorldName( name ){
+      for(var i=0; i<dimensionsToUse.length; i++){
+        if(dimensionsToUse[i].nameWorldSpace === name)
+          return dimensionsToUse[i];
+      }
+      return null;
+    }
     
     // set the directions
     for(var i=0; i<3; i++){
       var stepSize = getMagnitude( transfoMatrixToUse[i] )
       var directionSign = Math.sign( transfoMatrixToUse[i][i]);
-      dimensionsToUse[i].step = stepSize * directionSign;
+      //dimensionsToUse[i].step = stepSize * directionSign;
+      
+      // so that when i==0, dimension is x, etc.
+      var dimension = getDimensionByWorldName(worldSpaceNames[i])
+      dimension.step = stepSize * directionSign;
     }
+    
+    
     
     metadata.dimensions = dimensionsToUse;
     
