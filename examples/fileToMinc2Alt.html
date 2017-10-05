@@ -54,39 +54,10 @@
       var mniVolume = minc2Decoder.getOutput();
 
       if(mniVolume){
-        console.log( mniVolume.getPositionFromVoxelSpaceToTransfoSpace({i:20, j:10, k:30}, "v2w") );
-        console.log( mniVolume.getPositionFromVoxelSpaceToTransfoSpaceEXP1({i:20, j:10, k:30}, "v2w") );
+        //console.log( mniVolume.getPositionFromVoxelSpaceToTransfoSpace({i:20, j:10, k:30}, "v2w") );
+        //console.log( mniVolume.getPositionFromVoxelSpaceToTransfoSpaceEXP1({i:20, j:10, k:30}, "v2w") );
         
-        
-        /*
-        console.log( mniVolume.getPositionFromVoxelSpaceToTransfoSpace({i:20, j:30, k:10}, "w2v") );
-        console.log( mniVolume.getPositionFromVoxelSpaceToTransfoSpace({i:20, j:10, k:30}, "w2v") );
-        console.log( mniVolume.getPositionFromVoxelSpaceToTransfoSpace({i:30, j:20, k:10}, "w2v") );
-        console.log( mniVolume.getPositionFromVoxelSpaceToTransfoSpace({i:30, j:10, k:20}, "w2v") );
-        console.log( mniVolume.getPositionFromVoxelSpaceToTransfoSpace({i:10, j:30, k:20}, "w2v") );
-        console.log( mniVolume.getPositionFromVoxelSpaceToTransfoSpace({i:10, j:20, k:30}, "w2v") );
-        
-        console.log( mniVolume.getPositionFromVoxelSpaceToTransfoSpace({i:20, j:30, k:10}, "v2w") );  // this one SHOULD work
-        console.log( mniVolume.getPositionFromVoxelSpaceToTransfoSpace({i:20, j:10, k:30}, "v2w") );
-        console.log( mniVolume.getPositionFromVoxelSpaceToTransfoSpace({i:30, j:20, k:10}, "v2w") );
-        console.log( mniVolume.getPositionFromVoxelSpaceToTransfoSpace({i:30, j:10, k:20}, "v2w") );
-        console.log( mniVolume.getPositionFromVoxelSpaceToTransfoSpace({i:10, j:30, k:20}, "v2w") );
-        console.log( mniVolume.getPositionFromVoxelSpaceToTransfoSpace({i:10, j:20, k:30}, "v2w") );
-        
-        console.log( mniVolume.getPositionFromTransfoSpaceToVoxelSpace({x:20, y:30, z:10}, "w2v") );
         console.log( mniVolume.getPositionFromTransfoSpaceToVoxelSpace({x:20, y:10, z:30}, "w2v") );
-        console.log( mniVolume.getPositionFromTransfoSpaceToVoxelSpace({x:30, y:20, z:10}, "w2v") );
-        console.log( mniVolume.getPositionFromTransfoSpaceToVoxelSpace({x:30, y:10, z:20}, "w2v") );
-        console.log( mniVolume.getPositionFromTransfoSpaceToVoxelSpace({x:10, y:30, z:20}, "w2v") );
-        console.log( mniVolume.getPositionFromTransfoSpaceToVoxelSpace({x:10, y:20, z:30}, "w2v") );
-
-        console.log( mniVolume.getPositionFromTransfoSpaceToVoxelSpace({x:20, y:30, z:10}, "v2w") );  // this one works for voxel to world (!)
-        console.log( mniVolume.getPositionFromTransfoSpaceToVoxelSpace({x:20, y:10, z:30}, "v2w") );
-        console.log( mniVolume.getPositionFromTransfoSpaceToVoxelSpace({x:30, y:20, z:10}, "v2w") );
-        console.log( mniVolume.getPositionFromTransfoSpaceToVoxelSpace({x:30, y:10, z:20}, "v2w") );
-        console.log( mniVolume.getPositionFromTransfoSpaceToVoxelSpace({x:10, y:30, z:20}, "v2w") );
-        console.log( mniVolume.getPositionFromTransfoSpaceToVoxelSpace({x:10, y:20, z:30}, "v2w") );
-        */
         
         //var voxelOrigInWorld = mniVolume.getPositionFromTransfoSpaceToVoxelSpace({x:20, y:30, z:10}, "w2v");
         //console.log( voxelOrigInWorld );

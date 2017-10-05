@@ -154,11 +154,6 @@ class Image3DAlt extends PixpipeContainer{
       
       this._hasNativeCorrectOrder = this._hasNativeCorrectOrder && (this._worldPositionIndex[i] === correctOrder[i] );
     }
-
-    console.log( '_worldPositionIndex' );
-    console.log( this._worldPositionIndex );
-    console.log( '_worldPositionOrder' );
-    console.log( this._worldPositionOrder );
   }
   
   
@@ -493,86 +488,56 @@ class Image3DAlt extends PixpipeContainer{
     vec4.transformMat4(transPos, origPos, transform);
     return transPos;
   }
-
-
+  
+  
   /**
   * Convert a position from voxel coordinates to another space
   * @param {Object} voxelPosition - voxel coordinates like {i: Number, j: Number, k: Number} where i is the slowest varying and k is the fastest varying
   * @param {String} transformName - name of a transformation registered in the metadata as a child property of "transformations"
   * @return {Object} coordinates {x: Number, y: Number, z: Number} in the space coorinate given in argument
   */
-  getPositionFromVoxelSpaceToTransfoSpace( voxelPosition, transformName ){
-    /*
-    var transPosUnordered = this._getTransformedPosition( [voxelPosition.k, voxelPosition.j, voxelPosition.i], transformName);
-    
-    return [
-      transPosUnordered[ this._worldPositionIndex[0] ],
-      transPosUnordered[ this._worldPositionIndex[1] ],
-      transPosUnordered[ this._worldPositionIndex[2] ]
-    ]
-    */
-    
-    var transPosUnordered = this._getTransformedPosition( [voxelPosition.k, voxelPosition.j, voxelPosition.i], transformName);
-    
-    return [
-      transPosUnordered[ this._worldPositionIndex[0] ],
-      transPosUnordered[ this._worldPositionIndex[1] ],
-      transPosUnordered[ this._worldPositionIndex[2] ]
-    ]
+  getPositionFromVoxelSpaceToTransfoSpace(  voxelPosition, transformName ){
+    var inputPosArray = [voxelPosition.i, voxelPosition.j, voxelPosition.k];
+    var reOrderedInput = [
+      inputPosArray[ this._worldPositionOrder[2] ],
+      inputPosArray[ this._worldPositionOrder[1] ],
+      inputPosArray[ this._worldPositionOrder[0] ]
+    ]  
+    var transPosUnordered = this._getTransformedPosition( reOrderedInput, transformName);
+
+    return {
+      x: transPosUnordered[0],
+      y: transPosUnordered[1],
+      z: transPosUnordered[2]
+    }
   }
   
   
   /**
   * Convert coordinates from a a given (non-voxel based) position into a voxel based coord
-  * @param {Object} spacePosition - a non-voxel based coordinate as {x, y, z}
+  * @param {Object} spacePosition - a non-voxel based coordinate as {x: Number, y: Number, z: Number}
   * @param {String} transformName - name of the transformation to use
+  * @return {Object} coordinates {i: Number, j: Number, k: Number} in the space coorinate given in argument
   */
   getPositionFromTransfoSpaceToVoxelSpace( spacePosition , transformName ){
     var inputPosArray = [spacePosition.x, spacePosition.y, spacePosition.z];
-    
-    var reOrderedInput = [
-      inputPosArray[ this._worldPositionOrder[0] ],
-      inputPosArray[ this._worldPositionOrder[1] ],
-      inputPosArray[ this._worldPositionOrder[2] ]
-    ]
-    
-    var transPosUnordered = this._getTransformedPosition( reOrderedInput, transformName);
-    /*
-    return [
-      Math.round(transPosUnordered[2]),
-      Math.round(transPosUnordered[1]),
-      Math.round(transPosUnordered[0])
-    ];
-    */
-    return [
-      transPosUnordered[2],
-      transPosUnordered[1],
-      transPosUnordered[0]
-    ];
+    var transPosUnordered = this._getTransformedPosition( inputPosArray, transformName);
+
+    return {
+      i: Math.round(transPosUnordered[ this._worldPositionOrder[2] ]),
+      j: Math.round(transPosUnordered[ this._worldPositionOrder[1] ]),
+      k: Math.round(transPosUnordered[ this._worldPositionOrder[0] ])
+    }
   }
   
   
-  
-  getPositionFromVoxelSpaceToTransfoSpaceEXP1(  voxelPosition, transformName ){
-    //console.log( "_hasNativeCorrectOrder" )
-    //console.log( this._hasNativeCorrectOrder );
-    
-    var inputPosArray = [voxelPosition.i, voxelPosition.j, voxelPosition.k];
-      
-    var reOrderedInput = [
-      inputPosArray[ this._worldPositionOrder[2] ],
-      inputPosArray[ this._worldPositionOrder[1] ],
-      inputPosArray[ this._worldPositionOrder[0] ]
-    ]
-      
-    //console.log( reOrderedInput );
-      
-    var transPosUnordered = this._getTransformedPosition( reOrderedInput, transformName);
-      
-    //console.log( transPosUnordered );
-      
-    return transPosUnordered.slice(0, 3);
+  getValueTransfoSpace( spaceToVoxelTransfoName, spacePosition, time=0 ){
+    // transform to voxel space
+    var voxPos = this.getPositionFromTransfoSpaceToVoxelSpace( spacePosition, spaceToVoxelTransfoName );
+    var color = this.getVoxel( voxPos, time );
+    return color;
   }
+  
   
   
   /**
