@@ -248,7 +248,7 @@ class Image3DAlt extends PixpipeContainer{
             length: xSize,
             widthDimension: 1,
             heightDimension: 2,
-            nameVoxelSpace: "i",
+            nameVoxelSpace: "k",
             nameWorldSpace: "x",
             worldUnitSize: 1,
             stride: 1
@@ -266,7 +266,7 @@ class Image3DAlt extends PixpipeContainer{
             length: zSize,
             widthDimension: 0,
             heightDimension: 1,
-            nameVoxelSpace: "k",
+            nameVoxelSpace: "i",
             nameWorldSpace: "z",
             worldUnitSize: 1,
             stride: xSize * ySize
