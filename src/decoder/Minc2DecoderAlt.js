@@ -10,7 +10,7 @@
 import pako from 'pako'
 import { Filter } from '../core/Filter.js';
 import { Image3DAlt } from '../core/Image3DAlt.js';
-import { Image3DMetadataConverter } from '../utils/Image3DMetadataConverter.js'
+import { Image3DMetadataConverter } from '../utils/Image3DMetadataConverter.js';
 
 
 /**

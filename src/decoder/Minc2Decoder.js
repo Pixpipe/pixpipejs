@@ -1939,7 +1939,7 @@ class Minc2Decoder extends Filter{
       if (that.getMetadata("debug")) {
         console.log(link_num + " " + child.hdr_offset + " " + child.name);
       }
-      if (this.checkSignature("OHDR")) {
+      if (that.checkSignature("OHDR")) {
         that.seek(child.hdr_offset);
         that.hdf5V2ObjectHeader(child);
       }
