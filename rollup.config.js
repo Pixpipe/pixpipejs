@@ -8,23 +8,46 @@ import builtins from 'rollup-plugin-node-builtins';
 import globals from 'rollup-plugin-node-globals';
 
 
-export default {
-  entry: config.entry,
-  format: config.moduleFormat,
-  moduleName: config.moduleName,
-  sourceMap: true,
-  dest: config.moduleBuildDir + '/' + config.moduleName + '.' + config.moduleFormat + '.js',
-  plugins: [
-    nodeResolve({
-      preferBuiltins: false
-    }),
-    commonjs(),
-    //bundleWorker(),
-    globals(),
-    builtins(),
-    babel({
-      babelrc: false,
-      presets: [ 'es2015-rollup' ]
-    })
-  ]
-};
+export default [
+  {
+
+    entry: config.entry,
+    format: config.moduleFormat,
+    name: config.moduleName,
+    sourceMap: true,
+    dest: config.moduleBuildDir + '/' + config.moduleName + '.' + config.moduleFormat + '.js',
+    plugins: [
+      nodeResolve({
+        preferBuiltins: false
+      }),
+      commonjs(),
+      //bundleWorker(),
+      globals(),
+      builtins(),
+      babel({
+        babelrc: false,
+        presets: [ 'es2015-rollup' ]
+      })
+    ]
+  },
+  {
+    entry: config.entry,
+    format: 'umd',
+    name: config.moduleName,
+    sourceMap: true,
+    dest: config.moduleBuildDir + '/' + config.moduleName + '.js',
+    plugins: [
+      nodeResolve({
+        preferBuiltins: false
+      }),
+      commonjs(),
+      //bundleWorker(),
+      globals(),
+      builtins(),
+      babel({
+        babelrc: false,
+        presets: [ 'es2015-rollup' ]
+      })
+    ]
+  }
+];

@@ -3,9 +3,9 @@
   "version": "0.1.0",
   "description": "A image processing pipeline in Javascript",
   "entry": "src/pixpipe.js",
-  "main": "dist/pixpipe.es.js",
+  "main": "dist/pixpipe.cjs.js",
   "moduleName": "pixpipe",
-  "moduleFormat": "es",
+  "moduleFormat": "cjs",
   "moduleBuildDir": "dist",
   "scripts": {
     "install": "npm run build",
