@@ -1,3 +1,9 @@
+# Build files
+dist/*.cjs.js
+dist/*.cjs.js.map
+dist/*.es.js
+dist/*.es.js.map
+
 # Logs
 logs
 *.log
