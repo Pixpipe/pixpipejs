@@ -1,3 +1,7 @@
+# Build files
+dist/*.module.js
+dist/*.module.js.map
+
 # Logs
 logs
 *.log
