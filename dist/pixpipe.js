@@ -4,6 +4,3528 @@
 	(factory((global.pixpipe = global.pixpipe || {})));
 }(this, (function (exports) { 'use strict';
 
+/* Copyright (c) 2015, Brandon Jones, Colin MacKenzie IV.
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE. */
+
+/**
+ * Common utilities
+ * @module glMatrix
+ */
+
+// Configuration Constants
+
+let ARRAY_TYPE = (typeof Float32Array !== 'undefined') ? Float32Array : Array;
+
+
+/**
+ * Sets the type of array used when creating new vectors and matrices
+ *
+ * @param {Type} type Array type, such as Float32Array or Array
+ */
+function setMatrixArrayType(type) {
+  ARRAY_TYPE = type;
+}
+
+/**
+ * Convert Degree To Radian
+ *
+ * @param {Number} a Angle in Degrees
+ */
+
+
+/**
+ * Tests whether or not the arguments have approximately the same value, within an absolute
+ * or relative tolerance of glMatrix.EPSILON (an absolute tolerance is used for values less
+ * than or equal to 1.0, and a relative tolerance is used for larger values)
+ *
+ * @param {Number} a The first number to test.
+ * @param {Number} b The second number to test.
+ * @returns {Boolean} True if the numbers are approximately equal, false otherwise.
+ */
+
+/* Copyright (c) 2015, Brandon Jones, Colin MacKenzie IV.
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE. */
+
+/**
+ * 2x2 Matrix
+ * @module mat2
+ */
+
+/**
+ * Creates a new identity mat2
+ *
+ * @returns {mat2} a new 2x2 matrix
+ */
+
+
+/**
+ * Creates a new mat2 initialized with values from an existing matrix
+ *
+ * @param {mat2} a matrix to clone
+ * @returns {mat2} a new 2x2 matrix
+ */
+
+
+/**
+ * Copy the values from one mat2 to another
+ *
+ * @param {mat2} out the receiving matrix
+ * @param {mat2} a the source matrix
+ * @returns {mat2} out
+ */
+
+
+/**
+ * Set a mat2 to the identity matrix
+ *
+ * @param {mat2} out the receiving matrix
+ * @returns {mat2} out
+ */
+
+
+/**
+ * Create a new mat2 with the given values
+ *
+ * @param {Number} m00 Component in column 0, row 0 position (index 0)
+ * @param {Number} m01 Component in column 0, row 1 position (index 1)
+ * @param {Number} m10 Component in column 1, row 0 position (index 2)
+ * @param {Number} m11 Component in column 1, row 1 position (index 3)
+ * @returns {mat2} out A new 2x2 matrix
+ */
+
+
+/**
+ * Set the components of a mat2 to the given values
+ *
+ * @param {mat2} out the receiving matrix
+ * @param {Number} m00 Component in column 0, row 0 position (index 0)
+ * @param {Number} m01 Component in column 0, row 1 position (index 1)
+ * @param {Number} m10 Component in column 1, row 0 position (index 2)
+ * @param {Number} m11 Component in column 1, row 1 position (index 3)
+ * @returns {mat2} out
+ */
+
+
+/**
+ * Transpose the values of a mat2
+ *
+ * @param {mat2} out the receiving matrix
+ * @param {mat2} a the source matrix
+ * @returns {mat2} out
+ */
+
+
+/**
+ * Inverts a mat2
+ *
+ * @param {mat2} out the receiving matrix
+ * @param {mat2} a the source matrix
+ * @returns {mat2} out
+ */
+
+
+/**
+ * Calculates the adjugate of a mat2
+ *
+ * @param {mat2} out the receiving matrix
+ * @param {mat2} a the source matrix
+ * @returns {mat2} out
+ */
+
+
+/**
+ * Calculates the determinant of a mat2
+ *
+ * @param {mat2} a the source matrix
+ * @returns {Number} determinant of a
+ */
+
+
+/**
+ * Multiplies two mat2's
+ *
+ * @param {mat2} out the receiving matrix
+ * @param {mat2} a the first operand
+ * @param {mat2} b the second operand
+ * @returns {mat2} out
+ */
+
+
+/**
+ * Rotates a mat2 by the given angle
+ *
+ * @param {mat2} out the receiving matrix
+ * @param {mat2} a the matrix to rotate
+ * @param {Number} rad the angle to rotate the matrix by
+ * @returns {mat2} out
+ */
+
+
+/**
+ * Scales the mat2 by the dimensions in the given vec2
+ *
+ * @param {mat2} out the receiving matrix
+ * @param {mat2} a the matrix to rotate
+ * @param {vec2} v the vec2 to scale the matrix by
+ * @returns {mat2} out
+ **/
+
+
+/**
+ * Creates a matrix from a given angle
+ * This is equivalent to (but much faster than):
+ *
+ *     mat2.identity(dest);
+ *     mat2.rotate(dest, dest, rad);
+ *
+ * @param {mat2} out mat2 receiving operation result
+ * @param {Number} rad the angle to rotate the matrix by
+ * @returns {mat2} out
+ */
+
+
+/**
+ * Creates a matrix from a vector scaling
+ * This is equivalent to (but much faster than):
+ *
+ *     mat2.identity(dest);
+ *     mat2.scale(dest, dest, vec);
+ *
+ * @param {mat2} out mat2 receiving operation result
+ * @param {vec2} v Scaling vector
+ * @returns {mat2} out
+ */
+
+
+/**
+ * Returns a string representation of a mat2
+ *
+ * @param {mat2} a matrix to represent as a string
+ * @returns {String} string representation of the matrix
+ */
+
+
+/**
+ * Returns Frobenius norm of a mat2
+ *
+ * @param {mat2} a the matrix to calculate Frobenius norm of
+ * @returns {Number} Frobenius norm
+ */
+
+
+/**
+ * Returns L, D and U matrices (Lower triangular, Diagonal and Upper triangular) by factorizing the input matrix
+ * @param {mat2} L the lower triangular matrix
+ * @param {mat2} D the diagonal matrix
+ * @param {mat2} U the upper triangular matrix
+ * @param {mat2} a the input matrix to factorize
+ */
+
+
+
+/**
+ * Adds two mat2's
+ *
+ * @param {mat2} out the receiving matrix
+ * @param {mat2} a the first operand
+ * @param {mat2} b the second operand
+ * @returns {mat2} out
+ */
+
+
+/**
+ * Subtracts matrix b from matrix a
+ *
+ * @param {mat2} out the receiving matrix
+ * @param {mat2} a the first operand
+ * @param {mat2} b the second operand
+ * @returns {mat2} out
+ */
+
+
+/**
+ * Returns whether or not the matrices have exactly the same elements in the same position (when compared with ===)
+ *
+ * @param {mat2} a The first matrix.
+ * @param {mat2} b The second matrix.
+ * @returns {Boolean} True if the matrices are equal, false otherwise.
+ */
+
+
+/**
+ * Returns whether or not the matrices have approximately the same elements in the same position.
+ *
+ * @param {mat2} a The first matrix.
+ * @param {mat2} b The second matrix.
+ * @returns {Boolean} True if the matrices are equal, false otherwise.
+ */
+
+
+/**
+ * Multiply each element of the matrix by a scalar.
+ *
+ * @param {mat2} out the receiving matrix
+ * @param {mat2} a the matrix to scale
+ * @param {Number} b amount to scale the matrix's elements by
+ * @returns {mat2} out
+ */
+
+
+/**
+ * Adds two mat2's after multiplying each element of the second operand by a scalar value.
+ *
+ * @param {mat2} out the receiving vector
+ * @param {mat2} a the first operand
+ * @param {mat2} b the second operand
+ * @param {Number} scale the amount to scale b's elements by before adding
+ * @returns {mat2} out
+ */
+
+
+/**
+ * Alias for {@link mat2.multiply}
+ * @function
+ */
+
+
+/**
+ * Alias for {@link mat2.subtract}
+ * @function
+ */
+
+/* Copyright (c) 2015, Brandon Jones, Colin MacKenzie IV.
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE. */
+
+/**
+ * 2x3 Matrix
+ * @module mat2d
+ *
+ * @description
+ * A mat2d contains six elements defined as:
+ * <pre>
+ * [a, c, tx,
+ *  b, d, ty]
+ * </pre>
+ * This is a short form for the 3x3 matrix:
+ * <pre>
+ * [a, c, tx,
+ *  b, d, ty,
+ *  0, 0, 1]
+ * </pre>
+ * The last row is ignored so the array is shorter and operations are faster.
+ */
+
+/**
+ * Creates a new identity mat2d
+ *
+ * @returns {mat2d} a new 2x3 matrix
+ */
+
+
+/**
+ * Creates a new mat2d initialized with values from an existing matrix
+ *
+ * @param {mat2d} a matrix to clone
+ * @returns {mat2d} a new 2x3 matrix
+ */
+
+
+/**
+ * Copy the values from one mat2d to another
+ *
+ * @param {mat2d} out the receiving matrix
+ * @param {mat2d} a the source matrix
+ * @returns {mat2d} out
+ */
+
+
+/**
+ * Set a mat2d to the identity matrix
+ *
+ * @param {mat2d} out the receiving matrix
+ * @returns {mat2d} out
+ */
+
+
+/**
+ * Create a new mat2d with the given values
+ *
+ * @param {Number} a Component A (index 0)
+ * @param {Number} b Component B (index 1)
+ * @param {Number} c Component C (index 2)
+ * @param {Number} d Component D (index 3)
+ * @param {Number} tx Component TX (index 4)
+ * @param {Number} ty Component TY (index 5)
+ * @returns {mat2d} A new mat2d
+ */
+
+
+/**
+ * Set the components of a mat2d to the given values
+ *
+ * @param {mat2d} out the receiving matrix
+ * @param {Number} a Component A (index 0)
+ * @param {Number} b Component B (index 1)
+ * @param {Number} c Component C (index 2)
+ * @param {Number} d Component D (index 3)
+ * @param {Number} tx Component TX (index 4)
+ * @param {Number} ty Component TY (index 5)
+ * @returns {mat2d} out
+ */
+
+
+/**
+ * Inverts a mat2d
+ *
+ * @param {mat2d} out the receiving matrix
+ * @param {mat2d} a the source matrix
+ * @returns {mat2d} out
+ */
+
+
+/**
+ * Calculates the determinant of a mat2d
+ *
+ * @param {mat2d} a the source matrix
+ * @returns {Number} determinant of a
+ */
+
+
+/**
+ * Multiplies two mat2d's
+ *
+ * @param {mat2d} out the receiving matrix
+ * @param {mat2d} a the first operand
+ * @param {mat2d} b the second operand
+ * @returns {mat2d} out
+ */
+
+
+/**
+ * Rotates a mat2d by the given angle
+ *
+ * @param {mat2d} out the receiving matrix
+ * @param {mat2d} a the matrix to rotate
+ * @param {Number} rad the angle to rotate the matrix by
+ * @returns {mat2d} out
+ */
+
+
+/**
+ * Scales the mat2d by the dimensions in the given vec2
+ *
+ * @param {mat2d} out the receiving matrix
+ * @param {mat2d} a the matrix to translate
+ * @param {vec2} v the vec2 to scale the matrix by
+ * @returns {mat2d} out
+ **/
+
+
+/**
+ * Translates the mat2d by the dimensions in the given vec2
+ *
+ * @param {mat2d} out the receiving matrix
+ * @param {mat2d} a the matrix to translate
+ * @param {vec2} v the vec2 to translate the matrix by
+ * @returns {mat2d} out
+ **/
+
+
+/**
+ * Creates a matrix from a given angle
+ * This is equivalent to (but much faster than):
+ *
+ *     mat2d.identity(dest);
+ *     mat2d.rotate(dest, dest, rad);
+ *
+ * @param {mat2d} out mat2d receiving operation result
+ * @param {Number} rad the angle to rotate the matrix by
+ * @returns {mat2d} out
+ */
+
+
+/**
+ * Creates a matrix from a vector scaling
+ * This is equivalent to (but much faster than):
+ *
+ *     mat2d.identity(dest);
+ *     mat2d.scale(dest, dest, vec);
+ *
+ * @param {mat2d} out mat2d receiving operation result
+ * @param {vec2} v Scaling vector
+ * @returns {mat2d} out
+ */
+
+
+/**
+ * Creates a matrix from a vector translation
+ * This is equivalent to (but much faster than):
+ *
+ *     mat2d.identity(dest);
+ *     mat2d.translate(dest, dest, vec);
+ *
+ * @param {mat2d} out mat2d receiving operation result
+ * @param {vec2} v Translation vector
+ * @returns {mat2d} out
+ */
+
+
+/**
+ * Returns a string representation of a mat2d
+ *
+ * @param {mat2d} a matrix to represent as a string
+ * @returns {String} string representation of the matrix
+ */
+
+
+/**
+ * Returns Frobenius norm of a mat2d
+ *
+ * @param {mat2d} a the matrix to calculate Frobenius norm of
+ * @returns {Number} Frobenius norm
+ */
+
+
+/**
+ * Adds two mat2d's
+ *
+ * @param {mat2d} out the receiving matrix
+ * @param {mat2d} a the first operand
+ * @param {mat2d} b the second operand
+ * @returns {mat2d} out
+ */
+
+
+/**
+ * Subtracts matrix b from matrix a
+ *
+ * @param {mat2d} out the receiving matrix
+ * @param {mat2d} a the first operand
+ * @param {mat2d} b the second operand
+ * @returns {mat2d} out
+ */
+
+
+/**
+ * Multiply each element of the matrix by a scalar.
+ *
+ * @param {mat2d} out the receiving matrix
+ * @param {mat2d} a the matrix to scale
+ * @param {Number} b amount to scale the matrix's elements by
+ * @returns {mat2d} out
+ */
+
+
+/**
+ * Adds two mat2d's after multiplying each element of the second operand by a scalar value.
+ *
+ * @param {mat2d} out the receiving vector
+ * @param {mat2d} a the first operand
+ * @param {mat2d} b the second operand
+ * @param {Number} scale the amount to scale b's elements by before adding
+ * @returns {mat2d} out
+ */
+
+
+/**
+ * Returns whether or not the matrices have exactly the same elements in the same position (when compared with ===)
+ *
+ * @param {mat2d} a The first matrix.
+ * @param {mat2d} b The second matrix.
+ * @returns {Boolean} True if the matrices are equal, false otherwise.
+ */
+
+
+/**
+ * Returns whether or not the matrices have approximately the same elements in the same position.
+ *
+ * @param {mat2d} a The first matrix.
+ * @param {mat2d} b The second matrix.
+ * @returns {Boolean} True if the matrices are equal, false otherwise.
+ */
+
+
+/**
+ * Alias for {@link mat2d.multiply}
+ * @function
+ */
+
+
+/**
+ * Alias for {@link mat2d.subtract}
+ * @function
+ */
+
+/* Copyright (c) 2015, Brandon Jones, Colin MacKenzie IV.
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE. */
+
+/**
+ * 3x3 Matrix
+ * @module mat3
+ */
+
+/**
+ * Creates a new identity mat3
+ *
+ * @returns {mat3} a new 3x3 matrix
+ */
+function create$2() {
+  let out = new ARRAY_TYPE(9);
+  out[0] = 1;
+  out[1] = 0;
+  out[2] = 0;
+  out[3] = 0;
+  out[4] = 1;
+  out[5] = 0;
+  out[6] = 0;
+  out[7] = 0;
+  out[8] = 1;
+  return out;
+}
+
+/**
+ * Copies the upper-left 3x3 values into the given mat3.
+ *
+ * @param {mat3} out the receiving 3x3 matrix
+ * @param {mat4} a   the source 4x4 matrix
+ * @returns {mat3} out
+ */
+
+
+/**
+ * Creates a new mat3 initialized with values from an existing matrix
+ *
+ * @param {mat3} a matrix to clone
+ * @returns {mat3} a new 3x3 matrix
+ */
+
+
+/**
+ * Copy the values from one mat3 to another
+ *
+ * @param {mat3} out the receiving matrix
+ * @param {mat3} a the source matrix
+ * @returns {mat3} out
+ */
+
+
+/**
+ * Create a new mat3 with the given values
+ *
+ * @param {Number} m00 Component in column 0, row 0 position (index 0)
+ * @param {Number} m01 Component in column 0, row 1 position (index 1)
+ * @param {Number} m02 Component in column 0, row 2 position (index 2)
+ * @param {Number} m10 Component in column 1, row 0 position (index 3)
+ * @param {Number} m11 Component in column 1, row 1 position (index 4)
+ * @param {Number} m12 Component in column 1, row 2 position (index 5)
+ * @param {Number} m20 Component in column 2, row 0 position (index 6)
+ * @param {Number} m21 Component in column 2, row 1 position (index 7)
+ * @param {Number} m22 Component in column 2, row 2 position (index 8)
+ * @returns {mat3} A new mat3
+ */
+
+
+/**
+ * Set the components of a mat3 to the given values
+ *
+ * @param {mat3} out the receiving matrix
+ * @param {Number} m00 Component in column 0, row 0 position (index 0)
+ * @param {Number} m01 Component in column 0, row 1 position (index 1)
+ * @param {Number} m02 Component in column 0, row 2 position (index 2)
+ * @param {Number} m10 Component in column 1, row 0 position (index 3)
+ * @param {Number} m11 Component in column 1, row 1 position (index 4)
+ * @param {Number} m12 Component in column 1, row 2 position (index 5)
+ * @param {Number} m20 Component in column 2, row 0 position (index 6)
+ * @param {Number} m21 Component in column 2, row 1 position (index 7)
+ * @param {Number} m22 Component in column 2, row 2 position (index 8)
+ * @returns {mat3} out
+ */
+
+
+/**
+ * Set a mat3 to the identity matrix
+ *
+ * @param {mat3} out the receiving matrix
+ * @returns {mat3} out
+ */
+
+
+/**
+ * Transpose the values of a mat3
+ *
+ * @param {mat3} out the receiving matrix
+ * @param {mat3} a the source matrix
+ * @returns {mat3} out
+ */
+
+
+/**
+ * Inverts a mat3
+ *
+ * @param {mat3} out the receiving matrix
+ * @param {mat3} a the source matrix
+ * @returns {mat3} out
+ */
+
+
+/**
+ * Calculates the adjugate of a mat3
+ *
+ * @param {mat3} out the receiving matrix
+ * @param {mat3} a the source matrix
+ * @returns {mat3} out
+ */
+
+
+/**
+ * Calculates the determinant of a mat3
+ *
+ * @param {mat3} a the source matrix
+ * @returns {Number} determinant of a
+ */
+
+
+/**
+ * Multiplies two mat3's
+ *
+ * @param {mat3} out the receiving matrix
+ * @param {mat3} a the first operand
+ * @param {mat3} b the second operand
+ * @returns {mat3} out
+ */
+
+
+/**
+ * Translate a mat3 by the given vector
+ *
+ * @param {mat3} out the receiving matrix
+ * @param {mat3} a the matrix to translate
+ * @param {vec2} v vector to translate by
+ * @returns {mat3} out
+ */
+
+
+/**
+ * Rotates a mat3 by the given angle
+ *
+ * @param {mat3} out the receiving matrix
+ * @param {mat3} a the matrix to rotate
+ * @param {Number} rad the angle to rotate the matrix by
+ * @returns {mat3} out
+ */
+
+
+/**
+ * Scales the mat3 by the dimensions in the given vec2
+ *
+ * @param {mat3} out the receiving matrix
+ * @param {mat3} a the matrix to rotate
+ * @param {vec2} v the vec2 to scale the matrix by
+ * @returns {mat3} out
+ **/
+
+
+/**
+ * Creates a matrix from a vector translation
+ * This is equivalent to (but much faster than):
+ *
+ *     mat3.identity(dest);
+ *     mat3.translate(dest, dest, vec);
+ *
+ * @param {mat3} out mat3 receiving operation result
+ * @param {vec2} v Translation vector
+ * @returns {mat3} out
+ */
+
+
+/**
+ * Creates a matrix from a given angle
+ * This is equivalent to (but much faster than):
+ *
+ *     mat3.identity(dest);
+ *     mat3.rotate(dest, dest, rad);
+ *
+ * @param {mat3} out mat3 receiving operation result
+ * @param {Number} rad the angle to rotate the matrix by
+ * @returns {mat3} out
+ */
+
+
+/**
+ * Creates a matrix from a vector scaling
+ * This is equivalent to (but much faster than):
+ *
+ *     mat3.identity(dest);
+ *     mat3.scale(dest, dest, vec);
+ *
+ * @param {mat3} out mat3 receiving operation result
+ * @param {vec2} v Scaling vector
+ * @returns {mat3} out
+ */
+
+
+/**
+ * Copies the values from a mat2d into a mat3
+ *
+ * @param {mat3} out the receiving matrix
+ * @param {mat2d} a the matrix to copy
+ * @returns {mat3} out
+ **/
+
+
+/**
+* Calculates a 3x3 matrix from the given quaternion
+*
+* @param {mat3} out mat3 receiving operation result
+* @param {quat} q Quaternion to create matrix from
+*
+* @returns {mat3} out
+*/
+
+
+/**
+* Calculates a 3x3 normal matrix (transpose inverse) from the 4x4 matrix
+*
+* @param {mat3} out mat3 receiving operation result
+* @param {mat4} a Mat4 to derive the normal matrix from
+*
+* @returns {mat3} out
+*/
+
+
+/**
+ * Generates a 2D projection matrix with the given bounds
+ *
+ * @param {mat3} out mat3 frustum matrix will be written into
+ * @param {number} width Width of your gl context
+ * @param {number} height Height of gl context
+ * @returns {mat3} out
+ */
+
+
+/**
+ * Returns a string representation of a mat3
+ *
+ * @param {mat3} a matrix to represent as a string
+ * @returns {String} string representation of the matrix
+ */
+
+
+/**
+ * Returns Frobenius norm of a mat3
+ *
+ * @param {mat3} a the matrix to calculate Frobenius norm of
+ * @returns {Number} Frobenius norm
+ */
+
+
+/**
+ * Adds two mat3's
+ *
+ * @param {mat3} out the receiving matrix
+ * @param {mat3} a the first operand
+ * @param {mat3} b the second operand
+ * @returns {mat3} out
+ */
+
+
+/**
+ * Subtracts matrix b from matrix a
+ *
+ * @param {mat3} out the receiving matrix
+ * @param {mat3} a the first operand
+ * @param {mat3} b the second operand
+ * @returns {mat3} out
+ */
+
+
+
+
+/**
+ * Multiply each element of the matrix by a scalar.
+ *
+ * @param {mat3} out the receiving matrix
+ * @param {mat3} a the matrix to scale
+ * @param {Number} b amount to scale the matrix's elements by
+ * @returns {mat3} out
+ */
+
+
+/**
+ * Adds two mat3's after multiplying each element of the second operand by a scalar value.
+ *
+ * @param {mat3} out the receiving vector
+ * @param {mat3} a the first operand
+ * @param {mat3} b the second operand
+ * @param {Number} scale the amount to scale b's elements by before adding
+ * @returns {mat3} out
+ */
+
+
+/**
+ * Returns whether or not the matrices have exactly the same elements in the same position (when compared with ===)
+ *
+ * @param {mat3} a The first matrix.
+ * @param {mat3} b The second matrix.
+ * @returns {Boolean} True if the matrices are equal, false otherwise.
+ */
+
+
+/**
+ * Returns whether or not the matrices have approximately the same elements in the same position.
+ *
+ * @param {mat3} a The first matrix.
+ * @param {mat3} b The second matrix.
+ * @returns {Boolean} True if the matrices are equal, false otherwise.
+ */
+
+
+/**
+ * Alias for {@link mat3.multiply}
+ * @function
+ */
+
+
+/**
+ * Alias for {@link mat3.subtract}
+ * @function
+ */
+
+/* Copyright (c) 2015, Brandon Jones, Colin MacKenzie IV.
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE. */
+
+/**
+ * 4x4 Matrix
+ * @module mat4
+ */
+
+/**
+ * Creates a new identity mat4
+ *
+ * @returns {mat4} a new 4x4 matrix
+ */
+function create$3() {
+  let out = new ARRAY_TYPE(16);
+  out[0] = 1;
+  out[1] = 0;
+  out[2] = 0;
+  out[3] = 0;
+  out[4] = 0;
+  out[5] = 1;
+  out[6] = 0;
+  out[7] = 0;
+  out[8] = 0;
+  out[9] = 0;
+  out[10] = 1;
+  out[11] = 0;
+  out[12] = 0;
+  out[13] = 0;
+  out[14] = 0;
+  out[15] = 1;
+  return out;
+}
+
+/**
+ * Creates a new mat4 initialized with values from an existing matrix
+ *
+ * @param {mat4} a matrix to clone
+ * @returns {mat4} a new 4x4 matrix
+ */
+
+
+/**
+ * Copy the values from one mat4 to another
+ *
+ * @param {mat4} out the receiving matrix
+ * @param {mat4} a the source matrix
+ * @returns {mat4} out
+ */
+
+
+/**
+ * Create a new mat4 with the given values
+ *
+ * @param {Number} m00 Component in column 0, row 0 position (index 0)
+ * @param {Number} m01 Component in column 0, row 1 position (index 1)
+ * @param {Number} m02 Component in column 0, row 2 position (index 2)
+ * @param {Number} m03 Component in column 0, row 3 position (index 3)
+ * @param {Number} m10 Component in column 1, row 0 position (index 4)
+ * @param {Number} m11 Component in column 1, row 1 position (index 5)
+ * @param {Number} m12 Component in column 1, row 2 position (index 6)
+ * @param {Number} m13 Component in column 1, row 3 position (index 7)
+ * @param {Number} m20 Component in column 2, row 0 position (index 8)
+ * @param {Number} m21 Component in column 2, row 1 position (index 9)
+ * @param {Number} m22 Component in column 2, row 2 position (index 10)
+ * @param {Number} m23 Component in column 2, row 3 position (index 11)
+ * @param {Number} m30 Component in column 3, row 0 position (index 12)
+ * @param {Number} m31 Component in column 3, row 1 position (index 13)
+ * @param {Number} m32 Component in column 3, row 2 position (index 14)
+ * @param {Number} m33 Component in column 3, row 3 position (index 15)
+ * @returns {mat4} A new mat4
+ */
+function fromValues$3(m00, m01, m02, m03, m10, m11, m12, m13, m20, m21, m22, m23, m30, m31, m32, m33) {
+  let out = new ARRAY_TYPE(16);
+  out[0] = m00;
+  out[1] = m01;
+  out[2] = m02;
+  out[3] = m03;
+  out[4] = m10;
+  out[5] = m11;
+  out[6] = m12;
+  out[7] = m13;
+  out[8] = m20;
+  out[9] = m21;
+  out[10] = m22;
+  out[11] = m23;
+  out[12] = m30;
+  out[13] = m31;
+  out[14] = m32;
+  out[15] = m33;
+  return out;
+}
+
+/**
+ * Set the components of a mat4 to the given values
+ *
+ * @param {mat4} out the receiving matrix
+ * @param {Number} m00 Component in column 0, row 0 position (index 0)
+ * @param {Number} m01 Component in column 0, row 1 position (index 1)
+ * @param {Number} m02 Component in column 0, row 2 position (index 2)
+ * @param {Number} m03 Component in column 0, row 3 position (index 3)
+ * @param {Number} m10 Component in column 1, row 0 position (index 4)
+ * @param {Number} m11 Component in column 1, row 1 position (index 5)
+ * @param {Number} m12 Component in column 1, row 2 position (index 6)
+ * @param {Number} m13 Component in column 1, row 3 position (index 7)
+ * @param {Number} m20 Component in column 2, row 0 position (index 8)
+ * @param {Number} m21 Component in column 2, row 1 position (index 9)
+ * @param {Number} m22 Component in column 2, row 2 position (index 10)
+ * @param {Number} m23 Component in column 2, row 3 position (index 11)
+ * @param {Number} m30 Component in column 3, row 0 position (index 12)
+ * @param {Number} m31 Component in column 3, row 1 position (index 13)
+ * @param {Number} m32 Component in column 3, row 2 position (index 14)
+ * @param {Number} m33 Component in column 3, row 3 position (index 15)
+ * @returns {mat4} out
+ */
+
+
+
+/**
+ * Set a mat4 to the identity matrix
+ *
+ * @param {mat4} out the receiving matrix
+ * @returns {mat4} out
+ */
+
+
+/**
+ * Transpose the values of a mat4
+ *
+ * @param {mat4} out the receiving matrix
+ * @param {mat4} a the source matrix
+ * @returns {mat4} out
+ */
+
+
+/**
+ * Inverts a mat4
+ *
+ * @param {mat4} out the receiving matrix
+ * @param {mat4} a the source matrix
+ * @returns {mat4} out
+ */
+function invert$3(out, a) {
+  let a00 = a[0], a01 = a[1], a02 = a[2], a03 = a[3];
+  let a10 = a[4], a11 = a[5], a12 = a[6], a13 = a[7];
+  let a20 = a[8], a21 = a[9], a22 = a[10], a23 = a[11];
+  let a30 = a[12], a31 = a[13], a32 = a[14], a33 = a[15];
+
+  let b00 = a00 * a11 - a01 * a10;
+  let b01 = a00 * a12 - a02 * a10;
+  let b02 = a00 * a13 - a03 * a10;
+  let b03 = a01 * a12 - a02 * a11;
+  let b04 = a01 * a13 - a03 * a11;
+  let b05 = a02 * a13 - a03 * a12;
+  let b06 = a20 * a31 - a21 * a30;
+  let b07 = a20 * a32 - a22 * a30;
+  let b08 = a20 * a33 - a23 * a30;
+  let b09 = a21 * a32 - a22 * a31;
+  let b10 = a21 * a33 - a23 * a31;
+  let b11 = a22 * a33 - a23 * a32;
+
+  // Calculate the determinant
+  let det = b00 * b11 - b01 * b10 + b02 * b09 + b03 * b08 - b04 * b07 + b05 * b06;
+
+  if (!det) {
+    return null;
+  }
+  det = 1.0 / det;
+
+  out[0] = (a11 * b11 - a12 * b10 + a13 * b09) * det;
+  out[1] = (a02 * b10 - a01 * b11 - a03 * b09) * det;
+  out[2] = (a31 * b05 - a32 * b04 + a33 * b03) * det;
+  out[3] = (a22 * b04 - a21 * b05 - a23 * b03) * det;
+  out[4] = (a12 * b08 - a10 * b11 - a13 * b07) * det;
+  out[5] = (a00 * b11 - a02 * b08 + a03 * b07) * det;
+  out[6] = (a32 * b02 - a30 * b05 - a33 * b01) * det;
+  out[7] = (a20 * b05 - a22 * b02 + a23 * b01) * det;
+  out[8] = (a10 * b10 - a11 * b08 + a13 * b06) * det;
+  out[9] = (a01 * b08 - a00 * b10 - a03 * b06) * det;
+  out[10] = (a30 * b04 - a31 * b02 + a33 * b00) * det;
+  out[11] = (a21 * b02 - a20 * b04 - a23 * b00) * det;
+  out[12] = (a11 * b07 - a10 * b09 - a12 * b06) * det;
+  out[13] = (a00 * b09 - a01 * b07 + a02 * b06) * det;
+  out[14] = (a31 * b01 - a30 * b03 - a32 * b00) * det;
+  out[15] = (a20 * b03 - a21 * b01 + a22 * b00) * det;
+
+  return out;
+}
+
+/**
+ * Calculates the adjugate of a mat4
+ *
+ * @param {mat4} out the receiving matrix
+ * @param {mat4} a the source matrix
+ * @returns {mat4} out
+ */
+
+
+/**
+ * Calculates the determinant of a mat4
+ *
+ * @param {mat4} a the source matrix
+ * @returns {Number} determinant of a
+ */
+
+
+/**
+ * Multiplies two mat4s
+ *
+ * @param {mat4} out the receiving matrix
+ * @param {mat4} a the first operand
+ * @param {mat4} b the second operand
+ * @returns {mat4} out
+ */
+
+
+/**
+ * Translate a mat4 by the given vector
+ *
+ * @param {mat4} out the receiving matrix
+ * @param {mat4} a the matrix to translate
+ * @param {vec3} v vector to translate by
+ * @returns {mat4} out
+ */
+
+
+/**
+ * Scales the mat4 by the dimensions in the given vec3 not using vectorization
+ *
+ * @param {mat4} out the receiving matrix
+ * @param {mat4} a the matrix to scale
+ * @param {vec3} v the vec3 to scale the matrix by
+ * @returns {mat4} out
+ **/
+
+
+/**
+ * Rotates a mat4 by the given angle around the given axis
+ *
+ * @param {mat4} out the receiving matrix
+ * @param {mat4} a the matrix to rotate
+ * @param {Number} rad the angle to rotate the matrix by
+ * @param {vec3} axis the axis to rotate around
+ * @returns {mat4} out
+ */
+
+
+/**
+ * Rotates a matrix by the given angle around the X axis
+ *
+ * @param {mat4} out the receiving matrix
+ * @param {mat4} a the matrix to rotate
+ * @param {Number} rad the angle to rotate the matrix by
+ * @returns {mat4} out
+ */
+
+
+/**
+ * Rotates a matrix by the given angle around the Y axis
+ *
+ * @param {mat4} out the receiving matrix
+ * @param {mat4} a the matrix to rotate
+ * @param {Number} rad the angle to rotate the matrix by
+ * @returns {mat4} out
+ */
+
+
+/**
+ * Rotates a matrix by the given angle around the Z axis
+ *
+ * @param {mat4} out the receiving matrix
+ * @param {mat4} a the matrix to rotate
+ * @param {Number} rad the angle to rotate the matrix by
+ * @returns {mat4} out
+ */
+
+
+/**
+ * Creates a matrix from a vector translation
+ * This is equivalent to (but much faster than):
+ *
+ *     mat4.identity(dest);
+ *     mat4.translate(dest, dest, vec);
+ *
+ * @param {mat4} out mat4 receiving operation result
+ * @param {vec3} v Translation vector
+ * @returns {mat4} out
+ */
+
+
+/**
+ * Creates a matrix from a vector scaling
+ * This is equivalent to (but much faster than):
+ *
+ *     mat4.identity(dest);
+ *     mat4.scale(dest, dest, vec);
+ *
+ * @param {mat4} out mat4 receiving operation result
+ * @param {vec3} v Scaling vector
+ * @returns {mat4} out
+ */
+
+
+/**
+ * Creates a matrix from a given angle around a given axis
+ * This is equivalent to (but much faster than):
+ *
+ *     mat4.identity(dest);
+ *     mat4.rotate(dest, dest, rad, axis);
+ *
+ * @param {mat4} out mat4 receiving operation result
+ * @param {Number} rad the angle to rotate the matrix by
+ * @param {vec3} axis the axis to rotate around
+ * @returns {mat4} out
+ */
+
+
+/**
+ * Creates a matrix from the given angle around the X axis
+ * This is equivalent to (but much faster than):
+ *
+ *     mat4.identity(dest);
+ *     mat4.rotateX(dest, dest, rad);
+ *
+ * @param {mat4} out mat4 receiving operation result
+ * @param {Number} rad the angle to rotate the matrix by
+ * @returns {mat4} out
+ */
+
+
+/**
+ * Creates a matrix from the given angle around the Y axis
+ * This is equivalent to (but much faster than):
+ *
+ *     mat4.identity(dest);
+ *     mat4.rotateY(dest, dest, rad);
+ *
+ * @param {mat4} out mat4 receiving operation result
+ * @param {Number} rad the angle to rotate the matrix by
+ * @returns {mat4} out
+ */
+
+
+/**
+ * Creates a matrix from the given angle around the Z axis
+ * This is equivalent to (but much faster than):
+ *
+ *     mat4.identity(dest);
+ *     mat4.rotateZ(dest, dest, rad);
+ *
+ * @param {mat4} out mat4 receiving operation result
+ * @param {Number} rad the angle to rotate the matrix by
+ * @returns {mat4} out
+ */
+
+
+/**
+ * Creates a matrix from a quaternion rotation and vector translation
+ * This is equivalent to (but much faster than):
+ *
+ *     mat4.identity(dest);
+ *     mat4.translate(dest, vec);
+ *     let quatMat = mat4.create();
+ *     quat4.toMat4(quat, quatMat);
+ *     mat4.multiply(dest, quatMat);
+ *
+ * @param {mat4} out mat4 receiving operation result
+ * @param {quat4} q Rotation quaternion
+ * @param {vec3} v Translation vector
+ * @returns {mat4} out
+ */
+
+
+/**
+ * Returns the translation vector component of a transformation
+ *  matrix. If a matrix is built with fromRotationTranslation,
+ *  the returned vector will be the same as the translation vector
+ *  originally supplied.
+ * @param  {vec3} out Vector to receive translation component
+ * @param  {mat4} mat Matrix to be decomposed (input)
+ * @return {vec3} out
+ */
+
+
+/**
+ * Returns the scaling factor component of a transformation
+ *  matrix. If a matrix is built with fromRotationTranslationScale
+ *  with a normalized Quaternion paramter, the returned vector will be
+ *  the same as the scaling vector
+ *  originally supplied.
+ * @param  {vec3} out Vector to receive scaling factor component
+ * @param  {mat4} mat Matrix to be decomposed (input)
+ * @return {vec3} out
+ */
+
+
+/**
+ * Returns a quaternion representing the rotational component
+ *  of a transformation matrix. If a matrix is built with
+ *  fromRotationTranslation, the returned quaternion will be the
+ *  same as the quaternion originally supplied.
+ * @param {quat} out Quaternion to receive the rotation component
+ * @param {mat4} mat Matrix to be decomposed (input)
+ * @return {quat} out
+ */
+
+
+/**
+ * Creates a matrix from a quaternion rotation, vector translation and vector scale
+ * This is equivalent to (but much faster than):
+ *
+ *     mat4.identity(dest);
+ *     mat4.translate(dest, vec);
+ *     let quatMat = mat4.create();
+ *     quat4.toMat4(quat, quatMat);
+ *     mat4.multiply(dest, quatMat);
+ *     mat4.scale(dest, scale)
+ *
+ * @param {mat4} out mat4 receiving operation result
+ * @param {quat4} q Rotation quaternion
+ * @param {vec3} v Translation vector
+ * @param {vec3} s Scaling vector
+ * @returns {mat4} out
+ */
+
+
+/**
+ * Creates a matrix from a quaternion rotation, vector translation and vector scale, rotating and scaling around the given origin
+ * This is equivalent to (but much faster than):
+ *
+ *     mat4.identity(dest);
+ *     mat4.translate(dest, vec);
+ *     mat4.translate(dest, origin);
+ *     let quatMat = mat4.create();
+ *     quat4.toMat4(quat, quatMat);
+ *     mat4.multiply(dest, quatMat);
+ *     mat4.scale(dest, scale)
+ *     mat4.translate(dest, negativeOrigin);
+ *
+ * @param {mat4} out mat4 receiving operation result
+ * @param {quat4} q Rotation quaternion
+ * @param {vec3} v Translation vector
+ * @param {vec3} s Scaling vector
+ * @param {vec3} o The origin vector around which to scale and rotate
+ * @returns {mat4} out
+ */
+
+
+/**
+ * Calculates a 4x4 matrix from the given quaternion
+ *
+ * @param {mat4} out mat4 receiving operation result
+ * @param {quat} q Quaternion to create matrix from
+ *
+ * @returns {mat4} out
+ */
+
+
+/**
+ * Generates a frustum matrix with the given bounds
+ *
+ * @param {mat4} out mat4 frustum matrix will be written into
+ * @param {Number} left Left bound of the frustum
+ * @param {Number} right Right bound of the frustum
+ * @param {Number} bottom Bottom bound of the frustum
+ * @param {Number} top Top bound of the frustum
+ * @param {Number} near Near bound of the frustum
+ * @param {Number} far Far bound of the frustum
+ * @returns {mat4} out
+ */
+
+
+/**
+ * Generates a perspective projection matrix with the given bounds
+ *
+ * @param {mat4} out mat4 frustum matrix will be written into
+ * @param {number} fovy Vertical field of view in radians
+ * @param {number} aspect Aspect ratio. typically viewport width/height
+ * @param {number} near Near bound of the frustum
+ * @param {number} far Far bound of the frustum
+ * @returns {mat4} out
+ */
+
+
+/**
+ * Generates a perspective projection matrix with the given field of view.
+ * This is primarily useful for generating projection matrices to be used
+ * with the still experiemental WebVR API.
+ *
+ * @param {mat4} out mat4 frustum matrix will be written into
+ * @param {Object} fov Object containing the following values: upDegrees, downDegrees, leftDegrees, rightDegrees
+ * @param {number} near Near bound of the frustum
+ * @param {number} far Far bound of the frustum
+ * @returns {mat4} out
+ */
+
+
+/**
+ * Generates a orthogonal projection matrix with the given bounds
+ *
+ * @param {mat4} out mat4 frustum matrix will be written into
+ * @param {number} left Left bound of the frustum
+ * @param {number} right Right bound of the frustum
+ * @param {number} bottom Bottom bound of the frustum
+ * @param {number} top Top bound of the frustum
+ * @param {number} near Near bound of the frustum
+ * @param {number} far Far bound of the frustum
+ * @returns {mat4} out
+ */
+
+
+/**
+ * Generates a look-at matrix with the given eye position, focal point, and up axis
+ *
+ * @param {mat4} out mat4 frustum matrix will be written into
+ * @param {vec3} eye Position of the viewer
+ * @param {vec3} center Point the viewer is looking at
+ * @param {vec3} up vec3 pointing up
+ * @returns {mat4} out
+ */
+
+
+/**
+ * Generates a matrix that makes something look at something else.
+ *
+ * @param {mat4} out mat4 frustum matrix will be written into
+ * @param {vec3} eye Position of the viewer
+ * @param {vec3} center Point the viewer is looking at
+ * @param {vec3} up vec3 pointing up
+ * @returns {mat4} out
+ */
+
+
+/**
+ * Returns a string representation of a mat4
+ *
+ * @param {mat4} a matrix to represent as a string
+ * @returns {String} string representation of the matrix
+ */
+
+
+/**
+ * Returns Frobenius norm of a mat4
+ *
+ * @param {mat4} a the matrix to calculate Frobenius norm of
+ * @returns {Number} Frobenius norm
+ */
+
+
+/**
+ * Adds two mat4's
+ *
+ * @param {mat4} out the receiving matrix
+ * @param {mat4} a the first operand
+ * @param {mat4} b the second operand
+ * @returns {mat4} out
+ */
+
+
+/**
+ * Subtracts matrix b from matrix a
+ *
+ * @param {mat4} out the receiving matrix
+ * @param {mat4} a the first operand
+ * @param {mat4} b the second operand
+ * @returns {mat4} out
+ */
+
+
+/**
+ * Multiply each element of the matrix by a scalar.
+ *
+ * @param {mat4} out the receiving matrix
+ * @param {mat4} a the matrix to scale
+ * @param {Number} b amount to scale the matrix's elements by
+ * @returns {mat4} out
+ */
+
+
+/**
+ * Adds two mat4's after multiplying each element of the second operand by a scalar value.
+ *
+ * @param {mat4} out the receiving vector
+ * @param {mat4} a the first operand
+ * @param {mat4} b the second operand
+ * @param {Number} scale the amount to scale b's elements by before adding
+ * @returns {mat4} out
+ */
+
+
+/**
+ * Returns whether or not the matrices have exactly the same elements in the same position (when compared with ===)
+ *
+ * @param {mat4} a The first matrix.
+ * @param {mat4} b The second matrix.
+ * @returns {Boolean} True if the matrices are equal, false otherwise.
+ */
+
+
+/**
+ * Returns whether or not the matrices have approximately the same elements in the same position.
+ *
+ * @param {mat4} a The first matrix.
+ * @param {mat4} b The second matrix.
+ * @returns {Boolean} True if the matrices are equal, false otherwise.
+ */
+
+
+/**
+ * Alias for {@link mat4.multiply}
+ * @function
+ */
+
+
+/**
+ * Alias for {@link mat4.subtract}
+ * @function
+ */
+
+/* Copyright (c) 2015, Brandon Jones, Colin MacKenzie IV.
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE. */
+
+/**
+ * 3 Dimensional Vector
+ * @module vec3
+ */
+
+/**
+ * Creates a new, empty vec3
+ *
+ * @returns {vec3} a new 3D vector
+ */
+function create$5() {
+  let out = new ARRAY_TYPE(3);
+  out[0] = 0;
+  out[1] = 0;
+  out[2] = 0;
+  return out;
+}
+
+/**
+ * Creates a new vec3 initialized with values from an existing vector
+ *
+ * @param {vec3} a vector to clone
+ * @returns {vec3} a new 3D vector
+ */
+
+
+/**
+ * Calculates the length of a vec3
+ *
+ * @param {vec3} a vector to calculate length of
+ * @returns {Number} length of a
+ */
+function length$1(a) {
+  let x = a[0];
+  let y = a[1];
+  let z = a[2];
+  return Math.sqrt(x*x + y*y + z*z);
+}
+
+/**
+ * Creates a new vec3 initialized with the given values
+ *
+ * @param {Number} x X component
+ * @param {Number} y Y component
+ * @param {Number} z Z component
+ * @returns {vec3} a new 3D vector
+ */
+function fromValues$5(x, y, z) {
+  let out = new ARRAY_TYPE(3);
+  out[0] = x;
+  out[1] = y;
+  out[2] = z;
+  return out;
+}
+
+/**
+ * Copy the values from one vec3 to another
+ *
+ * @param {vec3} out the receiving vector
+ * @param {vec3} a the source vector
+ * @returns {vec3} out
+ */
+
+
+/**
+ * Set the components of a vec3 to the given values
+ *
+ * @param {vec3} out the receiving vector
+ * @param {Number} x X component
+ * @param {Number} y Y component
+ * @param {Number} z Z component
+ * @returns {vec3} out
+ */
+
+
+/**
+ * Adds two vec3's
+ *
+ * @param {vec3} out the receiving vector
+ * @param {vec3} a the first operand
+ * @param {vec3} b the second operand
+ * @returns {vec3} out
+ */
+
+
+/**
+ * Subtracts vector b from vector a
+ *
+ * @param {vec3} out the receiving vector
+ * @param {vec3} a the first operand
+ * @param {vec3} b the second operand
+ * @returns {vec3} out
+ */
+
+
+/**
+ * Multiplies two vec3's
+ *
+ * @param {vec3} out the receiving vector
+ * @param {vec3} a the first operand
+ * @param {vec3} b the second operand
+ * @returns {vec3} out
+ */
+
+
+/**
+ * Divides two vec3's
+ *
+ * @param {vec3} out the receiving vector
+ * @param {vec3} a the first operand
+ * @param {vec3} b the second operand
+ * @returns {vec3} out
+ */
+
+
+/**
+ * Math.ceil the components of a vec3
+ *
+ * @param {vec3} out the receiving vector
+ * @param {vec3} a vector to ceil
+ * @returns {vec3} out
+ */
+
+
+/**
+ * Math.floor the components of a vec3
+ *
+ * @param {vec3} out the receiving vector
+ * @param {vec3} a vector to floor
+ * @returns {vec3} out
+ */
+
+
+/**
+ * Returns the minimum of two vec3's
+ *
+ * @param {vec3} out the receiving vector
+ * @param {vec3} a the first operand
+ * @param {vec3} b the second operand
+ * @returns {vec3} out
+ */
+
+
+/**
+ * Returns the maximum of two vec3's
+ *
+ * @param {vec3} out the receiving vector
+ * @param {vec3} a the first operand
+ * @param {vec3} b the second operand
+ * @returns {vec3} out
+ */
+
+
+/**
+ * Math.round the components of a vec3
+ *
+ * @param {vec3} out the receiving vector
+ * @param {vec3} a vector to round
+ * @returns {vec3} out
+ */
+
+
+/**
+ * Scales a vec3 by a scalar number
+ *
+ * @param {vec3} out the receiving vector
+ * @param {vec3} a the vector to scale
+ * @param {Number} b amount to scale the vector by
+ * @returns {vec3} out
+ */
+
+
+/**
+ * Adds two vec3's after scaling the second operand by a scalar value
+ *
+ * @param {vec3} out the receiving vector
+ * @param {vec3} a the first operand
+ * @param {vec3} b the second operand
+ * @param {Number} scale the amount to scale b by before adding
+ * @returns {vec3} out
+ */
+
+
+/**
+ * Calculates the euclidian distance between two vec3's
+ *
+ * @param {vec3} a the first operand
+ * @param {vec3} b the second operand
+ * @returns {Number} distance between a and b
+ */
+
+
+/**
+ * Calculates the squared euclidian distance between two vec3's
+ *
+ * @param {vec3} a the first operand
+ * @param {vec3} b the second operand
+ * @returns {Number} squared distance between a and b
+ */
+
+
+/**
+ * Calculates the squared length of a vec3
+ *
+ * @param {vec3} a vector to calculate squared length of
+ * @returns {Number} squared length of a
+ */
+
+
+/**
+ * Negates the components of a vec3
+ *
+ * @param {vec3} out the receiving vector
+ * @param {vec3} a vector to negate
+ * @returns {vec3} out
+ */
+
+
+/**
+ * Returns the inverse of the components of a vec3
+ *
+ * @param {vec3} out the receiving vector
+ * @param {vec3} a vector to invert
+ * @returns {vec3} out
+ */
+
+
+/**
+ * Normalize a vec3
+ *
+ * @param {vec3} out the receiving vector
+ * @param {vec3} a vector to normalize
+ * @returns {vec3} out
+ */
+function normalize$1(out, a) {
+  let x = a[0];
+  let y = a[1];
+  let z = a[2];
+  let len = x*x + y*y + z*z;
+  if (len > 0) {
+    //TODO: evaluate use of glm_invsqrt here?
+    len = 1 / Math.sqrt(len);
+    out[0] = a[0] * len;
+    out[1] = a[1] * len;
+    out[2] = a[2] * len;
+  }
+  return out;
+}
+
+/**
+ * Calculates the dot product of two vec3's
+ *
+ * @param {vec3} a the first operand
+ * @param {vec3} b the second operand
+ * @returns {Number} dot product of a and b
+ */
+function dot$1(a, b) {
+  return a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
+}
+
+/**
+ * Computes the cross product of two vec3's
+ *
+ * @param {vec3} out the receiving vector
+ * @param {vec3} a the first operand
+ * @param {vec3} b the second operand
+ * @returns {vec3} out
+ */
+function cross(out, a, b) {
+  let ax = a[0], ay = a[1], az = a[2];
+  let bx = b[0], by = b[1], bz = b[2];
+
+  out[0] = ay * bz - az * by;
+  out[1] = az * bx - ax * bz;
+  out[2] = ax * by - ay * bx;
+  return out;
+}
+
+/**
+ * Performs a linear interpolation between two vec3's
+ *
+ * @param {vec3} out the receiving vector
+ * @param {vec3} a the first operand
+ * @param {vec3} b the second operand
+ * @param {Number} t interpolation amount between the two inputs
+ * @returns {vec3} out
+ */
+
+
+/**
+ * Performs a hermite interpolation with two control points
+ *
+ * @param {vec3} out the receiving vector
+ * @param {vec3} a the first operand
+ * @param {vec3} b the second operand
+ * @param {vec3} c the third operand
+ * @param {vec3} d the fourth operand
+ * @param {Number} t interpolation amount between the two inputs
+ * @returns {vec3} out
+ */
+
+
+/**
+ * Performs a bezier interpolation with two control points
+ *
+ * @param {vec3} out the receiving vector
+ * @param {vec3} a the first operand
+ * @param {vec3} b the second operand
+ * @param {vec3} c the third operand
+ * @param {vec3} d the fourth operand
+ * @param {Number} t interpolation amount between the two inputs
+ * @returns {vec3} out
+ */
+
+
+/**
+ * Generates a random vector with the given scale
+ *
+ * @param {vec3} out the receiving vector
+ * @param {Number} [scale] Length of the resulting vector. If ommitted, a unit vector will be returned
+ * @returns {vec3} out
+ */
+
+
+/**
+ * Transforms the vec3 with a mat4.
+ * 4th vector component is implicitly '1'
+ *
+ * @param {vec3} out the receiving vector
+ * @param {vec3} a the vector to transform
+ * @param {mat4} m matrix to transform with
+ * @returns {vec3} out
+ */
+
+
+/**
+ * Transforms the vec3 with a mat3.
+ *
+ * @param {vec3} out the receiving vector
+ * @param {vec3} a the vector to transform
+ * @param {mat3} m the 3x3 matrix to transform with
+ * @returns {vec3} out
+ */
+
+
+/**
+ * Transforms the vec3 with a quat
+ *
+ * @param {vec3} out the receiving vector
+ * @param {vec3} a the vector to transform
+ * @param {quat} q quaternion to transform with
+ * @returns {vec3} out
+ */
+
+
+/**
+ * Rotate a 3D vector around the x-axis
+ * @param {vec3} out The receiving vec3
+ * @param {vec3} a The vec3 point to rotate
+ * @param {vec3} b The origin of the rotation
+ * @param {Number} c The angle of rotation
+ * @returns {vec3} out
+ */
+
+
+/**
+ * Rotate a 3D vector around the y-axis
+ * @param {vec3} out The receiving vec3
+ * @param {vec3} a The vec3 point to rotate
+ * @param {vec3} b The origin of the rotation
+ * @param {Number} c The angle of rotation
+ * @returns {vec3} out
+ */
+
+
+/**
+ * Rotate a 3D vector around the z-axis
+ * @param {vec3} out The receiving vec3
+ * @param {vec3} a The vec3 point to rotate
+ * @param {vec3} b The origin of the rotation
+ * @param {Number} c The angle of rotation
+ * @returns {vec3} out
+ */
+
+
+/**
+ * Get the angle between two 3D vectors
+ * @param {vec3} a The first operand
+ * @param {vec3} b The second operand
+ * @returns {Number} The angle in radians
+ */
+
+
+/**
+ * Returns a string representation of a vector
+ *
+ * @param {vec3} a vector to represent as a string
+ * @returns {String} string representation of the vector
+ */
+
+
+/**
+ * Returns whether or not the vectors have exactly the same elements in the same position (when compared with ===)
+ *
+ * @param {vec3} a The first vector.
+ * @param {vec3} b The second vector.
+ * @returns {Boolean} True if the vectors are equal, false otherwise.
+ */
+
+
+/**
+ * Returns whether or not the vectors have approximately the same elements in the same position.
+ *
+ * @param {vec3} a The first vector.
+ * @param {vec3} b The second vector.
+ * @returns {Boolean} True if the vectors are equal, false otherwise.
+ */
+
+
+/**
+ * Alias for {@link vec3.subtract}
+ * @function
+ */
+
+
+/**
+ * Alias for {@link vec3.multiply}
+ * @function
+ */
+
+
+/**
+ * Alias for {@link vec3.divide}
+ * @function
+ */
+
+
+/**
+ * Alias for {@link vec3.distance}
+ * @function
+ */
+
+
+/**
+ * Alias for {@link vec3.squaredDistance}
+ * @function
+ */
+
+
+/**
+ * Alias for {@link vec3.length}
+ * @function
+ */
+const len$1 = length$1;
+
+/**
+ * Alias for {@link vec3.squaredLength}
+ * @function
+ */
+
+
+/**
+ * Perform some operation over an array of vec3s.
+ *
+ * @param {Array} a the array of vectors to iterate over
+ * @param {Number} stride Number of elements between the start of each vec3. If 0 assumes tightly packed
+ * @param {Number} offset Number of elements to skip at the beginning of the array
+ * @param {Number} count Number of vec3s to iterate over. If 0 iterates over entire array
+ * @param {Function} fn Function to call for each vector in the array
+ * @param {Object} [arg] additional argument to pass to fn
+ * @returns {Array} a
+ * @function
+ */
+const forEach = (function() {
+  let vec = create$5();
+
+  return function(a, stride, offset, count, fn, arg) {
+    let i, l;
+    if(!stride) {
+      stride = 3;
+    }
+
+    if(!offset) {
+      offset = 0;
+    }
+
+    if(count) {
+      l = Math.min((count * stride) + offset, a.length);
+    } else {
+      l = a.length;
+    }
+
+    for(i = offset; i < l; i += stride) {
+      vec[0] = a[i]; vec[1] = a[i+1]; vec[2] = a[i+2];
+      fn(vec, vec, arg);
+      a[i] = vec[0]; a[i+1] = vec[1]; a[i+2] = vec[2];
+    }
+
+    return a;
+  };
+})();
+
+/* Copyright (c) 2015, Brandon Jones, Colin MacKenzie IV.
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE. */
+
+/**
+ * 4 Dimensional Vector
+ * @module vec4
+ */
+
+/**
+ * Creates a new, empty vec4
+ *
+ * @returns {vec4} a new 4D vector
+ */
+function create$6() {
+  let out = new ARRAY_TYPE(4);
+  out[0] = 0;
+  out[1] = 0;
+  out[2] = 0;
+  out[3] = 0;
+  return out;
+}
+
+/**
+ * Creates a new vec4 initialized with values from an existing vector
+ *
+ * @param {vec4} a vector to clone
+ * @returns {vec4} a new 4D vector
+ */
+
+
+/**
+ * Creates a new vec4 initialized with the given values
+ *
+ * @param {Number} x X component
+ * @param {Number} y Y component
+ * @param {Number} z Z component
+ * @param {Number} w W component
+ * @returns {vec4} a new 4D vector
+ */
+function fromValues$6(x, y, z, w) {
+  let out = new ARRAY_TYPE(4);
+  out[0] = x;
+  out[1] = y;
+  out[2] = z;
+  out[3] = w;
+  return out;
+}
+
+/**
+ * Copy the values from one vec4 to another
+ *
+ * @param {vec4} out the receiving vector
+ * @param {vec4} a the source vector
+ * @returns {vec4} out
+ */
+
+
+/**
+ * Set the components of a vec4 to the given values
+ *
+ * @param {vec4} out the receiving vector
+ * @param {Number} x X component
+ * @param {Number} y Y component
+ * @param {Number} z Z component
+ * @param {Number} w W component
+ * @returns {vec4} out
+ */
+
+
+/**
+ * Adds two vec4's
+ *
+ * @param {vec4} out the receiving vector
+ * @param {vec4} a the first operand
+ * @param {vec4} b the second operand
+ * @returns {vec4} out
+ */
+
+
+/**
+ * Subtracts vector b from vector a
+ *
+ * @param {vec4} out the receiving vector
+ * @param {vec4} a the first operand
+ * @param {vec4} b the second operand
+ * @returns {vec4} out
+ */
+
+
+/**
+ * Multiplies two vec4's
+ *
+ * @param {vec4} out the receiving vector
+ * @param {vec4} a the first operand
+ * @param {vec4} b the second operand
+ * @returns {vec4} out
+ */
+
+
+/**
+ * Divides two vec4's
+ *
+ * @param {vec4} out the receiving vector
+ * @param {vec4} a the first operand
+ * @param {vec4} b the second operand
+ * @returns {vec4} out
+ */
+
+
+/**
+ * Math.ceil the components of a vec4
+ *
+ * @param {vec4} out the receiving vector
+ * @param {vec4} a vector to ceil
+ * @returns {vec4} out
+ */
+
+
+/**
+ * Math.floor the components of a vec4
+ *
+ * @param {vec4} out the receiving vector
+ * @param {vec4} a vector to floor
+ * @returns {vec4} out
+ */
+
+
+/**
+ * Returns the minimum of two vec4's
+ *
+ * @param {vec4} out the receiving vector
+ * @param {vec4} a the first operand
+ * @param {vec4} b the second operand
+ * @returns {vec4} out
+ */
+
+
+/**
+ * Returns the maximum of two vec4's
+ *
+ * @param {vec4} out the receiving vector
+ * @param {vec4} a the first operand
+ * @param {vec4} b the second operand
+ * @returns {vec4} out
+ */
+
+
+/**
+ * Math.round the components of a vec4
+ *
+ * @param {vec4} out the receiving vector
+ * @param {vec4} a vector to round
+ * @returns {vec4} out
+ */
+
+
+/**
+ * Scales a vec4 by a scalar number
+ *
+ * @param {vec4} out the receiving vector
+ * @param {vec4} a the vector to scale
+ * @param {Number} b amount to scale the vector by
+ * @returns {vec4} out
+ */
+
+
+/**
+ * Adds two vec4's after scaling the second operand by a scalar value
+ *
+ * @param {vec4} out the receiving vector
+ * @param {vec4} a the first operand
+ * @param {vec4} b the second operand
+ * @param {Number} scale the amount to scale b by before adding
+ * @returns {vec4} out
+ */
+
+
+/**
+ * Calculates the euclidian distance between two vec4's
+ *
+ * @param {vec4} a the first operand
+ * @param {vec4} b the second operand
+ * @returns {Number} distance between a and b
+ */
+
+
+/**
+ * Calculates the squared euclidian distance between two vec4's
+ *
+ * @param {vec4} a the first operand
+ * @param {vec4} b the second operand
+ * @returns {Number} squared distance between a and b
+ */
+
+
+/**
+ * Calculates the length of a vec4
+ *
+ * @param {vec4} a vector to calculate length of
+ * @returns {Number} length of a
+ */
+
+
+/**
+ * Calculates the squared length of a vec4
+ *
+ * @param {vec4} a vector to calculate squared length of
+ * @returns {Number} squared length of a
+ */
+
+
+/**
+ * Negates the components of a vec4
+ *
+ * @param {vec4} out the receiving vector
+ * @param {vec4} a vector to negate
+ * @returns {vec4} out
+ */
+
+
+/**
+ * Returns the inverse of the components of a vec4
+ *
+ * @param {vec4} out the receiving vector
+ * @param {vec4} a vector to invert
+ * @returns {vec4} out
+ */
+
+
+/**
+ * Normalize a vec4
+ *
+ * @param {vec4} out the receiving vector
+ * @param {vec4} a vector to normalize
+ * @returns {vec4} out
+ */
+function normalize$2(out, a) {
+  let x = a[0];
+  let y = a[1];
+  let z = a[2];
+  let w = a[3];
+  let len = x*x + y*y + z*z + w*w;
+  if (len > 0) {
+    len = 1 / Math.sqrt(len);
+    out[0] = x * len;
+    out[1] = y * len;
+    out[2] = z * len;
+    out[3] = w * len;
+  }
+  return out;
+}
+
+/**
+ * Calculates the dot product of two vec4's
+ *
+ * @param {vec4} a the first operand
+ * @param {vec4} b the second operand
+ * @returns {Number} dot product of a and b
+ */
+
+
+/**
+ * Performs a linear interpolation between two vec4's
+ *
+ * @param {vec4} out the receiving vector
+ * @param {vec4} a the first operand
+ * @param {vec4} b the second operand
+ * @param {Number} t interpolation amount between the two inputs
+ * @returns {vec4} out
+ */
+
+
+/**
+ * Generates a random vector with the given scale
+ *
+ * @param {vec4} out the receiving vector
+ * @param {Number} [scale] Length of the resulting vector. If ommitted, a unit vector will be returned
+ * @returns {vec4} out
+ */
+
+
+/**
+ * Transforms the vec4 with a mat4.
+ *
+ * @param {vec4} out the receiving vector
+ * @param {vec4} a the vector to transform
+ * @param {mat4} m matrix to transform with
+ * @returns {vec4} out
+ */
+function transformMat4$1(out, a, m) {
+  let x = a[0], y = a[1], z = a[2], w = a[3];
+  out[0] = m[0] * x + m[4] * y + m[8] * z + m[12] * w;
+  out[1] = m[1] * x + m[5] * y + m[9] * z + m[13] * w;
+  out[2] = m[2] * x + m[6] * y + m[10] * z + m[14] * w;
+  out[3] = m[3] * x + m[7] * y + m[11] * z + m[15] * w;
+  return out;
+}
+
+/**
+ * Transforms the vec4 with a quat
+ *
+ * @param {vec4} out the receiving vector
+ * @param {vec4} a the vector to transform
+ * @param {quat} q quaternion to transform with
+ * @returns {vec4} out
+ */
+
+
+/**
+ * Returns a string representation of a vector
+ *
+ * @param {vec4} a vector to represent as a string
+ * @returns {String} string representation of the vector
+ */
+
+
+/**
+ * Returns whether or not the vectors have exactly the same elements in the same position (when compared with ===)
+ *
+ * @param {vec4} a The first vector.
+ * @param {vec4} b The second vector.
+ * @returns {Boolean} True if the vectors are equal, false otherwise.
+ */
+
+
+/**
+ * Returns whether or not the vectors have approximately the same elements in the same position.
+ *
+ * @param {vec4} a The first vector.
+ * @param {vec4} b The second vector.
+ * @returns {Boolean} True if the vectors are equal, false otherwise.
+ */
+
+
+/**
+ * Alias for {@link vec4.subtract}
+ * @function
+ */
+
+
+/**
+ * Alias for {@link vec4.multiply}
+ * @function
+ */
+
+
+/**
+ * Alias for {@link vec4.divide}
+ * @function
+ */
+
+
+/**
+ * Alias for {@link vec4.distance}
+ * @function
+ */
+
+
+/**
+ * Alias for {@link vec4.squaredDistance}
+ * @function
+ */
+
+
+/**
+ * Alias for {@link vec4.length}
+ * @function
+ */
+
+
+/**
+ * Alias for {@link vec4.squaredLength}
+ * @function
+ */
+
+
+/**
+ * Perform some operation over an array of vec4s.
+ *
+ * @param {Array} a the array of vectors to iterate over
+ * @param {Number} stride Number of elements between the start of each vec4. If 0 assumes tightly packed
+ * @param {Number} offset Number of elements to skip at the beginning of the array
+ * @param {Number} count Number of vec4s to iterate over. If 0 iterates over entire array
+ * @param {Function} fn Function to call for each vector in the array
+ * @param {Object} [arg] additional argument to pass to fn
+ * @returns {Array} a
+ * @function
+ */
+const forEach$1 = (function() {
+  let vec = create$6();
+
+  return function(a, stride, offset, count, fn, arg) {
+    let i, l;
+    if(!stride) {
+      stride = 4;
+    }
+
+    if(!offset) {
+      offset = 0;
+    }
+
+    if(count) {
+      l = Math.min((count * stride) + offset, a.length);
+    } else {
+      l = a.length;
+    }
+
+    for(i = offset; i < l; i += stride) {
+      vec[0] = a[i]; vec[1] = a[i+1]; vec[2] = a[i+2]; vec[3] = a[i+3];
+      fn(vec, vec, arg);
+      a[i] = vec[0]; a[i+1] = vec[1]; a[i+2] = vec[2]; a[i+3] = vec[3];
+    }
+
+    return a;
+  };
+})();
+
+/* Copyright (c) 2015, Brandon Jones, Colin MacKenzie IV.
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE. */
+
+/**
+ * Quaternion
+ * @module quat
+ */
+
+/**
+ * Creates a new identity quat
+ *
+ * @returns {quat} a new quaternion
+ */
+function create$4() {
+  let out = new ARRAY_TYPE(4);
+  out[0] = 0;
+  out[1] = 0;
+  out[2] = 0;
+  out[3] = 1;
+  return out;
+}
+
+/**
+ * Set a quat to the identity quaternion
+ *
+ * @param {quat} out the receiving quaternion
+ * @returns {quat} out
+ */
+
+
+/**
+ * Sets a quat from the given angle and rotation axis,
+ * then returns it.
+ *
+ * @param {quat} out the receiving quaternion
+ * @param {vec3} axis the axis around which to rotate
+ * @param {Number} rad the angle in radians
+ * @returns {quat} out
+ **/
+function setAxisAngle(out, axis, rad) {
+  rad = rad * 0.5;
+  let s = Math.sin(rad);
+  out[0] = s * axis[0];
+  out[1] = s * axis[1];
+  out[2] = s * axis[2];
+  out[3] = Math.cos(rad);
+  return out;
+}
+
+/**
+ * Gets the rotation axis and angle for a given
+ *  quaternion. If a quaternion is created with
+ *  setAxisAngle, this method will return the same
+ *  values as providied in the original parameter list
+ *  OR functionally equivalent values.
+ * Example: The quaternion formed by axis [0, 0, 1] and
+ *  angle -90 is the same as the quaternion formed by
+ *  [0, 0, 1] and 270. This method favors the latter.
+ * @param  {vec3} out_axis  Vector receiving the axis of rotation
+ * @param  {quat} q     Quaternion to be decomposed
+ * @return {Number}     Angle, in radians, of the rotation
+ */
+
+
+/**
+ * Multiplies two quat's
+ *
+ * @param {quat} out the receiving quaternion
+ * @param {quat} a the first operand
+ * @param {quat} b the second operand
+ * @returns {quat} out
+ */
+
+
+/**
+ * Rotates a quaternion by the given angle about the X axis
+ *
+ * @param {quat} out quat receiving operation result
+ * @param {quat} a quat to rotate
+ * @param {number} rad angle (in radians) to rotate
+ * @returns {quat} out
+ */
+
+
+/**
+ * Rotates a quaternion by the given angle about the Y axis
+ *
+ * @param {quat} out quat receiving operation result
+ * @param {quat} a quat to rotate
+ * @param {number} rad angle (in radians) to rotate
+ * @returns {quat} out
+ */
+
+
+/**
+ * Rotates a quaternion by the given angle about the Z axis
+ *
+ * @param {quat} out quat receiving operation result
+ * @param {quat} a quat to rotate
+ * @param {number} rad angle (in radians) to rotate
+ * @returns {quat} out
+ */
+
+
+/**
+ * Calculates the W component of a quat from the X, Y, and Z components.
+ * Assumes that quaternion is 1 unit in length.
+ * Any existing W component will be ignored.
+ *
+ * @param {quat} out the receiving quaternion
+ * @param {quat} a quat to calculate W component of
+ * @returns {quat} out
+ */
+
+
+/**
+ * Performs a spherical linear interpolation between two quat
+ *
+ * @param {quat} out the receiving quaternion
+ * @param {quat} a the first operand
+ * @param {quat} b the second operand
+ * @param {Number} t interpolation amount between the two inputs
+ * @returns {quat} out
+ */
+function slerp(out, a, b, t) {
+  // benchmarks:
+  //    http://jsperf.com/quaternion-slerp-implementations
+  let ax = a[0], ay = a[1], az = a[2], aw = a[3];
+  let bx = b[0], by = b[1], bz = b[2], bw = b[3];
+
+  let omega, cosom, sinom, scale0, scale1;
+
+  // calc cosine
+  cosom = ax * bx + ay * by + az * bz + aw * bw;
+  // adjust signs (if necessary)
+  if ( cosom < 0.0 ) {
+    cosom = -cosom;
+    bx = - bx;
+    by = - by;
+    bz = - bz;
+    bw = - bw;
+  }
+  // calculate coefficients
+  if ( (1.0 - cosom) > 0.000001 ) {
+    // standard case (slerp)
+    omega  = Math.acos(cosom);
+    sinom  = Math.sin(omega);
+    scale0 = Math.sin((1.0 - t) * omega) / sinom;
+    scale1 = Math.sin(t * omega) / sinom;
+  } else {
+    // "from" and "to" quaternions are very close
+    //  ... so we can do a linear interpolation
+    scale0 = 1.0 - t;
+    scale1 = t;
+  }
+  // calculate final values
+  out[0] = scale0 * ax + scale1 * bx;
+  out[1] = scale0 * ay + scale1 * by;
+  out[2] = scale0 * az + scale1 * bz;
+  out[3] = scale0 * aw + scale1 * bw;
+
+  return out;
+}
+
+/**
+ * Calculates the inverse of a quat
+ *
+ * @param {quat} out the receiving quaternion
+ * @param {quat} a quat to calculate inverse of
+ * @returns {quat} out
+ */
+
+
+/**
+ * Calculates the conjugate of a quat
+ * If the quaternion is normalized, this function is faster than quat.inverse and produces the same result.
+ *
+ * @param {quat} out the receiving quaternion
+ * @param {quat} a quat to calculate conjugate of
+ * @returns {quat} out
+ */
+
+
+/**
+ * Creates a quaternion from the given 3x3 rotation matrix.
+ *
+ * NOTE: The resultant quaternion is not normalized, so you should be sure
+ * to renormalize the quaternion yourself where necessary.
+ *
+ * @param {quat} out the receiving quaternion
+ * @param {mat3} m rotation matrix
+ * @returns {quat} out
+ * @function
+ */
+function fromMat3(out, m) {
+  // Algorithm in Ken Shoemake's article in 1987 SIGGRAPH course notes
+  // article "Quaternion Calculus and Fast Animation".
+  let fTrace = m[0] + m[4] + m[8];
+  let fRoot;
+
+  if ( fTrace > 0.0 ) {
+    // |w| > 1/2, may as well choose w > 1/2
+    fRoot = Math.sqrt(fTrace + 1.0);  // 2w
+    out[3] = 0.5 * fRoot;
+    fRoot = 0.5/fRoot;  // 1/(4w)
+    out[0] = (m[5]-m[7])*fRoot;
+    out[1] = (m[6]-m[2])*fRoot;
+    out[2] = (m[1]-m[3])*fRoot;
+  } else {
+    // |w| <= 1/2
+    let i = 0;
+    if ( m[4] > m[0] )
+      i = 1;
+    if ( m[8] > m[i*3+i] )
+      i = 2;
+    let j = (i+1)%3;
+    let k = (i+2)%3;
+
+    fRoot = Math.sqrt(m[i*3+i]-m[j*3+j]-m[k*3+k] + 1.0);
+    out[i] = 0.5 * fRoot;
+    fRoot = 0.5 / fRoot;
+    out[3] = (m[j*3+k] - m[k*3+j]) * fRoot;
+    out[j] = (m[j*3+i] + m[i*3+j]) * fRoot;
+    out[k] = (m[k*3+i] + m[i*3+k]) * fRoot;
+  }
+
+  return out;
+}
+
+/**
+ * Creates a quaternion from the given euler angle x, y, z.
+ *
+ * @param {quat} out the receiving quaternion
+ * @param {x} Angle to rotate around X axis in degrees.
+ * @param {y} Angle to rotate around Y axis in degrees.
+ * @param {z} Angle to rotate around Z axis in degrees.
+ * @returns {quat} out
+ * @function
+ */
+
+
+/**
+ * Returns a string representation of a quatenion
+ *
+ * @param {quat} a vector to represent as a string
+ * @returns {String} string representation of the vector
+ */
+
+
+/**
+ * Creates a new quat initialized with values from an existing quaternion
+ *
+ * @param {quat} a quaternion to clone
+ * @returns {quat} a new quaternion
+ * @function
+ */
+
+
+/**
+ * Creates a new quat initialized with the given values
+ *
+ * @param {Number} x X component
+ * @param {Number} y Y component
+ * @param {Number} z Z component
+ * @param {Number} w W component
+ * @returns {quat} a new quaternion
+ * @function
+ */
+
+
+/**
+ * Copy the values from one quat to another
+ *
+ * @param {quat} out the receiving quaternion
+ * @param {quat} a the source quaternion
+ * @returns {quat} out
+ * @function
+ */
+
+
+/**
+ * Set the components of a quat to the given values
+ *
+ * @param {quat} out the receiving quaternion
+ * @param {Number} x X component
+ * @param {Number} y Y component
+ * @param {Number} z Z component
+ * @param {Number} w W component
+ * @returns {quat} out
+ * @function
+ */
+
+
+/**
+ * Adds two quat's
+ *
+ * @param {quat} out the receiving quaternion
+ * @param {quat} a the first operand
+ * @param {quat} b the second operand
+ * @returns {quat} out
+ * @function
+ */
+
+
+/**
+ * Alias for {@link quat.multiply}
+ * @function
+ */
+
+
+/**
+ * Scales a quat by a scalar number
+ *
+ * @param {quat} out the receiving vector
+ * @param {quat} a the vector to scale
+ * @param {Number} b amount to scale the vector by
+ * @returns {quat} out
+ * @function
+ */
+
+
+/**
+ * Calculates the dot product of two quat's
+ *
+ * @param {quat} a the first operand
+ * @param {quat} b the second operand
+ * @returns {Number} dot product of a and b
+ * @function
+ */
+
+
+/**
+ * Performs a linear interpolation between two quat's
+ *
+ * @param {quat} out the receiving quaternion
+ * @param {quat} a the first operand
+ * @param {quat} b the second operand
+ * @param {Number} t interpolation amount between the two inputs
+ * @returns {quat} out
+ * @function
+ */
+
+
+/**
+ * Calculates the length of a quat
+ *
+ * @param {quat} a vector to calculate length of
+ * @returns {Number} length of a
+ */
+
+
+/**
+ * Alias for {@link quat.length}
+ * @function
+ */
+
+
+/**
+ * Calculates the squared length of a quat
+ *
+ * @param {quat} a vector to calculate squared length of
+ * @returns {Number} squared length of a
+ * @function
+ */
+
+
+/**
+ * Alias for {@link quat.squaredLength}
+ * @function
+ */
+
+
+/**
+ * Normalize a quat
+ *
+ * @param {quat} out the receiving quaternion
+ * @param {quat} a quaternion to normalize
+ * @returns {quat} out
+ * @function
+ */
+const normalize$$1 = normalize$2;
+
+/**
+ * Returns whether or not the quaternions have exactly the same elements in the same position (when compared with ===)
+ *
+ * @param {quat} a The first quaternion.
+ * @param {quat} b The second quaternion.
+ * @returns {Boolean} True if the vectors are equal, false otherwise.
+ */
+
+
+/**
+ * Returns whether or not the quaternions have approximately the same elements in the same position.
+ *
+ * @param {quat} a The first vector.
+ * @param {quat} b The second vector.
+ * @returns {Boolean} True if the vectors are equal, false otherwise.
+ */
+
+
+/**
+ * Sets a quaternion to represent the shortest rotation from one
+ * vector to another.
+ *
+ * Both vectors are assumed to be unit length.
+ *
+ * @param {quat} out the receiving quaternion.
+ * @param {vec3} a the initial vector
+ * @param {vec3} b the destination vector
+ * @returns {quat} out
+ */
+const rotationTo = (function() {
+  let tmpvec3 = create$5();
+  let xUnitVec3 = fromValues$5(1,0,0);
+  let yUnitVec3 = fromValues$5(0,1,0);
+
+  return function(out, a, b) {
+    let dot$$1 = dot$1(a, b);
+    if (dot$$1 < -0.999999) {
+      cross(tmpvec3, xUnitVec3, a);
+      if (len$1(tmpvec3) < 0.000001)
+        cross(tmpvec3, yUnitVec3, a);
+      normalize$1(tmpvec3, tmpvec3);
+      setAxisAngle(out, tmpvec3, Math.PI);
+      return out;
+    } else if (dot$$1 > 0.999999) {
+      out[0] = 0;
+      out[1] = 0;
+      out[2] = 0;
+      out[3] = 1;
+      return out;
+    } else {
+      cross(tmpvec3, a, b);
+      out[0] = tmpvec3[0];
+      out[1] = tmpvec3[1];
+      out[2] = tmpvec3[2];
+      out[3] = 1 + dot$$1;
+      return normalize$$1(out, out);
+    }
+  };
+})();
+
+/**
+ * Performs a spherical linear interpolation with two control points
+ *
+ * @param {quat} out the receiving quaternion
+ * @param {quat} a the first operand
+ * @param {quat} b the second operand
+ * @param {quat} c the third operand
+ * @param {quat} d the fourth operand
+ * @param {Number} t interpolation amount
+ * @returns {quat} out
+ */
+const sqlerp = (function () {
+  let temp1 = create$4();
+  let temp2 = create$4();
+
+  return function (out, a, b, c, d, t) {
+    slerp(temp1, a, d, t);
+    slerp(temp2, b, c, t);
+    slerp(out, temp1, temp2, 2 * t * (1 - t));
+
+    return out;
+  };
+}());
+
+/**
+ * Sets the specified quaternion with values corresponding to the given
+ * axes. Each axis is a vec3 and is expected to be unit length and
+ * perpendicular to all other specified axes.
+ *
+ * @param {vec3} view  the vector representing the viewing direction
+ * @param {vec3} right the vector representing the local "right" direction
+ * @param {vec3} up    the vector representing the local "up" direction
+ * @returns {quat} out
+ */
+const setAxes = (function() {
+  let matr = create$2();
+
+  return function(out, view, right, up) {
+    matr[0] = right[0];
+    matr[3] = right[1];
+    matr[6] = right[2];
+
+    matr[1] = up[0];
+    matr[4] = up[1];
+    matr[7] = up[2];
+
+    matr[2] = -view[0];
+    matr[5] = -view[1];
+    matr[8] = -view[2];
+
+    return normalize$$1(out, fromMat3(out, matr));
+  };
+})();
+
+/* Copyright (c) 2015, Brandon Jones, Colin MacKenzie IV.
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE. */
+
+/**
+ * 2 Dimensional Vector
+ * @module vec2
+ */
+
+/**
+ * Creates a new, empty vec2
+ *
+ * @returns {vec2} a new 2D vector
+ */
+function create$7() {
+  let out = new ARRAY_TYPE(2);
+  out[0] = 0;
+  out[1] = 0;
+  return out;
+}
+
+/**
+ * Creates a new vec2 initialized with values from an existing vector
+ *
+ * @param {vec2} a vector to clone
+ * @returns {vec2} a new 2D vector
+ */
+
+
+/**
+ * Creates a new vec2 initialized with the given values
+ *
+ * @param {Number} x X component
+ * @param {Number} y Y component
+ * @returns {vec2} a new 2D vector
+ */
+
+
+/**
+ * Copy the values from one vec2 to another
+ *
+ * @param {vec2} out the receiving vector
+ * @param {vec2} a the source vector
+ * @returns {vec2} out
+ */
+
+
+/**
+ * Set the components of a vec2 to the given values
+ *
+ * @param {vec2} out the receiving vector
+ * @param {Number} x X component
+ * @param {Number} y Y component
+ * @returns {vec2} out
+ */
+
+
+/**
+ * Adds two vec2's
+ *
+ * @param {vec2} out the receiving vector
+ * @param {vec2} a the first operand
+ * @param {vec2} b the second operand
+ * @returns {vec2} out
+ */
+
+
+/**
+ * Subtracts vector b from vector a
+ *
+ * @param {vec2} out the receiving vector
+ * @param {vec2} a the first operand
+ * @param {vec2} b the second operand
+ * @returns {vec2} out
+ */
+
+
+/**
+ * Multiplies two vec2's
+ *
+ * @param {vec2} out the receiving vector
+ * @param {vec2} a the first operand
+ * @param {vec2} b the second operand
+ * @returns {vec2} out
+ */
+
+
+/**
+ * Divides two vec2's
+ *
+ * @param {vec2} out the receiving vector
+ * @param {vec2} a the first operand
+ * @param {vec2} b the second operand
+ * @returns {vec2} out
+ */
+
+
+/**
+ * Math.ceil the components of a vec2
+ *
+ * @param {vec2} out the receiving vector
+ * @param {vec2} a vector to ceil
+ * @returns {vec2} out
+ */
+
+
+/**
+ * Math.floor the components of a vec2
+ *
+ * @param {vec2} out the receiving vector
+ * @param {vec2} a vector to floor
+ * @returns {vec2} out
+ */
+
+
+/**
+ * Returns the minimum of two vec2's
+ *
+ * @param {vec2} out the receiving vector
+ * @param {vec2} a the first operand
+ * @param {vec2} b the second operand
+ * @returns {vec2} out
+ */
+
+
+/**
+ * Returns the maximum of two vec2's
+ *
+ * @param {vec2} out the receiving vector
+ * @param {vec2} a the first operand
+ * @param {vec2} b the second operand
+ * @returns {vec2} out
+ */
+
+
+/**
+ * Math.round the components of a vec2
+ *
+ * @param {vec2} out the receiving vector
+ * @param {vec2} a vector to round
+ * @returns {vec2} out
+ */
+
+
+/**
+ * Scales a vec2 by a scalar number
+ *
+ * @param {vec2} out the receiving vector
+ * @param {vec2} a the vector to scale
+ * @param {Number} b amount to scale the vector by
+ * @returns {vec2} out
+ */
+
+
+/**
+ * Adds two vec2's after scaling the second operand by a scalar value
+ *
+ * @param {vec2} out the receiving vector
+ * @param {vec2} a the first operand
+ * @param {vec2} b the second operand
+ * @param {Number} scale the amount to scale b by before adding
+ * @returns {vec2} out
+ */
+
+
+/**
+ * Calculates the euclidian distance between two vec2's
+ *
+ * @param {vec2} a the first operand
+ * @param {vec2} b the second operand
+ * @returns {Number} distance between a and b
+ */
+
+
+/**
+ * Calculates the squared euclidian distance between two vec2's
+ *
+ * @param {vec2} a the first operand
+ * @param {vec2} b the second operand
+ * @returns {Number} squared distance between a and b
+ */
+
+
+/**
+ * Calculates the length of a vec2
+ *
+ * @param {vec2} a vector to calculate length of
+ * @returns {Number} length of a
+ */
+
+
+/**
+ * Calculates the squared length of a vec2
+ *
+ * @param {vec2} a vector to calculate squared length of
+ * @returns {Number} squared length of a
+ */
+
+
+/**
+ * Negates the components of a vec2
+ *
+ * @param {vec2} out the receiving vector
+ * @param {vec2} a vector to negate
+ * @returns {vec2} out
+ */
+
+
+/**
+ * Returns the inverse of the components of a vec2
+ *
+ * @param {vec2} out the receiving vector
+ * @param {vec2} a vector to invert
+ * @returns {vec2} out
+ */
+
+
+/**
+ * Normalize a vec2
+ *
+ * @param {vec2} out the receiving vector
+ * @param {vec2} a vector to normalize
+ * @returns {vec2} out
+ */
+
+
+/**
+ * Calculates the dot product of two vec2's
+ *
+ * @param {vec2} a the first operand
+ * @param {vec2} b the second operand
+ * @returns {Number} dot product of a and b
+ */
+
+
+/**
+ * Computes the cross product of two vec2's
+ * Note that the cross product must by definition produce a 3D vector
+ *
+ * @param {vec3} out the receiving vector
+ * @param {vec2} a the first operand
+ * @param {vec2} b the second operand
+ * @returns {vec3} out
+ */
+
+
+/**
+ * Performs a linear interpolation between two vec2's
+ *
+ * @param {vec2} out the receiving vector
+ * @param {vec2} a the first operand
+ * @param {vec2} b the second operand
+ * @param {Number} t interpolation amount between the two inputs
+ * @returns {vec2} out
+ */
+
+
+/**
+ * Generates a random vector with the given scale
+ *
+ * @param {vec2} out the receiving vector
+ * @param {Number} [scale] Length of the resulting vector. If ommitted, a unit vector will be returned
+ * @returns {vec2} out
+ */
+
+
+/**
+ * Transforms the vec2 with a mat2
+ *
+ * @param {vec2} out the receiving vector
+ * @param {vec2} a the vector to transform
+ * @param {mat2} m matrix to transform with
+ * @returns {vec2} out
+ */
+
+
+/**
+ * Transforms the vec2 with a mat2d
+ *
+ * @param {vec2} out the receiving vector
+ * @param {vec2} a the vector to transform
+ * @param {mat2d} m matrix to transform with
+ * @returns {vec2} out
+ */
+
+
+/**
+ * Transforms the vec2 with a mat3
+ * 3rd vector component is implicitly '1'
+ *
+ * @param {vec2} out the receiving vector
+ * @param {vec2} a the vector to transform
+ * @param {mat3} m matrix to transform with
+ * @returns {vec2} out
+ */
+
+
+/**
+ * Transforms the vec2 with a mat4
+ * 3rd vector component is implicitly '0'
+ * 4th vector component is implicitly '1'
+ *
+ * @param {vec2} out the receiving vector
+ * @param {vec2} a the vector to transform
+ * @param {mat4} m matrix to transform with
+ * @returns {vec2} out
+ */
+
+
+/**
+ * Returns a string representation of a vector
+ *
+ * @param {vec2} a vector to represent as a string
+ * @returns {String} string representation of the vector
+ */
+
+
+/**
+ * Returns whether or not the vectors exactly have the same elements in the same position (when compared with ===)
+ *
+ * @param {vec2} a The first vector.
+ * @param {vec2} b The second vector.
+ * @returns {Boolean} True if the vectors are equal, false otherwise.
+ */
+
+
+/**
+ * Returns whether or not the vectors have approximately the same elements in the same position.
+ *
+ * @param {vec2} a The first vector.
+ * @param {vec2} b The second vector.
+ * @returns {Boolean} True if the vectors are equal, false otherwise.
+ */
+
+
+/**
+ * Alias for {@link vec2.length}
+ * @function
+ */
+
+
+/**
+ * Alias for {@link vec2.subtract}
+ * @function
+ */
+
+
+/**
+ * Alias for {@link vec2.multiply}
+ * @function
+ */
+
+
+/**
+ * Alias for {@link vec2.divide}
+ * @function
+ */
+
+
+/**
+ * Alias for {@link vec2.distance}
+ * @function
+ */
+
+
+/**
+ * Alias for {@link vec2.squaredDistance}
+ * @function
+ */
+
+
+/**
+ * Alias for {@link vec2.squaredLength}
+ * @function
+ */
+
+
+/**
+ * Perform some operation over an array of vec2s.
+ *
+ * @param {Array} a the array of vectors to iterate over
+ * @param {Number} stride Number of elements between the start of each vec2. If 0 assumes tightly packed
+ * @param {Number} offset Number of elements to skip at the beginning of the array
+ * @param {Number} count Number of vec2s to iterate over. If 0 iterates over entire array
+ * @param {Function} fn Function to call for each vector in the array
+ * @param {Object} [arg] additional argument to pass to fn
+ * @returns {Array} a
+ * @function
+ */
+const forEach$2 = (function() {
+  let vec = create$7();
+
+  return function(a, stride, offset, count, fn, arg) {
+    let i, l;
+    if(!stride) {
+      stride = 2;
+    }
+
+    if(!offset) {
+      offset = 0;
+    }
+
+    if(count) {
+      l = Math.min((count * stride) + offset, a.length);
+    } else {
+      l = a.length;
+    }
+
+    for(i = offset; i < l; i += stride) {
+      vec[0] = a[i]; vec[1] = a[i+1];
+      fn(vec, vec, arg);
+      a[i] = vec[0]; a[i+1] = vec[1];
+    }
+
+    return a;
+  };
+})();
+
+/**
+ * @fileoverview gl-matrix - High performance matrix and vector operations
+ * @author Brandon Jones
+ * @author Colin MacKenzie IV
+ * @version 2.4.0
+ */
+
+/* Copyright (c) 2015, Brandon Jones, Colin MacKenzie IV.
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE. */
+// END HEADER
+
 /*
 * Author   Jonathan Lurie - http://me.jonahanlurie.fr
 * License  MIT
@@ -57,6 +3579,9192 @@ class CoreTypes {
   
 }
 
+var commonjsGlobal = typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
+
+function commonjsRequire () {
+	throw new Error('Dynamic requires are not currently supported by rollup-plugin-commonjs');
+}
+
+
+
+function createCommonjsModule(fn, module) {
+	return module = { exports: {} }, fn(module, module.exports), module.exports;
+}
+
+var joiBrowser = createCommonjsModule(function (module, exports) {
+(function webpackUniversalModuleDefinition(root, factory) {
+	module.exports = factory();
+})(commonjsGlobal, function() {
+return /******/ (function(modules) { // webpackBootstrap
+/******/ 	// The module cache
+/******/ 	var installedModules = {};
+
+/******/ 	// The require function
+/******/ 	function __webpack_require__(moduleId) {
+
+/******/ 		// Check if module is in cache
+/******/ 		if(installedModules[moduleId])
+/******/ 			return installedModules[moduleId].exports;
+
+/******/ 		// Create a new module (and put it into the cache)
+/******/ 		var module = installedModules[moduleId] = {
+/******/ 			exports: {},
+/******/ 			id: moduleId,
+/******/ 			loaded: false
+/******/ 		};
+
+/******/ 		// Execute the module function
+/******/ 		modules[moduleId].call(module.exports, module, module.exports, __webpack_require__);
+
+/******/ 		// Flag the module as loaded
+/******/ 		module.loaded = true;
+
+/******/ 		// Return the exports of the module
+/******/ 		return module.exports;
+/******/ 	}
+
+
+/******/ 	// expose the modules object (__webpack_modules__)
+/******/ 	__webpack_require__.m = modules;
+
+/******/ 	// expose the module cache
+/******/ 	__webpack_require__.c = installedModules;
+
+/******/ 	// __webpack_public_path__
+/******/ 	__webpack_require__.p = "";
+
+/******/ 	// Load entry module and return exports
+/******/ 	return __webpack_require__(0);
+/******/ })
+/************************************************************************/
+/******/ ([
+/* 0 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	var Joi = __webpack_require__(1);
+
+	module.exports = Joi;
+
+/***/ },
+/* 1 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	// Load modules
+
+	var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+	function _defaults(obj, defaults) { var keys = Object.getOwnPropertyNames(defaults); for (var i = 0; i < keys.length; i++) { var key = keys[i]; var value = Object.getOwnPropertyDescriptor(defaults, key); if (value && value.configurable && obj[key] === undefined) { Object.defineProperty(obj, key, value); } } return obj; }
+
+	function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : _defaults(subClass, superClass); }
+
+	var Hoek = __webpack_require__(2);
+	var Any = __webpack_require__(11);
+	var Cast = __webpack_require__(16);
+	var Errors = __webpack_require__(13);
+	var Lazy = __webpack_require__(29);
+	var Ref = __webpack_require__(12);
+
+	// Declare internals
+
+	var internals = {
+	    alternatives: __webpack_require__(25),
+	    array: __webpack_require__(30),
+	    boolean: __webpack_require__(24),
+	    binary: __webpack_require__(31),
+	    date: __webpack_require__(17),
+	    number: __webpack_require__(23),
+	    object: __webpack_require__(26),
+	    string: __webpack_require__(18)
+	};
+
+	internals.root = function () {
+
+	    var any = new Any();
+
+	    var root = any.clone();
+	    root.any = function () {
+
+	        Hoek.assert(arguments.length === 0, 'Joi.any() does not allow arguments.');
+
+	        return any;
+	    };
+
+	    root.alternatives = root.alt = function () {
+
+	        return arguments.length ? internals.alternatives.try.apply(internals.alternatives, arguments) : internals.alternatives;
+	    };
+
+	    root.array = function () {
+
+	        Hoek.assert(arguments.length === 0, 'Joi.array() does not allow arguments.');
+
+	        return internals.array;
+	    };
+
+	    root.boolean = root.bool = function () {
+
+	        Hoek.assert(arguments.length === 0, 'Joi.boolean() does not allow arguments.');
+
+	        return internals.boolean;
+	    };
+
+	    root.binary = function () {
+
+	        Hoek.assert(arguments.length === 0, 'Joi.binary() does not allow arguments.');
+
+	        return internals.binary;
+	    };
+
+	    root.date = function () {
+
+	        Hoek.assert(arguments.length === 0, 'Joi.date() does not allow arguments.');
+
+	        return internals.date;
+	    };
+
+	    root.func = function () {
+
+	        Hoek.assert(arguments.length === 0, 'Joi.func() does not allow arguments.');
+
+	        return internals.object._func();
+	    };
+
+	    root.number = function () {
+
+	        Hoek.assert(arguments.length === 0, 'Joi.number() does not allow arguments.');
+
+	        return internals.number;
+	    };
+
+	    root.object = function () {
+
+	        return arguments.length ? internals.object.keys.apply(internals.object, arguments) : internals.object;
+	    };
+
+	    root.string = function () {
+
+	        Hoek.assert(arguments.length === 0, 'Joi.string() does not allow arguments.');
+
+	        return internals.string;
+	    };
+
+	    root.ref = function () {
+
+	        return Ref.create.apply(null, arguments);
+	    };
+
+	    root.isRef = function (ref) {
+
+	        return Ref.isRef(ref);
+	    };
+
+	    root.validate = function (value /*, [schema], [options], callback */) {
+
+	        var last = arguments[arguments.length - 1];
+	        var callback = typeof last === 'function' ? last : null;
+
+	        var count = arguments.length - (callback ? 1 : 0);
+	        if (count === 1) {
+	            return any.validate(value, callback);
+	        }
+
+	        var options = count === 3 ? arguments[2] : {};
+	        var schema = root.compile(arguments[1]);
+
+	        return schema._validateWithOptions(value, options, callback);
+	    };
+
+	    root.describe = function () {
+
+	        var schema = arguments.length ? root.compile(arguments[0]) : any;
+	        return schema.describe();
+	    };
+
+	    root.compile = function (schema) {
+
+	        try {
+	            return Cast.schema(schema);
+	        } catch (err) {
+	            if (err.hasOwnProperty('path')) {
+	                err.message = err.message + '(' + err.path + ')';
+	            }
+	            throw err;
+	        }
+	    };
+
+	    root.assert = function (value, schema, message) {
+
+	        root.attempt(value, schema, message);
+	    };
+
+	    root.attempt = function (value, schema, message) {
+
+	        var result = root.validate(value, schema);
+	        var error = result.error;
+	        if (error) {
+	            if (!message) {
+	                if (typeof error.annotate === 'function') {
+	                    error.message = error.annotate();
+	                }
+	                throw error;
+	            }
+
+	            if (!(message instanceof Error)) {
+	                if (typeof error.annotate === 'function') {
+	                    error.message = message + ' ' + error.annotate();
+	                }
+	                throw error;
+	            }
+
+	            throw message;
+	        }
+
+	        return result.value;
+	    };
+
+	    root.reach = function (schema, path) {
+
+	        Hoek.assert(schema && schema instanceof Any, 'you must provide a joi schema');
+	        Hoek.assert(typeof path === 'string', 'path must be a string');
+
+	        if (path === '') {
+	            return schema;
+	        }
+
+	        var parts = path.split('.');
+	        var children = schema._inner.children;
+	        if (!children) {
+	            return;
+	        }
+
+	        var key = parts[0];
+	        for (var i = 0; i < children.length; ++i) {
+	            var child = children[i];
+	            if (child.key === key) {
+	                return this.reach(child.schema, path.substr(key.length + 1));
+	            }
+	        }
+	    };
+
+	    root.lazy = function (fn) {
+
+	        return Lazy.set(fn);
+	    };
+
+	    root.extend = function () {
+	        var _this = this;
+
+	        var extensions = Hoek.flatten(Array.prototype.slice.call(arguments));
+	        Hoek.assert(extensions.length > 0, 'You need to provide at least one extension');
+
+	        this.assert(extensions, root.extensionsSchema);
+
+	        var joi = Object.create(this.any());
+	        _extends(joi, this);
+
+	        var _loop = function _loop(i) {
+	            var extension = extensions[i];
+
+	            if (typeof extension === 'function') {
+	                extension = extension(joi);
+	            }
+
+	            _this.assert(extension, root.extensionSchema);
+
+	            var base = (extension.base || _this.any()).clone(); // Cloning because we're going to override language afterwards
+	            var ctor = base.constructor;
+	            var type = function (_ctor) {
+	                _inherits(type, _ctor);
+
+	                // eslint-disable-line no-loop-func
+
+	                function type() {
+	                    _classCallCheck(this, type);
+
+	                    var _this2 = _possibleConstructorReturn(this, _ctor.call(this));
+
+	                    if (extension.base) {
+	                        _extends(_this2, base);
+	                    }
+
+	                    _this2._type = extension.name;
+
+	                    if (extension.language) {
+	                        _this2._settings = _this2._settings || { language: {} };
+	                        _this2._settings.language = Hoek.applyToDefaults(_this2._settings.language, _defineProperty({}, extension.name, extension.language));
+	                    }
+	                    return _this2;
+	                }
+
+	                return type;
+	            }(ctor);
+
+	            if (extension.coerce) {
+	                type.prototype._coerce = function (value, state, options) {
+
+	                    if (ctor.prototype._coerce) {
+	                        var baseRet = ctor.prototype._coerce.call(this, value, state, options);
+
+	                        if (baseRet.errors) {
+	                            return baseRet;
+	                        }
+
+	                        value = baseRet.value;
+	                    }
+
+	                    var ret = extension.coerce.call(this, value, state, options);
+	                    if (ret instanceof Errors.Err) {
+	                        return { value: value, errors: ret };
+	                    }
+
+	                    return { value: ret };
+	                };
+	            }
+	            if (extension.pre) {
+	                type.prototype._base = function (value, state, options) {
+
+	                    if (ctor.prototype._base) {
+	                        var baseRet = ctor.prototype._base.call(this, value, state, options);
+
+	                        if (baseRet.errors) {
+	                            return baseRet;
+	                        }
+
+	                        value = baseRet.value;
+	                    }
+
+	                    var ret = extension.pre.call(this, value, state, options);
+	                    if (ret instanceof Errors.Err) {
+	                        return { value: value, errors: ret };
+	                    }
+
+	                    return { value: ret };
+	                };
+	            }
+
+	            if (extension.rules) {
+	                var _loop2 = function _loop2(j) {
+	                    var rule = extension.rules[j];
+	                    var ruleArgs = rule.params ? rule.params instanceof Any ? rule.params._inner.children.map(function (k) {
+	                        return k.key;
+	                    }) : Object.keys(rule.params) : [];
+	                    var validateArgs = rule.params ? Cast.schema(rule.params) : null;
+
+	                    type.prototype[rule.name] = function () {
+	                        // eslint-disable-line no-loop-func
+
+	                        if (arguments.length > ruleArgs.length) {
+	                            throw new Error('Unexpected number of arguments');
+	                        }
+
+	                        var args = Array.prototype.slice.call(arguments);
+	                        var hasRef = false;
+	                        var arg = {};
+
+	                        for (var k = 0; k < ruleArgs.length; ++k) {
+	                            arg[ruleArgs[k]] = args[k];
+	                            if (!hasRef && Ref.isRef(args[k])) {
+	                                hasRef = true;
+	                            }
+	                        }
+
+	                        if (validateArgs) {
+	                            arg = joi.attempt(arg, validateArgs);
+	                        }
+
+	                        var schema = void 0;
+	                        if (rule.validate) {
+	                            var validate = function validate(value, state, options) {
+
+	                                return rule.validate.call(this, arg, value, state, options);
+	                            };
+
+	                            schema = this._test(rule.name, arg, validate, {
+	                                description: rule.description,
+	                                hasRef: hasRef
+	                            });
+	                        } else {
+	                            schema = this.clone();
+	                        }
+
+	                        if (rule.setup) {
+	                            var newSchema = rule.setup.call(schema, arg);
+	                            if (newSchema !== undefined) {
+	                                Hoek.assert(newSchema instanceof Any, 'Setup of extension Joi.' + this._type + '().' + rule.name + '() must return undefined or a Joi object');
+	                                schema = newSchema;
+	                            }
+	                        }
+
+	                        return schema;
+	                    };
+	                };
+
+	                for (var j = 0; j < extension.rules.length; ++j) {
+	                    _loop2(j);
+	                }
+	            }
+
+	            if (extension.describe) {
+	                type.prototype.describe = function () {
+
+	                    var description = ctor.prototype.describe.call(this);
+	                    return extension.describe.call(this, description);
+	                };
+	            }
+
+	            var instance = new type();
+	            joi[extension.name] = function () {
+
+	                return instance;
+	            };
+	        };
+
+	        for (var i = 0; i < extensions.length; ++i) {
+	            _loop(i);
+	        }
+
+	        return joi;
+	    };
+
+	    root.extensionSchema = internals.object.keys({
+	        base: internals.object.type(Any, 'Joi object'),
+	        name: internals.string.required(),
+	        coerce: internals.object._func().arity(3),
+	        pre: internals.object._func().arity(3),
+	        language: internals.object,
+	        describe: internals.object._func().arity(1),
+	        rules: internals.array.items(internals.object.keys({
+	            name: internals.string.required(),
+	            setup: internals.object._func().arity(1),
+	            validate: internals.object._func().arity(4),
+	            params: [internals.object.pattern(/.*/, internals.object.type(Any, 'Joi object')), internals.object.type(internals.object.constructor, 'Joi object')],
+	            description: [internals.string, internals.object._func().arity(1)]
+	        }).or('setup', 'validate'))
+	    }).strict();
+
+	    root.extensionsSchema = internals.array.items([internals.object, internals.object._func().arity(1)]).strict();
+
+	    root.version = __webpack_require__(32).version;
+
+	    return root;
+	};
+
+	module.exports = internals.root();
+
+/***/ },
+/* 2 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/* WEBPACK VAR INJECTION */(function(Buffer, process) {'use strict';
+
+	// Load modules
+
+	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+
+	var Crypto = __webpack_require__(5);
+	var Path = __webpack_require__(6);
+	var Util = __webpack_require__(7);
+	var Escape = __webpack_require__(10);
+
+	// Declare internals
+
+	var internals = {};
+
+	// Clone object or array
+
+	exports.clone = function (obj, seen) {
+
+	    if ((typeof obj === 'undefined' ? 'undefined' : _typeof(obj)) !== 'object' || obj === null) {
+
+	        return obj;
+	    }
+
+	    seen = seen || new Map();
+
+	    var lookup = seen.get(obj);
+	    if (lookup) {
+	        return lookup;
+	    }
+
+	    var newObj = void 0;
+	    var cloneDeep = false;
+
+	    if (!Array.isArray(obj)) {
+	        if (Buffer.isBuffer(obj)) {
+	            newObj = new Buffer(obj);
+	        } else if (obj instanceof Date) {
+	            newObj = new Date(obj.getTime());
+	        } else if (obj instanceof RegExp) {
+	            newObj = new RegExp(obj);
+	        } else {
+	            var proto = Object.getPrototypeOf(obj);
+	            if (proto && proto.isImmutable) {
+
+	                newObj = obj;
+	            } else {
+	                newObj = Object.create(proto);
+	                cloneDeep = true;
+	            }
+	        }
+	    } else {
+	        newObj = [];
+	        cloneDeep = true;
+	    }
+
+	    seen.set(obj, newObj);
+
+	    if (cloneDeep) {
+	        var keys = Object.getOwnPropertyNames(obj);
+	        for (var i = 0; i < keys.length; ++i) {
+	            var key = keys[i];
+	            var descriptor = Object.getOwnPropertyDescriptor(obj, key);
+	            if (descriptor && (descriptor.get || descriptor.set)) {
+
+	                Object.defineProperty(newObj, key, descriptor);
+	            } else {
+	                newObj[key] = exports.clone(obj[key], seen);
+	            }
+	        }
+	    }
+
+	    return newObj;
+	};
+
+	// Merge all the properties of source into target, source wins in conflict, and by default null and undefined from source are applied
+
+	/*eslint-disable */
+	exports.merge = function (target, source, isNullOverride /* = true */, isMergeArrays /* = true */) {
+	    /*eslint-enable */
+
+	    exports.assert(target && (typeof target === 'undefined' ? 'undefined' : _typeof(target)) === 'object', 'Invalid target value: must be an object');
+	    exports.assert(source === null || source === undefined || (typeof source === 'undefined' ? 'undefined' : _typeof(source)) === 'object', 'Invalid source value: must be null, undefined, or an object');
+
+	    if (!source) {
+	        return target;
+	    }
+
+	    if (Array.isArray(source)) {
+	        exports.assert(Array.isArray(target), 'Cannot merge array onto an object');
+	        if (isMergeArrays === false) {
+	            // isMergeArrays defaults to true
+	            target.length = 0; // Must not change target assignment
+	        }
+
+	        for (var i = 0; i < source.length; ++i) {
+	            target.push(exports.clone(source[i]));
+	        }
+
+	        return target;
+	    }
+
+	    var keys = Object.keys(source);
+	    for (var _i = 0; _i < keys.length; ++_i) {
+	        var key = keys[_i];
+	        var value = source[key];
+	        if (value && (typeof value === 'undefined' ? 'undefined' : _typeof(value)) === 'object') {
+
+	            if (!target[key] || _typeof(target[key]) !== 'object' || Array.isArray(target[key]) !== Array.isArray(value) || value instanceof Date || Buffer.isBuffer(value) || value instanceof RegExp) {
+
+	                target[key] = exports.clone(value);
+	            } else {
+	                exports.merge(target[key], value, isNullOverride, isMergeArrays);
+	            }
+	        } else {
+	            if (value !== null && value !== undefined) {
+	                // Explicit to preserve empty strings
+
+	                target[key] = value;
+	            } else if (isNullOverride !== false) {
+	                // Defaults to true
+	                target[key] = value;
+	            }
+	        }
+	    }
+
+	    return target;
+	};
+
+	// Apply options to a copy of the defaults
+
+	exports.applyToDefaults = function (defaults, options, isNullOverride) {
+
+	    exports.assert(defaults && (typeof defaults === 'undefined' ? 'undefined' : _typeof(defaults)) === 'object', 'Invalid defaults value: must be an object');
+	    exports.assert(!options || options === true || (typeof options === 'undefined' ? 'undefined' : _typeof(options)) === 'object', 'Invalid options value: must be true, falsy or an object');
+
+	    if (!options) {
+	        // If no options, return null
+	        return null;
+	    }
+
+	    var copy = exports.clone(defaults);
+
+	    if (options === true) {
+	        // If options is set to true, use defaults
+	        return copy;
+	    }
+
+	    return exports.merge(copy, options, isNullOverride === true, false);
+	};
+
+	// Clone an object except for the listed keys which are shallow copied
+
+	exports.cloneWithShallow = function (source, keys) {
+
+	    if (!source || (typeof source === 'undefined' ? 'undefined' : _typeof(source)) !== 'object') {
+
+	        return source;
+	    }
+
+	    var storage = internals.store(source, keys); // Move shallow copy items to storage
+	    var copy = exports.clone(source); // Deep copy the rest
+	    internals.restore(copy, source, storage); // Shallow copy the stored items and restore
+	    return copy;
+	};
+
+	internals.store = function (source, keys) {
+
+	    var storage = {};
+	    for (var i = 0; i < keys.length; ++i) {
+	        var key = keys[i];
+	        var value = exports.reach(source, key);
+	        if (value !== undefined) {
+	            storage[key] = value;
+	            internals.reachSet(source, key, undefined);
+	        }
+	    }
+
+	    return storage;
+	};
+
+	internals.restore = function (copy, source, storage) {
+
+	    var keys = Object.keys(storage);
+	    for (var i = 0; i < keys.length; ++i) {
+	        var key = keys[i];
+	        internals.reachSet(copy, key, storage[key]);
+	        internals.reachSet(source, key, storage[key]);
+	    }
+	};
+
+	internals.reachSet = function (obj, key, value) {
+
+	    var path = key.split('.');
+	    var ref = obj;
+	    for (var i = 0; i < path.length; ++i) {
+	        var segment = path[i];
+	        if (i + 1 === path.length) {
+	            ref[segment] = value;
+	        }
+
+	        ref = ref[segment];
+	    }
+	};
+
+	// Apply options to defaults except for the listed keys which are shallow copied from option without merging
+
+	exports.applyToDefaultsWithShallow = function (defaults, options, keys) {
+
+	    exports.assert(defaults && (typeof defaults === 'undefined' ? 'undefined' : _typeof(defaults)) === 'object', 'Invalid defaults value: must be an object');
+	    exports.assert(!options || options === true || (typeof options === 'undefined' ? 'undefined' : _typeof(options)) === 'object', 'Invalid options value: must be true, falsy or an object');
+	    exports.assert(keys && Array.isArray(keys), 'Invalid keys');
+
+	    if (!options) {
+	        // If no options, return null
+	        return null;
+	    }
+
+	    var copy = exports.cloneWithShallow(defaults, keys);
+
+	    if (options === true) {
+	        // If options is set to true, use defaults
+	        return copy;
+	    }
+
+	    var storage = internals.store(options, keys); // Move shallow copy items to storage
+	    exports.merge(copy, options, false, false); // Deep copy the rest
+	    internals.restore(copy, options, storage); // Shallow copy the stored items and restore
+	    return copy;
+	};
+
+	// Deep object or array comparison
+
+	exports.deepEqual = function (obj, ref, options, seen) {
+
+	    options = options || { prototype: true };
+
+	    var type = typeof obj === 'undefined' ? 'undefined' : _typeof(obj);
+
+	    if (type !== (typeof ref === 'undefined' ? 'undefined' : _typeof(ref))) {
+	        return false;
+	    }
+
+	    if (type !== 'object' || obj === null || ref === null) {
+
+	        if (obj === ref) {
+	            // Copied from Deep-eql, copyright(c) 2013 Jake Luer, jake@alogicalparadox.com, MIT Licensed, https://github.com/chaijs/deep-eql
+	            return obj !== 0 || 1 / obj === 1 / ref; // -0 / +0
+	        }
+
+	        return obj !== obj && ref !== ref; // NaN
+	    }
+
+	    seen = seen || [];
+	    if (seen.indexOf(obj) !== -1) {
+	        return true; // If previous comparison failed, it would have stopped execution
+	    }
+
+	    seen.push(obj);
+
+	    if (Array.isArray(obj)) {
+	        if (!Array.isArray(ref)) {
+	            return false;
+	        }
+
+	        if (!options.part && obj.length !== ref.length) {
+	            return false;
+	        }
+
+	        for (var i = 0; i < obj.length; ++i) {
+	            if (options.part) {
+	                var found = false;
+	                for (var j = 0; j < ref.length; ++j) {
+	                    if (exports.deepEqual(obj[i], ref[j], options)) {
+	                        found = true;
+	                        break;
+	                    }
+	                }
+
+	                return found;
+	            }
+
+	            if (!exports.deepEqual(obj[i], ref[i], options)) {
+	                return false;
+	            }
+	        }
+
+	        return true;
+	    }
+
+	    if (Buffer.isBuffer(obj)) {
+	        if (!Buffer.isBuffer(ref)) {
+	            return false;
+	        }
+
+	        if (obj.length !== ref.length) {
+	            return false;
+	        }
+
+	        for (var _i2 = 0; _i2 < obj.length; ++_i2) {
+	            if (obj[_i2] !== ref[_i2]) {
+	                return false;
+	            }
+	        }
+
+	        return true;
+	    }
+
+	    if (obj instanceof Date) {
+	        return ref instanceof Date && obj.getTime() === ref.getTime();
+	    }
+
+	    if (obj instanceof RegExp) {
+	        return ref instanceof RegExp && obj.toString() === ref.toString();
+	    }
+
+	    if (options.prototype) {
+	        if (Object.getPrototypeOf(obj) !== Object.getPrototypeOf(ref)) {
+	            return false;
+	        }
+	    }
+
+	    var keys = Object.getOwnPropertyNames(obj);
+
+	    if (!options.part && keys.length !== Object.getOwnPropertyNames(ref).length) {
+	        return false;
+	    }
+
+	    for (var _i3 = 0; _i3 < keys.length; ++_i3) {
+	        var key = keys[_i3];
+	        var descriptor = Object.getOwnPropertyDescriptor(obj, key);
+	        if (descriptor.get) {
+	            if (!exports.deepEqual(descriptor, Object.getOwnPropertyDescriptor(ref, key), options, seen)) {
+	                return false;
+	            }
+	        } else if (!exports.deepEqual(obj[key], ref[key], options, seen)) {
+	            return false;
+	        }
+	    }
+
+	    return true;
+	};
+
+	// Remove duplicate items from array
+
+	exports.unique = function (array, key) {
+
+	    var result = void 0;
+	    if (key) {
+	        (function () {
+	            result = [];
+	            var index = new Set();
+	            array.forEach(function (item) {
+
+	                var identifier = item[key];
+	                if (!index.has(identifier)) {
+	                    index.add(identifier);
+	                    result.push(item);
+	                }
+	            });
+	        })();
+	    } else {
+	        result = Array.from(new Set(array));
+	    }
+
+	    return result;
+	};
+
+	// Convert array into object
+
+	exports.mapToObject = function (array, key) {
+
+	    if (!array) {
+	        return null;
+	    }
+
+	    var obj = {};
+	    for (var i = 0; i < array.length; ++i) {
+	        if (key) {
+	            if (array[i][key]) {
+	                obj[array[i][key]] = true;
+	            }
+	        } else {
+	            obj[array[i]] = true;
+	        }
+	    }
+
+	    return obj;
+	};
+
+	// Find the common unique items in two arrays
+
+	exports.intersect = function (array1, array2, justFirst) {
+
+	    if (!array1 || !array2) {
+	        return [];
+	    }
+
+	    var common = [];
+	    var hash = Array.isArray(array1) ? exports.mapToObject(array1) : array1;
+	    var found = {};
+	    for (var i = 0; i < array2.length; ++i) {
+	        if (hash[array2[i]] && !found[array2[i]]) {
+	            if (justFirst) {
+	                return array2[i];
+	            }
+
+	            common.push(array2[i]);
+	            found[array2[i]] = true;
+	        }
+	    }
+
+	    return justFirst ? null : common;
+	};
+
+	// Test if the reference contains the values
+
+	exports.contain = function (ref, values, options) {
+
+	    /*
+	        string -> string(s)
+	        array -> item(s)
+	        object -> key(s)
+	        object -> object (key:value)
+	    */
+
+	    var valuePairs = null;
+	    if ((typeof ref === 'undefined' ? 'undefined' : _typeof(ref)) === 'object' && (typeof values === 'undefined' ? 'undefined' : _typeof(values)) === 'object' && !Array.isArray(ref) && !Array.isArray(values)) {
+
+	        valuePairs = values;
+	        values = Object.keys(values);
+	    } else {
+	        values = [].concat(values);
+	    }
+
+	    options = options || {}; // deep, once, only, part
+
+	    exports.assert(arguments.length >= 2, 'Insufficient arguments');
+	    exports.assert(typeof ref === 'string' || (typeof ref === 'undefined' ? 'undefined' : _typeof(ref)) === 'object', 'Reference must be string or an object');
+	    exports.assert(values.length, 'Values array cannot be empty');
+
+	    var compare = void 0;
+	    var compareFlags = void 0;
+	    if (options.deep) {
+	        compare = exports.deepEqual;
+
+	        var hasOnly = options.hasOwnProperty('only');
+	        var hasPart = options.hasOwnProperty('part');
+
+	        compareFlags = {
+	            prototype: hasOnly ? options.only : hasPart ? !options.part : false,
+	            part: hasOnly ? !options.only : hasPart ? options.part : true
+	        };
+	    } else {
+	        compare = function compare(a, b) {
+	            return a === b;
+	        };
+	    }
+
+	    var misses = false;
+	    var matches = new Array(values.length);
+	    for (var i = 0; i < matches.length; ++i) {
+	        matches[i] = 0;
+	    }
+
+	    if (typeof ref === 'string') {
+	        var pattern = '(';
+	        for (var _i4 = 0; _i4 < values.length; ++_i4) {
+	            var value = values[_i4];
+	            exports.assert(typeof value === 'string', 'Cannot compare string reference to non-string value');
+	            pattern += (_i4 ? '|' : '') + exports.escapeRegex(value);
+	        }
+
+	        var regex = new RegExp(pattern + ')', 'g');
+	        var leftovers = ref.replace(regex, function ($0, $1) {
+
+	            var index = values.indexOf($1);
+	            ++matches[index];
+	            return ''; // Remove from string
+	        });
+
+	        misses = !!leftovers;
+	    } else if (Array.isArray(ref)) {
+	        for (var _i5 = 0; _i5 < ref.length; ++_i5) {
+	            var matched = false;
+	            for (var j = 0; j < values.length && matched === false; ++j) {
+	                matched = compare(values[j], ref[_i5], compareFlags) && j;
+	            }
+
+	            if (matched !== false) {
+	                ++matches[matched];
+	            } else {
+	                misses = true;
+	            }
+	        }
+	    } else {
+	        var keys = Object.getOwnPropertyNames(ref);
+	        for (var _i6 = 0; _i6 < keys.length; ++_i6) {
+	            var key = keys[_i6];
+	            var pos = values.indexOf(key);
+	            if (pos !== -1) {
+	                if (valuePairs && !compare(valuePairs[key], ref[key], compareFlags)) {
+
+	                    return false;
+	                }
+
+	                ++matches[pos];
+	            } else {
+	                misses = true;
+	            }
+	        }
+	    }
+
+	    var result = false;
+	    for (var _i7 = 0; _i7 < matches.length; ++_i7) {
+	        result = result || !!matches[_i7];
+	        if (options.once && matches[_i7] > 1 || !options.part && !matches[_i7]) {
+
+	            return false;
+	        }
+	    }
+
+	    if (options.only && misses) {
+
+	        return false;
+	    }
+
+	    return result;
+	};
+
+	// Flatten array
+
+	exports.flatten = function (array, target) {
+
+	    var result = target || [];
+
+	    for (var i = 0; i < array.length; ++i) {
+	        if (Array.isArray(array[i])) {
+	            exports.flatten(array[i], result);
+	        } else {
+	            result.push(array[i]);
+	        }
+	    }
+
+	    return result;
+	};
+
+	// Convert an object key chain string ('a.b.c') to reference (object[a][b][c])
+
+	exports.reach = function (obj, chain, options) {
+
+	    if (chain === false || chain === null || typeof chain === 'undefined') {
+
+	        return obj;
+	    }
+
+	    options = options || {};
+	    if (typeof options === 'string') {
+	        options = { separator: options };
+	    }
+
+	    var path = chain.split(options.separator || '.');
+	    var ref = obj;
+	    for (var i = 0; i < path.length; ++i) {
+	        var key = path[i];
+	        if (key[0] === '-' && Array.isArray(ref)) {
+	            key = key.slice(1, key.length);
+	            key = ref.length - key;
+	        }
+
+	        if (!ref || !(((typeof ref === 'undefined' ? 'undefined' : _typeof(ref)) === 'object' || typeof ref === 'function') && key in ref) || (typeof ref === 'undefined' ? 'undefined' : _typeof(ref)) !== 'object' && options.functions === false) {
+	            // Only object and function can have properties
+
+	            exports.assert(!options.strict || i + 1 === path.length, 'Missing segment', key, 'in reach path ', chain);
+	            exports.assert((typeof ref === 'undefined' ? 'undefined' : _typeof(ref)) === 'object' || options.functions === true || typeof ref !== 'function', 'Invalid segment', key, 'in reach path ', chain);
+	            ref = options.default;
+	            break;
+	        }
+
+	        ref = ref[key];
+	    }
+
+	    return ref;
+	};
+
+	exports.reachTemplate = function (obj, template, options) {
+
+	    return template.replace(/{([^}]+)}/g, function ($0, chain) {
+
+	        var value = exports.reach(obj, chain, options);
+	        return value === undefined || value === null ? '' : value;
+	    });
+	};
+
+	exports.formatStack = function (stack) {
+
+	    var trace = [];
+	    for (var i = 0; i < stack.length; ++i) {
+	        var item = stack[i];
+	        trace.push([item.getFileName(), item.getLineNumber(), item.getColumnNumber(), item.getFunctionName(), item.isConstructor()]);
+	    }
+
+	    return trace;
+	};
+
+	exports.formatTrace = function (trace) {
+
+	    var display = [];
+
+	    for (var i = 0; i < trace.length; ++i) {
+	        var row = trace[i];
+	        display.push((row[4] ? 'new ' : '') + row[3] + ' (' + row[0] + ':' + row[1] + ':' + row[2] + ')');
+	    }
+
+	    return display;
+	};
+
+	exports.callStack = function (slice) {
+
+	    // http://code.google.com/p/v8/wiki/JavaScriptStackTraceApi
+
+	    var v8 = Error.prepareStackTrace;
+	    Error.prepareStackTrace = function (_, stack) {
+
+	        return stack;
+	    };
+
+	    var capture = {};
+	    Error.captureStackTrace(capture, this); // arguments.callee is not supported in strict mode so we use this and slice the trace of this off the result
+	    var stack = capture.stack;
+
+	    Error.prepareStackTrace = v8;
+
+	    var trace = exports.formatStack(stack);
+
+	    return trace.slice(1 + slice);
+	};
+
+	exports.displayStack = function (slice) {
+
+	    var trace = exports.callStack(slice === undefined ? 1 : slice + 1);
+
+	    return exports.formatTrace(trace);
+	};
+
+	exports.abortThrow = false;
+
+	exports.abort = function (message, hideStack) {
+
+	    if (process.env.NODE_ENV === 'test' || exports.abortThrow === true) {
+	        throw new Error(message || 'Unknown error');
+	    }
+
+	    var stack = '';
+	    if (!hideStack) {
+	        stack = exports.displayStack(1).join('\n\t');
+	    }
+	    console.log('ABORT: ' + message + '\n\t' + stack);
+	    process.exit(1);
+	};
+
+	exports.assert = function (condition /*, msg1, msg2, msg3 */) {
+
+	    if (condition) {
+	        return;
+	    }
+
+	    if (arguments.length === 2 && arguments[1] instanceof Error) {
+	        throw arguments[1];
+	    }
+
+	    var msgs = [];
+	    for (var i = 1; i < arguments.length; ++i) {
+	        if (arguments[i] !== '') {
+	            msgs.push(arguments[i]); // Avoids Array.slice arguments leak, allowing for V8 optimizations
+	        }
+	    }
+
+	    msgs = msgs.map(function (msg) {
+
+	        return typeof msg === 'string' ? msg : msg instanceof Error ? msg.message : exports.stringify(msg);
+	    });
+
+	    throw new Error(msgs.join(' ') || 'Unknown error');
+	};
+
+	exports.Timer = function () {
+
+	    this.ts = 0;
+	    this.reset();
+	};
+
+	exports.Timer.prototype.reset = function () {
+
+	    this.ts = Date.now();
+	};
+
+	exports.Timer.prototype.elapsed = function () {
+
+	    return Date.now() - this.ts;
+	};
+
+	exports.Bench = function () {
+
+	    this.ts = 0;
+	    this.reset();
+	};
+
+	exports.Bench.prototype.reset = function () {
+
+	    this.ts = exports.Bench.now();
+	};
+
+	exports.Bench.prototype.elapsed = function () {
+
+	    return exports.Bench.now() - this.ts;
+	};
+
+	exports.Bench.now = function () {
+
+	    var ts = process.hrtime();
+	    return ts[0] * 1e3 + ts[1] / 1e6;
+	};
+
+	// Escape string for Regex construction
+
+	exports.escapeRegex = function (string) {
+
+	    // Escape ^$.*+-?=!:|\/()[]{},
+	    return string.replace(/[\^\$\.\*\+\-\?\=\!\:\|\\\/\(\)\[\]\{\}\,]/g, '\\$&');
+	};
+
+	// Base64url (RFC 4648) encode
+
+	exports.base64urlEncode = function (value, encoding) {
+
+	    exports.assert(typeof value === 'string' || Buffer.isBuffer(value), 'value must be string or buffer');
+	    var buf = Buffer.isBuffer(value) ? value : new Buffer(value, encoding || 'binary');
+	    return buf.toString('base64').replace(/\+/g, '-').replace(/\//g, '_').replace(/\=/g, '');
+	};
+
+	// Base64url (RFC 4648) decode
+
+	exports.base64urlDecode = function (value, encoding) {
+
+	    if (typeof value !== 'string') {
+
+	        return new Error('Value not a string');
+	    }
+
+	    if (!/^[\w\-]*$/.test(value)) {
+
+	        return new Error('Invalid character');
+	    }
+
+	    var buf = new Buffer(value, 'base64');
+	    return encoding === 'buffer' ? buf : buf.toString(encoding || 'binary');
+	};
+
+	// Escape attribute value for use in HTTP header
+
+	exports.escapeHeaderAttribute = function (attribute) {
+
+	    // Allowed value characters: !#$%&'()*+,-./:;<=>?@[]^_`{|}~ and space, a-z, A-Z, 0-9, \, "
+
+	    exports.assert(/^[ \w\!#\$%&'\(\)\*\+,\-\.\/\:;<\=>\?@\[\]\^`\{\|\}~\"\\]*$/.test(attribute), 'Bad attribute value (' + attribute + ')');
+
+	    return attribute.replace(/\\/g, '\\\\').replace(/\"/g, '\\"'); // Escape quotes and slash
+	};
+
+	exports.escapeHtml = function (string) {
+
+	    return Escape.escapeHtml(string);
+	};
+
+	exports.escapeJavaScript = function (string) {
+
+	    return Escape.escapeJavaScript(string);
+	};
+
+	exports.nextTick = function (callback) {
+
+	    return function () {
+
+	        var args = arguments;
+	        process.nextTick(function () {
+
+	            callback.apply(null, args);
+	        });
+	    };
+	};
+
+	exports.once = function (method) {
+
+	    if (method._hoekOnce) {
+	        return method;
+	    }
+
+	    var once = false;
+	    var wrapped = function wrapped() {
+
+	        if (!once) {
+	            once = true;
+	            method.apply(null, arguments);
+	        }
+	    };
+
+	    wrapped._hoekOnce = true;
+
+	    return wrapped;
+	};
+
+	exports.isInteger = Number.isSafeInteger;
+
+	exports.ignore = function () {};
+
+	exports.inherits = Util.inherits;
+
+	exports.format = Util.format;
+
+	exports.transform = function (source, transform, options) {
+
+	    exports.assert(source === null || source === undefined || (typeof source === 'undefined' ? 'undefined' : _typeof(source)) === 'object' || Array.isArray(source), 'Invalid source object: must be null, undefined, an object, or an array');
+	    var separator = (typeof options === 'undefined' ? 'undefined' : _typeof(options)) === 'object' && options !== null ? options.separator || '.' : '.';
+
+	    if (Array.isArray(source)) {
+	        var results = [];
+	        for (var i = 0; i < source.length; ++i) {
+	            results.push(exports.transform(source[i], transform, options));
+	        }
+	        return results;
+	    }
+
+	    var result = {};
+	    var keys = Object.keys(transform);
+
+	    for (var _i8 = 0; _i8 < keys.length; ++_i8) {
+	        var key = keys[_i8];
+	        var path = key.split(separator);
+	        var sourcePath = transform[key];
+
+	        exports.assert(typeof sourcePath === 'string', 'All mappings must be "." delineated strings');
+
+	        var segment = void 0;
+	        var res = result;
+
+	        while (path.length > 1) {
+	            segment = path.shift();
+	            if (!res[segment]) {
+	                res[segment] = {};
+	            }
+	            res = res[segment];
+	        }
+	        segment = path.shift();
+	        res[segment] = exports.reach(source, sourcePath, options);
+	    }
+
+	    return result;
+	};
+
+	exports.uniqueFilename = function (path, extension) {
+
+	    if (extension) {
+	        extension = extension[0] !== '.' ? '.' + extension : extension;
+	    } else {
+	        extension = '';
+	    }
+
+	    path = Path.resolve(path);
+	    var name = [Date.now(), process.pid, Crypto.randomBytes(8).toString('hex')].join('-') + extension;
+	    return Path.join(path, name);
+	};
+
+	exports.stringify = function () {
+
+	    try {
+	        return JSON.stringify.apply(null, arguments);
+	    } catch (err) {
+	        return '[Cannot display object: ' + err.message + ']';
+	    }
+	};
+
+	exports.shallow = function (source) {
+
+	    var target = {};
+	    var keys = Object.keys(source);
+	    for (var i = 0; i < keys.length; ++i) {
+	        var key = keys[i];
+	        target[key] = source[key];
+	    }
+
+	    return target;
+	};
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(3).Buffer, __webpack_require__(4)));
+
+/***/ },
+/* 3 */
+/***/ function(module, exports) {
+
+	function Buffer() {
+		throw new Error("Buffer is not included.");
+	}
+	Buffer.isBuffer = function() {
+	  return false;
+	};
+
+	exports.INSPECT_MAX_BYTES = 50;
+	exports.SlowBuffer = Buffer;
+	exports.Buffer = Buffer;
+
+
+/***/ },
+/* 4 */
+/***/ function(module, exports) {
+
+	// shim for using process in browser
+	var process = module.exports = {};
+
+	// cached from whatever global is present so that test runners that stub it
+	// don't break things.  But we need to wrap it in a try catch in case it is
+	// wrapped in strict mode code which doesn't define any globals.  It's inside a
+	// function because try/catches deoptimize in certain engines.
+
+	var cachedSetTimeout;
+	var cachedClearTimeout;
+
+	function defaultSetTimout() {
+	    throw new Error('setTimeout has not been defined');
+	}
+	function defaultClearTimeout () {
+	    throw new Error('clearTimeout has not been defined');
+	}
+	(function () {
+	    try {
+	        if (typeof setTimeout === 'function') {
+	            cachedSetTimeout = setTimeout;
+	        } else {
+	            cachedSetTimeout = defaultSetTimout;
+	        }
+	    } catch (e) {
+	        cachedSetTimeout = defaultSetTimout;
+	    }
+	    try {
+	        if (typeof clearTimeout === 'function') {
+	            cachedClearTimeout = clearTimeout;
+	        } else {
+	            cachedClearTimeout = defaultClearTimeout;
+	        }
+	    } catch (e) {
+	        cachedClearTimeout = defaultClearTimeout;
+	    }
+	} ());
+	function runTimeout(fun) {
+	    if (cachedSetTimeout === setTimeout) {
+	        //normal enviroments in sane situations
+	        return setTimeout(fun, 0);
+	    }
+	    // if setTimeout wasn't available but was latter defined
+	    if ((cachedSetTimeout === defaultSetTimout || !cachedSetTimeout) && setTimeout) {
+	        cachedSetTimeout = setTimeout;
+	        return setTimeout(fun, 0);
+	    }
+	    try {
+	        // when when somebody has screwed with setTimeout but no I.E. maddness
+	        return cachedSetTimeout(fun, 0);
+	    } catch(e){
+	        try {
+	            // When we are in I.E. but the script has been evaled so I.E. doesn't trust the global object when called normally
+	            return cachedSetTimeout.call(null, fun, 0);
+	        } catch(e){
+	            // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error
+	            return cachedSetTimeout.call(this, fun, 0);
+	        }
+	    }
+
+
+	}
+	function runClearTimeout(marker) {
+	    if (cachedClearTimeout === clearTimeout) {
+	        //normal enviroments in sane situations
+	        return clearTimeout(marker);
+	    }
+	    // if clearTimeout wasn't available but was latter defined
+	    if ((cachedClearTimeout === defaultClearTimeout || !cachedClearTimeout) && clearTimeout) {
+	        cachedClearTimeout = clearTimeout;
+	        return clearTimeout(marker);
+	    }
+	    try {
+	        // when when somebody has screwed with setTimeout but no I.E. maddness
+	        return cachedClearTimeout(marker);
+	    } catch (e){
+	        try {
+	            // When we are in I.E. but the script has been evaled so I.E. doesn't  trust the global object when called normally
+	            return cachedClearTimeout.call(null, marker);
+	        } catch (e){
+	            // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error.
+	            // Some versions of I.E. have different rules for clearTimeout vs setTimeout
+	            return cachedClearTimeout.call(this, marker);
+	        }
+	    }
+
+
+
+	}
+	var queue = [];
+	var draining = false;
+	var currentQueue;
+	var queueIndex = -1;
+
+	function cleanUpNextTick() {
+	    if (!draining || !currentQueue) {
+	        return;
+	    }
+	    draining = false;
+	    if (currentQueue.length) {
+	        queue = currentQueue.concat(queue);
+	    } else {
+	        queueIndex = -1;
+	    }
+	    if (queue.length) {
+	        drainQueue();
+	    }
+	}
+
+	function drainQueue() {
+	    if (draining) {
+	        return;
+	    }
+	    var timeout = runTimeout(cleanUpNextTick);
+	    draining = true;
+
+	    var len = queue.length;
+	    while(len) {
+	        currentQueue = queue;
+	        queue = [];
+	        while (++queueIndex < len) {
+	            if (currentQueue) {
+	                currentQueue[queueIndex].run();
+	            }
+	        }
+	        queueIndex = -1;
+	        len = queue.length;
+	    }
+	    currentQueue = null;
+	    draining = false;
+	    runClearTimeout(timeout);
+	}
+
+	process.nextTick = function (fun) {
+	    var args = new Array(arguments.length - 1);
+	    if (arguments.length > 1) {
+	        for (var i = 1; i < arguments.length; i++) {
+	            args[i - 1] = arguments[i];
+	        }
+	    }
+	    queue.push(new Item(fun, args));
+	    if (queue.length === 1 && !draining) {
+	        runTimeout(drainQueue);
+	    }
+	};
+
+	// v8 likes predictible objects
+	function Item(fun, array) {
+	    this.fun = fun;
+	    this.array = array;
+	}
+	Item.prototype.run = function () {
+	    this.fun.apply(null, this.array);
+	};
+	process.title = 'browser';
+	process.browser = true;
+	process.env = {};
+	process.argv = [];
+	process.version = ''; // empty string to avoid regexp issues
+	process.versions = {};
+
+	function noop() {}
+
+	process.on = noop;
+	process.addListener = noop;
+	process.once = noop;
+	process.off = noop;
+	process.removeListener = noop;
+	process.removeAllListeners = noop;
+	process.emit = noop;
+
+	process.binding = function (name) {
+	    throw new Error('process.binding is not supported');
+	};
+
+	process.cwd = function () { return '/' };
+	process.chdir = function (dir) {
+	    throw new Error('process.chdir is not supported');
+	};
+	process.umask = function() { return 0; };
+
+
+/***/ },
+/* 5 */
+/***/ function(module, exports) {
+
+	
+
+/***/ },
+/* 6 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/* WEBPACK VAR INJECTION */(function(process) {// Copyright Joyent, Inc. and other Node contributors.
+	//
+	// Permission is hereby granted, free of charge, to any person obtaining a
+	// copy of this software and associated documentation files (the
+	// "Software"), to deal in the Software without restriction, including
+	// without limitation the rights to use, copy, modify, merge, publish,
+	// distribute, sublicense, and/or sell copies of the Software, and to permit
+	// persons to whom the Software is furnished to do so, subject to the
+	// following conditions:
+	//
+	// The above copyright notice and this permission notice shall be included
+	// in all copies or substantial portions of the Software.
+	//
+	// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+	// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+	// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
+	// NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+	// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+	// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
+	// USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+	// resolves . and .. elements in a path array with directory names there
+	// must be no slashes, empty elements, or device names (c:\) in the array
+	// (so also no leading and trailing slashes - it does not distinguish
+	// relative and absolute paths)
+	function normalizeArray(parts, allowAboveRoot) {
+	  // if the path tries to go above the root, `up` ends up > 0
+	  var up = 0;
+	  for (var i = parts.length - 1; i >= 0; i--) {
+	    var last = parts[i];
+	    if (last === '.') {
+	      parts.splice(i, 1);
+	    } else if (last === '..') {
+	      parts.splice(i, 1);
+	      up++;
+	    } else if (up) {
+	      parts.splice(i, 1);
+	      up--;
+	    }
+	  }
+
+	  // if the path is allowed to go above the root, restore leading ..s
+	  if (allowAboveRoot) {
+	    for (; up--; up) {
+	      parts.unshift('..');
+	    }
+	  }
+
+	  return parts;
+	}
+
+	// Split a filename into [root, dir, basename, ext], unix version
+	// 'root' is just a slash, or nothing.
+	var splitPathRe =
+	    /^(\/?|)([\s\S]*?)((?:\.{1,2}|[^\/]+?|)(\.[^.\/]*|))(?:[\/]*)$/;
+	var splitPath = function(filename) {
+	  return splitPathRe.exec(filename).slice(1);
+	};
+
+	// path.resolve([from ...], to)
+	// posix version
+	exports.resolve = function() {
+	  var resolvedPath = '',
+	      resolvedAbsolute = false;
+
+	  for (var i = arguments.length - 1; i >= -1 && !resolvedAbsolute; i--) {
+	    var path = (i >= 0) ? arguments[i] : process.cwd();
+
+	    // Skip empty and invalid entries
+	    if (typeof path !== 'string') {
+	      throw new TypeError('Arguments to path.resolve must be strings');
+	    } else if (!path) {
+	      continue;
+	    }
+
+	    resolvedPath = path + '/' + resolvedPath;
+	    resolvedAbsolute = path.charAt(0) === '/';
+	  }
+
+	  // At this point the path should be resolved to a full absolute path, but
+	  // handle relative paths to be safe (might happen when process.cwd() fails)
+
+	  // Normalize the path
+	  resolvedPath = normalizeArray(filter(resolvedPath.split('/'), function(p) {
+	    return !!p;
+	  }), !resolvedAbsolute).join('/');
+
+	  return ((resolvedAbsolute ? '/' : '') + resolvedPath) || '.';
+	};
+
+	// path.normalize(path)
+	// posix version
+	exports.normalize = function(path) {
+	  var isAbsolute = exports.isAbsolute(path),
+	      trailingSlash = substr(path, -1) === '/';
+
+	  // Normalize the path
+	  path = normalizeArray(filter(path.split('/'), function(p) {
+	    return !!p;
+	  }), !isAbsolute).join('/');
+
+	  if (!path && !isAbsolute) {
+	    path = '.';
+	  }
+	  if (path && trailingSlash) {
+	    path += '/';
+	  }
+
+	  return (isAbsolute ? '/' : '') + path;
+	};
+
+	// posix version
+	exports.isAbsolute = function(path) {
+	  return path.charAt(0) === '/';
+	};
+
+	// posix version
+	exports.join = function() {
+	  var paths = Array.prototype.slice.call(arguments, 0);
+	  return exports.normalize(filter(paths, function(p, index) {
+	    if (typeof p !== 'string') {
+	      throw new TypeError('Arguments to path.join must be strings');
+	    }
+	    return p;
+	  }).join('/'));
+	};
+
+
+	// path.relative(from, to)
+	// posix version
+	exports.relative = function(from, to) {
+	  from = exports.resolve(from).substr(1);
+	  to = exports.resolve(to).substr(1);
+
+	  function trim(arr) {
+	    var start = 0;
+	    for (; start < arr.length; start++) {
+	      if (arr[start] !== '') break;
+	    }
+
+	    var end = arr.length - 1;
+	    for (; end >= 0; end--) {
+	      if (arr[end] !== '') break;
+	    }
+
+	    if (start > end) return [];
+	    return arr.slice(start, end - start + 1);
+	  }
+
+	  var fromParts = trim(from.split('/'));
+	  var toParts = trim(to.split('/'));
+
+	  var length = Math.min(fromParts.length, toParts.length);
+	  var samePartsLength = length;
+	  for (var i = 0; i < length; i++) {
+	    if (fromParts[i] !== toParts[i]) {
+	      samePartsLength = i;
+	      break;
+	    }
+	  }
+
+	  var outputParts = [];
+	  for (var i = samePartsLength; i < fromParts.length; i++) {
+	    outputParts.push('..');
+	  }
+
+	  outputParts = outputParts.concat(toParts.slice(samePartsLength));
+
+	  return outputParts.join('/');
+	};
+
+	exports.sep = '/';
+	exports.delimiter = ':';
+
+	exports.dirname = function(path) {
+	  var result = splitPath(path),
+	      root = result[0],
+	      dir = result[1];
+
+	  if (!root && !dir) {
+	    // No dirname whatsoever
+	    return '.';
+	  }
+
+	  if (dir) {
+	    // It has a dirname, strip trailing slash
+	    dir = dir.substr(0, dir.length - 1);
+	  }
+
+	  return root + dir;
+	};
+
+
+	exports.basename = function(path, ext) {
+	  var f = splitPath(path)[2];
+	  // TODO: make this comparison case-insensitive on windows?
+	  if (ext && f.substr(-1 * ext.length) === ext) {
+	    f = f.substr(0, f.length - ext.length);
+	  }
+	  return f;
+	};
+
+
+	exports.extname = function(path) {
+	  return splitPath(path)[3];
+	};
+
+	function filter (xs, f) {
+	    if (xs.filter) return xs.filter(f);
+	    var res = [];
+	    for (var i = 0; i < xs.length; i++) {
+	        if (f(xs[i], i, xs)) res.push(xs[i]);
+	    }
+	    return res;
+	}
+
+	// String.prototype.substr - negative index don't work in IE8
+	var substr = 'ab'.substr(-1) === 'b'
+	    ? function (str, start, len) { return str.substr(start, len) }
+	    : function (str, start, len) {
+	        if (start < 0) start = str.length + start;
+	        return str.substr(start, len);
+	    };
+
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)));
+
+/***/ },
+/* 7 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/* WEBPACK VAR INJECTION */(function(global, process) {// Copyright Joyent, Inc. and other Node contributors.
+	//
+	// Permission is hereby granted, free of charge, to any person obtaining a
+	// copy of this software and associated documentation files (the
+	// "Software"), to deal in the Software without restriction, including
+	// without limitation the rights to use, copy, modify, merge, publish,
+	// distribute, sublicense, and/or sell copies of the Software, and to permit
+	// persons to whom the Software is furnished to do so, subject to the
+	// following conditions:
+	//
+	// The above copyright notice and this permission notice shall be included
+	// in all copies or substantial portions of the Software.
+	//
+	// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+	// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+	// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
+	// NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+	// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+	// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
+	// USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+	var formatRegExp = /%[sdj%]/g;
+	exports.format = function(f) {
+	  if (!isString(f)) {
+	    var objects = [];
+	    for (var i = 0; i < arguments.length; i++) {
+	      objects.push(inspect(arguments[i]));
+	    }
+	    return objects.join(' ');
+	  }
+
+	  var i = 1;
+	  var args = arguments;
+	  var len = args.length;
+	  var str = String(f).replace(formatRegExp, function(x) {
+	    if (x === '%%') return '%';
+	    if (i >= len) return x;
+	    switch (x) {
+	      case '%s': return String(args[i++]);
+	      case '%d': return Number(args[i++]);
+	      case '%j':
+	        try {
+	          return JSON.stringify(args[i++]);
+	        } catch (_) {
+	          return '[Circular]';
+	        }
+	      default:
+	        return x;
+	    }
+	  });
+	  for (var x = args[i]; i < len; x = args[++i]) {
+	    if (isNull(x) || !isObject(x)) {
+	      str += ' ' + x;
+	    } else {
+	      str += ' ' + inspect(x);
+	    }
+	  }
+	  return str;
+	};
+
+
+	// Mark that a method should not be used.
+	// Returns a modified function which warns once by default.
+	// If --no-deprecation is set, then it is a no-op.
+	exports.deprecate = function(fn, msg) {
+	  // Allow for deprecating things in the process of starting up.
+	  if (isUndefined(global.process)) {
+	    return function() {
+	      return exports.deprecate(fn, msg).apply(this, arguments);
+	    };
+	  }
+
+	  if (process.noDeprecation === true) {
+	    return fn;
+	  }
+
+	  var warned = false;
+	  function deprecated() {
+	    if (!warned) {
+	      if (process.throwDeprecation) {
+	        throw new Error(msg);
+	      } else if (process.traceDeprecation) {
+	        console.trace(msg);
+	      } else {
+	        console.error(msg);
+	      }
+	      warned = true;
+	    }
+	    return fn.apply(this, arguments);
+	  }
+
+	  return deprecated;
+	};
+
+
+	var debugs = {};
+	var debugEnviron;
+	exports.debuglog = function(set) {
+	  if (isUndefined(debugEnviron))
+	    debugEnviron = process.env.NODE_DEBUG || '';
+	  set = set.toUpperCase();
+	  if (!debugs[set]) {
+	    if (new RegExp('\\b' + set + '\\b', 'i').test(debugEnviron)) {
+	      var pid = process.pid;
+	      debugs[set] = function() {
+	        var msg = exports.format.apply(exports, arguments);
+	        console.error('%s %d: %s', set, pid, msg);
+	      };
+	    } else {
+	      debugs[set] = function() {};
+	    }
+	  }
+	  return debugs[set];
+	};
+
+
+	/**
+	 * Echos the value of a value. Trys to print the value out
+	 * in the best way possible given the different types.
+	 *
+	 * @param {Object} obj The object to print out.
+	 * @param {Object} opts Optional options object that alters the output.
+	 */
+	/* legacy: obj, showHidden, depth, colors*/
+	function inspect(obj, opts) {
+	  // default options
+	  var ctx = {
+	    seen: [],
+	    stylize: stylizeNoColor
+	  };
+	  // legacy...
+	  if (arguments.length >= 3) ctx.depth = arguments[2];
+	  if (arguments.length >= 4) ctx.colors = arguments[3];
+	  if (isBoolean(opts)) {
+	    // legacy...
+	    ctx.showHidden = opts;
+	  } else if (opts) {
+	    // got an "options" object
+	    exports._extend(ctx, opts);
+	  }
+	  // set default options
+	  if (isUndefined(ctx.showHidden)) ctx.showHidden = false;
+	  if (isUndefined(ctx.depth)) ctx.depth = 2;
+	  if (isUndefined(ctx.colors)) ctx.colors = false;
+	  if (isUndefined(ctx.customInspect)) ctx.customInspect = true;
+	  if (ctx.colors) ctx.stylize = stylizeWithColor;
+	  return formatValue(ctx, obj, ctx.depth);
+	}
+	exports.inspect = inspect;
+
+
+	// http://en.wikipedia.org/wiki/ANSI_escape_code#graphics
+	inspect.colors = {
+	  'bold' : [1, 22],
+	  'italic' : [3, 23],
+	  'underline' : [4, 24],
+	  'inverse' : [7, 27],
+	  'white' : [37, 39],
+	  'grey' : [90, 39],
+	  'black' : [30, 39],
+	  'blue' : [34, 39],
+	  'cyan' : [36, 39],
+	  'green' : [32, 39],
+	  'magenta' : [35, 39],
+	  'red' : [31, 39],
+	  'yellow' : [33, 39]
+	};
+
+	// Don't use 'blue' not visible on cmd.exe
+	inspect.styles = {
+	  'special': 'cyan',
+	  'number': 'yellow',
+	  'boolean': 'yellow',
+	  'undefined': 'grey',
+	  'null': 'bold',
+	  'string': 'green',
+	  'date': 'magenta',
+	  // "name": intentionally not styling
+	  'regexp': 'red'
+	};
+
+
+	function stylizeWithColor(str, styleType) {
+	  var style = inspect.styles[styleType];
+
+	  if (style) {
+	    return '\u001b[' + inspect.colors[style][0] + 'm' + str +
+	           '\u001b[' + inspect.colors[style][1] + 'm';
+	  } else {
+	    return str;
+	  }
+	}
+
+
+	function stylizeNoColor(str, styleType) {
+	  return str;
+	}
+
+
+	function arrayToHash(array) {
+	  var hash = {};
+
+	  array.forEach(function(val, idx) {
+	    hash[val] = true;
+	  });
+
+	  return hash;
+	}
+
+
+	function formatValue(ctx, value, recurseTimes) {
+	  // Provide a hook for user-specified inspect functions.
+	  // Check that value is an object with an inspect function on it
+	  if (ctx.customInspect &&
+	      value &&
+	      isFunction(value.inspect) &&
+	      // Filter out the util module, it's inspect function is special
+	      value.inspect !== exports.inspect &&
+	      // Also filter out any prototype objects using the circular check.
+	      !(value.constructor && value.constructor.prototype === value)) {
+	    var ret = value.inspect(recurseTimes, ctx);
+	    if (!isString(ret)) {
+	      ret = formatValue(ctx, ret, recurseTimes);
+	    }
+	    return ret;
+	  }
+
+	  // Primitive types cannot have properties
+	  var primitive = formatPrimitive(ctx, value);
+	  if (primitive) {
+	    return primitive;
+	  }
+
+	  // Look up the keys of the object.
+	  var keys = Object.keys(value);
+	  var visibleKeys = arrayToHash(keys);
+
+	  if (ctx.showHidden) {
+	    keys = Object.getOwnPropertyNames(value);
+	  }
+
+	  // IE doesn't make error fields non-enumerable
+	  // http://msdn.microsoft.com/en-us/library/ie/dww52sbt(v=vs.94).aspx
+	  if (isError(value)
+	      && (keys.indexOf('message') >= 0 || keys.indexOf('description') >= 0)) {
+	    return formatError(value);
+	  }
+
+	  // Some type of object without properties can be shortcutted.
+	  if (keys.length === 0) {
+	    if (isFunction(value)) {
+	      var name = value.name ? ': ' + value.name : '';
+	      return ctx.stylize('[Function' + name + ']', 'special');
+	    }
+	    if (isRegExp(value)) {
+	      return ctx.stylize(RegExp.prototype.toString.call(value), 'regexp');
+	    }
+	    if (isDate(value)) {
+	      return ctx.stylize(Date.prototype.toString.call(value), 'date');
+	    }
+	    if (isError(value)) {
+	      return formatError(value);
+	    }
+	  }
+
+	  var base = '', array = false, braces = ['{', '}'];
+
+	  // Make Array say that they are Array
+	  if (isArray(value)) {
+	    array = true;
+	    braces = ['[', ']'];
+	  }
+
+	  // Make functions say that they are functions
+	  if (isFunction(value)) {
+	    var n = value.name ? ': ' + value.name : '';
+	    base = ' [Function' + n + ']';
+	  }
+
+	  // Make RegExps say that they are RegExps
+	  if (isRegExp(value)) {
+	    base = ' ' + RegExp.prototype.toString.call(value);
+	  }
+
+	  // Make dates with properties first say the date
+	  if (isDate(value)) {
+	    base = ' ' + Date.prototype.toUTCString.call(value);
+	  }
+
+	  // Make error with message first say the error
+	  if (isError(value)) {
+	    base = ' ' + formatError(value);
+	  }
+
+	  if (keys.length === 0 && (!array || value.length == 0)) {
+	    return braces[0] + base + braces[1];
+	  }
+
+	  if (recurseTimes < 0) {
+	    if (isRegExp(value)) {
+	      return ctx.stylize(RegExp.prototype.toString.call(value), 'regexp');
+	    } else {
+	      return ctx.stylize('[Object]', 'special');
+	    }
+	  }
+
+	  ctx.seen.push(value);
+
+	  var output;
+	  if (array) {
+	    output = formatArray(ctx, value, recurseTimes, visibleKeys, keys);
+	  } else {
+	    output = keys.map(function(key) {
+	      return formatProperty(ctx, value, recurseTimes, visibleKeys, key, array);
+	    });
+	  }
+
+	  ctx.seen.pop();
+
+	  return reduceToSingleString(output, base, braces);
+	}
+
+
+	function formatPrimitive(ctx, value) {
+	  if (isUndefined(value))
+	    return ctx.stylize('undefined', 'undefined');
+	  if (isString(value)) {
+	    var simple = '\'' + JSON.stringify(value).replace(/^"|"$/g, '')
+	                                             .replace(/'/g, "\\'")
+	                                             .replace(/\\"/g, '"') + '\'';
+	    return ctx.stylize(simple, 'string');
+	  }
+	  if (isNumber(value))
+	    return ctx.stylize('' + value, 'number');
+	  if (isBoolean(value))
+	    return ctx.stylize('' + value, 'boolean');
+	  // For some reason typeof null is "object", so special case here.
+	  if (isNull(value))
+	    return ctx.stylize('null', 'null');
+	}
+
+
+	function formatError(value) {
+	  return '[' + Error.prototype.toString.call(value) + ']';
+	}
+
+
+	function formatArray(ctx, value, recurseTimes, visibleKeys, keys) {
+	  var output = [];
+	  for (var i = 0, l = value.length; i < l; ++i) {
+	    if (hasOwnProperty(value, String(i))) {
+	      output.push(formatProperty(ctx, value, recurseTimes, visibleKeys,
+	          String(i), true));
+	    } else {
+	      output.push('');
+	    }
+	  }
+	  keys.forEach(function(key) {
+	    if (!key.match(/^\d+$/)) {
+	      output.push(formatProperty(ctx, value, recurseTimes, visibleKeys,
+	          key, true));
+	    }
+	  });
+	  return output;
+	}
+
+
+	function formatProperty(ctx, value, recurseTimes, visibleKeys, key, array) {
+	  var name, str, desc;
+	  desc = Object.getOwnPropertyDescriptor(value, key) || { value: value[key] };
+	  if (desc.get) {
+	    if (desc.set) {
+	      str = ctx.stylize('[Getter/Setter]', 'special');
+	    } else {
+	      str = ctx.stylize('[Getter]', 'special');
+	    }
+	  } else {
+	    if (desc.set) {
+	      str = ctx.stylize('[Setter]', 'special');
+	    }
+	  }
+	  if (!hasOwnProperty(visibleKeys, key)) {
+	    name = '[' + key + ']';
+	  }
+	  if (!str) {
+	    if (ctx.seen.indexOf(desc.value) < 0) {
+	      if (isNull(recurseTimes)) {
+	        str = formatValue(ctx, desc.value, null);
+	      } else {
+	        str = formatValue(ctx, desc.value, recurseTimes - 1);
+	      }
+	      if (str.indexOf('\n') > -1) {
+	        if (array) {
+	          str = str.split('\n').map(function(line) {
+	            return '  ' + line;
+	          }).join('\n').substr(2);
+	        } else {
+	          str = '\n' + str.split('\n').map(function(line) {
+	            return '   ' + line;
+	          }).join('\n');
+	        }
+	      }
+	    } else {
+	      str = ctx.stylize('[Circular]', 'special');
+	    }
+	  }
+	  if (isUndefined(name)) {
+	    if (array && key.match(/^\d+$/)) {
+	      return str;
+	    }
+	    name = JSON.stringify('' + key);
+	    if (name.match(/^"([a-zA-Z_][a-zA-Z_0-9]*)"$/)) {
+	      name = name.substr(1, name.length - 2);
+	      name = ctx.stylize(name, 'name');
+	    } else {
+	      name = name.replace(/'/g, "\\'")
+	                 .replace(/\\"/g, '"')
+	                 .replace(/(^"|"$)/g, "'");
+	      name = ctx.stylize(name, 'string');
+	    }
+	  }
+
+	  return name + ': ' + str;
+	}
+
+
+	function reduceToSingleString(output, base, braces) {
+	  var numLinesEst = 0;
+	  var length = output.reduce(function(prev, cur) {
+	    numLinesEst++;
+	    if (cur.indexOf('\n') >= 0) numLinesEst++;
+	    return prev + cur.replace(/\u001b\[\d\d?m/g, '').length + 1;
+	  }, 0);
+
+	  if (length > 60) {
+	    return braces[0] +
+	           (base === '' ? '' : base + '\n ') +
+	           ' ' +
+	           output.join(',\n  ') +
+	           ' ' +
+	           braces[1];
+	  }
+
+	  return braces[0] + base + ' ' + output.join(', ') + ' ' + braces[1];
+	}
+
+
+	// NOTE: These type checking functions intentionally don't use `instanceof`
+	// because it is fragile and can be easily faked with `Object.create()`.
+	function isArray(ar) {
+	  return Array.isArray(ar);
+	}
+	exports.isArray = isArray;
+
+	function isBoolean(arg) {
+	  return typeof arg === 'boolean';
+	}
+	exports.isBoolean = isBoolean;
+
+	function isNull(arg) {
+	  return arg === null;
+	}
+	exports.isNull = isNull;
+
+	function isNullOrUndefined(arg) {
+	  return arg == null;
+	}
+	exports.isNullOrUndefined = isNullOrUndefined;
+
+	function isNumber(arg) {
+	  return typeof arg === 'number';
+	}
+	exports.isNumber = isNumber;
+
+	function isString(arg) {
+	  return typeof arg === 'string';
+	}
+	exports.isString = isString;
+
+	function isSymbol(arg) {
+	  return typeof arg === 'symbol';
+	}
+	exports.isSymbol = isSymbol;
+
+	function isUndefined(arg) {
+	  return arg === void 0;
+	}
+	exports.isUndefined = isUndefined;
+
+	function isRegExp(re) {
+	  return isObject(re) && objectToString(re) === '[object RegExp]';
+	}
+	exports.isRegExp = isRegExp;
+
+	function isObject(arg) {
+	  return typeof arg === 'object' && arg !== null;
+	}
+	exports.isObject = isObject;
+
+	function isDate(d) {
+	  return isObject(d) && objectToString(d) === '[object Date]';
+	}
+	exports.isDate = isDate;
+
+	function isError(e) {
+	  return isObject(e) &&
+	      (objectToString(e) === '[object Error]' || e instanceof Error);
+	}
+	exports.isError = isError;
+
+	function isFunction(arg) {
+	  return typeof arg === 'function';
+	}
+	exports.isFunction = isFunction;
+
+	function isPrimitive(arg) {
+	  return arg === null ||
+	         typeof arg === 'boolean' ||
+	         typeof arg === 'number' ||
+	         typeof arg === 'string' ||
+	         typeof arg === 'symbol' ||  // ES6 symbol
+	         typeof arg === 'undefined';
+	}
+	exports.isPrimitive = isPrimitive;
+
+	exports.isBuffer = __webpack_require__(8);
+
+	function objectToString(o) {
+	  return Object.prototype.toString.call(o);
+	}
+
+
+	function pad(n) {
+	  return n < 10 ? '0' + n.toString(10) : n.toString(10);
+	}
+
+
+	var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep',
+	              'Oct', 'Nov', 'Dec'];
+
+	// 26 Feb 16:19:34
+	function timestamp() {
+	  var d = new Date();
+	  var time = [pad(d.getHours()),
+	              pad(d.getMinutes()),
+	              pad(d.getSeconds())].join(':');
+	  return [d.getDate(), months[d.getMonth()], time].join(' ');
+	}
+
+
+	// log is just a thin wrapper to console.log that prepends a timestamp
+	exports.log = function() {
+	  console.log('%s - %s', timestamp(), exports.format.apply(exports, arguments));
+	};
+
+
+	/**
+	 * Inherit the prototype methods from one constructor into another.
+	 *
+	 * The Function.prototype.inherits from lang.js rewritten as a standalone
+	 * function (not on Function.prototype). NOTE: If this file is to be loaded
+	 * during bootstrapping this function needs to be rewritten using some native
+	 * functions as prototype setup using normal JavaScript does not work as
+	 * expected during bootstrapping (see mirror.js in r114903).
+	 *
+	 * @param {function} ctor Constructor function which needs to inherit the
+	 *     prototype.
+	 * @param {function} superCtor Constructor function to inherit prototype from.
+	 */
+	exports.inherits = __webpack_require__(9);
+
+	exports._extend = function(origin, add) {
+	  // Don't do anything if add isn't an object
+	  if (!add || !isObject(add)) return origin;
+
+	  var keys = Object.keys(add);
+	  var i = keys.length;
+	  while (i--) {
+	    origin[keys[i]] = add[keys[i]];
+	  }
+	  return origin;
+	};
+
+	function hasOwnProperty(obj, prop) {
+	  return Object.prototype.hasOwnProperty.call(obj, prop);
+	}
+
+	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }()), __webpack_require__(4)));
+
+/***/ },
+/* 8 */
+/***/ function(module, exports) {
+
+	module.exports = function isBuffer(arg) {
+	  return arg && typeof arg === 'object'
+	    && typeof arg.copy === 'function'
+	    && typeof arg.fill === 'function'
+	    && typeof arg.readUInt8 === 'function';
+	};
+
+/***/ },
+/* 9 */
+/***/ function(module, exports) {
+
+	if (typeof Object.create === 'function') {
+	  // implementation from standard node.js 'util' module
+	  module.exports = function inherits(ctor, superCtor) {
+	    ctor.super_ = superCtor;
+	    ctor.prototype = Object.create(superCtor.prototype, {
+	      constructor: {
+	        value: ctor,
+	        enumerable: false,
+	        writable: true,
+	        configurable: true
+	      }
+	    });
+	  };
+	} else {
+	  // old school shim for old browsers
+	  module.exports = function inherits(ctor, superCtor) {
+	    ctor.super_ = superCtor;
+	    var TempCtor = function () {};
+	    TempCtor.prototype = superCtor.prototype;
+	    ctor.prototype = new TempCtor();
+	    ctor.prototype.constructor = ctor;
+	  };
+	}
+
+
+/***/ },
+/* 10 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/* WEBPACK VAR INJECTION */(function(Buffer) {'use strict';
+
+	// Declare internals
+
+	var internals = {};
+
+	exports.escapeJavaScript = function (input) {
+
+	    if (!input) {
+	        return '';
+	    }
+
+	    var escaped = '';
+
+	    for (var i = 0; i < input.length; ++i) {
+
+	        var charCode = input.charCodeAt(i);
+
+	        if (internals.isSafe(charCode)) {
+	            escaped += input[i];
+	        } else {
+	            escaped += internals.escapeJavaScriptChar(charCode);
+	        }
+	    }
+
+	    return escaped;
+	};
+
+	exports.escapeHtml = function (input) {
+
+	    if (!input) {
+	        return '';
+	    }
+
+	    var escaped = '';
+
+	    for (var i = 0; i < input.length; ++i) {
+
+	        var charCode = input.charCodeAt(i);
+
+	        if (internals.isSafe(charCode)) {
+	            escaped += input[i];
+	        } else {
+	            escaped += internals.escapeHtmlChar(charCode);
+	        }
+	    }
+
+	    return escaped;
+	};
+
+	internals.escapeJavaScriptChar = function (charCode) {
+
+	    if (charCode >= 256) {
+	        return '\\u' + internals.padLeft('' + charCode, 4);
+	    }
+
+	    var hexValue = new Buffer(String.fromCharCode(charCode), 'ascii').toString('hex');
+	    return '\\x' + internals.padLeft(hexValue, 2);
+	};
+
+	internals.escapeHtmlChar = function (charCode) {
+
+	    var namedEscape = internals.namedHtml[charCode];
+	    if (typeof namedEscape !== 'undefined') {
+	        return namedEscape;
+	    }
+
+	    if (charCode >= 256) {
+	        return '&#' + charCode + ';';
+	    }
+
+	    var hexValue = new Buffer(String.fromCharCode(charCode), 'ascii').toString('hex');
+	    return '&#x' + internals.padLeft(hexValue, 2) + ';';
+	};
+
+	internals.padLeft = function (str, len) {
+
+	    while (str.length < len) {
+	        str = '0' + str;
+	    }
+
+	    return str;
+	};
+
+	internals.isSafe = function (charCode) {
+
+	    return typeof internals.safeCharCodes[charCode] !== 'undefined';
+	};
+
+	internals.namedHtml = {
+	    '38': '&amp;',
+	    '60': '&lt;',
+	    '62': '&gt;',
+	    '34': '&quot;',
+	    '160': '&nbsp;',
+	    '162': '&cent;',
+	    '163': '&pound;',
+	    '164': '&curren;',
+	    '169': '&copy;',
+	    '174': '&reg;'
+	};
+
+	internals.safeCharCodes = function () {
+
+	    var safe = {};
+
+	    for (var i = 32; i < 123; ++i) {
+
+	        if (i >= 97 || // a-z
+	        i >= 65 && i <= 90 || // A-Z
+	        i >= 48 && i <= 57 || // 0-9
+	        i === 32 || // space
+	        i === 46 || // .
+	        i === 44 || // ,
+	        i === 45 || // -
+	        i === 58 || // :
+	        i === 95) {
+	            // _
+
+	            safe[i] = null;
+	        }
+	    }
+
+	    return safe;
+	}();
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(3).Buffer));
+
+/***/ },
+/* 11 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	// Load modules
+
+	var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	var Hoek = __webpack_require__(2);
+	var Ref = __webpack_require__(12);
+	var Errors = __webpack_require__(13);
+	var Alternatives = null; // Delay-loaded to prevent circular dependencies
+	var Cast = null;
+
+	// Declare internals
+
+	var internals = {
+	    Set: __webpack_require__(15)
+	};
+
+	internals.defaults = {
+	    abortEarly: true,
+	    convert: true,
+	    allowUnknown: false,
+	    skipFunctions: false,
+	    stripUnknown: false,
+	    language: {},
+	    presence: 'optional',
+	    strip: false,
+	    noDefaults: false
+
+	    // context: null
+	};
+
+	module.exports = internals.Any = function () {
+	    function _class() {
+	        _classCallCheck(this, _class);
+
+	        Cast = Cast || __webpack_require__(16);
+
+	        this.isJoi = true;
+	        this._type = 'any';
+	        this._settings = null;
+	        this._valids = new internals.Set();
+	        this._invalids = new internals.Set();
+	        this._tests = [];
+	        this._refs = [];
+	        this._flags = {
+	            /*
+	             presence: 'optional',                   // optional, required, forbidden, ignore
+	             allowOnly: false,
+	             allowUnknown: undefined,
+	             default: undefined,
+	             forbidden: false,
+	             encoding: undefined,
+	             insensitive: false,
+	             trim: false,
+	             case: undefined,                        // upper, lower
+	             empty: undefined,
+	             func: false,
+	             raw: false
+	             */
+	        };
+
+	        this._description = null;
+	        this._unit = null;
+	        this._notes = [];
+	        this._tags = [];
+	        this._examples = [];
+	        this._meta = [];
+
+	        this._inner = {}; // Hash of arrays of immutable objects
+	    }
+
+	    _class.prototype.createError = function createError(type, context, state, options) {
+
+	        return Errors.create(type, context, state, options, this._flags);
+	    };
+
+	    _class.prototype.createOverrideError = function createOverrideError(type, context, state, options, message, template) {
+
+	        return Errors.create(type, context, state, options, this._flags, message, template);
+	    };
+
+	    _class.prototype.checkOptions = function checkOptions(options) {
+
+	        var Schemas = __webpack_require__(28);
+	        var result = Schemas.options.validate(options);
+	        if (result.error) {
+	            throw new Error(result.error.details[0].message);
+	        }
+	    };
+
+	    _class.prototype.clone = function clone() {
+
+	        var obj = Object.create(Object.getPrototypeOf(this));
+
+	        obj.isJoi = true;
+	        obj._type = this._type;
+	        obj._settings = internals.concatSettings(this._settings);
+	        obj._baseType = this._baseType;
+	        obj._valids = Hoek.clone(this._valids);
+	        obj._invalids = Hoek.clone(this._invalids);
+	        obj._tests = this._tests.slice();
+	        obj._refs = this._refs.slice();
+	        obj._flags = Hoek.clone(this._flags);
+
+	        obj._description = this._description;
+	        obj._unit = this._unit;
+	        obj._notes = this._notes.slice();
+	        obj._tags = this._tags.slice();
+	        obj._examples = this._examples.slice();
+	        obj._meta = this._meta.slice();
+
+	        obj._inner = {};
+	        var inners = Object.keys(this._inner);
+	        for (var i = 0; i < inners.length; ++i) {
+	            var key = inners[i];
+	            obj._inner[key] = this._inner[key] ? this._inner[key].slice() : null;
+	        }
+
+	        return obj;
+	    };
+
+	    _class.prototype.concat = function concat(schema) {
+
+	        Hoek.assert(schema instanceof internals.Any, 'Invalid schema object');
+	        Hoek.assert(this._type === 'any' || schema._type === 'any' || schema._type === this._type, 'Cannot merge type', this._type, 'with another type:', schema._type);
+
+	        var obj = this.clone();
+
+	        if (this._type === 'any' && schema._type !== 'any') {
+
+	            // Reset values as if we were "this"
+	            var tmpObj = schema.clone();
+	            var keysToRestore = ['_settings', '_valids', '_invalids', '_tests', '_refs', '_flags', '_description', '_unit', '_notes', '_tags', '_examples', '_meta', '_inner'];
+
+	            for (var i = 0; i < keysToRestore.length; ++i) {
+	                tmpObj[keysToRestore[i]] = obj[keysToRestore[i]];
+	            }
+
+	            obj = tmpObj;
+	        }
+
+	        obj._settings = obj._settings ? internals.concatSettings(obj._settings, schema._settings) : schema._settings;
+	        obj._valids.merge(schema._valids, schema._invalids);
+	        obj._invalids.merge(schema._invalids, schema._valids);
+	        obj._tests = obj._tests.concat(schema._tests);
+	        obj._refs = obj._refs.concat(schema._refs);
+	        Hoek.merge(obj._flags, schema._flags);
+
+	        obj._description = schema._description || obj._description;
+	        obj._unit = schema._unit || obj._unit;
+	        obj._notes = obj._notes.concat(schema._notes);
+	        obj._tags = obj._tags.concat(schema._tags);
+	        obj._examples = obj._examples.concat(schema._examples);
+	        obj._meta = obj._meta.concat(schema._meta);
+
+	        var inners = Object.keys(schema._inner);
+	        var isObject = obj._type === 'object';
+	        for (var _i = 0; _i < inners.length; ++_i) {
+	            var key = inners[_i];
+	            var source = schema._inner[key];
+	            if (source) {
+	                var target = obj._inner[key];
+	                if (target) {
+	                    if (isObject && key === 'children') {
+	                        var keys = {};
+
+	                        for (var j = 0; j < target.length; ++j) {
+	                            keys[target[j].key] = j;
+	                        }
+
+	                        for (var _j = 0; _j < source.length; ++_j) {
+	                            var sourceKey = source[_j].key;
+	                            if (keys[sourceKey] >= 0) {
+	                                target[keys[sourceKey]] = {
+	                                    key: sourceKey,
+	                                    schema: target[keys[sourceKey]].schema.concat(source[_j].schema)
+	                                };
+	                            } else {
+	                                target.push(source[_j]);
+	                            }
+	                        }
+	                    } else {
+	                        obj._inner[key] = obj._inner[key].concat(source);
+	                    }
+	                } else {
+	                    obj._inner[key] = source.slice();
+	                }
+	            }
+	        }
+
+	        return obj;
+	    };
+
+	    _class.prototype._test = function _test(name, arg, func, options) {
+
+	        var obj = this.clone();
+	        obj._tests.push({ func: func, name: name, arg: arg, options: options });
+	        return obj;
+	    };
+
+	    _class.prototype.options = function options(_options) {
+
+	        Hoek.assert(!_options.context, 'Cannot override context');
+	        this.checkOptions(_options);
+
+	        var obj = this.clone();
+	        obj._settings = internals.concatSettings(obj._settings, _options);
+	        return obj;
+	    };
+
+	    _class.prototype.strict = function strict(isStrict) {
+
+	        var obj = this.clone();
+	        obj._settings = obj._settings || {};
+	        obj._settings.convert = isStrict === undefined ? false : !isStrict;
+	        return obj;
+	    };
+
+	    _class.prototype.raw = function raw(isRaw) {
+
+	        var value = isRaw === undefined ? true : isRaw;
+
+	        if (this._flags.raw === value) {
+	            return this;
+	        }
+
+	        var obj = this.clone();
+	        obj._flags.raw = value;
+	        return obj;
+	    };
+
+	    _class.prototype.error = function error(err) {
+
+	        Hoek.assert(err && (err instanceof Error || typeof err === 'function'), 'Must provide a valid Error object or a function');
+
+	        var obj = this.clone();
+	        obj._flags.error = err;
+	        return obj;
+	    };
+
+	    _class.prototype.allow = function allow() {
+
+	        var obj = this.clone();
+	        var values = Hoek.flatten(Array.prototype.slice.call(arguments));
+	        for (var i = 0; i < values.length; ++i) {
+	            var value = values[i];
+
+	            Hoek.assert(value !== undefined, 'Cannot call allow/valid/invalid with undefined');
+	            obj._invalids.remove(value);
+	            obj._valids.add(value, obj._refs);
+	        }
+	        return obj;
+	    };
+
+	    _class.prototype.valid = function valid() {
+
+	        var obj = this.allow.apply(this, arguments);
+	        obj._flags.allowOnly = true;
+	        return obj;
+	    };
+
+	    _class.prototype.invalid = function invalid(value) {
+
+	        var obj = this.clone();
+	        var values = Hoek.flatten(Array.prototype.slice.call(arguments));
+	        for (var i = 0; i < values.length; ++i) {
+	            value = values[i];
+
+	            Hoek.assert(value !== undefined, 'Cannot call allow/valid/invalid with undefined');
+	            obj._valids.remove(value);
+	            obj._invalids.add(value, this._refs);
+	        }
+
+	        return obj;
+	    };
+
+	    _class.prototype.required = function required() {
+
+	        if (this._flags.presence === 'required') {
+	            return this;
+	        }
+
+	        var obj = this.clone();
+	        obj._flags.presence = 'required';
+	        return obj;
+	    };
+
+	    _class.prototype.optional = function optional() {
+
+	        if (this._flags.presence === 'optional') {
+	            return this;
+	        }
+
+	        var obj = this.clone();
+	        obj._flags.presence = 'optional';
+	        return obj;
+	    };
+
+	    _class.prototype.forbidden = function forbidden() {
+
+	        if (this._flags.presence === 'forbidden') {
+	            return this;
+	        }
+
+	        var obj = this.clone();
+	        obj._flags.presence = 'forbidden';
+	        return obj;
+	    };
+
+	    _class.prototype.strip = function strip() {
+
+	        if (this._flags.strip) {
+	            return this;
+	        }
+
+	        var obj = this.clone();
+	        obj._flags.strip = true;
+	        return obj;
+	    };
+
+	    _class.prototype.applyFunctionToChildren = function applyFunctionToChildren(children, fn, args, root) {
+
+	        children = [].concat(children);
+
+	        if (children.length !== 1 || children[0] !== '') {
+	            root = root ? root + '.' : '';
+
+	            var extraChildren = (children[0] === '' ? children.slice(1) : children).map(function (child) {
+
+	                return root + child;
+	            });
+
+	            throw new Error('unknown key(s) ' + extraChildren.join(', '));
+	        }
+
+	        return this[fn].apply(this, args);
+	    };
+
+	    _class.prototype.default = function _default(value, description) {
+
+	        if (typeof value === 'function' && !Ref.isRef(value)) {
+
+	            if (!value.description && description) {
+
+	                value.description = description;
+	            }
+
+	            if (!this._flags.func) {
+	                Hoek.assert(typeof value.description === 'string' && value.description.length > 0, 'description must be provided when default value is a function');
+	            }
+	        }
+
+	        var obj = this.clone();
+	        obj._flags.default = value;
+	        Ref.push(obj._refs, value);
+	        return obj;
+	    };
+
+	    _class.prototype.empty = function empty(schema) {
+
+	        var obj = this.clone();
+	        obj._flags.empty = schema === undefined ? undefined : Cast.schema(schema);
+	        return obj;
+	    };
+
+	    _class.prototype.when = function when(ref, options) {
+
+	        Hoek.assert(options && (typeof options === 'undefined' ? 'undefined' : _typeof(options)) === 'object', 'Invalid options');
+	        Hoek.assert(options.then !== undefined || options.otherwise !== undefined, 'options must have at least one of "then" or "otherwise"');
+
+	        var then = options.hasOwnProperty('then') ? this.concat(Cast.schema(options.then)) : undefined;
+	        var otherwise = options.hasOwnProperty('otherwise') ? this.concat(Cast.schema(options.otherwise)) : undefined;
+
+	        Alternatives = Alternatives || __webpack_require__(25);
+	        var obj = Alternatives.when(ref, { is: options.is, then: then, otherwise: otherwise });
+	        obj._flags.presence = 'ignore';
+	        obj._baseType = this;
+
+	        return obj;
+	    };
+
+	    _class.prototype.description = function description(desc) {
+
+	        Hoek.assert(desc && typeof desc === 'string', 'Description must be a non-empty string');
+
+	        var obj = this.clone();
+	        obj._description = desc;
+	        return obj;
+	    };
+
+	    _class.prototype.notes = function notes(_notes) {
+
+	        Hoek.assert(_notes && (typeof _notes === 'string' || Array.isArray(_notes)), 'Notes must be a non-empty string or array');
+
+	        var obj = this.clone();
+	        obj._notes = obj._notes.concat(_notes);
+	        return obj;
+	    };
+
+	    _class.prototype.tags = function tags(_tags) {
+
+	        Hoek.assert(_tags && (typeof _tags === 'string' || Array.isArray(_tags)), 'Tags must be a non-empty string or array');
+
+	        var obj = this.clone();
+	        obj._tags = obj._tags.concat(_tags);
+	        return obj;
+	    };
+
+	    _class.prototype.meta = function meta(_meta) {
+
+	        Hoek.assert(_meta !== undefined, 'Meta cannot be undefined');
+
+	        var obj = this.clone();
+	        obj._meta = obj._meta.concat(_meta);
+	        return obj;
+	    };
+
+	    _class.prototype.example = function example(value) {
+
+	        Hoek.assert(arguments.length, 'Missing example');
+	        var result = this._validate(value, null, internals.defaults);
+	        Hoek.assert(!result.errors, 'Bad example:', result.errors && Errors.process(result.errors, value));
+
+	        var obj = this.clone();
+	        obj._examples.push(value);
+	        return obj;
+	    };
+
+	    _class.prototype.unit = function unit(name) {
+
+	        Hoek.assert(name && typeof name === 'string', 'Unit name must be a non-empty string');
+
+	        var obj = this.clone();
+	        obj._unit = name;
+	        return obj;
+	    };
+
+	    _class.prototype._prepareEmptyValue = function _prepareEmptyValue(value) {
+
+	        if (typeof value === 'string' && this._flags.trim) {
+	            return value.trim();
+	        }
+
+	        return value;
+	    };
+
+	    _class.prototype._validate = function _validate(value, state, options, reference) {
+	        var _this = this;
+
+	        var originalValue = value;
+
+	        // Setup state and settings
+
+	        state = state || { key: '', path: '', parent: null, reference: reference };
+
+	        if (this._settings) {
+	            options = internals.concatSettings(options, this._settings);
+	        }
+
+	        var errors = [];
+	        var finish = function finish() {
+
+	            var finalValue = void 0;
+
+	            if (value !== undefined) {
+	                finalValue = _this._flags.raw ? originalValue : value;
+	            } else if (options.noDefaults) {
+	                finalValue = value;
+	            } else if (Ref.isRef(_this._flags.default)) {
+	                finalValue = _this._flags.default(state.parent, options);
+	            } else if (typeof _this._flags.default === 'function' && !(_this._flags.func && !_this._flags.default.description)) {
+
+	                var args = void 0;
+
+	                if (state.parent !== null && _this._flags.default.length > 0) {
+
+	                    args = [Hoek.clone(state.parent), options];
+	                }
+
+	                var defaultValue = internals._try(_this._flags.default, args);
+	                finalValue = defaultValue.value;
+	                if (defaultValue.error) {
+	                    errors.push(_this.createError('any.default', defaultValue.error, state, options));
+	                }
+	            } else {
+	                finalValue = Hoek.clone(_this._flags.default);
+	            }
+
+	            if (errors.length && typeof _this._flags.error === 'function') {
+	                var change = _this._flags.error.call(_this, errors);
+
+	                if (typeof change === 'string') {
+	                    errors = [_this.createOverrideError('override', { reason: errors }, state, options, change)];
+	                } else {
+	                    errors = [].concat(change).map(function (err) {
+
+	                        return err instanceof Error ? err : _this.createOverrideError(err.type || 'override', err.context, state, options, err.message, err.template);
+	                    });
+	                }
+	            }
+
+	            return {
+	                value: _this._flags.strip ? undefined : finalValue,
+	                finalValue: finalValue,
+	                errors: errors.length ? errors : null
+	            };
+	        };
+
+	        if (this._coerce) {
+	            var coerced = this._coerce.call(this, value, state, options);
+	            if (coerced.errors) {
+	                value = coerced.value;
+	                errors = errors.concat(coerced.errors);
+	                return finish(); // Coerced error always aborts early
+	            }
+
+	            value = coerced.value;
+	        }
+
+	        if (this._flags.empty && !this._flags.empty._validate(this._prepareEmptyValue(value), null, internals.defaults).errors) {
+	            value = undefined;
+	        }
+
+	        // Check presence requirements
+
+	        var presence = this._flags.presence || options.presence;
+	        if (presence === 'optional') {
+	            if (value === undefined) {
+	                var isDeepDefault = this._flags.hasOwnProperty('default') && this._flags.default === undefined;
+	                if (isDeepDefault && this._type === 'object') {
+	                    value = {};
+	                } else {
+	                    return finish();
+	                }
+	            }
+	        } else if (presence === 'required' && value === undefined) {
+
+	            errors.push(this.createError('any.required', null, state, options));
+	            return finish();
+	        } else if (presence === 'forbidden') {
+	            if (value === undefined) {
+	                return finish();
+	            }
+
+	            errors.push(this.createError('any.unknown', null, state, options));
+	            return finish();
+	        }
+
+	        // Check allowed and denied values using the original value
+
+	        if (this._valids.has(value, state, options, this._flags.insensitive)) {
+	            return finish();
+	        }
+
+	        if (this._invalids.has(value, state, options, this._flags.insensitive)) {
+	            errors.push(this.createError(value === '' ? 'any.empty' : 'any.invalid', null, state, options));
+	            if (options.abortEarly || value === undefined) {
+	                // No reason to keep validating missing value
+
+	                return finish();
+	            }
+	        }
+
+	        // Convert value and validate type
+
+	        if (this._base) {
+	            var base = this._base.call(this, value, state, options);
+	            if (base.errors) {
+	                value = base.value;
+	                errors = errors.concat(base.errors);
+	                return finish(); // Base error always aborts early
+	            }
+
+	            if (base.value !== value) {
+	                value = base.value;
+
+	                // Check allowed and denied values using the converted value
+
+	                if (this._valids.has(value, state, options, this._flags.insensitive)) {
+	                    return finish();
+	                }
+
+	                if (this._invalids.has(value, state, options, this._flags.insensitive)) {
+	                    errors.push(this.createError(value === '' ? 'any.empty' : 'any.invalid', null, state, options));
+	                    if (options.abortEarly) {
+	                        return finish();
+	                    }
+	                }
+	            }
+	        }
+
+	        // Required values did not match
+
+	        if (this._flags.allowOnly) {
+	            errors.push(this.createError('any.allowOnly', { valids: this._valids.values({ stripUndefined: true }) }, state, options));
+	            if (options.abortEarly) {
+	                return finish();
+	            }
+	        }
+
+	        // Helper.validate tests
+
+	        for (var i = 0; i < this._tests.length; ++i) {
+	            var test = this._tests[i];
+	            var ret = test.func.call(this, value, state, options);
+	            if (ret instanceof Errors.Err) {
+	                errors.push(ret);
+	                if (options.abortEarly) {
+	                    return finish();
+	                }
+	            } else {
+	                value = ret;
+	            }
+	        }
+
+	        return finish();
+	    };
+
+	    _class.prototype._validateWithOptions = function _validateWithOptions(value, options, callback) {
+
+	        if (options) {
+	            this.checkOptions(options);
+	        }
+
+	        var settings = internals.concatSettings(internals.defaults, options);
+	        var result = this._validate(value, null, settings);
+	        var errors = Errors.process(result.errors, value);
+
+	        if (callback) {
+	            return callback(errors, result.value);
+	        }
+
+	        return { error: errors, value: result.value };
+	    };
+
+	    _class.prototype.validate = function validate(value, options, callback) {
+
+	        if (typeof options === 'function') {
+	            return this._validateWithOptions(value, null, options);
+	        }
+
+	        return this._validateWithOptions(value, options, callback);
+	    };
+
+	    _class.prototype.describe = function describe() {
+	        var _this2 = this;
+
+	        var description = {
+	            type: this._type
+	        };
+
+	        var flags = Object.keys(this._flags);
+	        if (flags.length) {
+	            if (['empty', 'default', 'lazy', 'label'].some(function (flag) {
+	                return _this2._flags.hasOwnProperty(flag);
+	            })) {
+	                description.flags = {};
+	                for (var i = 0; i < flags.length; ++i) {
+	                    var flag = flags[i];
+	                    if (flag === 'empty') {
+	                        description.flags[flag] = this._flags[flag].describe();
+	                    } else if (flag === 'default') {
+	                        if (Ref.isRef(this._flags[flag])) {
+	                            description.flags[flag] = this._flags[flag].toString();
+	                        } else if (typeof this._flags[flag] === 'function') {
+	                            description.flags[flag] = this._flags[flag].description;
+	                        } else {
+	                            description.flags[flag] = this._flags[flag];
+	                        }
+	                    } else if (flag === 'lazy' || flag === 'label') {
+	                        // We don't want it in the description
+	                    } else {
+	                        description.flags[flag] = this._flags[flag];
+	                    }
+	                }
+	            } else {
+	                description.flags = this._flags;
+	            }
+	        }
+
+	        if (this._settings) {
+	            description.options = Hoek.clone(this._settings);
+	        }
+
+	        if (this._baseType) {
+	            description.base = this._baseType.describe();
+	        }
+
+	        if (this._description) {
+	            description.description = this._description;
+	        }
+
+	        if (this._notes.length) {
+	            description.notes = this._notes;
+	        }
+
+	        if (this._tags.length) {
+	            description.tags = this._tags;
+	        }
+
+	        if (this._meta.length) {
+	            description.meta = this._meta;
+	        }
+
+	        if (this._examples.length) {
+	            description.examples = this._examples;
+	        }
+
+	        if (this._unit) {
+	            description.unit = this._unit;
+	        }
+
+	        var valids = this._valids.values();
+	        if (valids.length) {
+	            description.valids = valids.map(function (v) {
+
+	                return Ref.isRef(v) ? v.toString() : v;
+	            });
+	        }
+
+	        var invalids = this._invalids.values();
+	        if (invalids.length) {
+	            description.invalids = invalids.map(function (v) {
+
+	                return Ref.isRef(v) ? v.toString() : v;
+	            });
+	        }
+
+	        description.rules = [];
+
+	        for (var _i2 = 0; _i2 < this._tests.length; ++_i2) {
+	            var validator = this._tests[_i2];
+	            var item = { name: validator.name };
+
+	            if (validator.arg !== void 0) {
+	                item.arg = Ref.isRef(validator.arg) ? validator.arg.toString() : validator.arg;
+	            }
+
+	            var options = validator.options;
+	            if (options) {
+	                if (options.hasRef) {
+	                    item.arg = {};
+	                    var keys = Object.keys(validator.arg);
+	                    for (var j = 0; j < keys.length; ++j) {
+	                        var key = keys[j];
+	                        var value = validator.arg[key];
+	                        item.arg[key] = Ref.isRef(value) ? value.toString() : value;
+	                    }
+	                }
+
+	                if (typeof options.description === 'string') {
+	                    item.description = options.description;
+	                } else if (typeof options.description === 'function') {
+	                    item.description = options.description(item.arg);
+	                }
+	            }
+
+	            description.rules.push(item);
+	        }
+
+	        if (!description.rules.length) {
+	            delete description.rules;
+	        }
+
+	        var label = this._getLabel();
+	        if (label) {
+	            description.label = label;
+	        }
+
+	        return description;
+	    };
+
+	    _class.prototype.label = function label(name) {
+
+	        Hoek.assert(name && typeof name === 'string', 'Label name must be a non-empty string');
+
+	        var obj = this.clone();
+	        obj._flags.label = name;
+	        return obj;
+	    };
+
+	    _class.prototype._getLabel = function _getLabel(def) {
+
+	        return this._flags.label || def;
+	    };
+
+	    return _class;
+	}();
+
+	internals.Any.prototype.isImmutable = true; // Prevents Hoek from deep cloning schema objects
+
+	// Aliases
+
+	internals.Any.prototype.only = internals.Any.prototype.equal = internals.Any.prototype.valid;
+	internals.Any.prototype.disallow = internals.Any.prototype.not = internals.Any.prototype.invalid;
+	internals.Any.prototype.exist = internals.Any.prototype.required;
+
+	internals._try = function (fn, args) {
+
+	    var err = void 0;
+	    var result = void 0;
+
+	    try {
+	        result = fn.apply(null, args);
+	    } catch (e) {
+	        err = e;
+	    }
+
+	    return {
+	        value: result,
+	        error: err
+	    };
+	};
+
+	internals.concatSettings = function (target, source) {
+
+	    // Used to avoid cloning context
+
+	    if (!target && !source) {
+
+	        return null;
+	    }
+
+	    var obj = {};
+
+	    if (target) {
+	        _extends(obj, target);
+	    }
+
+	    if (source) {
+	        var sKeys = Object.keys(source);
+	        for (var i = 0; i < sKeys.length; ++i) {
+	            var key = sKeys[i];
+	            if (key !== 'language' || !obj.hasOwnProperty(key)) {
+
+	                obj[key] = source[key];
+	            } else {
+	                obj[key] = Hoek.applyToDefaults(obj[key], source[key]);
+	            }
+	        }
+	    }
+
+	    return obj;
+	};
+
+/***/ },
+/* 12 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	// Load modules
+
+	var Hoek = __webpack_require__(2);
+
+	// Declare internals
+
+	var internals = {};
+
+	exports.create = function (key, options) {
+
+	    Hoek.assert(typeof key === 'string', 'Invalid reference key:', key);
+
+	    var settings = Hoek.clone(options); // options can be reused and modified
+
+	    var ref = function ref(value, validationOptions) {
+
+	        return Hoek.reach(ref.isContext ? validationOptions.context : value, ref.key, settings);
+	    };
+
+	    ref.isContext = key[0] === (settings && settings.contextPrefix || '$');
+	    ref.key = ref.isContext ? key.slice(1) : key;
+	    ref.path = ref.key.split(settings && settings.separator || '.');
+	    ref.depth = ref.path.length;
+	    ref.root = ref.path[0];
+	    ref.isJoi = true;
+
+	    ref.toString = function () {
+
+	        return (ref.isContext ? 'context:' : 'ref:') + ref.key;
+	    };
+
+	    return ref;
+	};
+
+	exports.isRef = function (ref) {
+
+	    return typeof ref === 'function' && ref.isJoi;
+	};
+
+	exports.push = function (array, ref) {
+
+	    if (exports.isRef(ref) && !ref.isContext) {
+
+	        array.push(ref.root);
+	    }
+	};
+
+/***/ },
+/* 13 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	// Load modules
+
+	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	var Hoek = __webpack_require__(2);
+	var Language = __webpack_require__(14);
+
+	// Declare internals
+
+	var internals = {
+	    annotations: Symbol('joi-annotations')
+	};
+
+	internals.stringify = function (value, wrapArrays) {
+
+	    var type = typeof value === 'undefined' ? 'undefined' : _typeof(value);
+
+	    if (value === null) {
+	        return 'null';
+	    }
+
+	    if (type === 'string') {
+	        return value;
+	    }
+
+	    if (value instanceof exports.Err || type === 'function') {
+	        return value.toString();
+	    }
+
+	    if (type === 'object') {
+	        if (Array.isArray(value)) {
+	            var partial = '';
+
+	            for (var i = 0; i < value.length; ++i) {
+	                partial = partial + (partial.length ? ', ' : '') + internals.stringify(value[i], wrapArrays);
+	            }
+
+	            return wrapArrays ? '[' + partial + ']' : partial;
+	        }
+
+	        return value.toString();
+	    }
+
+	    return JSON.stringify(value);
+	};
+
+	exports.Err = function () {
+	    function _class(type, context, state, options, flags, message, template) {
+	        _classCallCheck(this, _class);
+
+	        this.isJoi = true;
+	        this.type = type;
+	        this.context = context || {};
+	        this.context.key = state.key;
+	        this.path = state.path;
+	        this.options = options;
+	        this.flags = flags;
+	        this.message = message;
+	        this.template = template;
+	    }
+
+	    _class.prototype.toString = function toString() {
+	        var _this = this;
+
+	        if (this.message) {
+	            return this.message;
+	        }
+
+	        var format = void 0;
+
+	        if (this.template) {
+	            format = this.template;
+	        }
+
+	        var localized = this.options.language;
+
+	        if (this.flags.label) {
+	            this.context.key = this.flags.label;
+	        } else if (this.context.key === '' || this.context.key === null) {
+	            this.context.key = localized.root || Language.errors.root;
+	        }
+
+	        format = format || Hoek.reach(localized, this.type) || Hoek.reach(Language.errors, this.type);
+
+	        var wrapArrays = Hoek.reach(localized, 'messages.wrapArrays');
+	        if (typeof wrapArrays !== 'boolean') {
+	            wrapArrays = Language.errors.messages.wrapArrays;
+	        }
+
+	        if (format === null) {
+	            var childrenString = internals.stringify(this.context.reason, wrapArrays);
+	            if (wrapArrays) {
+	                return childrenString.slice(1, -1);
+	            }
+	            return childrenString;
+	        }
+
+	        var hasKey = /\{\{\!?key\}\}/.test(format);
+	        var skipKey = format.length > 2 && format[0] === '!' && format[1] === '!';
+
+	        if (skipKey) {
+	            format = format.slice(2);
+	        }
+
+	        if (!hasKey && !skipKey) {
+	            format = (Hoek.reach(localized, 'key') || Hoek.reach(Language.errors, 'key')) + format;
+	        }
+
+	        return format.replace(/\{\{(\!?)([^}]+)\}\}/g, function ($0, isSecure, name) {
+
+	            var value = Hoek.reach(_this.context, name);
+	            var normalized = internals.stringify(value, wrapArrays);
+	            return isSecure ? Hoek.escapeHtml(normalized) : normalized;
+	        });
+	    };
+
+	    return _class;
+	}();
+
+	exports.create = function (type, context, state, options, flags, message, template) {
+
+	    return new exports.Err(type, context, state, options, flags, message, template);
+	};
+
+	exports.process = function (errors, object) {
+
+	    if (!errors || !errors.length) {
+	        return null;
+	    }
+
+	    // Construct error
+
+	    var message = '';
+	    var details = [];
+
+	    var processErrors = function processErrors(localErrors, parent) {
+
+	        for (var i = 0; i < localErrors.length; ++i) {
+	            var item = localErrors[i];
+
+	            if (item instanceof Error) {
+	                return item;
+	            }
+
+	            if (item.flags.error && typeof item.flags.error !== 'function') {
+	                return item.flags.error;
+	            }
+
+	            var itemMessage = void 0;
+	            if (parent === undefined) {
+	                itemMessage = item.toString();
+	                message = message + (message ? '. ' : '') + itemMessage;
+	            }
+
+	            // Do not push intermediate errors, we're only interested in leafs
+
+	            if (item.context.reason && item.context.reason.length) {
+	                var _override = processErrors(item.context.reason, item.path);
+	                if (_override) {
+	                    return _override;
+	                }
+	            } else {
+	                details.push({
+	                    message: itemMessage || item.toString(),
+	                    path: internals.getPath(item),
+	                    type: item.type,
+	                    context: item.context
+	                });
+	            }
+	        }
+	    };
+
+	    var override = processErrors(errors);
+	    if (override) {
+	        return override;
+	    }
+
+	    var error = new Error(message);
+	    error.isJoi = true;
+	    error.name = 'ValidationError';
+	    error.details = details;
+	    error._object = object;
+	    error.annotate = internals.annotate;
+	    return error;
+	};
+
+	internals.getPath = function (item) {
+
+	    return item.path || item.context.key;
+	};
+
+	// Inspired by json-stringify-safe
+	internals.safeStringify = function (obj, spaces) {
+
+	    return JSON.stringify(obj, internals.serializer(), spaces);
+	};
+
+	internals.serializer = function () {
+
+	    var keys = [];
+	    var stack = [];
+
+	    var cycleReplacer = function cycleReplacer(key, value) {
+
+	        if (stack[0] === value) {
+	            return '[Circular ~]';
+	        }
+
+	        return '[Circular ~.' + keys.slice(0, stack.indexOf(value)).join('.') + ']';
+	    };
+
+	    return function (key, value) {
+
+	        if (stack.length > 0) {
+	            var thisPos = stack.indexOf(this);
+	            if (~thisPos) {
+	                stack.length = thisPos + 1;
+	                keys.length = thisPos + 1;
+	                keys[thisPos] = key;
+	            } else {
+	                stack.push(this);
+	                keys.push(key);
+	            }
+
+	            if (~stack.indexOf(value)) {
+	                value = cycleReplacer.call(this, key, value);
+	            }
+	        } else {
+	            stack.push(value);
+	        }
+
+	        if (value) {
+	            var annotations = value[internals.annotations];
+	            if (annotations) {
+	                if (Array.isArray(value)) {
+	                    var annotated = [];
+
+	                    for (var i = 0; i < value.length; ++i) {
+	                        if (annotations.errors[i]) {
+	                            annotated.push('_$idx$_' + annotations.errors[i].sort().join(', ') + '_$end$_');
+	                        }
+	                        annotated.push(value[i]);
+	                    }
+
+	                    value = annotated;
+	                } else {
+	                    var errorKeys = Object.keys(annotations.errors);
+	                    for (var _i = 0; _i < errorKeys.length; ++_i) {
+	                        var errorKey = errorKeys[_i];
+	                        value[errorKey + '_$key$_' + annotations.errors[errorKey].sort().join(', ') + '_$end$_'] = value[errorKey];
+	                        value[errorKey] = undefined;
+	                    }
+
+	                    var missingKeys = Object.keys(annotations.missing);
+	                    for (var _i2 = 0; _i2 < missingKeys.length; ++_i2) {
+	                        var missingKey = missingKeys[_i2];
+	                        value['_$miss$_' + missingKey + '|' + annotations.missing[missingKey] + '_$end$_'] = '__missing__';
+	                    }
+	                }
+
+	                return value;
+	            }
+	        }
+
+	        if (value === Infinity || value === -Infinity || Number.isNaN(value) || typeof value === 'function' || (typeof value === 'undefined' ? 'undefined' : _typeof(value)) === 'symbol') {
+	            return '[' + value.toString() + ']';
+	        }
+
+	        return value;
+	    };
+	};
+
+	internals.annotate = function (stripColorCodes) {
+
+	    var redFgEscape = stripColorCodes ? '' : '\x1B[31m';
+	    var redBgEscape = stripColorCodes ? '' : '\x1B[41m';
+	    var endColor = stripColorCodes ? '' : '\x1B[0m';
+
+	    if (_typeof(this._object) !== 'object') {
+	        return this.details[0].message;
+	    }
+
+	    var obj = Hoek.clone(this._object || {});
+
+	    for (var i = this.details.length - 1; i >= 0; --i) {
+	        // Reverse order to process deepest child first
+	        var pos = i + 1;
+	        var error = this.details[i];
+	        var path = error.path.split('.');
+	        var ref = obj;
+	        for (var j = 0;; ++j) {
+	            var seg = path[j];
+
+	            if (ref.isImmutable) {
+	                ref = ref.clone(); // joi schemas are not cloned by hoek, we have to take this extra step
+	            }
+
+	            if (j + 1 < path.length && ref[seg] && typeof ref[seg] !== 'string') {
+
+	                ref = ref[seg];
+	            } else {
+	                var refAnnotations = ref[internals.annotations] = ref[internals.annotations] || { errors: {}, missing: {} };
+	                var value = ref[seg];
+
+	                if (value !== undefined) {
+	                    refAnnotations.errors[seg] = refAnnotations.errors[seg] || [];
+	                    refAnnotations.errors[seg].push(pos);
+	                } else {
+	                    refAnnotations.missing[seg] = pos;
+	                }
+
+	                break;
+	            }
+	        }
+	    }
+
+	    var replacers = {
+	        key: /_\$key\$_([, \d]+)_\$end\$_\"/g,
+	        missing: /\"_\$miss\$_([^\|]+)\|(\d+)_\$end\$_\"\: \"__missing__\"/g,
+	        arrayIndex: /\s*\"_\$idx\$_([, \d]+)_\$end\$_\",?\n(.*)/g,
+	        specials: /"\[(NaN|Symbol.*|-?Infinity|function.*|\(.*)\]"/g
+	    };
+
+	    var message = internals.safeStringify(obj, 2).replace(replacers.key, function ($0, $1) {
+	        return '" ' + redFgEscape + '[' + $1 + ']' + endColor;
+	    }).replace(replacers.missing, function ($0, $1, $2) {
+	        return redBgEscape + '"' + $1 + '"' + endColor + redFgEscape + ' [' + $2 + ']: -- missing --' + endColor;
+	    }).replace(replacers.arrayIndex, function ($0, $1, $2) {
+	        return '\n' + $2 + ' ' + redFgEscape + '[' + $1 + ']' + endColor;
+	    }).replace(replacers.specials, function ($0, $1) {
+	        return $1;
+	    });
+
+	    message = message + '\n' + redFgEscape;
+
+	    for (var _i3 = 0; _i3 < this.details.length; ++_i3) {
+	        var _pos = _i3 + 1;
+	        message = message + '\n[' + _pos + '] ' + this.details[_i3].message;
+	    }
+
+	    message = message + endColor;
+
+	    return message;
+	};
+
+/***/ },
+/* 14 */
+/***/ function(module, exports) {
+
+	'use strict';
+
+	// Load modules
+
+
+	// Declare internals
+
+	var internals = {};
+
+	exports.errors = {
+	    root: 'value',
+	    key: '"{{!key}}" ',
+	    messages: {
+	        wrapArrays: true
+	    },
+	    any: {
+	        unknown: 'is not allowed',
+	        invalid: 'contains an invalid value',
+	        empty: 'is not allowed to be empty',
+	        required: 'is required',
+	        allowOnly: 'must be one of {{valids}}',
+	        default: 'threw an error when running default method'
+	    },
+	    alternatives: {
+	        base: 'not matching any of the allowed alternatives',
+	        child: null
+	    },
+	    array: {
+	        base: 'must be an array',
+	        includes: 'at position {{pos}} does not match any of the allowed types',
+	        includesSingle: 'single value of "{{!key}}" does not match any of the allowed types',
+	        includesOne: 'at position {{pos}} fails because {{reason}}',
+	        includesOneSingle: 'single value of "{{!key}}" fails because {{reason}}',
+	        includesRequiredUnknowns: 'does not contain {{unknownMisses}} required value(s)',
+	        includesRequiredKnowns: 'does not contain {{knownMisses}}',
+	        includesRequiredBoth: 'does not contain {{knownMisses}} and {{unknownMisses}} other required value(s)',
+	        excludes: 'at position {{pos}} contains an excluded value',
+	        excludesSingle: 'single value of "{{!key}}" contains an excluded value',
+	        min: 'must contain at least {{limit}} items',
+	        max: 'must contain less than or equal to {{limit}} items',
+	        length: 'must contain {{limit}} items',
+	        ordered: 'at position {{pos}} fails because {{reason}}',
+	        orderedLength: 'at position {{pos}} fails because array must contain at most {{limit}} items',
+	        ref: 'references "{{ref}}" which is not a positive integer',
+	        sparse: 'must not be a sparse array',
+	        unique: 'position {{pos}} contains a duplicate value'
+	    },
+	    boolean: {
+	        base: 'must be a boolean'
+	    },
+	    binary: {
+	        base: 'must be a buffer or a string',
+	        min: 'must be at least {{limit}} bytes',
+	        max: 'must be less than or equal to {{limit}} bytes',
+	        length: 'must be {{limit}} bytes'
+	    },
+	    date: {
+	        base: 'must be a number of milliseconds or valid date string',
+	        format: 'must be a string with one of the following formats {{format}}',
+	        strict: 'must be a valid date',
+	        min: 'must be larger than or equal to "{{limit}}"',
+	        max: 'must be less than or equal to "{{limit}}"',
+	        isoDate: 'must be a valid ISO 8601 date',
+	        timestamp: {
+	            javascript: 'must be a valid timestamp or number of milliseconds',
+	            unix: 'must be a valid timestamp or number of seconds'
+	        },
+	        ref: 'references "{{ref}}" which is not a date'
+	    },
+	    function: {
+	        base: 'must be a Function',
+	        arity: 'must have an arity of {{n}}',
+	        minArity: 'must have an arity greater or equal to {{n}}',
+	        maxArity: 'must have an arity lesser or equal to {{n}}',
+	        ref: 'must be a Joi reference'
+	    },
+	    lazy: {
+	        base: '!!schema error: lazy schema must be set',
+	        schema: '!!schema error: lazy schema function must return a schema'
+	    },
+	    object: {
+	        base: 'must be an object',
+	        child: '!!child "{{!child}}" fails because {{reason}}',
+	        min: 'must have at least {{limit}} children',
+	        max: 'must have less than or equal to {{limit}} children',
+	        length: 'must have {{limit}} children',
+	        allowUnknown: '!!"{{!child}}" is not allowed',
+	        with: '!!"{{mainWithLabel}}" missing required peer "{{peerWithLabel}}"',
+	        without: '!!"{{mainWithLabel}}" conflict with forbidden peer "{{peerWithLabel}}"',
+	        missing: 'must contain at least one of {{peersWithLabels}}',
+	        xor: 'contains a conflict between exclusive peers {{peersWithLabels}}',
+	        or: 'must contain at least one of {{peersWithLabels}}',
+	        and: 'contains {{presentWithLabels}} without its required peers {{missingWithLabels}}',
+	        nand: '!!"{{mainWithLabel}}" must not exist simultaneously with {{peersWithLabels}}',
+	        assert: '!!"{{ref}}" validation failed because "{{ref}}" failed to {{message}}',
+	        rename: {
+	            multiple: 'cannot rename child "{{from}}" because multiple renames are disabled and another key was already renamed to "{{to}}"',
+	            override: 'cannot rename child "{{from}}" because override is disabled and target "{{to}}" exists'
+	        },
+	        type: 'must be an instance of "{{type}}"',
+	        schema: 'must be a Joi instance'
+	    },
+	    number: {
+	        base: 'must be a number',
+	        min: 'must be larger than or equal to {{limit}}',
+	        max: 'must be less than or equal to {{limit}}',
+	        less: 'must be less than {{limit}}',
+	        greater: 'must be greater than {{limit}}',
+	        float: 'must be a float or double',
+	        integer: 'must be an integer',
+	        negative: 'must be a negative number',
+	        positive: 'must be a positive number',
+	        precision: 'must have no more than {{limit}} decimal places',
+	        ref: 'references "{{ref}}" which is not a number',
+	        multiple: 'must be a multiple of {{multiple}}'
+	    },
+	    string: {
+	        base: 'must be a string',
+	        min: 'length must be at least {{limit}} characters long',
+	        max: 'length must be less than or equal to {{limit}} characters long',
+	        length: 'length must be {{limit}} characters long',
+	        alphanum: 'must only contain alpha-numeric characters',
+	        token: 'must only contain alpha-numeric and underscore characters',
+	        regex: {
+	            base: 'with value "{{!value}}" fails to match the required pattern: {{pattern}}',
+	            name: 'with value "{{!value}}" fails to match the {{name}} pattern',
+	            invert: {
+	                base: 'with value "{{!value}}" matches the inverted pattern: {{pattern}}',
+	                name: 'with value "{{!value}}" matches the inverted {{name}} pattern'
+	            }
+	        },
+	        email: 'must be a valid email',
+	        uri: 'must be a valid uri',
+	        uriRelativeOnly: 'must be a valid relative uri',
+	        uriCustomScheme: 'must be a valid uri with a scheme matching the {{scheme}} pattern',
+	        isoDate: 'must be a valid ISO 8601 date',
+	        guid: 'must be a valid GUID',
+	        hex: 'must only contain hexadecimal characters',
+	        base64: 'must be a valid base64 string',
+	        hostname: 'must be a valid hostname',
+	        lowercase: 'must only contain lowercase characters',
+	        uppercase: 'must only contain uppercase characters',
+	        trim: 'must not have leading or trailing whitespace',
+	        creditCard: 'must be a credit card',
+	        ref: 'references "{{ref}}" which is not a number',
+	        ip: 'must be a valid ip address with a {{cidr}} CIDR',
+	        ipVersion: 'must be a valid ip address of one of the following versions {{version}} with a {{cidr}} CIDR'
+	    }
+	};
+
+/***/ },
+/* 15 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/* WEBPACK VAR INJECTION */(function(Buffer) {'use strict';
+
+	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	var Ref = __webpack_require__(12);
+
+	module.exports = function () {
+	    function Set() {
+	        _classCallCheck(this, Set);
+
+	        this._set = [];
+	    }
+
+	    Set.prototype.add = function add(value, refs) {
+
+	        if (!Ref.isRef(value) && this.has(value, null, null, false)) {
+
+	            return;
+	        }
+
+	        if (refs !== undefined) {
+	            // If it's a merge, we don't have any refs
+	            Ref.push(refs, value);
+	        }
+
+	        this._set.push(value);
+	        return this;
+	    };
+
+	    Set.prototype.merge = function merge(add, remove) {
+
+	        for (var i = 0; i < add._set.length; ++i) {
+	            this.add(add._set[i]);
+	        }
+
+	        for (var _i = 0; _i < remove._set.length; ++_i) {
+	            this.remove(remove._set[_i]);
+	        }
+
+	        return this;
+	    };
+
+	    Set.prototype.remove = function remove(value) {
+
+	        this._set = this._set.filter(function (item) {
+	            return value !== item;
+	        });
+	        return this;
+	    };
+
+	    Set.prototype.has = function has(value, state, options, insensitive) {
+
+	        for (var i = 0; i < this._set.length; ++i) {
+	            var items = this._set[i];
+
+	            if (state && Ref.isRef(items)) {
+	                // Only resolve references if there is a state, otherwise it's a merge
+	                items = items(state.reference || state.parent, options);
+	            }
+
+	            if (!Array.isArray(items)) {
+	                items = [items];
+	            }
+
+	            for (var j = 0; j < items.length; ++j) {
+	                var item = items[j];
+	                if ((typeof value === 'undefined' ? 'undefined' : _typeof(value)) !== (typeof item === 'undefined' ? 'undefined' : _typeof(item))) {
+	                    continue;
+	                }
+
+	                if (value === item || value instanceof Date && item instanceof Date && value.getTime() === item.getTime() || insensitive && typeof value === 'string' && value.toLowerCase() === item.toLowerCase() || Buffer.isBuffer(value) && Buffer.isBuffer(item) && value.length === item.length && value.toString('binary') === item.toString('binary')) {
+
+	                    return true;
+	                }
+	            }
+	        }
+
+	        return false;
+	    };
+
+	    Set.prototype.values = function values(options) {
+
+	        if (options && options.stripUndefined) {
+	            var values = [];
+
+	            for (var i = 0; i < this._set.length; ++i) {
+	                var item = this._set[i];
+	                if (item !== undefined) {
+	                    values.push(item);
+	                }
+	            }
+
+	            return values;
+	        }
+
+	        return this._set.slice();
+	    };
+
+	    Set.prototype.slice = function slice() {
+
+	        var newSet = new Set();
+	        newSet._set = this._set.slice();
+
+	        return newSet;
+	    };
+
+	    Set.prototype.concat = function concat(source) {
+
+	        var newSet = new Set();
+	        newSet._set = this._set.concat(source._set);
+
+	        return newSet;
+	    };
+
+	    return Set;
+	}();
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(3).Buffer));
+
+/***/ },
+/* 16 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	// Load modules
+
+	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+
+	var Hoek = __webpack_require__(2);
+	var Ref = __webpack_require__(12);
+
+	// Type modules are delay-loaded to prevent circular dependencies
+
+
+	// Declare internals
+
+	var internals = {
+	    any: null,
+	    date: __webpack_require__(17),
+	    string: __webpack_require__(18),
+	    number: __webpack_require__(23),
+	    boolean: __webpack_require__(24),
+	    alt: null,
+	    object: null
+	};
+
+	exports.schema = function (config) {
+
+	    internals.any = internals.any || new (__webpack_require__(11))();
+	    internals.alt = internals.alt || __webpack_require__(25);
+	    internals.object = internals.object || __webpack_require__(26);
+
+	    if (config !== undefined && config !== null && (typeof config === 'undefined' ? 'undefined' : _typeof(config)) === 'object') {
+
+	        if (config.isJoi) {
+	            return config;
+	        }
+
+	        if (Array.isArray(config)) {
+	            return internals.alt.try(config);
+	        }
+
+	        if (config instanceof RegExp) {
+	            return internals.string.regex(config);
+	        }
+
+	        if (config instanceof Date) {
+	            return internals.date.valid(config);
+	        }
+
+	        return internals.object.keys(config);
+	    }
+
+	    if (typeof config === 'string') {
+	        return internals.string.valid(config);
+	    }
+
+	    if (typeof config === 'number') {
+	        return internals.number.valid(config);
+	    }
+
+	    if (typeof config === 'boolean') {
+	        return internals.boolean.valid(config);
+	    }
+
+	    if (Ref.isRef(config)) {
+	        return internals.any.valid(config);
+	    }
+
+	    Hoek.assert(config === null, 'Invalid schema content:', config);
+
+	    return internals.any.valid(null);
+	};
+
+	exports.ref = function (id) {
+
+	    return Ref.isRef(id) ? id : Ref.create(id);
+	};
+
+/***/ },
+/* 17 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	// Load modules
+
+	function _defaults(obj, defaults) { var keys = Object.getOwnPropertyNames(defaults); for (var i = 0; i < keys.length; i++) { var key = keys[i]; var value = Object.getOwnPropertyDescriptor(defaults, key); if (value && value.configurable && obj[key] === undefined) { Object.defineProperty(obj, key, value); } } return obj; }
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : _defaults(subClass, superClass); }
+
+	var Any = __webpack_require__(11);
+	var Ref = __webpack_require__(12);
+	var Hoek = __webpack_require__(2);
+
+	// Declare internals
+
+	var internals = {};
+
+	internals.isoDate = /^(?:[-+]\d{2})?(?:\d{4}(?!\d{2}\b))(?:(-?)(?:(?:0[1-9]|1[0-2])(?:\1(?:[12]\d|0[1-9]|3[01]))?|W(?:[0-4]\d|5[0-2])(?:-?[1-7])?|(?:00[1-9]|0[1-9]\d|[12]\d{2}|3(?:[0-5]\d|6[1-6])))(?![T]$|[T][\d]+Z$)(?:[T\s](?:(?:(?:[01]\d|2[0-3])(?:(:?)[0-5]\d)?|24\:?00)(?:[.,]\d+(?!:))?)(?:\2[0-5]\d(?:[.,]\d+)?)?(?:[Z]|(?:[+-])(?:[01]\d|2[0-3])(?::?[0-5]\d)?)?)?)?$/;
+	internals.invalidDate = new Date('');
+	internals.isIsoDate = function () {
+
+	    var isoString = internals.isoDate.toString();
+
+	    return function (date) {
+
+	        return date && date.toString() === isoString;
+	    };
+	}();
+
+	internals.Date = function (_Any) {
+	    _inherits(_class, _Any);
+
+	    function _class() {
+	        _classCallCheck(this, _class);
+
+	        var _this = _possibleConstructorReturn(this, _Any.call(this));
+
+	        _this._type = 'date';
+	        return _this;
+	    }
+
+	    _class.prototype._base = function _base(value, state, options) {
+
+	        var result = {
+	            value: options.convert && internals.Date.toDate(value, this._flags.format, this._flags.timestamp, this._flags.multiplier) || value
+	        };
+
+	        if (result.value instanceof Date && !isNaN(result.value.getTime())) {
+	            result.errors = null;
+	        } else if (!options.convert) {
+	            result.errors = this.createError('date.strict', null, state, options);
+	        } else {
+	            var type = void 0;
+	            if (internals.isIsoDate(this._flags.format)) {
+	                type = 'isoDate';
+	            } else if (this._flags.timestamp) {
+	                type = 'timestamp.' + this._flags.timestamp;
+	            } else {
+	                type = 'base';
+	            }
+
+	            result.errors = this.createError('date.' + type, null, state, options);
+	        }
+
+	        return result;
+	    };
+
+	    _class.toDate = function toDate(value, format, timestamp, multiplier) {
+
+	        if (value instanceof Date) {
+	            return value;
+	        }
+
+	        if (typeof value === 'string' || typeof value === 'number' && !isNaN(value) && isFinite(value)) {
+
+	            if (typeof value === 'string' && /^[+-]?\d+(\.\d+)?$/.test(value)) {
+
+	                value = parseFloat(value);
+	            }
+
+	            var date = void 0;
+	            if (format && internals.isIsoDate(format)) {
+	                date = format.test(value) ? new Date(value) : internals.invalidDate;
+	            } else if (timestamp && multiplier) {
+	                date = new Date(value * multiplier);
+	            } else {
+	                date = new Date(value);
+	            }
+
+	            if (!isNaN(date.getTime())) {
+	                return date;
+	            }
+	        }
+
+	        return null;
+	    };
+
+	    _class.prototype.iso = function iso() {
+
+	        if (this._flags.format === internals.isoDate) {
+	            return this;
+	        }
+
+	        var obj = this.clone();
+	        obj._flags.format = internals.isoDate;
+	        return obj;
+	    };
+
+	    _class.prototype.timestamp = function timestamp(type) {
+
+	        type = type || 'javascript';
+
+	        var allowed = ['javascript', 'unix'];
+	        Hoek.assert(allowed.indexOf(type) !== -1, '"type" must be one of "' + allowed.join('", "') + '"');
+
+	        if (this._flags.timestamp === type) {
+	            return this;
+	        }
+
+	        var obj = this.clone();
+	        obj._flags.timestamp = type;
+	        obj._flags.multiplier = type === 'unix' ? 1000 : 1;
+	        return obj;
+	    };
+
+	    _class.prototype._isIsoDate = function _isIsoDate(value) {
+
+	        return internals.isoDate.test(value);
+	    };
+
+	    return _class;
+	}(Any);
+
+	internals.compare = function (type, compare) {
+
+	    return function (date) {
+
+	        var isNow = date === 'now';
+	        var isRef = Ref.isRef(date);
+
+	        if (!isNow && !isRef) {
+	            date = internals.Date.toDate(date);
+	        }
+
+	        Hoek.assert(date, 'Invalid date format');
+
+	        return this._test(type, date, function (value, state, options) {
+
+	            var compareTo = void 0;
+	            if (isNow) {
+	                compareTo = Date.now();
+	            } else if (isRef) {
+	                compareTo = internals.Date.toDate(date(state.reference || state.parent, options));
+
+	                if (!compareTo) {
+	                    return this.createError('date.ref', { ref: date.key }, state, options);
+	                }
+
+	                compareTo = compareTo.getTime();
+	            } else {
+	                compareTo = date.getTime();
+	            }
+
+	            if (compare(value.getTime(), compareTo)) {
+	                return value;
+	            }
+
+	            return this.createError('date.' + type, { limit: new Date(compareTo) }, state, options);
+	        });
+	    };
+	};
+	internals.Date.prototype.min = internals.compare('min', function (value, date) {
+	    return value >= date;
+	});
+	internals.Date.prototype.max = internals.compare('max', function (value, date) {
+	    return value <= date;
+	});
+
+	module.exports = new internals.Date();
+
+/***/ },
+/* 18 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/* WEBPACK VAR INJECTION */(function(Buffer) {'use strict';
+
+	// Load modules
+
+	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+
+	function _defaults(obj, defaults) { var keys = Object.getOwnPropertyNames(defaults); for (var i = 0; i < keys.length; i++) { var key = keys[i]; var value = Object.getOwnPropertyDescriptor(defaults, key); if (value && value.configurable && obj[key] === undefined) { Object.defineProperty(obj, key, value); } } return obj; }
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : _defaults(subClass, superClass); }
+
+	var Net = __webpack_require__(5);
+	var Hoek = __webpack_require__(2);
+	var Isemail = void 0; // Loaded on demand
+	var Any = __webpack_require__(11);
+	var Ref = __webpack_require__(12);
+	var JoiDate = __webpack_require__(17);
+	var Uri = __webpack_require__(19);
+	var Ip = __webpack_require__(21);
+
+	// Declare internals
+
+	var internals = {
+	    uriRegex: Uri.createUriRegex(),
+	    ipRegex: Ip.createIpRegex(['ipv4', 'ipv6', 'ipvfuture'], 'optional'),
+	    guidBrackets: {
+	        '{': '}', '[': ']', '(': ')', '': ''
+	    },
+	    guidVersions: {
+	        uuidv1: '1',
+	        uuidv2: '2',
+	        uuidv3: '3',
+	        uuidv4: '4',
+	        uuidv5: '5'
+	    }
+	};
+
+	internals.String = function (_Any) {
+	    _inherits(_class, _Any);
+
+	    function _class() {
+	        _classCallCheck(this, _class);
+
+	        var _this = _possibleConstructorReturn(this, _Any.call(this));
+
+	        _this._type = 'string';
+	        _this._invalids.add('');
+	        return _this;
+	    }
+
+	    _class.prototype._base = function _base(value, state, options) {
+
+	        if (typeof value === 'string' && options.convert) {
+
+	            if (this._flags.case) {
+	                value = this._flags.case === 'upper' ? value.toLocaleUpperCase() : value.toLocaleLowerCase();
+	            }
+
+	            if (this._flags.trim) {
+	                value = value.trim();
+	            }
+
+	            if (this._inner.replacements) {
+
+	                for (var i = 0; i < this._inner.replacements.length; ++i) {
+	                    var replacement = this._inner.replacements[i];
+	                    value = value.replace(replacement.pattern, replacement.replacement);
+	                }
+	            }
+
+	            if (this._flags.truncate) {
+	                for (var _i = 0; _i < this._tests.length; ++_i) {
+	                    var test = this._tests[_i];
+	                    if (test.name === 'max') {
+	                        value = value.slice(0, test.arg);
+	                        break;
+	                    }
+	                }
+	            }
+	        }
+
+	        return {
+	            value: value,
+	            errors: typeof value === 'string' ? null : this.createError('string.base', { value: value }, state, options)
+	        };
+	    };
+
+	    _class.prototype.insensitive = function insensitive() {
+
+	        if (this._flags.insensitive) {
+	            return this;
+	        }
+
+	        var obj = this.clone();
+	        obj._flags.insensitive = true;
+	        return obj;
+	    };
+
+	    _class.prototype.creditCard = function creditCard() {
+
+	        return this._test('creditCard', undefined, function (value, state, options) {
+
+	            var i = value.length;
+	            var sum = 0;
+	            var mul = 1;
+
+	            while (i--) {
+	                var char = value.charAt(i) * mul;
+	                sum = sum + (char - (char > 9) * 9);
+	                mul = mul ^ 3;
+	            }
+
+	            var check = sum % 10 === 0 && sum > 0;
+	            return check ? value : this.createError('string.creditCard', { value: value }, state, options);
+	        });
+	    };
+
+	    _class.prototype.regex = function regex(pattern, patternOptions) {
+
+	        Hoek.assert(pattern instanceof RegExp, 'pattern must be a RegExp');
+
+	        var patternObject = {
+	            pattern: new RegExp(pattern.source, pattern.ignoreCase ? 'i' : undefined) // Future version should break this and forbid unsupported regex flags
+	        };
+
+	        if (typeof patternOptions === 'string') {
+	            patternObject.name = patternOptions;
+	        } else if ((typeof patternOptions === 'undefined' ? 'undefined' : _typeof(patternOptions)) === 'object') {
+	            patternObject.invert = !!patternOptions.invert;
+
+	            if (patternOptions.name) {
+	                patternObject.name = patternOptions.name;
+	            }
+	        }
+
+	        var errorCode = ['string.regex', patternObject.invert ? '.invert' : '', patternObject.name ? '.name' : '.base'].join('');
+
+	        return this._test('regex', patternObject, function (value, state, options) {
+
+	            var patternMatch = patternObject.pattern.test(value);
+
+	            if (patternMatch ^ patternObject.invert) {
+	                return value;
+	            }
+
+	            return this.createError(errorCode, { name: patternObject.name, pattern: patternObject.pattern, value: value }, state, options);
+	        });
+	    };
+
+	    _class.prototype.alphanum = function alphanum() {
+
+	        return this._test('alphanum', undefined, function (value, state, options) {
+
+	            if (/^[a-zA-Z0-9]+$/.test(value)) {
+	                return value;
+	            }
+
+	            return this.createError('string.alphanum', { value: value }, state, options);
+	        });
+	    };
+
+	    _class.prototype.token = function token() {
+
+	        return this._test('token', undefined, function (value, state, options) {
+
+	            if (/^\w+$/.test(value)) {
+	                return value;
+	            }
+
+	            return this.createError('string.token', { value: value }, state, options);
+	        });
+	    };
+
+	    _class.prototype.email = function email(isEmailOptions) {
+
+	        if (isEmailOptions) {
+	            Hoek.assert((typeof isEmailOptions === 'undefined' ? 'undefined' : _typeof(isEmailOptions)) === 'object', 'email options must be an object');
+	            Hoek.assert(typeof isEmailOptions.checkDNS === 'undefined', 'checkDNS option is not supported');
+	            Hoek.assert(typeof isEmailOptions.tldWhitelist === 'undefined' || _typeof(isEmailOptions.tldWhitelist) === 'object', 'tldWhitelist must be an array or object');
+	            Hoek.assert(typeof isEmailOptions.minDomainAtoms === 'undefined' || Number.isSafeInteger(isEmailOptions.minDomainAtoms) && isEmailOptions.minDomainAtoms > 0, 'minDomainAtoms must be a positive integer');
+	            Hoek.assert(typeof isEmailOptions.errorLevel === 'undefined' || typeof isEmailOptions.errorLevel === 'boolean' || Number.isSafeInteger(isEmailOptions.errorLevel) && isEmailOptions.errorLevel >= 0, 'errorLevel must be a non-negative integer or boolean');
+	        }
+
+	        return this._test('email', isEmailOptions, function (value, state, options) {
+
+	            Isemail = Isemail || __webpack_require__(22);
+
+	            try {
+	                var result = Isemail.validate(value, isEmailOptions);
+	                if (result === true || result === 0) {
+	                    return value;
+	                }
+	            } catch (e) {}
+
+	            return this.createError('string.email', { value: value }, state, options);
+	        });
+	    };
+
+	    _class.prototype.ip = function ip(ipOptions) {
+
+	        var regex = internals.ipRegex;
+	        ipOptions = ipOptions || {};
+	        Hoek.assert((typeof ipOptions === 'undefined' ? 'undefined' : _typeof(ipOptions)) === 'object', 'options must be an object');
+
+	        if (ipOptions.cidr) {
+	            Hoek.assert(typeof ipOptions.cidr === 'string', 'cidr must be a string');
+	            ipOptions.cidr = ipOptions.cidr.toLowerCase();
+
+	            Hoek.assert(ipOptions.cidr in Ip.cidrs, 'cidr must be one of ' + Object.keys(Ip.cidrs).join(', '));
+
+	            // If we only received a `cidr` setting, create a regex for it. But we don't need to create one if `cidr` is "optional" since that is the default
+	            if (!ipOptions.version && ipOptions.cidr !== 'optional') {
+	                regex = Ip.createIpRegex(['ipv4', 'ipv6', 'ipvfuture'], ipOptions.cidr);
+	            }
+	        } else {
+
+	            // Set our default cidr strategy
+	            ipOptions.cidr = 'optional';
+	        }
+
+	        var versions = void 0;
+	        if (ipOptions.version) {
+	            if (!Array.isArray(ipOptions.version)) {
+	                ipOptions.version = [ipOptions.version];
+	            }
+
+	            Hoek.assert(ipOptions.version.length >= 1, 'version must have at least 1 version specified');
+
+	            versions = [];
+	            for (var i = 0; i < ipOptions.version.length; ++i) {
+	                var version = ipOptions.version[i];
+	                Hoek.assert(typeof version === 'string', 'version at position ' + i + ' must be a string');
+	                version = version.toLowerCase();
+	                Hoek.assert(Ip.versions[version], 'version at position ' + i + ' must be one of ' + Object.keys(Ip.versions).join(', '));
+	                versions.push(version);
+	            }
+
+	            // Make sure we have a set of versions
+	            versions = Hoek.unique(versions);
+
+	            regex = Ip.createIpRegex(versions, ipOptions.cidr);
+	        }
+
+	        return this._test('ip', ipOptions, function (value, state, options) {
+
+	            if (regex.test(value)) {
+	                return value;
+	            }
+
+	            if (versions) {
+	                return this.createError('string.ipVersion', { value: value, cidr: ipOptions.cidr, version: versions }, state, options);
+	            }
+
+	            return this.createError('string.ip', { value: value, cidr: ipOptions.cidr }, state, options);
+	        });
+	    };
+
+	    _class.prototype.uri = function uri(uriOptions) {
+
+	        var customScheme = '';
+	        var allowRelative = false;
+	        var relativeOnly = false;
+	        var regex = internals.uriRegex;
+
+	        if (uriOptions) {
+	            Hoek.assert((typeof uriOptions === 'undefined' ? 'undefined' : _typeof(uriOptions)) === 'object', 'options must be an object');
+
+	            if (uriOptions.scheme) {
+	                Hoek.assert(uriOptions.scheme instanceof RegExp || typeof uriOptions.scheme === 'string' || Array.isArray(uriOptions.scheme), 'scheme must be a RegExp, String, or Array');
+
+	                if (!Array.isArray(uriOptions.scheme)) {
+	                    uriOptions.scheme = [uriOptions.scheme];
+	                }
+
+	                Hoek.assert(uriOptions.scheme.length >= 1, 'scheme must have at least 1 scheme specified');
+
+	                // Flatten the array into a string to be used to match the schemes.
+	                for (var i = 0; i < uriOptions.scheme.length; ++i) {
+	                    var scheme = uriOptions.scheme[i];
+	                    Hoek.assert(scheme instanceof RegExp || typeof scheme === 'string', 'scheme at position ' + i + ' must be a RegExp or String');
+
+	                    // Add OR separators if a value already exists
+	                    customScheme = customScheme + (customScheme ? '|' : '');
+
+	                    // If someone wants to match HTTP or HTTPS for example then we need to support both RegExp and String so we don't escape their pattern unknowingly.
+	                    if (scheme instanceof RegExp) {
+	                        customScheme = customScheme + scheme.source;
+	                    } else {
+	                        Hoek.assert(/[a-zA-Z][a-zA-Z0-9+-\.]*/.test(scheme), 'scheme at position ' + i + ' must be a valid scheme');
+	                        customScheme = customScheme + Hoek.escapeRegex(scheme);
+	                    }
+	                }
+	            }
+
+	            if (uriOptions.allowRelative) {
+	                allowRelative = true;
+	            }
+
+	            if (uriOptions.relativeOnly) {
+	                relativeOnly = true;
+	            }
+	        }
+
+	        if (customScheme || allowRelative || relativeOnly) {
+	            regex = Uri.createUriRegex(customScheme, allowRelative, relativeOnly);
+	        }
+
+	        return this._test('uri', uriOptions, function (value, state, options) {
+
+	            if (regex.test(value)) {
+	                return value;
+	            }
+
+	            if (relativeOnly) {
+	                return this.createError('string.uriRelativeOnly', { value: value }, state, options);
+	            }
+
+	            if (customScheme) {
+	                return this.createError('string.uriCustomScheme', { scheme: customScheme, value: value }, state, options);
+	            }
+
+	            return this.createError('string.uri', { value: value }, state, options);
+	        });
+	    };
+
+	    _class.prototype.isoDate = function isoDate() {
+
+	        return this._test('isoDate', undefined, function (value, state, options) {
+
+	            if (JoiDate._isIsoDate(value)) {
+	                return value;
+	            }
+
+	            return this.createError('string.isoDate', { value: value }, state, options);
+	        });
+	    };
+
+	    _class.prototype.guid = function guid(guidOptions) {
+
+	        var versionNumbers = '';
+
+	        if (guidOptions && guidOptions.version) {
+	            if (!Array.isArray(guidOptions.version)) {
+	                guidOptions.version = [guidOptions.version];
+	            }
+
+	            Hoek.assert(guidOptions.version.length >= 1, 'version must have at least 1 valid version specified');
+	            var versions = new Set();
+
+	            for (var i = 0; i < guidOptions.version.length; ++i) {
+	                var version = guidOptions.version[i];
+	                Hoek.assert(typeof version === 'string', 'version at position ' + i + ' must be a string');
+	                version = version.toLowerCase();
+	                var versionNumber = internals.guidVersions[version];
+	                Hoek.assert(versionNumber, 'version at position ' + i + ' must be one of ' + Object.keys(internals.guidVersions).join(', '));
+	                Hoek.assert(!versions.has(versionNumber), 'version at position ' + i + ' must not be a duplicate.');
+
+	                versionNumbers += versionNumber;
+	                versions.add(versionNumber);
+	            }
+	        }
+
+	        var guidRegex = new RegExp('^([\\[{\\(]?)[0-9A-F]{8}([:-]?)[0-9A-F]{4}\\2?[' + (versionNumbers || '0-9A-F') + '][0-9A-F]{3}\\2?[' + (versionNumbers ? '89AB' : '0-9A-F') + '][0-9A-F]{3}\\2?[0-9A-F]{12}([\\]}\\)]?)$', 'i');
+
+	        return this._test('guid', guidOptions, function (value, state, options) {
+
+	            var results = guidRegex.exec(value);
+
+	            if (!results) {
+	                return this.createError('string.guid', { value: value }, state, options);
+	            }
+
+	            // Matching braces
+	            if (internals.guidBrackets[results[1]] !== results[results.length - 1]) {
+	                return this.createError('string.guid', { value: value }, state, options);
+	            }
+
+	            return value;
+	        });
+	    };
+
+	    _class.prototype.hex = function hex() {
+
+	        var regex = /^[a-f0-9]+$/i;
+
+	        return this._test('hex', regex, function (value, state, options) {
+
+	            if (regex.test(value)) {
+	                return value;
+	            }
+
+	            return this.createError('string.hex', { value: value }, state, options);
+	        });
+	    };
+
+	    _class.prototype.base64 = function base64(base64Options) {
+
+	        base64Options = base64Options || {};
+
+	        // Validation.
+	        Hoek.assert((typeof base64Options === 'undefined' ? 'undefined' : _typeof(base64Options)) === 'object', 'base64 options must be an object');
+	        Hoek.assert(typeof base64Options.paddingRequired === 'undefined' || typeof base64Options.paddingRequired === 'boolean', 'paddingRequired must be boolean');
+
+	        // Determine if padding is required.
+	        var paddingRequired = base64Options.paddingRequired === false ? base64Options.paddingRequired : base64Options.paddingRequired || true;
+
+	        // Set validation based on preference.
+	        var regex = paddingRequired ?
+	        // Padding is required.
+	        /^(?:[A-Za-z0-9+\/]{4})*(?:[A-Za-z0-9+\/]{2}==|[A-Za-z0-9+\/]{3}=)?$/
+	        // Padding is optional.
+	        : /^(?:[A-Za-z0-9+\/]{4})*(?:[A-Za-z0-9+\/]{2}(==)?|[A-Za-z0-9+\/]{3}=?)?$/;
+
+	        return this._test('base64', regex, function (value, state, options) {
+
+	            if (regex.test(value)) {
+	                return value;
+	            }
+
+	            return this.createError('string.base64', { value: value }, state, options);
+	        });
+	    };
+
+	    _class.prototype.hostname = function hostname() {
+
+	        var regex = /^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])$/;
+
+	        return this._test('hostname', undefined, function (value, state, options) {
+
+	            if (value.length <= 255 && regex.test(value) || Net.isIPv6(value)) {
+
+	                return value;
+	            }
+
+	            return this.createError('string.hostname', { value: value }, state, options);
+	        });
+	    };
+
+	    _class.prototype.lowercase = function lowercase() {
+
+	        var obj = this._test('lowercase', undefined, function (value, state, options) {
+
+	            if (options.convert || value === value.toLocaleLowerCase()) {
+
+	                return value;
+	            }
+
+	            return this.createError('string.lowercase', { value: value }, state, options);
+	        });
+
+	        obj._flags.case = 'lower';
+	        return obj;
+	    };
+
+	    _class.prototype.uppercase = function uppercase() {
+
+	        var obj = this._test('uppercase', undefined, function (value, state, options) {
+
+	            if (options.convert || value === value.toLocaleUpperCase()) {
+
+	                return value;
+	            }
+
+	            return this.createError('string.uppercase', { value: value }, state, options);
+	        });
+
+	        obj._flags.case = 'upper';
+	        return obj;
+	    };
+
+	    _class.prototype.trim = function trim() {
+
+	        var obj = this._test('trim', undefined, function (value, state, options) {
+
+	            if (options.convert || value === value.trim()) {
+
+	                return value;
+	            }
+
+	            return this.createError('string.trim', { value: value }, state, options);
+	        });
+
+	        obj._flags.trim = true;
+	        return obj;
+	    };
+
+	    _class.prototype.replace = function replace(pattern, replacement) {
+
+	        if (typeof pattern === 'string') {
+	            pattern = new RegExp(Hoek.escapeRegex(pattern), 'g');
+	        }
+
+	        Hoek.assert(pattern instanceof RegExp, 'pattern must be a RegExp');
+	        Hoek.assert(typeof replacement === 'string', 'replacement must be a String');
+
+	        // This can not be considere a test like trim, we can't "reject"
+	        // anything from this rule, so just clone the current object
+	        var obj = this.clone();
+
+	        if (!obj._inner.replacements) {
+	            obj._inner.replacements = [];
+	        }
+
+	        obj._inner.replacements.push({
+	            pattern: pattern,
+	            replacement: replacement
+	        });
+
+	        return obj;
+	    };
+
+	    _class.prototype.truncate = function truncate(enabled) {
+
+	        var value = enabled === undefined ? true : !!enabled;
+
+	        if (this._flags.truncate === value) {
+	            return this;
+	        }
+
+	        var obj = this.clone();
+	        obj._flags.truncate = value;
+	        return obj;
+	    };
+
+	    return _class;
+	}(Any);
+
+	internals.compare = function (type, compare) {
+
+	    return function (limit, encoding) {
+
+	        var isRef = Ref.isRef(limit);
+
+	        Hoek.assert(Number.isSafeInteger(limit) && limit >= 0 || isRef, 'limit must be a positive integer or reference');
+	        Hoek.assert(!encoding || Buffer.isEncoding(encoding), 'Invalid encoding:', encoding);
+
+	        return this._test(type, limit, function (value, state, options) {
+
+	            var compareTo = void 0;
+	            if (isRef) {
+	                compareTo = limit(state.reference || state.parent, options);
+
+	                if (!Number.isSafeInteger(compareTo)) {
+	                    return this.createError('string.ref', { ref: limit.key }, state, options);
+	                }
+	            } else {
+	                compareTo = limit;
+	            }
+
+	            if (compare(value, compareTo, encoding)) {
+	                return value;
+	            }
+
+	            return this.createError('string.' + type, { limit: compareTo, value: value, encoding: encoding }, state, options);
+	        });
+	    };
+	};
+
+	internals.String.prototype.min = internals.compare('min', function (value, limit, encoding) {
+
+	    var length = encoding ? Buffer.byteLength(value, encoding) : value.length;
+	    return length >= limit;
+	});
+
+	internals.String.prototype.max = internals.compare('max', function (value, limit, encoding) {
+
+	    var length = encoding ? Buffer.byteLength(value, encoding) : value.length;
+	    return length <= limit;
+	});
+
+	internals.String.prototype.length = internals.compare('length', function (value, limit, encoding) {
+
+	    var length = encoding ? Buffer.byteLength(value, encoding) : value.length;
+	    return length === limit;
+	});
+
+	// Aliases
+
+	internals.String.prototype.uuid = internals.String.prototype.guid;
+
+	module.exports = new internals.String();
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(3).Buffer));
+
+/***/ },
+/* 19 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	// Load Modules
+
+	var RFC3986 = __webpack_require__(20);
+
+	// Declare internals
+
+	var internals = {
+	    Uri: {
+	        createUriRegex: function createUriRegex(optionalScheme, allowRelative, relativeOnly) {
+
+	            var scheme = RFC3986.scheme;
+	            var prefix = void 0;
+
+	            if (relativeOnly) {
+	                prefix = '(?:' + RFC3986.relativeRef + ')';
+	            } else {
+	                // If we were passed a scheme, use it instead of the generic one
+	                if (optionalScheme) {
+
+	                    // Have to put this in a non-capturing group to handle the OR statements
+	                    scheme = '(?:' + optionalScheme + ')';
+	                }
+
+	                var withScheme = '(?:' + scheme + ':' + RFC3986.hierPart + ')';
+
+	                prefix = allowRelative ? '(?:' + withScheme + '|' + RFC3986.relativeRef + ')' : withScheme;
+	            }
+
+	            /**
+	             * URI = scheme ":" hier-part [ "?" query ] [ "#" fragment ]
+	             *
+	             * OR
+	             *
+	             * relative-ref = relative-part [ "?" query ] [ "#" fragment ]
+	             */
+	            return new RegExp('^' + prefix + '(?:\\?' + RFC3986.query + ')?' + '(?:#' + RFC3986.fragment + ')?$');
+	        }
+	    }
+	};
+
+	module.exports = internals.Uri;
+
+/***/ },
+/* 20 */
+/***/ function(module, exports) {
+
+	'use strict';
+
+	// Load modules
+
+
+	// Delcare internals
+
+	var internals = {
+	  rfc3986: {}
+	};
+
+	internals.generate = function () {
+
+	  /**
+	   * elements separated by forward slash ("/") are alternatives.
+	   */
+	  var or = '|';
+
+	  /**
+	   * DIGIT = %x30-39 ; 0-9
+	   */
+	  var digit = '0-9';
+	  var digitOnly = '[' + digit + ']';
+
+	  /**
+	   * ALPHA = %x41-5A / %x61-7A   ; A-Z / a-z
+	   */
+	  var alpha = 'a-zA-Z';
+	  var alphaOnly = '[' + alpha + ']';
+
+	  /**
+	   * cidr       = DIGIT                ; 0-9
+	   *            / %x31-32 DIGIT         ; 10-29
+	   *            / "3" %x30-32           ; 30-32
+	   */
+	  internals.rfc3986.cidr = digitOnly + or + '[1-2]' + digitOnly + or + '3' + '[0-2]';
+
+	  /**
+	   * HEXDIG = DIGIT / "A" / "B" / "C" / "D" / "E" / "F"
+	   */
+	  var hexDigit = digit + 'A-Fa-f';
+	  var hexDigitOnly = '[' + hexDigit + ']';
+
+	  /**
+	   * unreserved = ALPHA / DIGIT / "-" / "." / "_" / "~"
+	   */
+	  var unreserved = alpha + digit + '-\\._~';
+
+	  /**
+	   * sub-delims = "!" / "$" / "&" / "'" / "(" / ")" / "*" / "+" / "," / ";" / "="
+	   */
+	  var subDelims = '!\\$&\'\\(\\)\\*\\+,;=';
+
+	  /**
+	   * pct-encoded = "%" HEXDIG HEXDIG
+	   */
+	  var pctEncoded = '%' + hexDigit;
+
+	  /**
+	   * pchar = unreserved / pct-encoded / sub-delims / ":" / "@"
+	   */
+	  var pchar = unreserved + pctEncoded + subDelims + ':@';
+	  var pcharOnly = '[' + pchar + ']';
+
+	  /**
+	   * Rule to support zero-padded addresses.
+	   */
+	  var zeroPad = '0?';
+
+	  /**
+	   * dec-octet   = DIGIT                 ; 0-9
+	   *            / %x31-39 DIGIT         ; 10-99
+	   *            / "1" 2DIGIT            ; 100-199
+	   *            / "2" %x30-34 DIGIT     ; 200-249
+	   *            / "25" %x30-35          ; 250-255
+	   */
+	  var decOctect = '(?:' + zeroPad + zeroPad + digitOnly + or + zeroPad + '[1-9]' + digitOnly + or + '1' + digitOnly + digitOnly + or + '2' + '[0-4]' + digitOnly + or + '25' + '[0-5])';
+
+	  /**
+	   * IPv4address = dec-octet "." dec-octet "." dec-octet "." dec-octet
+	   */
+	  internals.rfc3986.IPv4address = '(?:' + decOctect + '\\.){3}' + decOctect;
+
+	  /**
+	   * h16 = 1*4HEXDIG ; 16 bits of address represented in hexadecimal
+	   * ls32 = ( h16 ":" h16 ) / IPv4address ; least-significant 32 bits of address
+	   * IPv6address =                            6( h16 ":" ) ls32
+	   *             /                       "::" 5( h16 ":" ) ls32
+	   *             / [               h16 ] "::" 4( h16 ":" ) ls32
+	   *             / [ *1( h16 ":" ) h16 ] "::" 3( h16 ":" ) ls32
+	   *             / [ *2( h16 ":" ) h16 ] "::" 2( h16 ":" ) ls32
+	   *             / [ *3( h16 ":" ) h16 ] "::"    h16 ":"   ls32
+	   *             / [ *4( h16 ":" ) h16 ] "::"              ls32
+	   *             / [ *5( h16 ":" ) h16 ] "::"              h16
+	   *             / [ *6( h16 ":" ) h16 ] "::"
+	   */
+	  var h16 = hexDigitOnly + '{1,4}';
+	  var ls32 = '(?:' + h16 + ':' + h16 + '|' + internals.rfc3986.IPv4address + ')';
+	  var IPv6SixHex = '(?:' + h16 + ':){6}' + ls32;
+	  var IPv6FiveHex = '::(?:' + h16 + ':){5}' + ls32;
+	  var IPv6FourHex = '(?:' + h16 + ')?::(?:' + h16 + ':){4}' + ls32;
+	  var IPv6ThreeHex = '(?:(?:' + h16 + ':){0,1}' + h16 + ')?::(?:' + h16 + ':){3}' + ls32;
+	  var IPv6TwoHex = '(?:(?:' + h16 + ':){0,2}' + h16 + ')?::(?:' + h16 + ':){2}' + ls32;
+	  var IPv6OneHex = '(?:(?:' + h16 + ':){0,3}' + h16 + ')?::' + h16 + ':' + ls32;
+	  var IPv6NoneHex = '(?:(?:' + h16 + ':){0,4}' + h16 + ')?::' + ls32;
+	  var IPv6NoneHex2 = '(?:(?:' + h16 + ':){0,5}' + h16 + ')?::' + h16;
+	  var IPv6NoneHex3 = '(?:(?:' + h16 + ':){0,6}' + h16 + ')?::';
+	  internals.rfc3986.IPv6address = '(?:' + IPv6SixHex + or + IPv6FiveHex + or + IPv6FourHex + or + IPv6ThreeHex + or + IPv6TwoHex + or + IPv6OneHex + or + IPv6NoneHex + or + IPv6NoneHex2 + or + IPv6NoneHex3 + ')';
+
+	  /**
+	   * IPvFuture = "v" 1*HEXDIG "." 1*( unreserved / sub-delims / ":" )
+	   */
+	  internals.rfc3986.IPvFuture = 'v' + hexDigitOnly + '+\\.[' + unreserved + subDelims + ':]+';
+
+	  /**
+	   * scheme = ALPHA *( ALPHA / DIGIT / "+" / "-" / "." )
+	   */
+	  internals.rfc3986.scheme = alphaOnly + '[' + alpha + digit + '+-\\.]*';
+
+	  /**
+	   * userinfo = *( unreserved / pct-encoded / sub-delims / ":" )
+	   */
+	  var userinfo = '[' + unreserved + pctEncoded + subDelims + ':]*';
+
+	  /**
+	   * IP-literal = "[" ( IPv6address / IPvFuture  ) "]"
+	   */
+	  var IPLiteral = '\\[(?:' + internals.rfc3986.IPv6address + or + internals.rfc3986.IPvFuture + ')\\]';
+
+	  /**
+	   * reg-name = *( unreserved / pct-encoded / sub-delims )
+	   */
+	  var regName = '[' + unreserved + pctEncoded + subDelims + ']{0,255}';
+
+	  /**
+	   * host = IP-literal / IPv4address / reg-name
+	   */
+	  var host = '(?:' + IPLiteral + or + internals.rfc3986.IPv4address + or + regName + ')';
+
+	  /**
+	   * port = *DIGIT
+	   */
+	  var port = digitOnly + '*';
+
+	  /**
+	   * authority   = [ userinfo "@" ] host [ ":" port ]
+	   */
+	  var authority = '(?:' + userinfo + '@)?' + host + '(?::' + port + ')?';
+
+	  /**
+	   * segment       = *pchar
+	   * segment-nz    = 1*pchar
+	   * path          = path-abempty    ; begins with "/" or is empty
+	   *               / path-absolute   ; begins with "/" but not "//"
+	   *               / path-noscheme   ; begins with a non-colon segment
+	   *               / path-rootless   ; begins with a segment
+	   *               / path-empty      ; zero characters
+	   * path-abempty  = *( "/" segment )
+	   * path-absolute = "/" [ segment-nz *( "/" segment ) ]
+	   * path-rootless = segment-nz *( "/" segment )
+	   */
+	  var segment = pcharOnly + '*';
+	  var segmentNz = pcharOnly + '+';
+	  var segmentNzNc = '[' + unreserved + pctEncoded + subDelims + '@' + ']+';
+	  var pathEmpty = '';
+	  var pathAbEmpty = '(?:\\/' + segment + ')*';
+	  var pathAbsolute = '\\/(?:' + segmentNz + pathAbEmpty + ')?';
+	  var pathRootless = segmentNz + pathAbEmpty;
+	  var pathNoScheme = segmentNzNc + pathAbEmpty;
+
+	  /**
+	   * hier-part = "//" authority path
+	   */
+	  internals.rfc3986.hierPart = '(?:' + '(?:\\/\\/' + authority + pathAbEmpty + ')' + or + pathAbsolute + or + pathRootless + ')';
+
+	  /**
+	   * relative-part = "//" authority path-abempty
+	   *                 / path-absolute
+	   *                 / path-noscheme
+	   *                 / path-empty
+	   */
+	  internals.rfc3986.relativeRef = '(?:' + '(?:\\/\\/' + authority + pathAbEmpty + ')' + or + pathAbsolute + or + pathNoScheme + or + pathEmpty + ')';
+
+	  /**
+	   * query = *( pchar / "/" / "?" )
+	   */
+	  internals.rfc3986.query = '[' + pchar + '\\/\\?]*(?=#|$)'; //Finish matching either at the fragment part or end of the line.
+
+	  /**
+	   * fragment = *( pchar / "/" / "?" )
+	   */
+	  internals.rfc3986.fragment = '[' + pchar + '\\/\\?]*';
+	};
+
+	internals.generate();
+
+	module.exports = internals.rfc3986;
+
+/***/ },
+/* 21 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	// Load modules
+
+	var RFC3986 = __webpack_require__(20);
+
+	// Declare internals
+
+	var internals = {
+	    Ip: {
+	        cidrs: {
+	            required: '\\/(?:' + RFC3986.cidr + ')',
+	            optional: '(?:\\/(?:' + RFC3986.cidr + '))?',
+	            forbidden: ''
+	        },
+	        versions: {
+	            ipv4: RFC3986.IPv4address,
+	            ipv6: RFC3986.IPv6address,
+	            ipvfuture: RFC3986.IPvFuture
+	        }
+	    }
+	};
+
+	internals.Ip.createIpRegex = function (versions, cidr) {
+
+	    var regex = void 0;
+	    for (var i = 0; i < versions.length; ++i) {
+	        var version = versions[i];
+	        if (!regex) {
+	            regex = '^(?:' + internals.Ip.versions[version];
+	        }
+	        regex = regex + '|' + internals.Ip.versions[version];
+	    }
+
+	    return new RegExp(regex + ')' + internals.Ip.cidrs[cidr] + '$');
+	};
+
+	module.exports = internals.Ip;
+
+/***/ },
+/* 22 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/* WEBPACK VAR INJECTION */(function(process) {'use strict';
+
+	// Load modules
+
+	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+
+	var Dns = __webpack_require__(5);
+
+	// Declare internals
+
+	var internals = {
+	    hasOwn: Object.prototype.hasOwnProperty,
+	    indexOf: Array.prototype.indexOf,
+	    defaultThreshold: 16,
+	    maxIPv6Groups: 8,
+
+	    categories: {
+	        valid: 1,
+	        dnsWarn: 7,
+	        rfc5321: 15,
+	        cfws: 31,
+	        deprecated: 63,
+	        rfc5322: 127,
+	        error: 255
+	    },
+
+	    diagnoses: {
+
+	        // Address is valid
+
+	        valid: 0,
+
+	        // Address is valid, but the DNS check failed
+
+	        dnsWarnNoMXRecord: 5,
+	        dnsWarnNoRecord: 6,
+
+	        // Address is valid for SMTP but has unusual elements
+
+	        rfc5321TLD: 9,
+	        rfc5321TLDNumeric: 10,
+	        rfc5321QuotedString: 11,
+	        rfc5321AddressLiteral: 12,
+
+	        // Address is valid for message, but must be modified for envelope
+
+	        cfwsComment: 17,
+	        cfwsFWS: 18,
+
+	        // Address contains deprecated elements, but may still be valid in some contexts
+
+	        deprecatedLocalPart: 33,
+	        deprecatedFWS: 34,
+	        deprecatedQTEXT: 35,
+	        deprecatedQP: 36,
+	        deprecatedComment: 37,
+	        deprecatedCTEXT: 38,
+	        deprecatedIPv6: 39,
+	        deprecatedCFWSNearAt: 49,
+
+	        // Address is only valid according to broad definition in RFC 5322, but is otherwise invalid
+
+	        rfc5322Domain: 65,
+	        rfc5322TooLong: 66,
+	        rfc5322LocalTooLong: 67,
+	        rfc5322DomainTooLong: 68,
+	        rfc5322LabelTooLong: 69,
+	        rfc5322DomainLiteral: 70,
+	        rfc5322DomainLiteralOBSDText: 71,
+	        rfc5322IPv6GroupCount: 72,
+	        rfc5322IPv62x2xColon: 73,
+	        rfc5322IPv6BadCharacter: 74,
+	        rfc5322IPv6MaxGroups: 75,
+	        rfc5322IPv6ColonStart: 76,
+	        rfc5322IPv6ColonEnd: 77,
+
+	        // Address is invalid for any purpose
+
+	        errExpectingDTEXT: 129,
+	        errNoLocalPart: 130,
+	        errNoDomain: 131,
+	        errConsecutiveDots: 132,
+	        errATEXTAfterCFWS: 133,
+	        errATEXTAfterQS: 134,
+	        errATEXTAfterDomainLiteral: 135,
+	        errExpectingQPair: 136,
+	        errExpectingATEXT: 137,
+	        errExpectingQTEXT: 138,
+	        errExpectingCTEXT: 139,
+	        errBackslashEnd: 140,
+	        errDotStart: 141,
+	        errDotEnd: 142,
+	        errDomainHyphenStart: 143,
+	        errDomainHyphenEnd: 144,
+	        errUnclosedQuotedString: 145,
+	        errUnclosedComment: 146,
+	        errUnclosedDomainLiteral: 147,
+	        errFWSCRLFx2: 148,
+	        errFWSCRLFEnd: 149,
+	        errCRNoLF: 150,
+	        errUnknownTLD: 160,
+	        errDomainTooShort: 161
+	    },
+
+	    components: {
+	        localpart: 0,
+	        domain: 1,
+	        literal: 2,
+	        contextComment: 3,
+	        contextFWS: 4,
+	        contextQuotedString: 5,
+	        contextQuotedPair: 6
+	    }
+	};
+
+	// $lab:coverage:off$
+	internals.defer = typeof process !== 'undefined' && process && typeof process.nextTick === 'function' ? process.nextTick.bind(process) : function (callback) {
+
+	    return setTimeout(callback, 0);
+	};
+	// $lab:coverage:on$
+
+
+	internals.specials = function () {
+
+	    var specials = '()<>[]:;@\\,."'; // US-ASCII visible characters not valid for atext (http://tools.ietf.org/html/rfc5322#section-3.2.3)
+	    var lookup = new Array(0x100);
+	    for (var i = 0xff; i >= 0; --i) {
+	        lookup[i] = false;
+	    }
+
+	    for (var _i = 0; _i < specials.length; ++_i) {
+	        lookup[specials.charCodeAt(_i)] = true;
+	    }
+
+	    return function (code) {
+
+	        return lookup[code];
+	    };
+	}();
+
+	internals.regex = {
+	    ipV4: /\b(?:(?:25[0-5]|2[0-4]\d|[01]?\d\d?)\.){3}(?:25[0-5]|2[0-4]\d|[01]?\d\d?)$/,
+	    ipV6: /^[a-fA-F\d]{0,4}$/
+	};
+
+	internals.checkIpV6 = function (items) {
+
+	    return items.every(function (value) {
+	        return internals.regex.ipV6.test(value);
+	    });
+	};
+
+	internals.validDomain = function (tldAtom, options) {
+
+	    if (options.tldBlacklist) {
+	        if (Array.isArray(options.tldBlacklist)) {
+	            return internals.indexOf.call(options.tldBlacklist, tldAtom) === -1;
+	        }
+
+	        return !internals.hasOwn.call(options.tldBlacklist, tldAtom);
+	    }
+
+	    if (Array.isArray(options.tldWhitelist)) {
+	        return internals.indexOf.call(options.tldWhitelist, tldAtom) !== -1;
+	    }
+
+	    return internals.hasOwn.call(options.tldWhitelist, tldAtom);
+	};
+
+	/**
+	 * Check that an email address conforms to RFCs 5321, 5322 and others
+	 *
+	 * We distinguish clearly between a Mailbox as defined by RFC 5321 and an
+	 * addr-spec as defined by RFC 5322. Depending on the context, either can be
+	 * regarded as a valid email address. The RFC 5321 Mailbox specification is
+	 * more restrictive (comments, white space and obsolete forms are not allowed).
+	 *
+	 * @param {string} email The email address to check. See README for specifics.
+	 * @param {Object} options The (optional) options:
+	 *   {boolean} checkDNS If true then will check DNS for MX records. If
+	 *     true this call to isEmail _will_ be asynchronous.
+	 *   {*} errorLevel Determines the boundary between valid and invalid
+	 *     addresses.
+	 *   {*} tldBlacklist The set of domains to consider invalid.
+	 *   {*} tldWhitelist The set of domains to consider valid.
+	 *   {*} minDomainAtoms The minimum number of domain atoms which must be present
+	 *     for the address to be valid.
+	 * @param {function(number|boolean)} callback The (optional) callback handler.
+	 * @return {*}
+	 */
+
+	exports.validate = internals.validate = function (email, options, callback) {
+
+	    options = options || {};
+
+	    if (typeof options === 'function') {
+	        callback = options;
+	        options = {};
+	    }
+
+	    if (typeof callback !== 'function') {
+	        if (options.checkDNS) {
+	            throw new TypeError('expected callback function for checkDNS option');
+	        }
+
+	        callback = null;
+	    }
+
+	    var diagnose = void 0;
+	    var threshold = void 0;
+
+	    if (typeof options.errorLevel === 'number') {
+	        diagnose = true;
+	        threshold = options.errorLevel;
+	    } else {
+	        diagnose = !!options.errorLevel;
+	        threshold = internals.diagnoses.valid;
+	    }
+
+	    if (options.tldWhitelist) {
+	        if (typeof options.tldWhitelist === 'string') {
+	            options.tldWhitelist = [options.tldWhitelist];
+	        } else if (_typeof(options.tldWhitelist) !== 'object') {
+	            throw new TypeError('expected array or object tldWhitelist');
+	        }
+	    }
+
+	    if (options.tldBlacklist) {
+	        if (typeof options.tldBlacklist === 'string') {
+	            options.tldBlacklist = [options.tldBlacklist];
+	        } else if (_typeof(options.tldBlacklist) !== 'object') {
+	            throw new TypeError('expected array or object tldBlacklist');
+	        }
+	    }
+
+	    if (options.minDomainAtoms && (options.minDomainAtoms !== (+options.minDomainAtoms | 0) || options.minDomainAtoms < 0)) {
+	        throw new TypeError('expected positive integer minDomainAtoms');
+	    }
+
+	    var maxResult = internals.diagnoses.valid;
+	    var updateResult = function updateResult(value) {
+
+	        if (value > maxResult) {
+	            maxResult = value;
+	        }
+	    };
+
+	    var context = {
+	        now: internals.components.localpart,
+	        prev: internals.components.localpart,
+	        stack: [internals.components.localpart]
+	    };
+
+	    var prevToken = '';
+
+	    var parseData = {
+	        local: '',
+	        domain: ''
+	    };
+	    var atomData = {
+	        locals: [''],
+	        domains: ['']
+	    };
+
+	    var elementCount = 0;
+	    var elementLength = 0;
+	    var crlfCount = 0;
+	    var charCode = void 0;
+
+	    var hyphenFlag = false;
+	    var assertEnd = false;
+
+	    var emailLength = email.length;
+
+	    var token = void 0; // Token is used outside the loop, must declare similarly
+	    for (var i = 0; i < emailLength; ++i) {
+	        token = email[i];
+
+	        switch (context.now) {
+	            // Local-part
+	            case internals.components.localpart:
+	                // http://tools.ietf.org/html/rfc5322#section-3.4.1
+	                //   local-part      =   dot-atom / quoted-string / obs-local-part
+	                //
+	                //   dot-atom        =   [CFWS] dot-atom-text [CFWS]
+	                //
+	                //   dot-atom-text   =   1*atext *("." 1*atext)
+	                //
+	                //   quoted-string   =   [CFWS]
+	                //                       DQUOTE *([FWS] qcontent) [FWS] DQUOTE
+	                //                       [CFWS]
+	                //
+	                //   obs-local-part  =   word *("." word)
+	                //
+	                //   word            =   atom / quoted-string
+	                //
+	                //   atom            =   [CFWS] 1*atext [CFWS]
+	                switch (token) {
+	                    // Comment
+	                    case '(':
+	                        if (elementLength === 0) {
+	                            // Comments are OK at the beginning of an element
+	                            updateResult(elementCount === 0 ? internals.diagnoses.cfwsComment : internals.diagnoses.deprecatedComment);
+	                        } else {
+	                            updateResult(internals.diagnoses.cfwsComment);
+	                            // Cannot start a comment in an element, should be end
+	                            assertEnd = true;
+	                        }
+
+	                        context.stack.push(context.now);
+	                        context.now = internals.components.contextComment;
+	                        break;
+
+	                    // Next dot-atom element
+	                    case '.':
+	                        if (elementLength === 0) {
+	                            // Another dot, already?
+	                            updateResult(elementCount === 0 ? internals.diagnoses.errDotStart : internals.diagnoses.errConsecutiveDots);
+	                        } else {
+	                            // The entire local-part can be a quoted string for RFC 5321; if one atom is quoted it's an RFC 5322 obsolete form
+	                            if (assertEnd) {
+	                                updateResult(internals.diagnoses.deprecatedLocalPart);
+	                            }
+
+	                            // CFWS & quoted strings are OK again now we're at the beginning of an element (although they are obsolete forms)
+	                            assertEnd = false;
+	                            elementLength = 0;
+	                            ++elementCount;
+	                            parseData.local += token;
+	                            atomData.locals[elementCount] = '';
+	                        }
+
+	                        break;
+
+	                    // Quoted string
+	                    case '"':
+	                        if (elementLength === 0) {
+	                            // The entire local-part can be a quoted string for RFC 5321; if one atom is quoted it's an RFC 5322 obsolete form
+	                            updateResult(elementCount === 0 ? internals.diagnoses.rfc5321QuotedString : internals.diagnoses.deprecatedLocalPart);
+
+	                            parseData.local += token;
+	                            atomData.locals[elementCount] += token;
+	                            ++elementLength;
+
+	                            // Quoted string must be the entire element
+	                            assertEnd = true;
+	                            context.stack.push(context.now);
+	                            context.now = internals.components.contextQuotedString;
+	                        } else {
+	                            updateResult(internals.diagnoses.errExpectingATEXT);
+	                        }
+
+	                        break;
+
+	                    // Folding white space
+	                    case '\r':
+	                        if (emailLength === ++i || email[i] !== '\n') {
+	                            // Fatal error
+	                            updateResult(internals.diagnoses.errCRNoLF);
+	                            break;
+	                        }
+
+	                    // Fallthrough
+
+	                    case ' ':
+	                    case '\t':
+	                        if (elementLength === 0) {
+	                            updateResult(elementCount === 0 ? internals.diagnoses.cfwsFWS : internals.diagnoses.deprecatedFWS);
+	                        } else {
+	                            // We can't start FWS in the middle of an element, better be end
+	                            assertEnd = true;
+	                        }
+
+	                        context.stack.push(context.now);
+	                        context.now = internals.components.contextFWS;
+	                        prevToken = token;
+	                        break;
+
+	                    case '@':
+	                        // At this point we should have a valid local-part
+	                        // $lab:coverage:off$
+	                        if (context.stack.length !== 1) {
+	                            throw new Error('unexpected item on context stack');
+	                        }
+	                        // $lab:coverage:on$
+
+	                        if (parseData.local.length === 0) {
+	                            // Fatal error
+	                            updateResult(internals.diagnoses.errNoLocalPart);
+	                        } else if (elementLength === 0) {
+	                            // Fatal error
+	                            updateResult(internals.diagnoses.errDotEnd);
+	                        }
+	                        // http://tools.ietf.org/html/rfc5321#section-4.5.3.1.1 the maximum total length of a user name or other local-part is 64
+	                        //    octets
+	                        else if (parseData.local.length > 64) {
+	                                updateResult(internals.diagnoses.rfc5322LocalTooLong);
+	                            }
+	                            // http://tools.ietf.org/html/rfc5322#section-3.4.1 comments and folding white space SHOULD NOT be used around "@" in the
+	                            //    addr-spec
+	                            //
+	                            // http://tools.ietf.org/html/rfc2119
+	                            // 4. SHOULD NOT this phrase, or the phrase "NOT RECOMMENDED" mean that there may exist valid reasons in particular
+	                            //    circumstances when the particular behavior is acceptable or even useful, but the full implications should be understood
+	                            //    and the case carefully weighed before implementing any behavior described with this label.
+	                            else if (context.prev === internals.components.contextComment || context.prev === internals.components.contextFWS) {
+	                                    updateResult(internals.diagnoses.deprecatedCFWSNearAt);
+	                                }
+
+	                        // Clear everything down for the domain parsing
+	                        context.now = internals.components.domain;
+	                        context.stack[0] = internals.components.domain;
+	                        elementCount = 0;
+	                        elementLength = 0;
+	                        assertEnd = false; // CFWS can only appear at the end of the element
+	                        break;
+
+	                    // ATEXT
+	                    default:
+	                        // http://tools.ietf.org/html/rfc5322#section-3.2.3
+	                        //    atext = ALPHA / DIGIT / ; Printable US-ASCII
+	                        //            "!" / "#" /     ;  characters not including
+	                        //            "$" / "%" /     ;  specials.  Used for atoms.
+	                        //            "&" / "'" /
+	                        //            "*" / "+" /
+	                        //            "-" / "/" /
+	                        //            "=" / "?" /
+	                        //            "^" / "_" /
+	                        //            "`" / "{" /
+	                        //            "|" / "}" /
+	                        //            "~"
+	                        if (assertEnd) {
+	                            // We have encountered atext where it is no longer valid
+	                            switch (context.prev) {
+	                                case internals.components.contextComment:
+	                                case internals.components.contextFWS:
+	                                    updateResult(internals.diagnoses.errATEXTAfterCFWS);
+	                                    break;
+
+	                                case internals.components.contextQuotedString:
+	                                    updateResult(internals.diagnoses.errATEXTAfterQS);
+	                                    break;
+
+	                                // $lab:coverage:off$
+	                                default:
+	                                    throw new Error('more atext found where none is allowed, but unrecognized prev context: ' + context.prev);
+	                                // $lab:coverage:on$
+	                            }
+	                        } else {
+	                            context.prev = context.now;
+	                            charCode = token.charCodeAt(0);
+
+	                            // Especially if charCode == 10
+	                            if (charCode < 33 || charCode > 126 || internals.specials(charCode)) {
+
+	                                // Fatal error
+	                                updateResult(internals.diagnoses.errExpectingATEXT);
+	                            }
+
+	                            parseData.local += token;
+	                            atomData.locals[elementCount] += token;
+	                            ++elementLength;
+	                        }
+	                }
+
+	                break;
+
+	            case internals.components.domain:
+	                // http://tools.ietf.org/html/rfc5322#section-3.4.1
+	                //   domain          =   dot-atom / domain-literal / obs-domain
+	                //
+	                //   dot-atom        =   [CFWS] dot-atom-text [CFWS]
+	                //
+	                //   dot-atom-text   =   1*atext *("." 1*atext)
+	                //
+	                //   domain-literal  =   [CFWS] "[" *([FWS] dtext) [FWS] "]" [CFWS]
+	                //
+	                //   dtext           =   %d33-90 /          ; Printable US-ASCII
+	                //                       %d94-126 /         ;  characters not including
+	                //                       obs-dtext          ;  "[", "]", or "\"
+	                //
+	                //   obs-domain      =   atom *("." atom)
+	                //
+	                //   atom            =   [CFWS] 1*atext [CFWS]
+
+	                // http://tools.ietf.org/html/rfc5321#section-4.1.2
+	                //   Mailbox        = Local-part "@" ( Domain / address-literal )
+	                //
+	                //   Domain         = sub-domain *("." sub-domain)
+	                //
+	                //   address-literal  = "[" ( IPv4-address-literal /
+	                //                    IPv6-address-literal /
+	                //                    General-address-literal ) "]"
+	                //                    ; See Section 4.1.3
+
+	                // http://tools.ietf.org/html/rfc5322#section-3.4.1
+	                //      Note: A liberal syntax for the domain portion of addr-spec is
+	                //      given here.  However, the domain portion contains addressing
+	                //      information specified by and used in other protocols (e.g.,
+	                //      [RFC1034], [RFC1035], [RFC1123], [RFC5321]).  It is therefore
+	                //      incumbent upon implementations to conform to the syntax of
+	                //      addresses for the context in which they are used.
+	                //
+	                // is_email() author's note: it's not clear how to interpret this in
+	                // he context of a general email address validator. The conclusion I
+	                // have reached is this: "addressing information" must comply with
+	                // RFC 5321 (and in turn RFC 1035), anything that is "semantically
+	                // invisible" must comply only with RFC 5322.
+	                switch (token) {
+	                    // Comment
+	                    case '(':
+	                        if (elementLength === 0) {
+	                            // Comments at the start of the domain are deprecated in the text, comments at the start of a subdomain are obs-domain
+	                            // http://tools.ietf.org/html/rfc5322#section-3.4.1
+	                            updateResult(elementCount === 0 ? internals.diagnoses.deprecatedCFWSNearAt : internals.diagnoses.deprecatedComment);
+	                        } else {
+	                            // We can't start a comment mid-element, better be at the end
+	                            assertEnd = true;
+	                            updateResult(internals.diagnoses.cfwsComment);
+	                        }
+
+	                        context.stack.push(context.now);
+	                        context.now = internals.components.contextComment;
+	                        break;
+
+	                    // Next dot-atom element
+	                    case '.':
+	                        if (elementLength === 0) {
+	                            // Another dot, already? Fatal error.
+	                            updateResult(elementCount === 0 ? internals.diagnoses.errDotStart : internals.diagnoses.errConsecutiveDots);
+	                        } else if (hyphenFlag) {
+	                            // Previous subdomain ended in a hyphen. Fatal error.
+	                            updateResult(internals.diagnoses.errDomainHyphenEnd);
+	                        } else if (elementLength > 63) {
+	                            // Nowhere in RFC 5321 does it say explicitly that the domain part of a Mailbox must be a valid domain according to the
+	                            // DNS standards set out in RFC 1035, but this *is* implied in several places. For instance, wherever the idea of host
+	                            // routing is discussed the RFC says that the domain must be looked up in the DNS. This would be nonsense unless the
+	                            // domain was designed to be a valid DNS domain. Hence we must conclude that the RFC 1035 restriction on label length
+	                            // also applies to RFC 5321 domains.
+	                            //
+	                            // http://tools.ietf.org/html/rfc1035#section-2.3.4
+	                            // labels          63 octets or less
+
+	                            updateResult(internals.diagnoses.rfc5322LabelTooLong);
+	                        }
+
+	                        // CFWS is OK again now we're at the beginning of an element (although
+	                        // it may be obsolete CFWS)
+	                        assertEnd = false;
+	                        elementLength = 0;
+	                        ++elementCount;
+	                        atomData.domains[elementCount] = '';
+	                        parseData.domain += token;
+
+	                        break;
+
+	                    // Domain literal
+	                    case '[':
+	                        if (parseData.domain.length === 0) {
+	                            // Domain literal must be the only component
+	                            assertEnd = true;
+	                            ++elementLength;
+	                            context.stack.push(context.now);
+	                            context.now = internals.components.literal;
+	                            parseData.domain += token;
+	                            atomData.domains[elementCount] += token;
+	                            parseData.literal = '';
+	                        } else {
+	                            // Fatal error
+	                            updateResult(internals.diagnoses.errExpectingATEXT);
+	                        }
+
+	                        break;
+
+	                    // Folding white space
+	                    case '\r':
+	                        if (emailLength === ++i || email[i] !== '\n') {
+	                            // Fatal error
+	                            updateResult(internals.diagnoses.errCRNoLF);
+	                            break;
+	                        }
+
+	                    // Fallthrough
+
+	                    case ' ':
+	                    case '\t':
+	                        if (elementLength === 0) {
+	                            updateResult(elementCount === 0 ? internals.diagnoses.deprecatedCFWSNearAt : internals.diagnoses.deprecatedFWS);
+	                        } else {
+	                            // We can't start FWS in the middle of an element, so this better be the end
+	                            updateResult(internals.diagnoses.cfwsFWS);
+	                            assertEnd = true;
+	                        }
+
+	                        context.stack.push(context.now);
+	                        context.now = internals.components.contextFWS;
+	                        prevToken = token;
+	                        break;
+
+	                    // This must be ATEXT
+	                    default:
+	                        // RFC 5322 allows any atext...
+	                        // http://tools.ietf.org/html/rfc5322#section-3.2.3
+	                        //    atext = ALPHA / DIGIT / ; Printable US-ASCII
+	                        //            "!" / "#" /     ;  characters not including
+	                        //            "$" / "%" /     ;  specials.  Used for atoms.
+	                        //            "&" / "'" /
+	                        //            "*" / "+" /
+	                        //            "-" / "/" /
+	                        //            "=" / "?" /
+	                        //            "^" / "_" /
+	                        //            "`" / "{" /
+	                        //            "|" / "}" /
+	                        //            "~"
+
+	                        // But RFC 5321 only allows letter-digit-hyphen to comply with DNS rules
+	                        //   (RFCs 1034 & 1123)
+	                        // http://tools.ietf.org/html/rfc5321#section-4.1.2
+	                        //   sub-domain     = Let-dig [Ldh-str]
+	                        //
+	                        //   Let-dig        = ALPHA / DIGIT
+	                        //
+	                        //   Ldh-str        = *( ALPHA / DIGIT / "-" ) Let-dig
+	                        //
+	                        if (assertEnd) {
+	                            // We have encountered ATEXT where it is no longer valid
+	                            switch (context.prev) {
+	                                case internals.components.contextComment:
+	                                case internals.components.contextFWS:
+	                                    updateResult(internals.diagnoses.errATEXTAfterCFWS);
+	                                    break;
+
+	                                case internals.components.literal:
+	                                    updateResult(internals.diagnoses.errATEXTAfterDomainLiteral);
+	                                    break;
+
+	                                // $lab:coverage:off$
+	                                default:
+	                                    throw new Error('more atext found where none is allowed, but unrecognized prev context: ' + context.prev);
+	                                // $lab:coverage:on$
+	                            }
+	                        }
+
+	                        charCode = token.charCodeAt(0);
+	                        // Assume this token isn't a hyphen unless we discover it is
+	                        hyphenFlag = false;
+
+	                        if (charCode < 33 || charCode > 126 || internals.specials(charCode)) {
+	                            // Fatal error
+	                            updateResult(internals.diagnoses.errExpectingATEXT);
+	                        } else if (token === '-') {
+	                            if (elementLength === 0) {
+	                                // Hyphens cannot be at the beginning of a subdomain, fatal error
+	                                updateResult(internals.diagnoses.errDomainHyphenStart);
+	                            }
+
+	                            hyphenFlag = true;
+	                        }
+	                        // Check if it's a neither a number nor a latin letter
+	                        else if (charCode < 48 || charCode > 122 || charCode > 57 && charCode < 65 || charCode > 90 && charCode < 97) {
+	                                // This is not an RFC 5321 subdomain, but still OK by RFC 5322
+	                                updateResult(internals.diagnoses.rfc5322Domain);
+	                            }
+
+	                        parseData.domain += token;
+	                        atomData.domains[elementCount] += token;
+	                        ++elementLength;
+	                }
+
+	                break;
+
+	            // Domain literal
+	            case internals.components.literal:
+	                // http://tools.ietf.org/html/rfc5322#section-3.4.1
+	                //   domain-literal  =   [CFWS] "[" *([FWS] dtext) [FWS] "]" [CFWS]
+	                //
+	                //   dtext           =   %d33-90 /          ; Printable US-ASCII
+	                //                       %d94-126 /         ;  characters not including
+	                //                       obs-dtext          ;  "[", "]", or "\"
+	                //
+	                //   obs-dtext       =   obs-NO-WS-CTL / quoted-pair
+	                switch (token) {
+	                    // End of domain literal
+	                    case ']':
+	                        if (maxResult < internals.categories.deprecated) {
+	                            // Could be a valid RFC 5321 address literal, so let's check
+
+	                            // http://tools.ietf.org/html/rfc5321#section-4.1.2
+	                            //   address-literal  = "[" ( IPv4-address-literal /
+	                            //                    IPv6-address-literal /
+	                            //                    General-address-literal ) "]"
+	                            //                    ; See Section 4.1.3
+	                            //
+	                            // http://tools.ietf.org/html/rfc5321#section-4.1.3
+	                            //   IPv4-address-literal  = Snum 3("."  Snum)
+	                            //
+	                            //   IPv6-address-literal  = "IPv6:" IPv6-addr
+	                            //
+	                            //   General-address-literal  = Standardized-tag ":" 1*dcontent
+	                            //
+	                            //   Standardized-tag  = Ldh-str
+	                            //                     ; Standardized-tag MUST be specified in a
+	                            //                     ; Standards-Track RFC and registered with IANA
+	                            //
+	                            //   dcontent      = %d33-90 / ; Printable US-ASCII
+	                            //                 %d94-126 ; excl. "[", "\", "]"
+	                            //
+	                            //   Snum          = 1*3DIGIT
+	                            //                 ; representing a decimal integer
+	                            //                 ; value in the range 0 through 255
+	                            //
+	                            //   IPv6-addr     = IPv6-full / IPv6-comp / IPv6v4-full / IPv6v4-comp
+	                            //
+	                            //   IPv6-hex      = 1*4HEXDIG
+	                            //
+	                            //   IPv6-full     = IPv6-hex 7(":" IPv6-hex)
+	                            //
+	                            //   IPv6-comp     = [IPv6-hex *5(":" IPv6-hex)] "::"
+	                            //                 [IPv6-hex *5(":" IPv6-hex)]
+	                            //                 ; The "::" represents at least 2 16-bit groups of
+	                            //                 ; zeros.  No more than 6 groups in addition to the
+	                            //                 ; "::" may be present.
+	                            //
+	                            //   IPv6v4-full   = IPv6-hex 5(":" IPv6-hex) ":" IPv4-address-literal
+	                            //
+	                            //   IPv6v4-comp   = [IPv6-hex *3(":" IPv6-hex)] "::"
+	                            //                 [IPv6-hex *3(":" IPv6-hex) ":"]
+	                            //                 IPv4-address-literal
+	                            //                 ; The "::" represents at least 2 16-bit groups of
+	                            //                 ; zeros.  No more than 4 groups in addition to the
+	                            //                 ; "::" and IPv4-address-literal may be present.
+
+	                            var index = -1;
+	                            var addressLiteral = parseData.literal;
+	                            var matchesIP = internals.regex.ipV4.exec(addressLiteral);
+
+	                            // Maybe extract IPv4 part from the end of the address-literal
+	                            if (matchesIP) {
+	                                index = matchesIP.index;
+	                                if (index !== 0) {
+	                                    // Convert IPv4 part to IPv6 format for futher testing
+	                                    addressLiteral = addressLiteral.slice(0, index) + '0:0';
+	                                }
+	                            }
+
+	                            if (index === 0) {
+	                                // Nothing there except a valid IPv4 address, so...
+	                                updateResult(internals.diagnoses.rfc5321AddressLiteral);
+	                            } else if (addressLiteral.slice(0, 5).toLowerCase() !== 'ipv6:') {
+	                                updateResult(internals.diagnoses.rfc5322DomainLiteral);
+	                            } else {
+	                                var match = addressLiteral.slice(5);
+	                                var maxGroups = internals.maxIPv6Groups;
+	                                var groups = match.split(':');
+	                                index = match.indexOf('::');
+
+	                                if (!~index) {
+	                                    // Need exactly the right number of groups
+	                                    if (groups.length !== maxGroups) {
+	                                        updateResult(internals.diagnoses.rfc5322IPv6GroupCount);
+	                                    }
+	                                } else if (index !== match.lastIndexOf('::')) {
+	                                    updateResult(internals.diagnoses.rfc5322IPv62x2xColon);
+	                                } else {
+	                                    if (index === 0 || index === match.length - 2) {
+	                                        // RFC 4291 allows :: at the start or end of an address with 7 other groups in addition
+	                                        ++maxGroups;
+	                                    }
+
+	                                    if (groups.length > maxGroups) {
+	                                        updateResult(internals.diagnoses.rfc5322IPv6MaxGroups);
+	                                    } else if (groups.length === maxGroups) {
+	                                        // Eliding a single "::"
+	                                        updateResult(internals.diagnoses.deprecatedIPv6);
+	                                    }
+	                                }
+
+	                                // IPv6 testing strategy
+	                                if (match[0] === ':' && match[1] !== ':') {
+	                                    updateResult(internals.diagnoses.rfc5322IPv6ColonStart);
+	                                } else if (match[match.length - 1] === ':' && match[match.length - 2] !== ':') {
+	                                    updateResult(internals.diagnoses.rfc5322IPv6ColonEnd);
+	                                } else if (internals.checkIpV6(groups)) {
+	                                    updateResult(internals.diagnoses.rfc5321AddressLiteral);
+	                                } else {
+	                                    updateResult(internals.diagnoses.rfc5322IPv6BadCharacter);
+	                                }
+	                            }
+	                        } else {
+	                            updateResult(internals.diagnoses.rfc5322DomainLiteral);
+	                        }
+
+	                        parseData.domain += token;
+	                        atomData.domains[elementCount] += token;
+	                        ++elementLength;
+	                        context.prev = context.now;
+	                        context.now = context.stack.pop();
+	                        break;
+
+	                    case '\\':
+	                        updateResult(internals.diagnoses.rfc5322DomainLiteralOBSDText);
+	                        context.stack.push(context.now);
+	                        context.now = internals.components.contextQuotedPair;
+	                        break;
+
+	                    // Folding white space
+	                    case '\r':
+	                        if (emailLength === ++i || email[i] !== '\n') {
+	                            updateResult(internals.diagnoses.errCRNoLF);
+	                            break;
+	                        }
+
+	                    // Fallthrough
+
+	                    case ' ':
+	                    case '\t':
+	                        updateResult(internals.diagnoses.cfwsFWS);
+
+	                        context.stack.push(context.now);
+	                        context.now = internals.components.contextFWS;
+	                        prevToken = token;
+	                        break;
+
+	                    // DTEXT
+	                    default:
+	                        // http://tools.ietf.org/html/rfc5322#section-3.4.1
+	                        //   dtext         =   %d33-90 /  ; Printable US-ASCII
+	                        //                     %d94-126 / ;  characters not including
+	                        //                     obs-dtext  ;  "[", "]", or "\"
+	                        //
+	                        //   obs-dtext     =   obs-NO-WS-CTL / quoted-pair
+	                        //
+	                        //   obs-NO-WS-CTL =   %d1-8 /    ; US-ASCII control
+	                        //                     %d11 /     ;  characters that do not
+	                        //                     %d12 /     ;  include the carriage
+	                        //                     %d14-31 /  ;  return, line feed, and
+	                        //                     %d127      ;  white space characters
+	                        charCode = token.charCodeAt(0);
+
+	                        // '\r', '\n', ' ', and '\t' have already been parsed above
+	                        if (charCode > 127 || charCode === 0 || token === '[') {
+	                            // Fatal error
+	                            updateResult(internals.diagnoses.errExpectingDTEXT);
+	                            break;
+	                        } else if (charCode < 33 || charCode === 127) {
+	                            updateResult(internals.diagnoses.rfc5322DomainLiteralOBSDText);
+	                        }
+
+	                        parseData.literal += token;
+	                        parseData.domain += token;
+	                        atomData.domains[elementCount] += token;
+	                        ++elementLength;
+	                }
+
+	                break;
+
+	            // Quoted string
+	            case internals.components.contextQuotedString:
+	                // http://tools.ietf.org/html/rfc5322#section-3.2.4
+	                //   quoted-string = [CFWS]
+	                //                   DQUOTE *([FWS] qcontent) [FWS] DQUOTE
+	                //                   [CFWS]
+	                //
+	                //   qcontent      = qtext / quoted-pair
+	                switch (token) {
+	                    // Quoted pair
+	                    case '\\':
+	                        context.stack.push(context.now);
+	                        context.now = internals.components.contextQuotedPair;
+	                        break;
+
+	                    // Folding white space. Spaces are allowed as regular characters inside a quoted string - it's only FWS if we include '\t' or '\r\n'
+	                    case '\r':
+	                        if (emailLength === ++i || email[i] !== '\n') {
+	                            // Fatal error
+	                            updateResult(internals.diagnoses.errCRNoLF);
+	                            break;
+	                        }
+
+	                    // Fallthrough
+
+	                    case '\t':
+	                        // http://tools.ietf.org/html/rfc5322#section-3.2.2
+	                        //   Runs of FWS, comment, or CFWS that occur between lexical tokens in
+	                        //   a structured header field are semantically interpreted as a single
+	                        //   space character.
+
+	                        // http://tools.ietf.org/html/rfc5322#section-3.2.4
+	                        //   the CRLF in any FWS/CFWS that appears within the quoted-string [is]
+	                        //   semantically "invisible" and therefore not part of the
+	                        //   quoted-string
+
+	                        parseData.local += ' ';
+	                        atomData.locals[elementCount] += ' ';
+	                        ++elementLength;
+
+	                        updateResult(internals.diagnoses.cfwsFWS);
+	                        context.stack.push(context.now);
+	                        context.now = internals.components.contextFWS;
+	                        prevToken = token;
+	                        break;
+
+	                    // End of quoted string
+	                    case '"':
+	                        parseData.local += token;
+	                        atomData.locals[elementCount] += token;
+	                        ++elementLength;
+	                        context.prev = context.now;
+	                        context.now = context.stack.pop();
+	                        break;
+
+	                    // QTEXT
+	                    default:
+	                        // http://tools.ietf.org/html/rfc5322#section-3.2.4
+	                        //   qtext          =   %d33 /             ; Printable US-ASCII
+	                        //                      %d35-91 /          ;  characters not including
+	                        //                      %d93-126 /         ;  "\" or the quote character
+	                        //                      obs-qtext
+	                        //
+	                        //   obs-qtext      =   obs-NO-WS-CTL
+	                        //
+	                        //   obs-NO-WS-CTL  =   %d1-8 /            ; US-ASCII control
+	                        //                      %d11 /             ;  characters that do not
+	                        //                      %d12 /             ;  include the carriage
+	                        //                      %d14-31 /          ;  return, line feed, and
+	                        //                      %d127              ;  white space characters
+	                        charCode = token.charCodeAt(0);
+
+	                        if (charCode > 127 || charCode === 0 || charCode === 10) {
+	                            updateResult(internals.diagnoses.errExpectingQTEXT);
+	                        } else if (charCode < 32 || charCode === 127) {
+	                            updateResult(internals.diagnoses.deprecatedQTEXT);
+	                        }
+
+	                        parseData.local += token;
+	                        atomData.locals[elementCount] += token;
+	                        ++elementLength;
+	                }
+
+	                // http://tools.ietf.org/html/rfc5322#section-3.4.1
+	                //   If the string can be represented as a dot-atom (that is, it contains
+	                //   no characters other than atext characters or "." surrounded by atext
+	                //   characters), then the dot-atom form SHOULD be used and the quoted-
+	                //   string form SHOULD NOT be used.
+
+	                break;
+	            // Quoted pair
+	            case internals.components.contextQuotedPair:
+	                // http://tools.ietf.org/html/rfc5322#section-3.2.1
+	                //   quoted-pair     =   ("\" (VCHAR / WSP)) / obs-qp
+	                //
+	                //   VCHAR           =  %d33-126   ; visible (printing) characters
+	                //   WSP             =  SP / HTAB  ; white space
+	                //
+	                //   obs-qp          =   "\" (%d0 / obs-NO-WS-CTL / LF / CR)
+	                //
+	                //   obs-NO-WS-CTL   =   %d1-8 /   ; US-ASCII control
+	                //                       %d11 /    ;  characters that do not
+	                //                       %d12 /    ;  include the carriage
+	                //                       %d14-31 / ;  return, line feed, and
+	                //                       %d127     ;  white space characters
+	                //
+	                // i.e. obs-qp       =  "\" (%d0-8, %d10-31 / %d127)
+	                charCode = token.charCodeAt(0);
+
+	                if (charCode > 127) {
+	                    // Fatal error
+	                    updateResult(internals.diagnoses.errExpectingQPair);
+	                } else if (charCode < 31 && charCode !== 9 || charCode === 127) {
+	                    // ' ' and '\t' are allowed
+	                    updateResult(internals.diagnoses.deprecatedQP);
+	                }
+
+	                // At this point we know where this qpair occurred so we could check to see if the character actually needed to be quoted at all.
+	                // http://tools.ietf.org/html/rfc5321#section-4.1.2
+	                //   the sending system SHOULD transmit the form that uses the minimum quoting possible.
+
+	                context.prev = context.now;
+	                // End of qpair
+	                context.now = context.stack.pop();
+	                token = '\\' + token;
+
+	                switch (context.now) {
+	                    case internals.components.contextComment:
+	                        break;
+
+	                    case internals.components.contextQuotedString:
+	                        parseData.local += token;
+	                        atomData.locals[elementCount] += token;
+
+	                        // The maximum sizes specified by RFC 5321 are octet counts, so we must include the backslash
+	                        elementLength += 2;
+	                        break;
+
+	                    case internals.components.literal:
+	                        parseData.domain += token;
+	                        atomData.domains[elementCount] += token;
+
+	                        // The maximum sizes specified by RFC 5321 are octet counts, so we must include the backslash
+	                        elementLength += 2;
+	                        break;
+
+	                    // $lab:coverage:off$
+	                    default:
+	                        throw new Error('quoted pair logic invoked in an invalid context: ' + context.now);
+	                    // $lab:coverage:on$
+	                }
+	                break;
+
+	            // Comment
+	            case internals.components.contextComment:
+	                // http://tools.ietf.org/html/rfc5322#section-3.2.2
+	                //   comment  = "(" *([FWS] ccontent) [FWS] ")"
+	                //
+	                //   ccontent = ctext / quoted-pair / comment
+	                switch (token) {
+	                    // Nested comment
+	                    case '(':
+	                        // Nested comments are ok
+	                        context.stack.push(context.now);
+	                        context.now = internals.components.contextComment;
+	                        break;
+
+	                    // End of comment
+	                    case ')':
+	                        context.prev = context.now;
+	                        context.now = context.stack.pop();
+	                        break;
+
+	                    // Quoted pair
+	                    case '\\':
+	                        context.stack.push(context.now);
+	                        context.now = internals.components.contextQuotedPair;
+	                        break;
+
+	                    // Folding white space
+	                    case '\r':
+	                        if (emailLength === ++i || email[i] !== '\n') {
+	                            // Fatal error
+	                            updateResult(internals.diagnoses.errCRNoLF);
+	                            break;
+	                        }
+
+	                    // Fallthrough
+
+	                    case ' ':
+	                    case '\t':
+	                        updateResult(internals.diagnoses.cfwsFWS);
+
+	                        context.stack.push(context.now);
+	                        context.now = internals.components.contextFWS;
+	                        prevToken = token;
+	                        break;
+
+	                    // CTEXT
+	                    default:
+	                        // http://tools.ietf.org/html/rfc5322#section-3.2.3
+	                        //   ctext         = %d33-39 /  ; Printable US-ASCII
+	                        //                   %d42-91 /  ;  characters not including
+	                        //                   %d93-126 / ;  "(", ")", or "\"
+	                        //                   obs-ctext
+	                        //
+	                        //   obs-ctext     = obs-NO-WS-CTL
+	                        //
+	                        //   obs-NO-WS-CTL = %d1-8 /    ; US-ASCII control
+	                        //                   %d11 /     ;  characters that do not
+	                        //                   %d12 /     ;  include the carriage
+	                        //                   %d14-31 /  ;  return, line feed, and
+	                        //                   %d127      ;  white space characters
+	                        charCode = token.charCodeAt(0);
+
+	                        if (charCode > 127 || charCode === 0 || charCode === 10) {
+	                            // Fatal error
+	                            updateResult(internals.diagnoses.errExpectingCTEXT);
+	                            break;
+	                        } else if (charCode < 32 || charCode === 127) {
+	                            updateResult(internals.diagnoses.deprecatedCTEXT);
+	                        }
+	                }
+
+	                break;
+
+	            // Folding white space
+	            case internals.components.contextFWS:
+	                // http://tools.ietf.org/html/rfc5322#section-3.2.2
+	                //   FWS     =   ([*WSP CRLF] 1*WSP) /  obs-FWS
+	                //                                   ; Folding white space
+
+	                // But note the erratum:
+	                // http://www.rfc-editor.org/errata_search.php?rfc=5322&eid=1908:
+	                //   In the obsolete syntax, any amount of folding white space MAY be
+	                //   inserted where the obs-FWS rule is allowed.  This creates the
+	                //   possibility of having two consecutive "folds" in a line, and
+	                //   therefore the possibility that a line which makes up a folded header
+	                //   field could be composed entirely of white space.
+	                //
+	                //   obs-FWS =   1*([CRLF] WSP)
+
+	                if (prevToken === '\r') {
+	                    if (token === '\r') {
+	                        // Fatal error
+	                        updateResult(internals.diagnoses.errFWSCRLFx2);
+	                        break;
+	                    }
+
+	                    if (++crlfCount > 1) {
+	                        // Multiple folds => obsolete FWS
+	                        updateResult(internals.diagnoses.deprecatedFWS);
+	                    } else {
+	                        crlfCount = 1;
+	                    }
+	                }
+
+	                switch (token) {
+	                    case '\r':
+	                        if (emailLength === ++i || email[i] !== '\n') {
+	                            // Fatal error
+	                            updateResult(internals.diagnoses.errCRNoLF);
+	                        }
+
+	                        break;
+
+	                    case ' ':
+	                    case '\t':
+	                        break;
+
+	                    default:
+	                        if (prevToken === '\r') {
+	                            // Fatal error
+	                            updateResult(internals.diagnoses.errFWSCRLFEnd);
+	                        }
+
+	                        crlfCount = 0;
+
+	                        // End of FWS
+	                        context.prev = context.now;
+	                        context.now = context.stack.pop();
+
+	                        // Look at this token again in the parent context
+	                        --i;
+	                }
+
+	                prevToken = token;
+	                break;
+
+	            // Unexpected context
+	            // $lab:coverage:off$
+	            default:
+	                throw new Error('unknown context: ' + context.now);
+	            // $lab:coverage:on$
+	        } // Primary state machine
+
+	        if (maxResult > internals.categories.rfc5322) {
+	            // Fatal error, no point continuing
+	            break;
+	        }
+	    } // Token loop
+
+	    // Check for errors
+	    if (maxResult < internals.categories.rfc5322) {
+	        // Fatal errors
+	        if (context.now === internals.components.contextQuotedString) {
+	            updateResult(internals.diagnoses.errUnclosedQuotedString);
+	        } else if (context.now === internals.components.contextQuotedPair) {
+	            updateResult(internals.diagnoses.errBackslashEnd);
+	        } else if (context.now === internals.components.contextComment) {
+	            updateResult(internals.diagnoses.errUnclosedComment);
+	        } else if (context.now === internals.components.literal) {
+	            updateResult(internals.diagnoses.errUnclosedDomainLiteral);
+	        } else if (token === '\r') {
+	            updateResult(internals.diagnoses.errFWSCRLFEnd);
+	        } else if (parseData.domain.length === 0) {
+	            updateResult(internals.diagnoses.errNoDomain);
+	        } else if (elementLength === 0) {
+	            updateResult(internals.diagnoses.errDotEnd);
+	        } else if (hyphenFlag) {
+	            updateResult(internals.diagnoses.errDomainHyphenEnd);
+	        }
+
+	        // Other errors
+	        else if (parseData.domain.length > 255) {
+	                // http://tools.ietf.org/html/rfc5321#section-4.5.3.1.2
+	                //   The maximum total length of a domain name or number is 255 octets.
+	                updateResult(internals.diagnoses.rfc5322DomainTooLong);
+	            } else if (parseData.local.length + parseData.domain.length + /* '@' */1 > 254) {
+	                // http://tools.ietf.org/html/rfc5321#section-4.1.2
+	                //   Forward-path   = Path
+	                //
+	                //   Path           = "<" [ A-d-l ":" ] Mailbox ">"
+	                //
+	                // http://tools.ietf.org/html/rfc5321#section-4.5.3.1.3
+	                //   The maximum total length of a reverse-path or forward-path is 256 octets (including the punctuation and element separators).
+	                //
+	                // Thus, even without (obsolete) routing information, the Mailbox can only be 254 characters long. This is confirmed by this verified
+	                // erratum to RFC 3696:
+	                //
+	                // http://www.rfc-editor.org/errata_search.php?rfc=3696&eid=1690
+	                //   However, there is a restriction in RFC 2821 on the length of an address in MAIL and RCPT commands of 254 characters.  Since
+	                //   addresses that do not fit in those fields are not normally useful, the upper limit on address lengths should normally be considered
+	                //   to be 254.
+	                updateResult(internals.diagnoses.rfc5322TooLong);
+	            } else if (elementLength > 63) {
+	                // http://tools.ietf.org/html/rfc1035#section-2.3.4
+	                // labels   63 octets or less
+	                updateResult(internals.diagnoses.rfc5322LabelTooLong);
+	            } else if (options.minDomainAtoms && atomData.domains.length < options.minDomainAtoms) {
+	                updateResult(internals.diagnoses.errDomainTooShort);
+	            } else if (options.tldWhitelist || options.tldBlacklist) {
+	                var tldAtom = atomData.domains[elementCount];
+
+	                if (!internals.validDomain(tldAtom, options)) {
+	                    updateResult(internals.diagnoses.errUnknownTLD);
+	                }
+	            }
+	    } // Check for errors
+
+	    var dnsPositive = false;
+	    var finishImmediately = false;
+
+	    var finish = function finish() {
+
+	        if (!dnsPositive && maxResult < internals.categories.dnsWarn) {
+	            // Per RFC 5321, domain atoms are limited to letter-digit-hyphen, so we only need to check code <= 57 to check for a digit
+	            var code = atomData.domains[elementCount].charCodeAt(0);
+	            if (code <= 57) {
+	                updateResult(internals.diagnoses.rfc5321TLDNumeric);
+	            } else if (elementCount === 0) {
+	                updateResult(internals.diagnoses.rfc5321TLD);
+	            }
+	        }
+
+	        if (maxResult < threshold) {
+	            maxResult = internals.diagnoses.valid;
+	        }
+
+	        var finishResult = diagnose ? maxResult : maxResult < internals.defaultThreshold;
+
+	        if (callback) {
+	            if (finishImmediately) {
+	                callback(finishResult);
+	            } else {
+	                internals.defer(callback.bind(null, finishResult));
+	            }
+	        }
+
+	        return finishResult;
+	    }; // Finish
+
+	    if (options.checkDNS && maxResult < internals.categories.dnsWarn) {
+	        (function () {
+	            // http://tools.ietf.org/html/rfc5321#section-2.3.5
+	            //   Names that can be resolved to MX RRs or address (i.e., A or AAAA) RRs (as discussed in Section 5) are permitted, as are CNAME RRs whose
+	            //   targets can be resolved, in turn, to MX or address RRs.
+	            //
+	            // http://tools.ietf.org/html/rfc5321#section-5.1
+	            //   The lookup first attempts to locate an MX record associated with the name.  If a CNAME record is found, the resulting name is processed
+	            //   as if it were the initial name. ... If an empty list of MXs is returned, the address is treated as if it was associated with an implicit
+	            //   MX RR, with a preference of 0, pointing to that host.
+	            //
+	            // isEmail() author's note: We will regard the existence of a CNAME to be sufficient evidence of the domain's existence. For performance
+	            // reasons we will not repeat the DNS lookup for the CNAME's target, but we will raise a warning because we didn't immediately find an MX
+	            // record.
+	            if (elementCount === 0) {
+	                // Checking TLD DNS only works if you explicitly check from the root
+	                parseData.domain += '.';
+	            }
+
+	            var dnsDomain = parseData.domain;
+	            Dns.resolveMx(dnsDomain, function (err, mxRecords) {
+
+	                // If we have a fatal error, then we must assume that there are no records
+	                if (err && err.code !== Dns.NODATA) {
+	                    updateResult(internals.diagnoses.dnsWarnNoRecord);
+	                    return finish();
+	                }
+
+	                if (mxRecords && mxRecords.length) {
+	                    dnsPositive = true;
+	                    return finish();
+	                }
+
+	                var count = 3;
+	                var done = false;
+	                updateResult(internals.diagnoses.dnsWarnNoMXRecord);
+
+	                var handleRecords = function handleRecords(ignoreError, records) {
+
+	                    if (done) {
+	                        return;
+	                    }
+
+	                    --count;
+
+	                    if (records && records.length) {
+	                        done = true;
+	                        return finish();
+	                    }
+
+	                    if (count === 0) {
+	                        // No usable records for the domain can be found
+	                        updateResult(internals.diagnoses.dnsWarnNoRecord);
+	                        done = true;
+	                        finish();
+	                    }
+	                };
+
+	                Dns.resolveCname(dnsDomain, handleRecords);
+	                Dns.resolve4(dnsDomain, handleRecords);
+	                Dns.resolve6(dnsDomain, handleRecords);
+	            });
+
+	            finishImmediately = true;
+	        })();
+	    } else {
+	        var result = finish();
+	        finishImmediately = true;
+	        return result;
+	    } // CheckDNS
+	};
+
+	exports.diagnoses = internals.validate.diagnoses = function () {
+
+	    var diag = {};
+	    var keys = Object.keys(internals.diagnoses);
+	    for (var i = 0; i < keys.length; ++i) {
+	        var key = keys[i];
+	        diag[key] = internals.diagnoses[key];
+	    }
+
+	    return diag;
+	}();
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)));
+
+/***/ },
+/* 23 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	// Load modules
+
+	function _defaults(obj, defaults) { var keys = Object.getOwnPropertyNames(defaults); for (var i = 0; i < keys.length; i++) { var key = keys[i]; var value = Object.getOwnPropertyDescriptor(defaults, key); if (value && value.configurable && obj[key] === undefined) { Object.defineProperty(obj, key, value); } } return obj; }
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : _defaults(subClass, superClass); }
+
+	var Any = __webpack_require__(11);
+	var Ref = __webpack_require__(12);
+	var Hoek = __webpack_require__(2);
+
+	// Declare internals
+
+	var internals = {
+	    precisionRx: /(?:\.(\d+))?(?:[eE]([+-]?\d+))?$/
+	};
+
+	internals.Number = function (_Any) {
+	    _inherits(_class, _Any);
+
+	    function _class() {
+	        _classCallCheck(this, _class);
+
+	        var _this = _possibleConstructorReturn(this, _Any.call(this));
+
+	        _this._type = 'number';
+	        _this._invalids.add(Infinity);
+	        _this._invalids.add(-Infinity);
+	        return _this;
+	    }
+
+	    _class.prototype._base = function _base(value, state, options) {
+
+	        var result = {
+	            errors: null,
+	            value: value
+	        };
+
+	        if (typeof value === 'string' && options.convert) {
+
+	            var number = parseFloat(value);
+	            result.value = isNaN(number) || !isFinite(value) ? NaN : number;
+	        }
+
+	        var isNumber = typeof result.value === 'number' && !isNaN(result.value);
+
+	        if (options.convert && 'precision' in this._flags && isNumber) {
+
+	            // This is conceptually equivalent to using toFixed but it should be much faster
+	            var precision = Math.pow(10, this._flags.precision);
+	            result.value = Math.round(result.value * precision) / precision;
+	        }
+
+	        result.errors = isNumber ? null : this.createError('number.base', null, state, options);
+	        return result;
+	    };
+
+	    _class.prototype.multiple = function multiple(base) {
+
+	        var isRef = Ref.isRef(base);
+
+	        if (!isRef) {
+	            Hoek.assert(typeof base === 'number' && isFinite(base), 'multiple must be a number');
+	            Hoek.assert(base > 0, 'multiple must be greater than 0');
+	        }
+
+	        return this._test('multiple', base, function (value, state, options) {
+
+	            var divisor = isRef ? base(state.reference || state.parent, options) : base;
+
+	            if (isRef && (typeof divisor !== 'number' || !isFinite(divisor))) {
+	                return this.createError('number.ref', { ref: base.key }, state, options);
+	            }
+
+	            if (value % divisor === 0) {
+	                return value;
+	            }
+
+	            return this.createError('number.multiple', { multiple: base, value: value }, state, options);
+	        });
+	    };
+
+	    _class.prototype.integer = function integer() {
+
+	        return this._test('integer', undefined, function (value, state, options) {
+
+	            return Number.isSafeInteger(value) ? value : this.createError('number.integer', { value: value }, state, options);
+	        });
+	    };
+
+	    _class.prototype.negative = function negative() {
+
+	        return this._test('negative', undefined, function (value, state, options) {
+
+	            if (value < 0) {
+	                return value;
+	            }
+
+	            return this.createError('number.negative', { value: value }, state, options);
+	        });
+	    };
+
+	    _class.prototype.positive = function positive() {
+
+	        return this._test('positive', undefined, function (value, state, options) {
+
+	            if (value > 0) {
+	                return value;
+	            }
+
+	            return this.createError('number.positive', { value: value }, state, options);
+	        });
+	    };
+
+	    _class.prototype.precision = function precision(limit) {
+
+	        Hoek.assert(Number.isSafeInteger(limit), 'limit must be an integer');
+	        Hoek.assert(!('precision' in this._flags), 'precision already set');
+
+	        var obj = this._test('precision', limit, function (value, state, options) {
+
+	            var places = value.toString().match(internals.precisionRx);
+	            var decimals = Math.max((places[1] ? places[1].length : 0) - (places[2] ? parseInt(places[2], 10) : 0), 0);
+	            if (decimals <= limit) {
+	                return value;
+	            }
+
+	            return this.createError('number.precision', { limit: limit, value: value }, state, options);
+	        });
+
+	        obj._flags.precision = limit;
+	        return obj;
+	    };
+
+	    return _class;
+	}(Any);
+
+	internals.compare = function (type, compare) {
+
+	    return function (limit) {
+
+	        var isRef = Ref.isRef(limit);
+	        var isNumber = typeof limit === 'number' && !isNaN(limit);
+
+	        Hoek.assert(isNumber || isRef, 'limit must be a number or reference');
+
+	        return this._test(type, limit, function (value, state, options) {
+
+	            var compareTo = void 0;
+	            if (isRef) {
+	                compareTo = limit(state.reference || state.parent, options);
+
+	                if (!(typeof compareTo === 'number' && !isNaN(compareTo))) {
+	                    return this.createError('number.ref', { ref: limit.key }, state, options);
+	                }
+	            } else {
+	                compareTo = limit;
+	            }
+
+	            if (compare(value, compareTo)) {
+	                return value;
+	            }
+
+	            return this.createError('number.' + type, { limit: compareTo, value: value }, state, options);
+	        });
+	    };
+	};
+
+	internals.Number.prototype.min = internals.compare('min', function (value, limit) {
+	    return value >= limit;
+	});
+	internals.Number.prototype.max = internals.compare('max', function (value, limit) {
+	    return value <= limit;
+	});
+	internals.Number.prototype.greater = internals.compare('greater', function (value, limit) {
+	    return value > limit;
+	});
+	internals.Number.prototype.less = internals.compare('less', function (value, limit) {
+	    return value < limit;
+	});
+
+	module.exports = new internals.Number();
+
+/***/ },
+/* 24 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	// Load modules
+
+	function _defaults(obj, defaults) { var keys = Object.getOwnPropertyNames(defaults); for (var i = 0; i < keys.length; i++) { var key = keys[i]; var value = Object.getOwnPropertyDescriptor(defaults, key); if (value && value.configurable && obj[key] === undefined) { Object.defineProperty(obj, key, value); } } return obj; }
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : _defaults(subClass, superClass); }
+
+	var Any = __webpack_require__(11);
+	var Hoek = __webpack_require__(2);
+
+	// Declare internals
+
+	var internals = {
+	    Set: __webpack_require__(15)
+	};
+
+	internals.Boolean = function (_Any) {
+	    _inherits(_class, _Any);
+
+	    function _class() {
+	        _classCallCheck(this, _class);
+
+	        var _this = _possibleConstructorReturn(this, _Any.call(this));
+
+	        _this._type = 'boolean';
+	        _this._flags.insensitive = true;
+	        _this._inner.truthySet = new internals.Set();
+	        _this._inner.falsySet = new internals.Set();
+	        return _this;
+	    }
+
+	    _class.prototype._base = function _base(value, state, options) {
+
+	        var result = {
+	            value: value
+	        };
+
+	        if (typeof value === 'string' && options.convert) {
+
+	            var normalized = this._flags.insensitive ? value.toLowerCase() : value;
+	            result.value = normalized === 'true' ? true : normalized === 'false' ? false : value;
+	        }
+
+	        if (typeof result.value !== 'boolean') {
+	            result.value = this._inner.truthySet.has(value, null, null, this._flags.insensitive) ? true : this._inner.falsySet.has(value, null, null, this._flags.insensitive) ? false : value;
+	        }
+
+	        result.errors = typeof result.value === 'boolean' ? null : this.createError('boolean.base', null, state, options);
+	        return result;
+	    };
+
+	    _class.prototype.truthy = function truthy() {
+
+	        var obj = this.clone();
+	        var values = Hoek.flatten(Array.prototype.slice.call(arguments));
+	        for (var i = 0; i < values.length; ++i) {
+	            var value = values[i];
+
+	            Hoek.assert(value !== undefined, 'Cannot call truthy with undefined');
+	            obj._inner.truthySet.add(value);
+	        }
+	        return obj;
+	    };
+
+	    _class.prototype.falsy = function falsy() {
+
+	        var obj = this.clone();
+	        var values = Hoek.flatten(Array.prototype.slice.call(arguments));
+	        for (var i = 0; i < values.length; ++i) {
+	            var value = values[i];
+
+	            Hoek.assert(value !== undefined, 'Cannot call falsy with undefined');
+	            obj._inner.falsySet.add(value);
+	        }
+	        return obj;
+	    };
+
+	    _class.prototype.insensitive = function insensitive(enabled) {
+
+	        var insensitive = enabled === undefined ? true : !!enabled;
+
+	        if (this._flags.insensitive === insensitive) {
+	            return this;
+	        }
+
+	        var obj = this.clone();
+	        obj._flags.insensitive = insensitive;
+	        return obj;
+	    };
+
+	    _class.prototype.describe = function describe() {
+
+	        var description = Any.prototype.describe.call(this);
+	        description.truthy = [true].concat(this._inner.truthySet.values());
+	        description.falsy = [false].concat(this._inner.falsySet.values());
+	        return description;
+	    };
+
+	    return _class;
+	}(Any);
+
+	module.exports = new internals.Boolean();
+
+/***/ },
+/* 25 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	// Load modules
+
+	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+
+	function _defaults(obj, defaults) { var keys = Object.getOwnPropertyNames(defaults); for (var i = 0; i < keys.length; i++) { var key = keys[i]; var value = Object.getOwnPropertyDescriptor(defaults, key); if (value && value.configurable && obj[key] === undefined) { Object.defineProperty(obj, key, value); } } return obj; }
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : _defaults(subClass, superClass); }
+
+	var Hoek = __webpack_require__(2);
+	var Any = __webpack_require__(11);
+	var Cast = __webpack_require__(16);
+	var Ref = __webpack_require__(12);
+
+	// Declare internals
+
+	var internals = {};
+
+	internals.Alternatives = function (_Any) {
+	    _inherits(_class, _Any);
+
+	    function _class() {
+	        _classCallCheck(this, _class);
+
+	        var _this = _possibleConstructorReturn(this, _Any.call(this));
+
+	        _this._type = 'alternatives';
+	        _this._invalids.remove(null);
+	        _this._inner.matches = [];
+	        return _this;
+	    }
+
+	    _class.prototype._base = function _base(value, state, options) {
+
+	        var errors = [];
+	        var il = this._inner.matches.length;
+	        var baseType = this._baseType;
+
+	        for (var i = 0; i < il; ++i) {
+	            var item = this._inner.matches[i];
+	            var schema = item.schema;
+	            if (!schema) {
+	                var failed = item.is._validate(item.ref(state.reference || state.parent, options), null, options, state.parent).errors;
+
+	                if (failed) {
+	                    if (item.otherwise) {
+	                        return item.otherwise._validate(value, state, options);
+	                    }
+	                } else if (item.then) {
+	                    return item.then._validate(value, state, options);
+	                }
+
+	                if (i === il - 1 && baseType) {
+	                    return baseType._validate(value, state, options);
+	                }
+
+	                continue;
+	            }
+
+	            var result = schema._validate(value, state, options);
+	            if (!result.errors) {
+	                // Found a valid match
+	                return result;
+	            }
+
+	            errors = errors.concat(result.errors);
+	        }
+
+	        if (errors.length) {
+	            return { errors: this.createError('alternatives.child', { reason: errors }, state, options) };
+	        }
+
+	        return { errors: this.createError('alternatives.base', null, state, options) };
+	    };
+
+	    _class.prototype.try = function _try() /* schemas */{
+
+	        var schemas = Hoek.flatten(Array.prototype.slice.call(arguments));
+	        Hoek.assert(schemas.length, 'Cannot add other alternatives without at least one schema');
+
+	        var obj = this.clone();
+
+	        for (var i = 0; i < schemas.length; ++i) {
+	            var cast = Cast.schema(schemas[i]);
+	            if (cast._refs.length) {
+	                obj._refs = obj._refs.concat(cast._refs);
+	            }
+	            obj._inner.matches.push({ schema: cast });
+	        }
+
+	        return obj;
+	    };
+
+	    _class.prototype.when = function when(ref, options) {
+
+	        Hoek.assert(Ref.isRef(ref) || typeof ref === 'string', 'Invalid reference:', ref);
+	        Hoek.assert(options, 'Missing options');
+	        Hoek.assert((typeof options === 'undefined' ? 'undefined' : _typeof(options)) === 'object', 'Invalid options');
+	        Hoek.assert(options.hasOwnProperty('is'), 'Missing "is" directive');
+	        Hoek.assert(options.then !== undefined || options.otherwise !== undefined, 'options must have at least one of "then" or "otherwise"');
+
+	        var obj = this.clone();
+	        var is = Cast.schema(options.is);
+
+	        if (options.is === null || !(Ref.isRef(options.is) || options.is instanceof Any)) {
+
+	            // Only apply required if this wasn't already a schema or a ref, we'll suppose people know what they're doing
+	            is = is.required();
+	        }
+
+	        var item = {
+	            ref: Cast.ref(ref),
+	            is: is,
+	            then: options.then !== undefined ? Cast.schema(options.then) : undefined,
+	            otherwise: options.otherwise !== undefined ? Cast.schema(options.otherwise) : undefined
+	        };
+
+	        if (obj._baseType) {
+
+	            item.then = item.then && obj._baseType.concat(item.then);
+	            item.otherwise = item.otherwise && obj._baseType.concat(item.otherwise);
+	        }
+
+	        Ref.push(obj._refs, item.ref);
+	        obj._refs = obj._refs.concat(item.is._refs);
+
+	        if (item.then && item.then._refs) {
+	            obj._refs = obj._refs.concat(item.then._refs);
+	        }
+
+	        if (item.otherwise && item.otherwise._refs) {
+	            obj._refs = obj._refs.concat(item.otherwise._refs);
+	        }
+
+	        obj._inner.matches.push(item);
+
+	        return obj;
+	    };
+
+	    _class.prototype.describe = function describe() {
+
+	        var description = Any.prototype.describe.call(this);
+	        var alternatives = [];
+	        for (var i = 0; i < this._inner.matches.length; ++i) {
+	            var item = this._inner.matches[i];
+	            if (item.schema) {
+
+	                // try()
+
+	                alternatives.push(item.schema.describe());
+	            } else {
+
+	                // when()
+
+	                var when = {
+	                    ref: item.ref.toString(),
+	                    is: item.is.describe()
+	                };
+
+	                if (item.then) {
+	                    when.then = item.then.describe();
+	                }
+
+	                if (item.otherwise) {
+	                    when.otherwise = item.otherwise.describe();
+	                }
+
+	                alternatives.push(when);
+	            }
+	        }
+
+	        description.alternatives = alternatives;
+	        return description;
+	    };
+
+	    return _class;
+	}(Any);
+
+	module.exports = new internals.Alternatives();
+
+/***/ },
+/* 26 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	// Load modules
+
+	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+
+	function _defaults(obj, defaults) { var keys = Object.getOwnPropertyNames(defaults); for (var i = 0; i < keys.length; i++) { var key = keys[i]; var value = Object.getOwnPropertyDescriptor(defaults, key); if (value && value.configurable && obj[key] === undefined) { Object.defineProperty(obj, key, value); } } return obj; }
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : _defaults(subClass, superClass); }
+
+	var Hoek = __webpack_require__(2);
+	var Topo = __webpack_require__(27);
+	var Any = __webpack_require__(11);
+	var Errors = __webpack_require__(13);
+	var Cast = __webpack_require__(16);
+	var Ref = __webpack_require__(12);
+
+	// Declare internals
+
+	var internals = {};
+
+	internals.Object = function (_Any) {
+	    _inherits(_class, _Any);
+
+	    function _class() {
+	        _classCallCheck(this, _class);
+
+	        var _this = _possibleConstructorReturn(this, _Any.call(this));
+
+	        _this._type = 'object';
+	        _this._inner.children = null;
+	        _this._inner.renames = [];
+	        _this._inner.dependencies = [];
+	        _this._inner.patterns = [];
+	        return _this;
+	    }
+
+	    _class.prototype._base = function _base(value, state, options) {
+
+	        var target = value;
+	        var errors = [];
+	        var finish = function finish() {
+
+	            return {
+	                value: target,
+	                errors: errors.length ? errors : null
+	            };
+	        };
+
+	        if (typeof value === 'string' && options.convert) {
+
+	            value = internals.safeParse(value);
+	        }
+
+	        var type = this._flags.func ? 'function' : 'object';
+	        if (!value || (typeof value === 'undefined' ? 'undefined' : _typeof(value)) !== type || Array.isArray(value)) {
+
+	            errors.push(this.createError(type + '.base', null, state, options));
+	            return finish();
+	        }
+
+	        // Skip if there are no other rules to test
+
+	        if (!this._inner.renames.length && !this._inner.dependencies.length && !this._inner.children && // null allows any keys
+	        !this._inner.patterns.length) {
+
+	            target = value;
+	            return finish();
+	        }
+
+	        // Ensure target is a local copy (parsed) or shallow copy
+
+	        if (target === value) {
+	            if (type === 'object') {
+	                target = Object.create(Object.getPrototypeOf(value));
+	            } else {
+	                target = function target() {
+
+	                    return value.apply(this, arguments);
+	                };
+
+	                target.prototype = Hoek.clone(value.prototype);
+	            }
+
+	            var valueKeys = Object.keys(value);
+	            for (var i = 0; i < valueKeys.length; ++i) {
+	                target[valueKeys[i]] = value[valueKeys[i]];
+	            }
+	        } else {
+	            target = value;
+	        }
+
+	        // Rename keys
+
+	        var renamed = {};
+	        for (var _i = 0; _i < this._inner.renames.length; ++_i) {
+	            var rename = this._inner.renames[_i];
+
+	            if (rename.options.ignoreUndefined && target[rename.from] === undefined) {
+	                continue;
+	            }
+
+	            if (!rename.options.multiple && renamed[rename.to]) {
+
+	                errors.push(this.createError('object.rename.multiple', { from: rename.from, to: rename.to }, state, options));
+	                if (options.abortEarly) {
+	                    return finish();
+	                }
+	            }
+
+	            if (Object.prototype.hasOwnProperty.call(target, rename.to) && !rename.options.override && !renamed[rename.to]) {
+
+	                errors.push(this.createError('object.rename.override', { from: rename.from, to: rename.to }, state, options));
+	                if (options.abortEarly) {
+	                    return finish();
+	                }
+	            }
+
+	            if (target[rename.from] === undefined) {
+	                delete target[rename.to];
+	            } else {
+	                target[rename.to] = target[rename.from];
+	            }
+
+	            renamed[rename.to] = true;
+
+	            if (!rename.options.alias) {
+	                delete target[rename.from];
+	            }
+	        }
+
+	        // Validate schema
+
+	        if (!this._inner.children && // null allows any keys
+	        !this._inner.patterns.length && !this._inner.dependencies.length) {
+
+	            return finish();
+	        }
+
+	        var unprocessed = Hoek.mapToObject(Object.keys(target));
+
+	        if (this._inner.children) {
+	            var stripProps = [];
+
+	            for (var _i2 = 0; _i2 < this._inner.children.length; ++_i2) {
+	                var child = this._inner.children[_i2];
+	                var key = child.key;
+	                var item = target[key];
+
+	                delete unprocessed[key];
+
+	                var localState = { key: key, path: (state.path || '') + (state.path && key ? '.' : '') + key, parent: target, reference: state.reference };
+	                var result = child.schema._validate(item, localState, options);
+	                if (result.errors) {
+	                    errors.push(this.createError('object.child', { key: key, child: child.schema._getLabel(key), reason: result.errors }, localState, options));
+
+	                    if (options.abortEarly) {
+	                        return finish();
+	                    }
+	                } else {
+	                    if (child.schema._flags.strip || result.value === undefined && result.value !== item) {
+	                        stripProps.push(key);
+	                        target[key] = result.finalValue;
+	                    } else if (result.value !== undefined) {
+	                        target[key] = result.value;
+	                    }
+	                }
+	            }
+
+	            for (var _i3 = 0; _i3 < stripProps.length; ++_i3) {
+	                delete target[stripProps[_i3]];
+	            }
+	        }
+
+	        // Unknown keys
+
+	        var unprocessedKeys = Object.keys(unprocessed);
+	        if (unprocessedKeys.length && this._inner.patterns.length) {
+
+	            for (var _i4 = 0; _i4 < unprocessedKeys.length; ++_i4) {
+	                var _key = unprocessedKeys[_i4];
+	                var _localState = { key: _key, path: (state.path ? state.path + '.' : '') + _key, parent: target, reference: state.reference };
+	                var _item = target[_key];
+
+	                for (var j = 0; j < this._inner.patterns.length; ++j) {
+	                    var pattern = this._inner.patterns[j];
+
+	                    if (pattern.regex.test(_key)) {
+	                        delete unprocessed[_key];
+
+	                        var _result = pattern.rule._validate(_item, _localState, options);
+	                        if (_result.errors) {
+	                            errors.push(this.createError('object.child', { key: _key, child: pattern.rule._getLabel(_key), reason: _result.errors }, _localState, options));
+
+	                            if (options.abortEarly) {
+	                                return finish();
+	                            }
+	                        }
+
+	                        if (_result.value !== undefined) {
+	                            target[_key] = _result.value;
+	                        }
+	                    }
+	                }
+	            }
+
+	            unprocessedKeys = Object.keys(unprocessed);
+	        }
+
+	        if ((this._inner.children || this._inner.patterns.length) && unprocessedKeys.length) {
+	            if (options.stripUnknown && this._flags.allowUnknown !== true || options.skipFunctions) {
+
+	                var stripUnknown = options.stripUnknown ? options.stripUnknown === true ? true : !!options.stripUnknown.objects : false;
+
+	                for (var _i5 = 0; _i5 < unprocessedKeys.length; ++_i5) {
+	                    var _key2 = unprocessedKeys[_i5];
+
+	                    if (stripUnknown) {
+	                        delete target[_key2];
+	                        delete unprocessed[_key2];
+	                    } else if (typeof target[_key2] === 'function') {
+	                        delete unprocessed[_key2];
+	                    }
+	                }
+
+	                unprocessedKeys = Object.keys(unprocessed);
+	            }
+
+	            if (unprocessedKeys.length && (this._flags.allowUnknown !== undefined ? !this._flags.allowUnknown : !options.allowUnknown)) {
+
+	                for (var _i6 = 0; _i6 < unprocessedKeys.length; ++_i6) {
+	                    var unprocessedKey = unprocessedKeys[_i6];
+	                    errors.push(this.createError('object.allowUnknown', { child: unprocessedKey }, { key: unprocessedKey, path: state.path + (state.path ? '.' : '') + unprocessedKey }, options));
+	                }
+	            }
+	        }
+
+	        // Validate dependencies
+
+	        for (var _i7 = 0; _i7 < this._inner.dependencies.length; ++_i7) {
+	            var dep = this._inner.dependencies[_i7];
+	            var err = internals[dep.type].call(this, dep.key !== null && target[dep.key], dep.peers, target, { key: dep.key, path: (state.path || '') + (dep.key ? '.' + dep.key : '') }, options);
+	            if (err instanceof Errors.Err) {
+	                errors.push(err);
+	                if (options.abortEarly) {
+	                    return finish();
+	                }
+	            }
+	        }
+
+	        return finish();
+	    };
+
+	    _class.prototype._func = function _func() {
+
+	        var obj = this.clone();
+	        obj._flags.func = true;
+	        return obj;
+	    };
+
+	    _class.prototype.keys = function keys(schema) {
+
+	        Hoek.assert(schema === null || schema === undefined || (typeof schema === 'undefined' ? 'undefined' : _typeof(schema)) === 'object', 'Object schema must be a valid object');
+	        Hoek.assert(!schema || !(schema instanceof Any), 'Object schema cannot be a joi schema');
+
+	        var obj = this.clone();
+
+	        if (!schema) {
+	            obj._inner.children = null;
+	            return obj;
+	        }
+
+	        var children = Object.keys(schema);
+
+	        if (!children.length) {
+	            obj._inner.children = [];
+	            return obj;
+	        }
+
+	        var topo = new Topo();
+	        if (obj._inner.children) {
+	            for (var i = 0; i < obj._inner.children.length; ++i) {
+	                var child = obj._inner.children[i];
+
+	                // Only add the key if we are not going to replace it later
+	                if (children.indexOf(child.key) === -1) {
+	                    topo.add(child, { after: child._refs, group: child.key });
+	                }
+	            }
+	        }
+
+	        for (var _i8 = 0; _i8 < children.length; ++_i8) {
+	            var key = children[_i8];
+	            var _child = schema[key];
+	            try {
+	                var cast = Cast.schema(_child);
+	                topo.add({ key: key, schema: cast }, { after: cast._refs, group: key });
+	            } catch (castErr) {
+	                if (castErr.hasOwnProperty('path')) {
+	                    castErr.path = key + '.' + castErr.path;
+	                } else {
+	                    castErr.path = key;
+	                }
+	                throw castErr;
+	            }
+	        }
+
+	        obj._inner.children = topo.nodes;
+
+	        return obj;
+	    };
+
+	    _class.prototype.unknown = function unknown(allow) {
+
+	        var value = allow !== false;
+
+	        if (this._flags.allowUnknown === value) {
+	            return this;
+	        }
+
+	        var obj = this.clone();
+	        obj._flags.allowUnknown = value;
+	        return obj;
+	    };
+
+	    _class.prototype.length = function length(limit) {
+
+	        Hoek.assert(Number.isSafeInteger(limit) && limit >= 0, 'limit must be a positive integer');
+
+	        return this._test('length', limit, function (value, state, options) {
+
+	            if (Object.keys(value).length === limit) {
+	                return value;
+	            }
+
+	            return this.createError('object.length', { limit: limit }, state, options);
+	        });
+	    };
+
+	    _class.prototype.arity = function arity(n) {
+
+	        Hoek.assert(Number.isSafeInteger(n) && n >= 0, 'n must be a positive integer');
+
+	        return this._test('arity', n, function (value, state, options) {
+
+	            if (value.length === n) {
+	                return value;
+	            }
+
+	            return this.createError('function.arity', { n: n }, state, options);
+	        });
+	    };
+
+	    _class.prototype.minArity = function minArity(n) {
+
+	        Hoek.assert(Number.isSafeInteger(n) && n > 0, 'n must be a strict positive integer');
+
+	        return this._test('minArity', n, function (value, state, options) {
+
+	            if (value.length >= n) {
+	                return value;
+	            }
+
+	            return this.createError('function.minArity', { n: n }, state, options);
+	        });
+	    };
+
+	    _class.prototype.maxArity = function maxArity(n) {
+
+	        Hoek.assert(Number.isSafeInteger(n) && n >= 0, 'n must be a positive integer');
+
+	        return this._test('maxArity', n, function (value, state, options) {
+
+	            if (value.length <= n) {
+	                return value;
+	            }
+
+	            return this.createError('function.maxArity', { n: n }, state, options);
+	        });
+	    };
+
+	    _class.prototype.min = function min(limit) {
+
+	        Hoek.assert(Number.isSafeInteger(limit) && limit >= 0, 'limit must be a positive integer');
+
+	        return this._test('min', limit, function (value, state, options) {
+
+	            if (Object.keys(value).length >= limit) {
+	                return value;
+	            }
+
+	            return this.createError('object.min', { limit: limit }, state, options);
+	        });
+	    };
+
+	    _class.prototype.max = function max(limit) {
+
+	        Hoek.assert(Number.isSafeInteger(limit) && limit >= 0, 'limit must be a positive integer');
+
+	        return this._test('max', limit, function (value, state, options) {
+
+	            if (Object.keys(value).length <= limit) {
+	                return value;
+	            }
+
+	            return this.createError('object.max', { limit: limit }, state, options);
+	        });
+	    };
+
+	    _class.prototype.pattern = function pattern(_pattern, schema) {
+
+	        Hoek.assert(_pattern instanceof RegExp, 'Invalid regular expression');
+	        Hoek.assert(schema !== undefined, 'Invalid rule');
+
+	        _pattern = new RegExp(_pattern.source, _pattern.ignoreCase ? 'i' : undefined); // Future version should break this and forbid unsupported regex flags
+
+	        try {
+	            schema = Cast.schema(schema);
+	        } catch (castErr) {
+	            if (castErr.hasOwnProperty('path')) {
+	                castErr.message = castErr.message + '(' + castErr.path + ')';
+	            }
+
+	            throw castErr;
+	        }
+
+	        var obj = this.clone();
+	        obj._inner.patterns.push({ regex: _pattern, rule: schema });
+	        return obj;
+	    };
+
+	    _class.prototype.schema = function schema() {
+
+	        return this._test('schema', null, function (value, state, options) {
+
+	            if (value instanceof Any) {
+	                return value;
+	            }
+
+	            return this.createError('object.schema', null, state, options);
+	        });
+	    };
+
+	    _class.prototype.with = function _with(key, peers) {
+
+	        return this._dependency('with', key, peers);
+	    };
+
+	    _class.prototype.without = function without(key, peers) {
+
+	        return this._dependency('without', key, peers);
+	    };
+
+	    _class.prototype.xor = function xor() {
+
+	        var peers = Hoek.flatten(Array.prototype.slice.call(arguments));
+	        return this._dependency('xor', null, peers);
+	    };
+
+	    _class.prototype.or = function or() {
+
+	        var peers = Hoek.flatten(Array.prototype.slice.call(arguments));
+	        return this._dependency('or', null, peers);
+	    };
+
+	    _class.prototype.and = function and() {
+
+	        var peers = Hoek.flatten(Array.prototype.slice.call(arguments));
+	        return this._dependency('and', null, peers);
+	    };
+
+	    _class.prototype.nand = function nand() {
+
+	        var peers = Hoek.flatten(Array.prototype.slice.call(arguments));
+	        return this._dependency('nand', null, peers);
+	    };
+
+	    _class.prototype.requiredKeys = function requiredKeys(children) {
+
+	        children = Hoek.flatten(Array.prototype.slice.call(arguments));
+	        return this.applyFunctionToChildren(children, 'required');
+	    };
+
+	    _class.prototype.optionalKeys = function optionalKeys(children) {
+
+	        children = Hoek.flatten(Array.prototype.slice.call(arguments));
+	        return this.applyFunctionToChildren(children, 'optional');
+	    };
+
+	    _class.prototype.forbiddenKeys = function forbiddenKeys(children) {
+
+	        children = Hoek.flatten(Array.prototype.slice.call(arguments));
+	        return this.applyFunctionToChildren(children, 'forbidden');
+	    };
+
+	    _class.prototype.rename = function rename(from, to, options) {
+
+	        Hoek.assert(typeof from === 'string', 'Rename missing the from argument');
+	        Hoek.assert(typeof to === 'string', 'Rename missing the to argument');
+	        Hoek.assert(to !== from, 'Cannot rename key to same name:', from);
+
+	        for (var i = 0; i < this._inner.renames.length; ++i) {
+	            Hoek.assert(this._inner.renames[i].from !== from, 'Cannot rename the same key multiple times');
+	        }
+
+	        var obj = this.clone();
+
+	        obj._inner.renames.push({
+	            from: from,
+	            to: to,
+	            options: Hoek.applyToDefaults(internals.renameDefaults, options || {})
+	        });
+
+	        return obj;
+	    };
+
+	    _class.prototype.applyFunctionToChildren = function applyFunctionToChildren(children, fn, args, root) {
+
+	        children = [].concat(children);
+	        Hoek.assert(children.length > 0, 'expected at least one children');
+
+	        var groupedChildren = internals.groupChildren(children);
+	        var obj = void 0;
+
+	        if ('' in groupedChildren) {
+	            obj = this[fn].apply(this, args);
+	            delete groupedChildren[''];
+	        } else {
+	            obj = this.clone();
+	        }
+
+	        if (obj._inner.children) {
+	            root = root ? root + '.' : '';
+
+	            for (var i = 0; i < obj._inner.children.length; ++i) {
+	                var child = obj._inner.children[i];
+	                var group = groupedChildren[child.key];
+
+	                if (group) {
+	                    obj._inner.children[i] = {
+	                        key: child.key,
+	                        _refs: child._refs,
+	                        schema: child.schema.applyFunctionToChildren(group, fn, args, root + child.key)
+	                    };
+
+	                    delete groupedChildren[child.key];
+	                }
+	            }
+	        }
+
+	        var remaining = Object.keys(groupedChildren);
+	        Hoek.assert(remaining.length === 0, 'unknown key(s)', remaining.join(', '));
+
+	        return obj;
+	    };
+
+	    _class.prototype._dependency = function _dependency(type, key, peers) {
+
+	        peers = [].concat(peers);
+	        for (var i = 0; i < peers.length; ++i) {
+	            Hoek.assert(typeof peers[i] === 'string', type, 'peers must be a string or array of strings');
+	        }
+
+	        var obj = this.clone();
+	        obj._inner.dependencies.push({ type: type, key: key, peers: peers });
+	        return obj;
+	    };
+
+	    _class.prototype.describe = function describe(shallow) {
+
+	        var description = Any.prototype.describe.call(this);
+
+	        if (description.rules) {
+	            for (var i = 0; i < description.rules.length; ++i) {
+	                var rule = description.rules[i];
+	                // Coverage off for future-proof descriptions, only object().assert() is use right now
+	                if ( /* $lab:coverage:off$ */rule.arg && _typeof(rule.arg) === 'object' && rule.arg.schema && rule.arg.ref /* $lab:coverage:on$ */) {
+	                        rule.arg = {
+	                            schema: rule.arg.schema.describe(),
+	                            ref: rule.arg.ref.toString()
+	                        };
+	                    }
+	            }
+	        }
+
+	        if (this._inner.children && !shallow) {
+
+	            description.children = {};
+	            for (var _i9 = 0; _i9 < this._inner.children.length; ++_i9) {
+	                var child = this._inner.children[_i9];
+	                description.children[child.key] = child.schema.describe();
+	            }
+	        }
+
+	        if (this._inner.dependencies.length) {
+	            description.dependencies = Hoek.clone(this._inner.dependencies);
+	        }
+
+	        if (this._inner.patterns.length) {
+	            description.patterns = [];
+
+	            for (var _i10 = 0; _i10 < this._inner.patterns.length; ++_i10) {
+	                var pattern = this._inner.patterns[_i10];
+	                description.patterns.push({ regex: pattern.regex.toString(), rule: pattern.rule.describe() });
+	            }
+	        }
+
+	        if (this._inner.renames.length > 0) {
+	            description.renames = Hoek.clone(this._inner.renames);
+	        }
+
+	        return description;
+	    };
+
+	    _class.prototype.assert = function assert(ref, schema, message) {
+
+	        ref = Cast.ref(ref);
+	        Hoek.assert(ref.isContext || ref.depth > 1, 'Cannot use assertions for root level references - use direct key rules instead');
+	        message = message || 'pass the assertion test';
+
+	        try {
+	            schema = Cast.schema(schema);
+	        } catch (castErr) {
+	            if (castErr.hasOwnProperty('path')) {
+	                castErr.message = castErr.message + '(' + castErr.path + ')';
+	            }
+
+	            throw castErr;
+	        }
+
+	        var key = ref.path[ref.path.length - 1];
+	        var path = ref.path.join('.');
+
+	        return this._test('assert', { schema: schema, ref: ref }, function (value, state, options) {
+
+	            var result = schema._validate(ref(value), null, options, value);
+	            if (!result.errors) {
+	                return value;
+	            }
+
+	            var localState = Hoek.merge({}, state);
+	            localState.key = key;
+	            localState.path = path;
+	            return this.createError('object.assert', { ref: localState.path, message: message }, localState, options);
+	        });
+	    };
+
+	    _class.prototype.type = function type(constructor, name) {
+
+	        Hoek.assert(typeof constructor === 'function', 'type must be a constructor function');
+	        var typeData = {
+	            name: name || constructor.name,
+	            ctor: constructor
+	        };
+
+	        return this._test('type', typeData, function (value, state, options) {
+
+	            if (value instanceof constructor) {
+	                return value;
+	            }
+
+	            return this.createError('object.type', { type: typeData.name }, state, options);
+	        });
+	    };
+
+	    _class.prototype.ref = function ref() {
+
+	        return this._test('ref', null, function (value, state, options) {
+
+	            if (Ref.isRef(value)) {
+	                return value;
+	            }
+
+	            return this.createError('function.ref', null, state, options);
+	        });
+	    };
+
+	    return _class;
+	}(Any);
+
+	internals.safeParse = function (value) {
+
+	    try {
+	        return JSON.parse(value);
+	    } catch (parseErr) {}
+
+	    return value;
+	};
+
+	internals.renameDefaults = {
+	    alias: false, // Keep old value in place
+	    multiple: false, // Allow renaming multiple keys into the same target
+	    override: false // Overrides an existing key
+	};
+
+	internals.groupChildren = function (children) {
+
+	    children.sort();
+
+	    var grouped = {};
+
+	    for (var i = 0; i < children.length; ++i) {
+	        var child = children[i];
+	        Hoek.assert(typeof child === 'string', 'children must be strings');
+	        var group = child.split('.')[0];
+	        var childGroup = grouped[group] = grouped[group] || [];
+	        childGroup.push(child.substring(group.length + 1));
+	    }
+
+	    return grouped;
+	};
+
+	internals.keysToLabels = function (schema, keys) {
+
+	    var children = schema._inner.children;
+
+	    if (!children) {
+	        return keys;
+	    }
+
+	    var findLabel = function findLabel(key) {
+
+	        var matchingChild = children.find(function (child) {
+	            return child.key === key;
+	        });
+	        return matchingChild ? matchingChild.schema._getLabel(key) : key;
+	    };
+
+	    if (Array.isArray(keys)) {
+	        return keys.map(findLabel);
+	    }
+
+	    return findLabel(keys);
+	};
+
+	internals.with = function (value, peers, parent, state, options) {
+
+	    if (value === undefined) {
+	        return value;
+	    }
+
+	    for (var i = 0; i < peers.length; ++i) {
+	        var peer = peers[i];
+	        if (!Object.prototype.hasOwnProperty.call(parent, peer) || parent[peer] === undefined) {
+
+	            return this.createError('object.with', {
+	                main: state.key,
+	                mainWithLabel: internals.keysToLabels(this, state.key),
+	                peer: peer,
+	                peerWithLabel: internals.keysToLabels(this, peer)
+	            }, state, options);
+	        }
+	    }
+
+	    return value;
+	};
+
+	internals.without = function (value, peers, parent, state, options) {
+
+	    if (value === undefined) {
+	        return value;
+	    }
+
+	    for (var i = 0; i < peers.length; ++i) {
+	        var peer = peers[i];
+	        if (Object.prototype.hasOwnProperty.call(parent, peer) && parent[peer] !== undefined) {
+
+	            return this.createError('object.without', {
+	                main: state.key,
+	                mainWithLabel: internals.keysToLabels(this, state.key),
+	                peer: peer,
+	                peerWithLabel: internals.keysToLabels(this, peer)
+	            }, state, options);
+	        }
+	    }
+
+	    return value;
+	};
+
+	internals.xor = function (value, peers, parent, state, options) {
+
+	    var present = [];
+	    for (var i = 0; i < peers.length; ++i) {
+	        var peer = peers[i];
+	        if (Object.prototype.hasOwnProperty.call(parent, peer) && parent[peer] !== undefined) {
+
+	            present.push(peer);
+	        }
+	    }
+
+	    if (present.length === 1) {
+	        return value;
+	    }
+
+	    var context = { peers: peers, peersWithLabels: internals.keysToLabels(this, peers) };
+
+	    if (present.length === 0) {
+	        return this.createError('object.missing', context, state, options);
+	    }
+
+	    return this.createError('object.xor', context, state, options);
+	};
+
+	internals.or = function (value, peers, parent, state, options) {
+
+	    for (var i = 0; i < peers.length; ++i) {
+	        var peer = peers[i];
+	        if (Object.prototype.hasOwnProperty.call(parent, peer) && parent[peer] !== undefined) {
+	            return value;
+	        }
+	    }
+
+	    return this.createError('object.missing', {
+	        peers: peers,
+	        peersWithLabels: internals.keysToLabels(this, peers)
+	    }, state, options);
+	};
+
+	internals.and = function (value, peers, parent, state, options) {
+
+	    var missing = [];
+	    var present = [];
+	    var count = peers.length;
+	    for (var i = 0; i < count; ++i) {
+	        var peer = peers[i];
+	        if (!Object.prototype.hasOwnProperty.call(parent, peer) || parent[peer] === undefined) {
+
+	            missing.push(peer);
+	        } else {
+	            present.push(peer);
+	        }
+	    }
+
+	    var aon = missing.length === count || present.length === count;
+
+	    if (!aon) {
+
+	        return this.createError('object.and', {
+	            present: present,
+	            presentWithLabels: internals.keysToLabels(this, present),
+	            missing: missing,
+	            missingWithLabels: internals.keysToLabels(this, missing)
+	        }, state, options);
+	    }
+	};
+
+	internals.nand = function (value, peers, parent, state, options) {
+
+	    var present = [];
+	    for (var i = 0; i < peers.length; ++i) {
+	        var peer = peers[i];
+	        if (Object.prototype.hasOwnProperty.call(parent, peer) && parent[peer] !== undefined) {
+
+	            present.push(peer);
+	        }
+	    }
+
+	    var values = Hoek.clone(peers);
+	    var main = values.splice(0, 1)[0];
+	    var allPresent = present.length === peers.length;
+	    return allPresent ? this.createError('object.nand', {
+	        main: main,
+	        mainWithLabel: internals.keysToLabels(this, main),
+	        peers: values,
+	        peersWithLabels: internals.keysToLabels(this, values)
+	    }, state, options) : null;
+	};
+
+	module.exports = new internals.Object();
+
+/***/ },
+/* 27 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	// Load modules
+
+	var Hoek = __webpack_require__(2);
+
+	// Declare internals
+
+	var internals = {};
+
+	exports = module.exports = internals.Topo = function () {
+
+	    this._items = [];
+	    this.nodes = [];
+	};
+
+	internals.Topo.prototype.add = function (nodes, options) {
+	    var _this = this;
+
+	    options = options || {};
+
+	    // Validate rules
+
+	    var before = [].concat(options.before || []);
+	    var after = [].concat(options.after || []);
+	    var group = options.group || '?';
+	    var sort = options.sort || 0; // Used for merging only
+
+	    Hoek.assert(before.indexOf(group) === -1, 'Item cannot come before itself:', group);
+	    Hoek.assert(before.indexOf('?') === -1, 'Item cannot come before unassociated items');
+	    Hoek.assert(after.indexOf(group) === -1, 'Item cannot come after itself:', group);
+	    Hoek.assert(after.indexOf('?') === -1, 'Item cannot come after unassociated items');
+
+	    [].concat(nodes).forEach(function (node, i) {
+
+	        var item = {
+	            seq: _this._items.length,
+	            sort: sort,
+	            before: before,
+	            after: after,
+	            group: group,
+	            node: node
+	        };
+
+	        _this._items.push(item);
+	    });
+
+	    // Insert event
+
+	    var error = this._sort();
+	    Hoek.assert(!error, 'item', group !== '?' ? 'added into group ' + group : '', 'created a dependencies error');
+
+	    return this.nodes;
+	};
+
+	internals.Topo.prototype.merge = function (others) {
+
+	    others = [].concat(others);
+	    for (var i = 0; i < others.length; ++i) {
+	        var other = others[i];
+	        if (other) {
+	            for (var j = 0; j < other._items.length; ++j) {
+	                var item = Hoek.shallow(other._items[j]);
+	                this._items.push(item);
+	            }
+	        }
+	    }
+
+	    // Sort items
+
+	    this._items.sort(internals.mergeSort);
+	    for (var _i = 0; _i < this._items.length; ++_i) {
+	        this._items[_i].seq = _i;
+	    }
+
+	    var error = this._sort();
+	    Hoek.assert(!error, 'merge created a dependencies error');
+
+	    return this.nodes;
+	};
+
+	internals.mergeSort = function (a, b) {
+
+	    return a.sort === b.sort ? 0 : a.sort < b.sort ? -1 : 1;
+	};
+
+	internals.Topo.prototype._sort = function () {
+
+	    // Construct graph
+
+	    var graph = {};
+	    var graphAfters = Object.create(null); // A prototype can bungle lookups w/ false positives
+	    var groups = Object.create(null);
+
+	    for (var i = 0; i < this._items.length; ++i) {
+	        var item = this._items[i];
+	        var seq = item.seq; // Unique across all items
+	        var group = item.group;
+
+	        // Determine Groups
+
+	        groups[group] = groups[group] || [];
+	        groups[group].push(seq);
+
+	        // Build intermediary graph using 'before'
+
+	        graph[seq] = item.before;
+
+	        // Build second intermediary graph with 'after'
+
+	        var after = item.after;
+	        for (var j = 0; j < after.length; ++j) {
+	            graphAfters[after[j]] = (graphAfters[after[j]] || []).concat(seq);
+	        }
+	    }
+
+	    // Expand intermediary graph
+
+	    var graphNodes = Object.keys(graph);
+	    for (var _i2 = 0; _i2 < graphNodes.length; ++_i2) {
+	        var node = graphNodes[_i2];
+	        var expandedGroups = [];
+
+	        var graphNodeItems = Object.keys(graph[node]);
+	        for (var _j = 0; _j < graphNodeItems.length; ++_j) {
+	            var _group = graph[node][graphNodeItems[_j]];
+	            groups[_group] = groups[_group] || [];
+
+	            for (var k = 0; k < groups[_group].length; ++k) {
+	                expandedGroups.push(groups[_group][k]);
+	            }
+	        }
+	        graph[node] = expandedGroups;
+	    }
+
+	    // Merge intermediary graph using graphAfters into final graph
+
+	    var afterNodes = Object.keys(graphAfters);
+	    for (var _i3 = 0; _i3 < afterNodes.length; ++_i3) {
+	        var _group2 = afterNodes[_i3];
+
+	        if (groups[_group2]) {
+	            for (var _j2 = 0; _j2 < groups[_group2].length; ++_j2) {
+	                var _node = groups[_group2][_j2];
+	                graph[_node] = graph[_node].concat(graphAfters[_group2]);
+	            }
+	        }
+	    }
+
+	    // Compile ancestors
+
+	    var children = void 0;
+	    var ancestors = {};
+	    graphNodes = Object.keys(graph);
+	    for (var _i4 = 0; _i4 < graphNodes.length; ++_i4) {
+	        var _node2 = graphNodes[_i4];
+	        children = graph[_node2];
+
+	        for (var _j3 = 0; _j3 < children.length; ++_j3) {
+	            ancestors[children[_j3]] = (ancestors[children[_j3]] || []).concat(_node2);
+	        }
+	    }
+
+	    // Topo sort
+
+	    var visited = {};
+	    var sorted = [];
+
+	    for (var _i5 = 0; _i5 < this._items.length; ++_i5) {
+	        var next = _i5;
+
+	        if (ancestors[_i5]) {
+	            next = null;
+	            for (var _j4 = 0; _j4 < this._items.length; ++_j4) {
+	                if (visited[_j4] === true) {
+	                    continue;
+	                }
+
+	                if (!ancestors[_j4]) {
+	                    ancestors[_j4] = [];
+	                }
+
+	                var shouldSeeCount = ancestors[_j4].length;
+	                var seenCount = 0;
+	                for (var _k = 0; _k < shouldSeeCount; ++_k) {
+	                    if (sorted.indexOf(ancestors[_j4][_k]) >= 0) {
+	                        ++seenCount;
+	                    }
+	                }
+
+	                if (seenCount === shouldSeeCount) {
+	                    next = _j4;
+	                    break;
+	                }
+	            }
+	        }
+
+	        if (next !== null) {
+	            next = next.toString(); // Normalize to string TODO: replace with seq
+	            visited[next] = true;
+	            sorted.push(next);
+	        }
+	    }
+
+	    if (sorted.length !== this._items.length) {
+	        return new Error('Invalid dependencies');
+	    }
+
+	    var seqIndex = {};
+	    for (var _i6 = 0; _i6 < this._items.length; ++_i6) {
+	        var _item = this._items[_i6];
+	        seqIndex[_item.seq] = _item;
+	    }
+
+	    var sortedNodes = [];
+	    this._items = sorted.map(function (value) {
+
+	        var sortedItem = seqIndex[value];
+	        sortedNodes.push(sortedItem.node);
+	        return sortedItem;
+	    });
+
+	    this.nodes = sortedNodes;
+	};
+
+/***/ },
+/* 28 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	// Load modules
+
+	var Joi = __webpack_require__(1);
+
+	// Declare internals
+
+	var internals = {};
+
+	exports.options = Joi.object({
+	    abortEarly: Joi.boolean(),
+	    convert: Joi.boolean(),
+	    allowUnknown: Joi.boolean(),
+	    skipFunctions: Joi.boolean(),
+	    stripUnknown: [Joi.boolean(), Joi.object({ arrays: Joi.boolean(), objects: Joi.boolean() }).or('arrays', 'objects')],
+	    language: Joi.object(),
+	    presence: Joi.string().only('required', 'optional', 'forbidden', 'ignore'),
+	    raw: Joi.boolean(),
+	    context: Joi.object(),
+	    strip: Joi.boolean(),
+	    noDefaults: Joi.boolean()
+	}).strict();
+
+/***/ },
+/* 29 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	// Load modules
+
+	function _defaults(obj, defaults) { var keys = Object.getOwnPropertyNames(defaults); for (var i = 0; i < keys.length; i++) { var key = keys[i]; var value = Object.getOwnPropertyDescriptor(defaults, key); if (value && value.configurable && obj[key] === undefined) { Object.defineProperty(obj, key, value); } } return obj; }
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : _defaults(subClass, superClass); }
+
+	var Any = __webpack_require__(11);
+	var Hoek = __webpack_require__(2);
+
+	// Declare internals
+
+	var internals = {};
+
+	internals.Lazy = function (_Any) {
+	    _inherits(_class, _Any);
+
+	    function _class() {
+	        _classCallCheck(this, _class);
+
+	        var _this = _possibleConstructorReturn(this, _Any.call(this));
+
+	        _this._type = 'lazy';
+	        return _this;
+	    }
+
+	    _class.prototype._base = function _base(value, state, options) {
+
+	        var result = { value: value };
+	        var lazy = this._flags.lazy;
+
+	        if (!lazy) {
+	            result.errors = this.createError('lazy.base', null, state, options);
+	            return result;
+	        }
+
+	        var schema = lazy();
+
+	        if (!(schema instanceof Any)) {
+	            result.errors = this.createError('lazy.schema', null, state, options);
+	            return result;
+	        }
+
+	        return schema._validate(value, state, options);
+	    };
+
+	    _class.prototype.set = function set(fn) {
+
+	        Hoek.assert(typeof fn === 'function', 'You must provide a function as first argument');
+
+	        var obj = this.clone();
+	        obj._flags.lazy = fn;
+	        return obj;
+	    };
+
+	    return _class;
+	}(Any);
+
+	module.exports = new internals.Lazy();
+
+/***/ },
+/* 30 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	// Load modules
+
+	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+
+	function _defaults(obj, defaults) { var keys = Object.getOwnPropertyNames(defaults); for (var i = 0; i < keys.length; i++) { var key = keys[i]; var value = Object.getOwnPropertyDescriptor(defaults, key); if (value && value.configurable && obj[key] === undefined) { Object.defineProperty(obj, key, value); } } return obj; }
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : _defaults(subClass, superClass); }
+
+	var Any = __webpack_require__(11);
+	var Cast = __webpack_require__(16);
+	var Ref = __webpack_require__(12);
+	var Hoek = __webpack_require__(2);
+
+	// Declare internals
+
+	var internals = {};
+
+	internals.fastSplice = function (arr, i) {
+
+	    var pos = i;
+	    while (pos < arr.length) {
+	        arr[pos++] = arr[pos];
+	    }
+
+	    --arr.length;
+	};
+
+	internals.Array = function (_Any) {
+	    _inherits(_class, _Any);
+
+	    function _class() {
+	        _classCallCheck(this, _class);
+
+	        var _this = _possibleConstructorReturn(this, _Any.call(this));
+
+	        _this._type = 'array';
+	        _this._inner.items = [];
+	        _this._inner.ordereds = [];
+	        _this._inner.inclusions = [];
+	        _this._inner.exclusions = [];
+	        _this._inner.requireds = [];
+	        _this._flags.sparse = false;
+	        return _this;
+	    }
+
+	    _class.prototype._base = function _base(value, state, options) {
+
+	        var result = {
+	            value: value
+	        };
+
+	        if (typeof value === 'string' && options.convert) {
+
+	            internals.safeParse(value, result);
+	        }
+
+	        var isArray = Array.isArray(result.value);
+	        var wasArray = isArray;
+	        if (options.convert && this._flags.single && !isArray) {
+	            result.value = [result.value];
+	            isArray = true;
+	        }
+
+	        if (!isArray) {
+	            result.errors = this.createError('array.base', null, state, options);
+	            return result;
+	        }
+
+	        if (this._inner.inclusions.length || this._inner.exclusions.length || this._inner.requireds.length || this._inner.ordereds.length || !this._flags.sparse) {
+
+	            // Clone the array so that we don't modify the original
+	            if (wasArray) {
+	                result.value = result.value.slice(0);
+	            }
+
+	            result.errors = this._checkItems.call(this, result.value, wasArray, state, options);
+
+	            if (result.errors && wasArray && options.convert && this._flags.single) {
+
+	                // Attempt a 2nd pass by putting the array inside one.
+	                var previousErrors = result.errors;
+
+	                result.value = [result.value];
+	                result.errors = this._checkItems.call(this, result.value, wasArray, state, options);
+
+	                if (result.errors) {
+
+	                    // Restore previous errors and value since this didn't validate either.
+	                    result.errors = previousErrors;
+	                    result.value = result.value[0];
+	                }
+	            }
+	        }
+
+	        return result;
+	    };
+
+	    _class.prototype._checkItems = function _checkItems(items, wasArray, state, options) {
+
+	        var errors = [];
+	        var errored = void 0;
+
+	        var requireds = this._inner.requireds.slice();
+	        var ordereds = this._inner.ordereds.slice();
+	        var inclusions = this._inner.inclusions.concat(requireds);
+
+	        var il = items.length;
+	        for (var i = 0; i < il; ++i) {
+	            errored = false;
+	            var item = items[i];
+	            var isValid = false;
+	            var key = wasArray ? i : state.key;
+	            var path = wasArray ? (state.path ? state.path + '.' : '') + i : state.path;
+	            var localState = { key: key, path: path, parent: state.parent, reference: state.reference };
+	            var res = void 0;
+
+	            // Sparse
+
+	            if (!this._flags.sparse && item === undefined) {
+	                errors.push(this.createError('array.sparse', null, { key: state.key, path: localState.path, pos: i }, options));
+
+	                if (options.abortEarly) {
+	                    return errors;
+	                }
+
+	                continue;
+	            }
+
+	            // Exclusions
+
+	            for (var j = 0; j < this._inner.exclusions.length; ++j) {
+	                res = this._inner.exclusions[j]._validate(item, localState, {}); // Not passing options to use defaults
+
+	                if (!res.errors) {
+	                    errors.push(this.createError(wasArray ? 'array.excludes' : 'array.excludesSingle', { pos: i, value: item }, { key: state.key, path: localState.path }, options));
+	                    errored = true;
+
+	                    if (options.abortEarly) {
+	                        return errors;
+	                    }
+
+	                    break;
+	                }
+	            }
+
+	            if (errored) {
+	                continue;
+	            }
+
+	            // Ordered
+	            if (this._inner.ordereds.length) {
+	                if (ordereds.length > 0) {
+	                    var ordered = ordereds.shift();
+	                    res = ordered._validate(item, localState, options);
+	                    if (!res.errors) {
+	                        if (ordered._flags.strip) {
+	                            internals.fastSplice(items, i);
+	                            --i;
+	                            --il;
+	                        } else if (!this._flags.sparse && res.value === undefined) {
+	                            errors.push(this.createError('array.sparse', null, { key: state.key, path: localState.path, pos: i }, options));
+
+	                            if (options.abortEarly) {
+	                                return errors;
+	                            }
+
+	                            continue;
+	                        } else {
+	                            items[i] = res.value;
+	                        }
+	                    } else {
+	                        errors.push(this.createError('array.ordered', { pos: i, reason: res.errors, value: item }, { key: state.key, path: localState.path }, options));
+	                        if (options.abortEarly) {
+	                            return errors;
+	                        }
+	                    }
+	                    continue;
+	                } else if (!this._inner.items.length) {
+	                    errors.push(this.createError('array.orderedLength', { pos: i, limit: this._inner.ordereds.length }, { key: state.key, path: localState.path }, options));
+	                    if (options.abortEarly) {
+	                        return errors;
+	                    }
+	                    continue;
+	                }
+	            }
+
+	            // Requireds
+
+	            var requiredChecks = [];
+	            var jl = requireds.length;
+	            for (var _j = 0; _j < jl; ++_j) {
+	                res = requiredChecks[_j] = requireds[_j]._validate(item, localState, options);
+	                if (!res.errors) {
+	                    items[i] = res.value;
+	                    isValid = true;
+	                    internals.fastSplice(requireds, _j);
+	                    --_j;
+	                    --jl;
+
+	                    if (!this._flags.sparse && res.value === undefined) {
+	                        errors.push(this.createError('array.sparse', null, { key: state.key, path: localState.path, pos: i }, options));
+
+	                        if (options.abortEarly) {
+	                            return errors;
+	                        }
+	                    }
+
+	                    break;
+	                }
+	            }
+
+	            if (isValid) {
+	                continue;
+	            }
+
+	            // Inclusions
+
+	            var stripUnknown = options.stripUnknown ? options.stripUnknown === true ? true : !!options.stripUnknown.arrays : false;
+
+	            jl = inclusions.length;
+	            for (var _j2 = 0; _j2 < jl; ++_j2) {
+	                var inclusion = inclusions[_j2];
+
+	                // Avoid re-running requireds that already didn't match in the previous loop
+	                var previousCheck = requireds.indexOf(inclusion);
+	                if (previousCheck !== -1) {
+	                    res = requiredChecks[previousCheck];
+	                } else {
+	                    res = inclusion._validate(item, localState, options);
+
+	                    if (!res.errors) {
+	                        if (inclusion._flags.strip) {
+	                            internals.fastSplice(items, i);
+	                            --i;
+	                            --il;
+	                        } else if (!this._flags.sparse && res.value === undefined) {
+	                            errors.push(this.createError('array.sparse', null, { key: state.key, path: localState.path, pos: i }, options));
+	                            errored = true;
+	                        } else {
+	                            items[i] = res.value;
+	                        }
+	                        isValid = true;
+	                        break;
+	                    }
+	                }
+
+	                // Return the actual error if only one inclusion defined
+	                if (jl === 1) {
+	                    if (stripUnknown) {
+	                        internals.fastSplice(items, i);
+	                        --i;
+	                        --il;
+	                        isValid = true;
+	                        break;
+	                    }
+
+	                    errors.push(this.createError(wasArray ? 'array.includesOne' : 'array.includesOneSingle', { pos: i, reason: res.errors, value: item }, { key: state.key, path: localState.path }, options));
+	                    errored = true;
+
+	                    if (options.abortEarly) {
+	                        return errors;
+	                    }
+
+	                    break;
+	                }
+	            }
+
+	            if (errored) {
+	                continue;
+	            }
+
+	            if (this._inner.inclusions.length && !isValid) {
+	                if (stripUnknown) {
+	                    internals.fastSplice(items, i);
+	                    --i;
+	                    --il;
+	                    continue;
+	                }
+
+	                errors.push(this.createError(wasArray ? 'array.includes' : 'array.includesSingle', { pos: i, value: item }, { key: state.key, path: localState.path }, options));
+
+	                if (options.abortEarly) {
+	                    return errors;
+	                }
+	            }
+	        }
+
+	        if (requireds.length) {
+	            this._fillMissedErrors.call(this, errors, requireds, state, options);
+	        }
+
+	        if (ordereds.length) {
+	            this._fillOrderedErrors.call(this, errors, ordereds, state, options);
+	        }
+
+	        return errors.length ? errors : null;
+	    };
+
+	    _class.prototype.describe = function describe() {
+
+	        var description = Any.prototype.describe.call(this);
+
+	        if (this._inner.ordereds.length) {
+	            description.orderedItems = [];
+
+	            for (var i = 0; i < this._inner.ordereds.length; ++i) {
+	                description.orderedItems.push(this._inner.ordereds[i].describe());
+	            }
+	        }
+
+	        if (this._inner.items.length) {
+	            description.items = [];
+
+	            for (var _i = 0; _i < this._inner.items.length; ++_i) {
+	                description.items.push(this._inner.items[_i].describe());
+	            }
+	        }
+
+	        return description;
+	    };
+
+	    _class.prototype.items = function items() {
+
+	        var obj = this.clone();
+
+	        Hoek.flatten(Array.prototype.slice.call(arguments)).forEach(function (type, index) {
+
+	            try {
+	                type = Cast.schema(type);
+	            } catch (castErr) {
+	                if (castErr.hasOwnProperty('path')) {
+	                    castErr.path = index + '.' + castErr.path;
+	                } else {
+	                    castErr.path = index;
+	                }
+	                castErr.message = castErr.message + '(' + castErr.path + ')';
+	                throw castErr;
+	            }
+
+	            obj._inner.items.push(type);
+
+	            if (type._flags.presence === 'required') {
+	                obj._inner.requireds.push(type);
+	            } else if (type._flags.presence === 'forbidden') {
+	                obj._inner.exclusions.push(type.optional());
+	            } else {
+	                obj._inner.inclusions.push(type);
+	            }
+	        });
+
+	        return obj;
+	    };
+
+	    _class.prototype.ordered = function ordered() {
+
+	        var obj = this.clone();
+
+	        Hoek.flatten(Array.prototype.slice.call(arguments)).forEach(function (type, index) {
+
+	            try {
+	                type = Cast.schema(type);
+	            } catch (castErr) {
+	                if (castErr.hasOwnProperty('path')) {
+	                    castErr.path = index + '.' + castErr.path;
+	                } else {
+	                    castErr.path = index;
+	                }
+	                castErr.message = castErr.message + '(' + castErr.path + ')';
+	                throw castErr;
+	            }
+	            obj._inner.ordereds.push(type);
+	        });
+
+	        return obj;
+	    };
+
+	    _class.prototype.min = function min(limit) {
+
+	        var isRef = Ref.isRef(limit);
+
+	        Hoek.assert(Number.isSafeInteger(limit) && limit >= 0 || isRef, 'limit must be a positive integer or reference');
+
+	        return this._test('min', limit, function (value, state, options) {
+
+	            var compareTo = void 0;
+	            if (isRef) {
+	                compareTo = limit(state.reference || state.parent, options);
+
+	                if (!(Number.isSafeInteger(compareTo) && compareTo >= 0)) {
+	                    return this.createError('array.ref', { ref: limit.key }, state, options);
+	                }
+	            } else {
+	                compareTo = limit;
+	            }
+
+	            if (value.length >= compareTo) {
+	                return value;
+	            }
+
+	            return this.createError('array.min', { limit: limit, value: value }, state, options);
+	        });
+	    };
+
+	    _class.prototype.max = function max(limit) {
+
+	        var isRef = Ref.isRef(limit);
+
+	        Hoek.assert(Number.isSafeInteger(limit) && limit >= 0 || isRef, 'limit must be a positive integer or reference');
+
+	        return this._test('max', limit, function (value, state, options) {
+
+	            var compareTo = void 0;
+	            if (isRef) {
+	                compareTo = limit(state.reference || state.parent, options);
+
+	                if (!(Number.isSafeInteger(compareTo) && compareTo >= 0)) {
+	                    return this.createError('array.ref', { ref: limit.key }, state, options);
+	                }
+	            } else {
+	                compareTo = limit;
+	            }
+
+	            if (value.length <= compareTo) {
+	                return value;
+	            }
+
+	            return this.createError('array.max', { limit: limit, value: value }, state, options);
+	        });
+	    };
+
+	    _class.prototype.length = function length(limit) {
+
+	        var isRef = Ref.isRef(limit);
+
+	        Hoek.assert(Number.isSafeInteger(limit) && limit >= 0 || isRef, 'limit must be a positive integer or reference');
+
+	        return this._test('length', limit, function (value, state, options) {
+
+	            var compareTo = void 0;
+	            if (isRef) {
+	                compareTo = limit(state.reference || state.parent, options);
+
+	                if (!(Number.isSafeInteger(compareTo) && compareTo >= 0)) {
+	                    return this.createError('array.ref', { ref: limit.key }, state, options);
+	                }
+	            } else {
+	                compareTo = limit;
+	            }
+
+	            if (value.length === compareTo) {
+	                return value;
+	            }
+
+	            return this.createError('array.length', { limit: limit, value: value }, state, options);
+	        });
+	    };
+
+	    _class.prototype.unique = function unique(comparator) {
+
+	        Hoek.assert(comparator === undefined || typeof comparator === 'function' || typeof comparator === 'string', 'comparator must be a function or a string');
+
+	        var settings = {};
+
+	        if (typeof comparator === 'string') {
+	            settings.path = comparator;
+	        } else if (typeof comparator === 'function') {
+	            settings.comparator = comparator;
+	        }
+
+	        return this._test('unique', settings, function (value, state, options) {
+
+	            var found = {
+	                string: {},
+	                number: {},
+	                undefined: {},
+	                boolean: {},
+	                object: new Map(),
+	                function: new Map(),
+	                custom: new Map()
+	            };
+
+	            var compare = settings.comparator || Hoek.deepEqual;
+
+	            for (var i = 0; i < value.length; ++i) {
+	                var item = settings.path ? Hoek.reach(value[i], settings.path) : value[i];
+	                var records = settings.comparator ? found.custom : found[typeof item === 'undefined' ? 'undefined' : _typeof(item)];
+
+	                // All available types are supported, so it's not possible to reach 100% coverage without ignoring this line.
+	                // I still want to keep the test for future js versions with new types (eg. Symbol).
+	                if ( /* $lab:coverage:off$ */records /* $lab:coverage:on$ */) {
+	                        if (records instanceof Map) {
+	                            var entries = records.entries();
+	                            var current = void 0;
+	                            while (!(current = entries.next()).done) {
+	                                if (compare(current.value[0], item)) {
+	                                    var localState = {
+	                                        key: state.key,
+	                                        path: (state.path ? state.path + '.' : '') + i,
+	                                        parent: state.parent,
+	                                        reference: state.reference
+	                                    };
+
+	                                    var context = {
+	                                        pos: i,
+	                                        value: value[i],
+	                                        dupePos: current.value[1],
+	                                        dupeValue: value[current.value[1]]
+	                                    };
+
+	                                    if (settings.path) {
+	                                        context.path = settings.path;
+	                                    }
+
+	                                    return this.createError('array.unique', context, localState, options);
+	                                }
+	                            }
+
+	                            records.set(item, i);
+	                        } else {
+	                            if (records[item] !== undefined) {
+	                                var _localState = {
+	                                    key: state.key,
+	                                    path: (state.path ? state.path + '.' : '') + i,
+	                                    parent: state.parent,
+	                                    reference: state.reference
+	                                };
+
+	                                var _context = {
+	                                    pos: i,
+	                                    value: value[i],
+	                                    dupePos: records[item],
+	                                    dupeValue: value[records[item]]
+	                                };
+
+	                                if (settings.path) {
+	                                    _context.path = settings.path;
+	                                }
+
+	                                return this.createError('array.unique', _context, _localState, options);
+	                            }
+
+	                            records[item] = i;
+	                        }
+	                    }
+	            }
+
+	            return value;
+	        });
+	    };
+
+	    _class.prototype.sparse = function sparse(enabled) {
+
+	        var value = enabled === undefined ? true : !!enabled;
+
+	        if (this._flags.sparse === value) {
+	            return this;
+	        }
+
+	        var obj = this.clone();
+	        obj._flags.sparse = value;
+	        return obj;
+	    };
+
+	    _class.prototype.single = function single(enabled) {
+
+	        var value = enabled === undefined ? true : !!enabled;
+
+	        if (this._flags.single === value) {
+	            return this;
+	        }
+
+	        var obj = this.clone();
+	        obj._flags.single = value;
+	        return obj;
+	    };
+
+	    _class.prototype._fillMissedErrors = function _fillMissedErrors(errors, requireds, state, options) {
+
+	        var knownMisses = [];
+	        var unknownMisses = 0;
+	        for (var i = 0; i < requireds.length; ++i) {
+	            var label = requireds[i]._getLabel();
+	            if (label) {
+	                knownMisses.push(label);
+	            } else {
+	                ++unknownMisses;
+	            }
+	        }
+
+	        if (knownMisses.length) {
+	            if (unknownMisses) {
+	                errors.push(this.createError('array.includesRequiredBoth', { knownMisses: knownMisses, unknownMisses: unknownMisses }, { key: state.key, path: state.path }, options));
+	            } else {
+	                errors.push(this.createError('array.includesRequiredKnowns', { knownMisses: knownMisses }, { key: state.key, path: state.path }, options));
+	            }
+	        } else {
+	            errors.push(this.createError('array.includesRequiredUnknowns', { unknownMisses: unknownMisses }, { key: state.key, path: state.path }, options));
+	        }
+	    };
+
+	    _class.prototype._fillOrderedErrors = function _fillOrderedErrors(errors, ordereds, state, options) {
+
+	        var requiredOrdereds = [];
+
+	        for (var i = 0; i < ordereds.length; ++i) {
+	            var presence = Hoek.reach(ordereds[i], '_flags.presence');
+	            if (presence === 'required') {
+	                requiredOrdereds.push(ordereds[i]);
+	            }
+	        }
+
+	        if (requiredOrdereds.length) {
+	            this._fillMissedErrors.call(this, errors, requiredOrdereds, state, options);
+	        }
+	    };
+
+	    return _class;
+	}(Any);
+
+	internals.safeParse = function (value, result) {
+
+	    try {
+	        var converted = JSON.parse(value);
+	        if (Array.isArray(converted)) {
+	            result.value = converted;
+	        }
+	    } catch (e) {}
+	};
+
+	module.exports = new internals.Array();
+
+/***/ },
+/* 31 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/* WEBPACK VAR INJECTION */(function(Buffer) {'use strict';
+
+	// Load modules
+
+	function _defaults(obj, defaults) { var keys = Object.getOwnPropertyNames(defaults); for (var i = 0; i < keys.length; i++) { var key = keys[i]; var value = Object.getOwnPropertyDescriptor(defaults, key); if (value && value.configurable && obj[key] === undefined) { Object.defineProperty(obj, key, value); } } return obj; }
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : _defaults(subClass, superClass); }
+
+	var Any = __webpack_require__(11);
+	var Hoek = __webpack_require__(2);
+
+	// Declare internals
+
+	var internals = {};
+
+	internals.Binary = function (_Any) {
+	    _inherits(_class, _Any);
+
+	    function _class() {
+	        _classCallCheck(this, _class);
+
+	        var _this = _possibleConstructorReturn(this, _Any.call(this));
+
+	        _this._type = 'binary';
+	        return _this;
+	    }
+
+	    _class.prototype._base = function _base(value, state, options) {
+
+	        var result = {
+	            value: value
+	        };
+
+	        if (typeof value === 'string' && options.convert) {
+
+	            try {
+	                result.value = new Buffer(value, this._flags.encoding);
+	            } catch (e) {}
+	        }
+
+	        result.errors = Buffer.isBuffer(result.value) ? null : this.createError('binary.base', null, state, options);
+	        return result;
+	    };
+
+	    _class.prototype.encoding = function encoding(_encoding) {
+
+	        Hoek.assert(Buffer.isEncoding(_encoding), 'Invalid encoding:', _encoding);
+
+	        if (this._flags.encoding === _encoding) {
+	            return this;
+	        }
+
+	        var obj = this.clone();
+	        obj._flags.encoding = _encoding;
+	        return obj;
+	    };
+
+	    _class.prototype.min = function min(limit) {
+
+	        Hoek.assert(Number.isSafeInteger(limit) && limit >= 0, 'limit must be a positive integer');
+
+	        return this._test('min', limit, function (value, state, options) {
+
+	            if (value.length >= limit) {
+	                return value;
+	            }
+
+	            return this.createError('binary.min', { limit: limit, value: value }, state, options);
+	        });
+	    };
+
+	    _class.prototype.max = function max(limit) {
+
+	        Hoek.assert(Number.isSafeInteger(limit) && limit >= 0, 'limit must be a positive integer');
+
+	        return this._test('max', limit, function (value, state, options) {
+
+	            if (value.length <= limit) {
+	                return value;
+	            }
+
+	            return this.createError('binary.max', { limit: limit, value: value }, state, options);
+	        });
+	    };
+
+	    _class.prototype.length = function length(limit) {
+
+	        Hoek.assert(Number.isSafeInteger(limit) && limit >= 0, 'limit must be a positive integer');
+
+	        return this._test('length', limit, function (value, state, options) {
+
+	            if (value.length === limit) {
+	                return value;
+	            }
+
+	            return this.createError('binary.length', { limit: limit, value: value }, state, options);
+	        });
+	    };
+
+	    return _class;
+	}(Any);
+
+	module.exports = new internals.Binary();
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(3).Buffer));
+
+/***/ },
+/* 32 */
+/***/ function(module, exports) {
+
+	module.exports = {
+		"_args": [
+			[
+				{
+					"raw": "joi@10.6.0",
+					"scope": null,
+					"escapedName": "joi",
+					"name": "joi",
+					"rawSpec": "10.6.0",
+					"spec": "10.6.0",
+					"type": "version"
+				},
+				"/Users/jeff/projects/joi-browser"
+			]
+		],
+		"_from": "joi@10.6.0",
+		"_id": "joi@10.6.0",
+		"_inCache": true,
+		"_location": "/joi",
+		"_nodeVersion": "6.11.0",
+		"_npmOperationalInternal": {
+			"host": "s3://npm-registry-packages",
+			"tmp": "tmp/joi-10.6.0.tgz_1497548465053_0.7665833418723196"
+		},
+		"_npmUser": {
+			"name": "marsup",
+			"email": "nicolas@morel.io"
+		},
+		"_npmVersion": "5.0.3",
+		"_phantomChildren": {},
+		"_requested": {
+			"raw": "joi@10.6.0",
+			"scope": null,
+			"escapedName": "joi",
+			"name": "joi",
+			"rawSpec": "10.6.0",
+			"spec": "10.6.0",
+			"type": "version"
+		},
+		"_requiredBy": [
+			"#DEV:/"
+		],
+		"_resolved": "https://registry.npmjs.org/joi/-/joi-10.6.0.tgz",
+		"_shasum": "52587f02d52b8b75cdb0c74f0b164a191a0e1fc2",
+		"_shrinkwrap": null,
+		"_spec": "joi@10.6.0",
+		"_where": "/Users/jeff/projects/joi-browser",
+		"bugs": {
+			"url": "https://github.com/hapijs/joi/issues"
+		},
+		"dependencies": {
+			"hoek": "4.x.x",
+			"isemail": "2.x.x",
+			"items": "2.x.x",
+			"topo": "2.x.x"
+		},
+		"description": "Object schema validation",
+		"devDependencies": {
+			"code": "4.x.x",
+			"hapitoc": "1.x.x",
+			"lab": "13.x.x"
+		},
+		"directories": {},
+		"dist": {
+			"integrity": "sha512-hBF3LcqyAid+9X/pwg+eXjD2QBZI5eXnBFJYaAkH4SK3mp9QSRiiQnDYlmlz5pccMvnLcJRS4whhDOTCkmsAdQ==",
+			"shasum": "52587f02d52b8b75cdb0c74f0b164a191a0e1fc2",
+			"tarball": "https://registry.npmjs.org/joi/-/joi-10.6.0.tgz"
+		},
+		"engines": {
+			"node": ">=4.0.0"
+		},
+		"gitHead": "069bb6c04063cba202544dacf9da3bbe21fa3074",
+		"homepage": "https://github.com/hapijs/joi",
+		"keywords": [
+			"hapi",
+			"schema",
+			"validation"
+		],
+		"license": "BSD-3-Clause",
+		"main": "lib/index.js",
+		"maintainers": [
+			{
+				"name": "hueniverse",
+				"email": "eran@hammer.io"
+			},
+			{
+				"name": "marsup",
+				"email": "nicolas@morel.io"
+			},
+			{
+				"name": "nlf",
+				"email": "quitlahok@gmail.com"
+			},
+			{
+				"name": "wyatt",
+				"email": "wpreul@gmail.com"
+			}
+		],
+		"name": "joi",
+		"optionalDependencies": {},
+		"readme": "ERROR: No README data found!",
+		"repository": {
+			"type": "git",
+			"url": "git://github.com/hapijs/joi.git"
+		},
+		"scripts": {
+			"test": "lab -t 100 -a code -L",
+			"test-cov-html": "lab -r html -o coverage.html -a code",
+			"test-debug": "lab -a code",
+			"toc": "hapitoc",
+			"version": "npm run toc && git add API.md README.md"
+		},
+		"version": "10.6.0"
+	};
+
+/***/ }
+/******/ ])
+});
+
+});
+
 /*
 * Author   Jonathan Lurie - http://me.jonahanlurie.fr
 * License  MIT
@@ -64,7 +12772,7 @@ class CoreTypes {
 * Lab       MCIN - Montreal Neurological Institute
 */
 
-
+// Object schema validation
 /**
 * PixpipeObject is the base object of all. It creates a uuid and has few
 * generic attributes like type, name and description. Not all these attributes
@@ -82,8 +12790,16 @@ class PixpipeObject {
     // Metadata can be anything, a name, an ID, a description, a DOM element.
     // everything that is not an input but rather a setting
     this._metadata = {};
+    
+    // a joi schema to validate the _metadata integrity. If null, integrity not validated.
+    // I has to be overloaded when a class inherits from PixpipeObject
+    this._metadataSchema = this._buildMetadataSchema();
 
     this._type = PixpipeObject.TYPE();
+    
+    // to leasure time. The 2 default values are added by _beforeRun and _afterRun
+    // under the name of "begin" and "end"
+    this._timer = {};
   }
 
 
@@ -190,12 +12906,33 @@ class PixpipeObject {
 
 
   /**
+  * Get a copy of the metadata object using a serialization middle step (no reference shared).
   * @return {Object} a copy of local metadata
   */
   getMetadataCopy(){
     return JSON.parse( JSON.stringify( this._metadata ) );
   }
   
+  
+  /**
+  * Associate the internal metadata object with the one in args.
+  * @param {Object} m - metadata. Should NOT contain TypedArray
+  */
+  setRawMetadata( m ){
+    this._metadata = m;
+    this._metadataRawCopied();
+  }
+  
+  
+  /**
+  * Called just after metadata were raw-copied. Useful to perform checkings and pre processing.
+  * To be overwriten
+  */
+  _metadataRawCopied(){
+    /*
+          *** TO BE OVERWRITTEN ***
+    */
+  }
   
   /**
   * [PRIVATE]
@@ -227,6 +12964,75 @@ class PixpipeObject {
     return false;
   }
 
+
+  /**
+  * Set a time measurement (from an arbitrary starting point)
+  * @param {String} recordName - name of the record
+  */
+  addTimeRecord( recordName ){
+    this._timer[ recordName ] = performance.now();
+  }
+
+
+  /**
+  * @return {Number} the elapsed time in ms between fromRecord and toRecord.
+  * Return -1 if one or both time record
+  */
+  getTime(fromRecord, toRecord, print=false){
+    if( fromRecord in this._timer && toRecord in this._timer ){
+      var t = Math.abs(this._timer[toRecord] - this._timer[fromRecord]);
+
+      if(print){
+        console.log("> Time: [" + fromRecord + " , " + toRecord + "] is " + t + " millisec.");
+      }
+
+      return t;
+    }else{
+      console.warn("The two given record name must exist in the time record table.");
+      return -1;
+    }
+  }
+  
+  
+  /**
+  * Build the joi validation schema for the _metadata object.
+  * This method has to be overwriten and return a proper validation object, though
+  * this metadata check is optional.
+  * If not overwriten, metadata will always be considered valid
+  * @return {Object} the joi schema
+  */
+  _buildMetadataSchema(){
+    /*
+          *** TO BE OVERWRITTEN ***
+    */
+    return null;
+  }
+  
+  
+  /**
+  * Performs an inetgrity check of a metadata object. If none is given in argument,
+  * integrity check is performed on this._metadata.
+  * @param {Object} a metadata object to perform the integrity check on.
+  * @return {Boolean} true if metadata obj is valid, false if not.
+  */
+  metadataIntegrityCheck( metadataObj = null ){
+    if( metadataObj == null ){
+      metadataObj = this._metadata;
+    }
+    
+    if( metadataObj ){
+      var validationResults = joiBrowser.validate( metadataObj, this._metadataSchema );
+      if(validationResults.error){
+        console.warn("SCHEMA VALIDATION: " + validationResults.error );
+        return false;
+      }
+      return true;
+    }else{
+      console.warn("Validation schema not available. Metadata considered to be valid.");
+      return true;
+    }
+  }
+  
 }
 
 /*
@@ -270,14 +13076,8 @@ class Filter extends PixpipeObject {
       //"0" : []
     };
 
-    // to leasure time. The 2 default values are added by _beforeRun and _afterRun
-    // under the name of "begin" and "end"
-    this._timer = {};
-
     this._isOutputReady = false;
-
     this.setMetadata("time", true);
-
   }
 
 
@@ -563,35 +13363,6 @@ class Filter extends PixpipeObject {
 
 
   /**
-  * Set a time measurement (from an arbitrary starting point)
-  * @param {String} recordName - name of the record
-  */
-  addTimeRecord( recordName ){
-    this._timer[ recordName ] = performance.now();
-  }
-
-
-  /**
-  * @return {Number} the elapsed time in ms between fromRecord and toRecord.
-  * Return -1 if one or both time record
-  */
-  getTime(fromRecord, toRecord, print=false){
-    if( fromRecord in this._timer && toRecord in this._timer ){
-      var t = Math.abs(this._timer[toRecord] - this._timer[fromRecord]);
-
-      if(print){
-        console.log("> Time: [" + fromRecord + " , " + toRecord + "] is " + t + " millisec.");
-      }
-
-      return t;
-    }else{
-      console.warn("The two given record name must exist in the time record table.");
-      return -1;
-    }
-  }
-
-
-  /**
   * Defines a callback. By defautl, no callback is called.
   */
   on(eventId, callback){
@@ -689,15 +13460,6 @@ class PixpipeContainer extends PixpipeObject {
   */
   setRawData( d ){
     this._data = d;
-  }
-
-
-  /**
-  * Associate the internal metadata object with the one in args.
-  * @param {Object} m - metadata. Should NOT contain TypedArray
-  */
-  setRawMetadata( m ){
-    this._metadata = m;
   }
 
 } /* END of class PixpipeContainer */
@@ -1691,6 +14453,39 @@ class Image3D extends PixpipeContainer{
   }
 
   
+  getIntensity_xyzOrientation( x, y, z, time=0){
+    var time_offset = this.hasMetadata("time") ? time * this.getMetadata("time").offset : 0;
+    
+    var xspace = this.getMetadata("xspace");
+    var yspace = this.getMetadata("yspace");
+    var zspace = this.getMetadata("zspace");
+    
+    // Whether the dimension steps positively or negatively.
+    var x_positive = xspace.step > 0;
+    var y_positive = yspace.step > 0;
+    var z_positive = zspace.step > 0;
+    
+    var xOrent = x_positive ? x : xspace.space_length - x - 1;
+    var yOrent = y_positive ? y : yspace.space_length - y - 1;
+    //var yOrent = y_positive ? yspace.space_length - y - 1 : y;
+    var zOrent = z_positive ? z : zspace.space_length - z - 1;
+    
+    if (x >= 0 && x < xspace.space_length &&
+        y >= 0 && y < yspace.space_length &&
+        z >= 0 && z < zspace.space_length )
+    {
+      var offset = time_offset + 
+                   xOrent * xspace.offset +
+                   yOrent * yspace.offset +
+                   zOrent * zspace.offset;
+      return this._data[offset];
+    }else{
+      return null;
+    }
+    
+  }
+  
+  
   /**
   * Get the number of samples over time
   */
@@ -2342,6 +15137,730 @@ CoreTypes.addCoreType( LineString );
 * Lab       MCIN - Montreal Neurological Institute
 */
 
+
+/**
+* Image3DAlt class is one of the few base element of Pixpipejs.
+* It is always considered to be 4 channels (RGBA) and stored as a Float32Array
+* typed array.
+*/
+class Image3DAlt extends PixpipeContainer{
+  /**
+  * Constructor of an Image3DAlt instance. If no options, no array is allocated.
+  * @param {Object} options - may contain the following:
+  *   - options.xSize {Number} space length along x axis
+  *   - options.ySize {Number} space length along y axis
+  *   - options.zSize {Number} space length along z axis
+  *   - options.tSize {Number} space length along t axis (time)
+  *   - options.ncpp {Number} number of components per pixel. Default = 1
+  * If at least xSize, ySize and zSize are specified, a buffer is automatically initialized with the value 0.
+  */
+  constructor( options=null ){
+    super();
+    this._type = Image3DAlt.TYPE();
+
+    // default metadata values
+    this._initMetadata();
+    
+    // since dimensions from metadata is an array (where order matters),
+    // we also build LUTs where the key is are dimension's names
+    this._dimensionsWorldLUT= {};
+    this._dimensionsVoxelLUT = {};
+
+    // allocate data if the propers options are given
+    this._initData( options );
+  }
+
+
+  /**
+  * Hardcode the datatype
+  */
+  static TYPE(){
+    return "IMAGE3DALT";
+  }
+  
+  
+  /**
+  * [SUPER OVERWRITE - PipxpipeObject]
+  * [PRIVATE]
+  */
+  _buildMetadataSchema(){
+    var metadataSchema = joiBrowser.object({
+      
+      // required
+      ncpp: joiBrowser.number().integer().min(1).required(), 
+      
+      // required
+      dimensions: joiBrowser.array().min(3).max(4).items(
+        joiBrowser.object({
+          length: joiBrowser.number().integer().min(1).required(),
+          widthDimension: joiBrowser.number().integer().min(0).max(2).required(),
+          heightDimension: joiBrowser.number().integer().min(0).max(2).required(),
+          nameVoxelSpace: joiBrowser.string().regex(/(i|j|k|t)/).required(),
+          nameWorldSpace: joiBrowser.string().regex(/(x|y|z|t)/).required(),
+          worldUnitSize: joiBrowser.number().required(),
+          stride: joiBrowser.number().integer().min(1).required(),
+          step: joiBrowser.number().required()
+        }
+      ).unknown()),
+      
+      // required, some prop can be added to the list
+      statistics: joiBrowser.object({
+        upToDate: joiBrowser.boolean().required(),
+        min: joiBrowser.number().required(),
+        max: joiBrowser.number().required()
+      }).required().unknown(), // = we can have more stats but min/max are necessary
+      
+      // required but can be an empty object
+      transformations: joiBrowser.object().unknown().pattern(/.+/, joiBrowser.array().length(16).items(joiBrowser.number())).required(),
+      
+      // optional
+      description: joiBrowser.string().allow(''),
+      
+      // optional
+      spatialUnit: joiBrowser.string().allow(''),
+      
+      // optional
+      temporalUnit: joiBrowser.string().allow(''),
+      
+      // optional
+      format: joiBrowser.string().allow(''),
+      
+      // optional, some prop can be added to the list
+      formatSpecific: joiBrowser.object().unknown(),  
+    })
+    .unknown(); // = we can add other properties
+    
+    return metadataSchema;
+  }
+  
+  
+  /**
+  * [SUPER OVERWRITE - PipxpipeObject]
+  * [PRIVATE]
+  * This method is called at the end of setRawMetadata
+  */
+  _metadataRawCopied(){
+    this._buildDimensionsLUT();
+  }
+  
+  
+  /**
+  * [PRIVATE]
+  * Build the LUT to fetch dimensions easier = using their name as index rather than just a their index
+  */
+  _buildDimensionsLUT(){
+    this._dimensionsWorldLUT= {};
+    this._dimensionsVoxelLUT = {};
+    var worldAxisNames = ["x", "y", "z"];
+    var dimensions = this._metadata.dimensions;
+    
+    // At what position are "x", "y" and "z" in the array of dimensions?
+    // e.g. if we have nameWorldSpace in dimensions that are [y z x], then this array
+    // would be [2, 0, 1]
+    this._worldPositionIndex = Array(3);
+    
+    // what is the order of the nameWorldSpace in dimensions when compare to the ordered dimname ["x", "y", "z"]?
+    // e.g. if we have nameWorldSpace in dimensions that are [y z x], then this array
+    // would be [1, 2, 0]
+    this._worldPositionOrder = Array(3);
+    
+    function positionOf( dimName ){
+      return dimensions[0].nameWorldSpace === dimName ? 0 : dimensions[1].nameWorldSpace === dimName ? 1 : dimensions[2].nameWorldSpace === dimName ? 2 : -1;
+    }
+    
+    var correctOrder = [0, 1, 2];
+    this._hasNativeCorrectOrder = true;
+    
+    for(var i=0; i<dimensions.length; i++){
+      this._dimensionsWorldLUT[ dimensions[i].nameWorldSpace ] = i;
+      this._dimensionsVoxelLUT[ dimensions[i].nameVoxelSpace ] = i;
+      
+      this._worldPositionIndex[i] = positionOf( worldAxisNames[i] );
+      this._worldPositionOrder[i] = worldAxisNames.indexOf( dimensions[i].nameWorldSpace );
+      
+      this._hasNativeCorrectOrder = this._hasNativeCorrectOrder && (this._worldPositionIndex[i] === correctOrder[i] );
+    }
+  }
+  
+  
+  /**
+  * Get the index of a dimension, given its name.
+  * Looks up in the world dim and then in the voxel-based coord
+  * @param {String} name - Name of a dimension
+  * @return {Number} index or the dim. -1 if not found
+  */
+  getDimensionIndexFromName( name ){
+    if( name in this._dimensionsWorldLUT ){
+      return this._dimensionsWorldLUT[ name ];
+    }else if( name in this._dimensionsVoxelLUT ){
+      return this._dimensionsVoxelLUT[ name ];
+    }else{
+      return -1;
+    }
+  }
+  
+  /**
+  * [PRIVATE]
+  * initialize some defualt values for metadata
+  */
+  _initMetadata(){
+    var metaStat = { upToDate: true, min: NaN, max: NaN };
+
+    this.setMetadata("description", "");
+
+    this.setMetadata("statistics", metaStat );
+
+    // number of component per pixel, for color OR time series
+    this.setMetadata("ncpp", 1);
+
+    // no special unit for space and time
+    this.setMetadata("spatialUnit", "Voxel");
+    this.setMetadata("temporalUnit", "Time");
+
+    // So far, this instance does not come from a file decoding
+    this.setMetadata("format", "generic");
+
+    // this field is to hold original metadata from a reader (eg. NIfTI)
+    this.setMetadata("formatSpecific", {});
+    
+    // possibly contains no transformations
+    this.setMetadata("transformations", {});
+  }
+  
+  /**
+  * @return {Image3DAlt} a deep copy instance of this Image3DAlt
+  */
+  clone(){
+    var cpImg = new Image3DAlt();
+    cpImg.setRawData( new this._data.constructor( this._data ) );
+    cpImg.copyMetadataFrom( this );
+    return cpImg;
+  }
+
+
+  /**
+  * Initialize _this_ with some data and appropriate size
+  * @param {Float32Array} buffer - the raw data
+  * @param {Object} options - may contain the following:
+  *   - options.xSize {Number} space length along x axis
+  *   - options.ySize {Number} space length along y axis
+  *   - options.zSize {Number} space length along z axis
+  *   - options.tSize {Number} space length along t axis (time)
+  *   - options.ncpp {Number} number of components per pixel. Default = 1
+  *   - options.deepCopy {Boolean} perform a deep copy if true. Simple association if false
+  */
+  setData( buffer, options){
+    this._initData( options, buffer);
+    this.scanDataRange();
+  }
+
+
+  /**
+  * [PRIVATE]
+  * Called from the constructor or the setData method
+  */
+  _initData( options, buffer = null ){
+    if( options ){
+      // replacing default value for ncpp
+      if("ncpp" in options){
+        this.setMetadata("ncpp", options.ncpp);
+      }
+
+      // init default ordered dimensions based on the give sizes
+      if( "xSize" in options && "ySize" in options && "zSize" in options ){
+
+        var dimensions = [
+          {
+            length: xSize,
+            widthDimension: 1,
+            heightDimension: 2,
+            nameVoxelSpace: "k",
+            nameWorldSpace: "x",
+            worldUnitSize: 1,
+            stride: 1
+          },
+          {
+            length: ySize,
+            widthDimension: 0,
+            heightDimension: 2,
+            nameVoxelSpace: "j",
+            nameWorldSpace: "y",
+            worldUnitSize: 1,
+            stride: xSize
+          },
+          {
+            length: zSize,
+            widthDimension: 0,
+            heightDimension: 1,
+            nameVoxelSpace: "i",
+            nameWorldSpace: "z",
+            worldUnitSize: 1,
+            stride: xSize * ySize
+          },
+        ];
+
+        var bufferSize = xSize * ySize * zSize * this.getMetadata("ncpp");
+
+        // if we get time dimension info, let's add it too
+        if( "tSize" in options ){
+          var timeDim = {
+            length: tSize,
+            widthDimension: -1, // could remove
+            heightDimension: -1,
+            nameVoxelSpace: "l",
+            worldSpaceName: "t",
+            worldUnitSize: "",
+            stride: xSize * ySize * zSize,
+            step: 1
+          };
+          bufferSize *= tSize;
+          
+          dimensions.push( timeDim );
+          this.setMetadata("dimensions", dimensions);
+        }
+
+        // if a buffer is provided, we perform a size-check
+        if( buffer ){
+          if( buffer.length == bufferSize){
+            
+            // perform a deep copy
+            if("deepCopy" in options && options.deepCopy){
+              this._data = new buffer.constructor( buffer );
+            }
+            // perform a simple association
+            else{
+              this._data = buffer;
+            }
+            
+          }else{
+            console.warn("The buffer provided has a wrong size.");
+            return false;
+          }
+        }else{
+          // Allocating the buffer
+          this._data = new Float32Array( bufferSize );
+          var metaStat = this.getMetadata("statistics");
+          metaStat.min = 0;
+          metaStat.max = 0;
+        }
+        
+        this._buildDimensionsLUT();
+        return this.metadataIntegrityCheck();
+      }else{
+        console.warn("The necessary options xSize, ySize and zSize were not provided.");
+        return false;
+      }
+    }else{
+      return false;
+    }
+  }
+
+
+  /**
+  * [PRIVATE]
+  * Look for min and max on the dataset and add them to the header metadata
+  */
+  scanDataRange(){
+    var min = +Infinity;
+    var max = -Infinity;
+
+    for(var i=0; i<this._data.length; i++){
+      min = Math.min(min, this._data[i]);
+      max = Math.max(max, this._data[i]);
+    }
+
+    var metaStat = this.getMetadata("statistics");
+    if(!metaStat){
+      this.setMetadata("statistics", {});
+      metaStat = this.getMetadata("statistics");
+    }
+    metaStat.min = min;
+    metaStat.max = max;
+  }
+
+
+  /**
+  * Get the voxel value from a voxel position (in a voxel-coordinate sytem) with NO
+  * regards towards how the data is supposed to be read. In other word, dimension.direction
+  * is ignored.
+  * @param {Object} position - 3D position like {i, j, k}, i being the fastest varying, k being the slowest varying
+  * @param {Number} time - position along T axis (time dim, the very slowest varying dim when present)
+  
+  * @return {Number} the value at a given position.
+  */
+  getVoxel( position, time=0 ){
+    var dimensions = this._metadata.dimensions;
+    var i = position.i;
+    var j = position.j;
+    var k = position.k;
+    
+    if(i<0 || j<0 || k<0 || time<0 || 
+       i>=dimensions[0].length  ||
+       j>=dimensions[1].length  ||
+       k>=dimensions[2].length  ||
+       ( dimensions.length>3 && time>=dimensions[3].length) )
+    {
+      console.warn("Voxel query is out of bound.");
+      return null;
+    }
+    
+    var ncpp = this._metadata.ncpp;
+    
+    var tOffset = dimensions.length > 3 ? time*dimensions[3].stride * time : 0;
+    var iOffset = i * dimensions[2].stride;
+    var jOffset = j * dimensions[1].stride;
+    var kOffset = k * dimensions[0].stride;
+    
+    var positionBuffer = tOffset + iOffset + jOffset + kOffset;
+    positionBuffer *= ncpp;
+    return this._data[ positionBuffer ];
+  }
+  
+  
+  /**
+  * Get a voxel value at a given position with regards of the direction the data are
+  * supposed to be read. In other word, dimension.step is taken into account.
+  * @param {Object} position - 3D position like {i, j, k}, i being the fastest varying, k being the slowest varying
+  * @param {Number} time - position along T axis (time dim, the very slowest varying dim when present)
+  */
+  getVoxelSafe( position, time=0){
+    var dimensions = this._metadata.dimensions;
+    var i = position.i;
+    var j = position.j;
+    var k = position.k;
+    
+    if(i<0 || j<0 || k<0 || time<0 || 
+       i>=dimensions[0].length  ||
+       j>=dimensions[1].length  ||
+       k>=dimensions[2].length  ||
+       ( dimensions.length>3 && time>=dimensions[3].length) )
+    {
+      console.warn("Voxel query is out of bound.");
+      return null;
+    }
+    
+    var tOffset = dimensions.length > 3 ? time*dimensions[3].stride * time : 0;
+    var iOffset = (dimensions[2].step < 0 ?  dimensions[2].length - i -1 : i) * dimensions[2].stride;
+    var jOffset = (dimensions[1].step < 0 ?  dimensions[1].length - j -1 : j) * dimensions[1].stride;
+    var kOffset = (dimensions[0].step < 0 ?  dimensions[0].length - k -1 : k) * dimensions[0].stride;
+    
+    var positionBuffer = tOffset + iOffset + jOffset + kOffset;
+    return this._data[ positionBuffer ];
+  }
+
+
+  /**
+  * Get the size of a dimension in the voxel-based coord system
+  * @param {Number|String} dimIndex - can be 0, 1, 2, 3 or "i", "j", "k", "t"
+  * @return {Number} the length of this dimension
+  */
+  getDimensionSize( dimIndex ){
+    if( typeof dimIndex === "string" ){
+      // if string/name replace by its equivalent numerical index
+      dimIndex = this.getDimensionIndexFromName( dimIndex );
+      if(dimIndex == -1){
+        console.warn("dimensions " + dimIndex + " does not exist.");
+        return;
+      }
+    }
+
+    var dimensions = this._metadata.dimensions;
+    if( dimIndex < dimensions.length ){
+      return dimensions[ dimIndex ].length;
+    }else{
+      console.warn("A dimensions of such index does not exist.");
+      return null;
+    }
+  }
+
+
+  /**
+  * @return {Float32Array} the original data, dont mess up with this one.
+  * in case of doubt, use  getDataCopy()
+  */
+  getData(){
+    return this._data;  // return the actual array, editable!
+  }
+
+
+  /**
+  * @return {Float32Array} a deep copy of the data
+  */
+  getDataCopy(){
+    return new this._data.constructor( this._data );
+  }
+
+
+  /**
+  * [PRIVATE]
+  * Convert a position from a coordinate system to another. Should be called by a method that makes sure of the
+  * order of the dimensions.
+  * @param {Array} positionArr - 3D position, could be [x, y, z] or in voxel coord not necessary ordered [i, j, k]
+  * because this depends on the orders of the dimension.
+  * @param {String} transformName - name of the transformation registered in the metadata
+  * @return {Array} coordinate
+  */
+  _getTransformedPosition( positionArr, transformName ){
+    var transformations = this._metadata.transformations;
+    
+    if( !(transformName in transformations) ){
+      console.warn("No transform named " + transformName );
+      return null;
+    }
+    
+    var transform = transformations[ transformName ];
+    var origPos = fromValues$6(positionArr[0], positionArr[1], positionArr[2], 1);
+    var transPos = create$6();
+    transformMat4$1(transPos, origPos, transform);
+    return transPos;
+  }
+  
+  
+  /**
+  * Convert a position from voxel coordinates to another space
+  * @param {Object} voxelPosition - voxel coordinates like {i: Number, j: Number, k: Number} where i is the slowest varying and k is the fastest varying
+  * @param {String} transformName - name of a transformation registered in the metadata as a child property of "transformations"
+  * @return {Object} coordinates {x: Number, y: Number, z: Number} in the space coorinate given in argument
+  */
+  getPositionFromVoxelSpaceToTransfoSpace(  voxelPosition, transformName ){
+    var inputPosArray = [voxelPosition.i, voxelPosition.j, voxelPosition.k];
+    var reOrderedInput = [
+      inputPosArray[ this._worldPositionOrder[2] ],
+      inputPosArray[ this._worldPositionOrder[1] ],
+      inputPosArray[ this._worldPositionOrder[0] ]
+    ];  
+    var transPosUnordered = this._getTransformedPosition( reOrderedInput, transformName);
+
+    return {
+      x: transPosUnordered[0],
+      y: transPosUnordered[1],
+      z: transPosUnordered[2]
+    }
+  }
+  
+  
+  /**
+  * Convert coordinates from a a given (non-voxel based) position into a voxel based coord
+  * @param {Object} spacePosition - a non-voxel based coordinate as {x: Number, y: Number, z: Number}
+  * @param {String} transformName - name of the transformation to use
+  * @return {Object} coordinates {i: Number, j: Number, k: Number} in the space coorinate given in argument
+  */
+  getPositionFromTransfoSpaceToVoxelSpace( spacePosition , transformName ){
+    var inputPosArray = [spacePosition.x, spacePosition.y, spacePosition.z];
+    var transPosUnordered = this._getTransformedPosition( inputPosArray, transformName);
+
+    return {
+      i: Math.round(transPosUnordered[ this._worldPositionOrder[2] ]),
+      j: Math.round(transPosUnordered[ this._worldPositionOrder[1] ]),
+      k: Math.round(transPosUnordered[ this._worldPositionOrder[0] ])
+    }
+  }
+  
+  
+  getValueTransfoSpace( spaceToVoxelTransfoName, spacePosition, time=0 ){
+    // transform to voxel space
+    var voxPos = this.getPositionFromTransfoSpaceToVoxelSpace( spacePosition, spaceToVoxelTransfoName );
+    var color = this.getVoxel( voxPos, time );
+    return color;
+  }
+  
+  
+  
+  /**
+  * Add a transformation to the collection
+  * @param {Array} transform - a 4x4 matrix in a shape of a 1D array of size 16 column-major
+  * @param {String} name - Name to give to this transformation
+  */
+  addTransformation( transform, name ){
+    var transformations = this._metadata.transformations;
+    
+    var schema = joiBrowser.array().length(16).items(joiBrowser.number());
+    var isValid = joiBrowser.validate( transform , schema );
+    
+    if( isValid.error ){
+      console.warn("Invalid transformation: " + isValid.error );
+      return;
+    }
+    transformations[ name ] = transform;
+  }
+
+
+  /**
+  * Get a slice from the dataset
+  * @param {Number|String} dimIndex - can be 0, 1, 2 or "i", "j", "k"
+  * @param {Number} normalAxis - the index of the slice (default: 0)
+  * @param {Number} time - time position (default:0 , only relevant in a 3D + t dataset)
+  * @return {image2D} the slice
+  */
+  getSlice( normalAxis, sliceIndex=0, time=0 ){
+    if( typeof normalAxis === "string" ){
+      // if string/name replace by its equivalent numerical index
+      normalAxis = this.getDimensionIndexFromName( normalAxis );
+      if(normalAxis == -1){
+        console.warn("dimensions " + normalAxis + " does not exist.");
+        return;
+      }
+    }
+      
+    var dimensions = this._metadata.dimensions;
+    
+    // The dimension of the normalAxis must exist (and not be time)
+    if( normalAxis > 2 ){
+      console.warn("The dimension of a slice should be lower than 3.");
+      return null;
+    }
+    
+    // the final slice image has for normal vector the sliceDimension.
+    // In other words, the width and height of the slice will be the "lenght" of
+    // the sliceDimension.widthDimension and sliceDimension.heightDimension respectively
+    var sliceDimension = dimensions[normalAxis];
+    var widthDimension = dimensions[sliceDimension.widthDimension];
+    var heightDimension = dimensions[sliceDimension.heightDimension];
+    
+    // Slice index checking
+    if( sliceIndex < 0 || sliceIndex >= sliceDimension.length ){
+      console.warn("The slice required is out of bound.");
+      return null;
+    }
+    
+    var Img2dData = new this._data.constructor( widthDimension.length * heightDimension.length );
+    var timeOffset = dimensions.length > 3 ? time*dimensions[3].stride * time : 0;
+    var sliceOffset = (sliceDimension.step < 0 ? sliceDimension.length - sliceIndex - 1 : sliceIndex) * sliceDimension.stride;
+    
+    var pixelCounter = 0;
+    // this axis is always fliped by default (not sure why)
+    for (var r = heightDimension.length - 1; r >= 0; r--) {
+      var heighDimOffset = (heightDimension.step < 0 ? heightDimension.length - r -1 : r) * heightDimension.stride; 
+      
+      for(var c=0; c<widthDimension.length; c++){
+        var widthDimOffset = (widthDimension.step < 0 ?  widthDimension.length - c -1 : c) * widthDimension.stride; 
+        
+        var offset = sliceOffset + timeOffset + 
+                     heighDimOffset + 
+                     widthDimOffset;
+
+        Img2dData[pixelCounter] = this._data[ offset ];
+        pixelCounter ++;
+      }
+    }
+    
+    var outputImage = new Image2D();
+    outputImage.setData(  Img2dData, widthDimension.length, heightDimension.length, 1);
+    return outputImage;
+  }
+
+
+  /**
+  * Get the number of samples over time
+  * @return {number} the number of time samples
+  */
+  getTimeLength(){
+    var dimensions = this._metadata.dimensions;
+    return ( dimensions.length == 4 ? dimensions[3].length : 1 );
+  }
+
+
+  /**
+  * Tells if a given point is inside or outside the image
+  * @param {Object} pos - position like {x: Number, y: Number, z: Number}
+  * @return {Boolean} true for inside, false for outside
+  */
+  isInside( pos ){
+    var dimensions = this._metadata.dimensions;
+    return !(pos.x < 0 || pos.x >= dimensions[0].length ||
+             pos.y < 0 || pos.y >= dimensions[1].length ||
+             pos.z < 0 || pos.z >= dimensions[2].length)
+  }
+
+
+  /**
+  * Sample the color along a segment
+  * @param {Object} posFrom - starting position of type {x: Number, y: Number, z: Number}
+  * @param {Object} posFrom - ending position of type {x: Number, y: Number, z: Number}
+  * @return {Object} array of Array like that: {
+                                                  positions: [
+                                                    {x: x0, y: y0, z: z0},
+                                                    {x: x1, y: y1, z: z1},
+                                                    {x: x2, y: y2, z: z2},
+                                                    ...
+                                                  ],
+                                                  labels: [
+                                                    "(x0, y0, z0)", "(x1, y1, z1)", "(x2, y2, z2)", ...
+                                                  ],
+                                                  colors: [
+                                                            [r0, r1, r2 ...],
+                                                            [g0, g1, g2 ...],
+                                                            [b0, b1, b2 ...]
+                                                  ]
+                                                }
+     return null if posFrom or posTo is outside
+  */
+  getSegmentSample( posFrom, posTo, time = 0 ){
+    // both position must be inside the image
+    if( !this.isInside(posFrom) || !this.isInside(posTo) )
+      return null;
+
+    var dx = posTo.x - posFrom.x;
+    var dy = posTo.y - posFrom.y;
+    var dz = posTo.z - posFrom.z;
+    var euclidianDistance = Math.sqrt( Math.pow(dx , 2) + Math.pow(dy , 2) + Math.pow(dz , 2) );
+    var numberOfSamples = Math.floor( euclidianDistance + 1 );
+
+    // we want to sample every unit distance along the segment
+    var stepX = dx / euclidianDistance;
+    var stepY = dy / euclidianDistance;
+    var stepZ = dz / euclidianDistance;
+
+    var ncpp = this._metadata.ncpp;
+    var positions = new Array(numberOfSamples).fill(0);
+    var colors = new Array(ncpp).fill(0);
+    var labels = new Array(numberOfSamples).fill(0);
+
+    // creating empty arrays for colors
+    for(var c=0; c<ncpp; c++){
+      colors[c] = new Array(numberOfSamples).fill(0);
+    }
+
+    // walk along the segment, from posFrom to posTo
+    for(var i=0; i<numberOfSamples; i++){
+      var currentPos = {
+        x: Math.round(posFrom.x + i*stepX),
+        y: Math.round(posFrom.y + i*stepY),
+        z: Math.round(posFrom.z + i*stepZ)
+      };
+
+      positions[i] = currentPos;
+      labels[i] = "(" + currentPos.x + ", " + currentPos.y + ", " + currentPos.z + ")";
+
+      var pixValue = [this.getVoxel( currentPos.x, currentPos.y, currentPos.z, time )];
+      
+      // each channel is dispatched in its array
+      for(var c=0; c<ncpp; c++){
+        colors[c][i] = pixValue[c];
+      }
+    }
+
+    return {
+      positions: positions,
+      labels: labels,
+      colors: colors
+    }
+  } /* END of method getLineSample */
+
+
+
+} /* END of class Image3DAlt */
+
+// register this type as a CoreType
+CoreTypes.addCoreType( Image3DAlt );
+
+/*
+* Author   Jonathan Lurie - http://me.jonahanlurie.fr
+* License  MIT
+* Link      https://github.com/Pixpipe/pixpipejs
+* Lab       MCIN - Montreal Neurological Institute
+*/
+
 /**
 * CanvasImageWriter is a filter to output an instance of Image into a
 * HTML5 canvas element.  
@@ -2952,18 +16471,6 @@ var process = {
   config: config,
   uptime: uptime
 };
-
-var commonjsGlobal = typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
-
-function commonjsRequire () {
-	throw new Error('Dynamic requires are not currently supported by rollup-plugin-commonjs');
-}
-
-
-
-function createCommonjsModule(fn, module) {
-	return module = { exports: {} }, fn(module, module.exports), module.exports;
-}
 
 var empty = {};
 
@@ -14665,7 +28172,8 @@ class Minc2Decoder extends Filter{
     if (!this.checkSignature("OHDR")) {
       throw new Error('Bad or missing OHDR signature');
     }
-
+    
+    var that = this;
     var ver = this.getU8();
     var flags = this.getU8();
 
@@ -14747,7 +28255,7 @@ class Minc2Decoder extends Filter{
       if (that.getMetadata("debug")) {
         console.log(link_num + " " + child.hdr_offset + " " + child.name);
       }
-      if (this.checkSignature("OHDR")) {
+      if (that.checkSignature("OHDR")) {
         that.seek(child.hdr_offset);
         that.hdf5V2ObjectHeader(child);
       }
@@ -15685,7 +29193,7 @@ class NiftiDecoder extends Filter {
   */
   parseNifti1Header(raw_data) {
     var header = {
-      order: ["zspace", "yspace", "xspace"],
+      order: [],
       xspace: {},
       yspace: {},
       zspace: {}
@@ -15744,7 +29252,7 @@ class NiftiDecoder extends Filter {
     var qform_code = dview.getUint16(252, littleEndian);
     var sform_code = dview.getUint16(254, littleEndian);
 
-    var transform = [
+    var nifti_xfm = [
       [1, 0, 0, 0],
       [0, 1, 0, 0],
       [0, 0, 1, 0],
@@ -15757,7 +29265,6 @@ class NiftiDecoder extends Filter {
       header.time.step = tstep;
       header.time.start = 0;
       header.time.name = "time";
-      header.order = ["time", "zspace", "yspace", "xspace"];
     }
 
     /* Record the number of bytes per voxel, and note whether we need
@@ -15771,18 +29278,18 @@ class NiftiDecoder extends Filter {
        * generally assumed to correspond to some standard coordinate
        * space (e.g. Talairach).
        */
-      transform[0][0] = dview.getFloat32(280, littleEndian);
-      transform[0][1] = dview.getFloat32(284, littleEndian);
-      transform[0][2] = dview.getFloat32(288, littleEndian);
-      transform[0][3] = dview.getFloat32(292, littleEndian);
-      transform[1][0] = dview.getFloat32(296, littleEndian);
-      transform[1][1] = dview.getFloat32(300, littleEndian);
-      transform[1][2] = dview.getFloat32(304, littleEndian);
-      transform[1][3] = dview.getFloat32(308, littleEndian);
-      transform[2][0] = dview.getFloat32(312, littleEndian);
-      transform[2][1] = dview.getFloat32(316, littleEndian);
-      transform[2][2] = dview.getFloat32(320, littleEndian);
-      transform[2][3] = dview.getFloat32(324, littleEndian);
+      nifti_xfm[0][0] = dview.getFloat32(280, littleEndian);
+      nifti_xfm[0][1] = dview.getFloat32(284, littleEndian);
+      nifti_xfm[0][2] = dview.getFloat32(288, littleEndian);
+      nifti_xfm[0][3] = dview.getFloat32(292, littleEndian);
+      nifti_xfm[1][0] = dview.getFloat32(296, littleEndian);
+      nifti_xfm[1][1] = dview.getFloat32(300, littleEndian);
+      nifti_xfm[1][2] = dview.getFloat32(304, littleEndian);
+      nifti_xfm[1][3] = dview.getFloat32(308, littleEndian);
+      nifti_xfm[2][0] = dview.getFloat32(312, littleEndian);
+      nifti_xfm[2][1] = dview.getFloat32(316, littleEndian);
+      nifti_xfm[2][2] = dview.getFloat32(320, littleEndian);
+      nifti_xfm[2][3] = dview.getFloat32(324, littleEndian);
     }
     else if (qform_code > 0) {
       /* The "Qform", if present, defines a quaternion which specifies
@@ -15796,17 +29303,66 @@ class NiftiDecoder extends Filter {
       var qoffset_z = dview.getFloat32(276, littleEndian);
       var qfac = (dview.getFloat32(76, littleEndian) < 0) ? -1.0 : 1.0;
 
-      transform = this.niftiQuaternToMat44(quatern_b, quatern_c, quatern_d,
+      nifti_xfm = this.niftiQuaternToMat44(quatern_b, quatern_c, quatern_d,
                                            qoffset_x, qoffset_y, qoffset_z,
                                            xstep,     ystep,     zstep,     qfac);
     }
     else {
-      transform[0][0] = xstep;
-      transform[1][1] = ystep;
-      transform[2][2] = zstep;
+      nifti_xfm[0][0] = xstep;
+      nifti_xfm[1][1] = ystep;
+      nifti_xfm[2][2] = zstep;
     }
 
+
+    var i, j;
+    var axis_index_from_file = [0, 1, 2];
+    var transform = [[0, 0, 0, 0],
+                     [0, 0, 0, 0],
+                     [0, 0, 0, 0],
+                     [0, 0, 0, 1]];
+                     
+    for (i = 0; i < 3; i++) {
+      var c_x = Math.abs(nifti_xfm[0][i]);
+      var c_y = Math.abs(nifti_xfm[1][i]);
+      var c_z = Math.abs(nifti_xfm[2][i]);
+      
+      if (c_x > c_y && c_x > c_z) {
+        header.order[2 - i] = "xspace";
+        axis_index_from_file[i] = 0;
+      }
+      else if (c_y > c_x && c_y > c_z) {
+        header.order[2 - i] = "yspace";
+        axis_index_from_file[i] = 1;
+      }
+      else {
+        header.order[2 - i] = "zspace";
+        axis_index_from_file[i] = 2;
+      }
+    }
+    
+    for (i = 0; i < 3; i++) {
+      for (j = 0; j < 4; j++) {
+        var volume_axis = j;
+        if (j < 3) {
+          volume_axis = axis_index_from_file[j];
+        }
+        transform[i][volume_axis] = nifti_xfm[i][j];
+      }
+    }
+
+
+
+
     MniVolume.transformToMinc(transform, header);
+
+    header[header.order[2]].space_length = dview.getUint16(42, littleEndian);
+    header[header.order[1]].space_length = dview.getUint16(44, littleEndian);
+    header[header.order[0]].space_length = dview.getUint16(46, littleEndian);
+     
+    if (tlength >= 1) {
+       header.order.unshift("time");
+    }
+
 
     header.datatype = datatype;
     header.vox_offset = vox_offset;
@@ -15995,6 +29551,2112 @@ class NiftiDecoder extends Filter {
 
 
 } /* END class NiftiDecoder */
+
+var utilities = createCommonjsModule(function (module) {
+/*jslint browser: true, node: true */
+/*global require, module */
+
+"use strict";
+
+/*** Imports ***/
+
+var nifti = nifti || {};
+nifti.Utils = nifti.Utils || {};
+
+
+
+/*** Static Pseudo-constants ***/
+
+nifti.Utils.crcTable = null;
+nifti.Utils.GUNZIP_MAGIC_COOKIE1 = 31;
+nifti.Utils.GUNZIP_MAGIC_COOKIE2 = 139;
+
+
+
+/*** Static methods ***/
+
+nifti.Utils.getStringAt = function (data, start, end) {
+    var str = "", ctr, ch;
+
+    for (ctr = start; ctr < end; ctr += 1) {
+        ch = data.getUint8(ctr);
+
+        if (ch !== 0) {
+            str += String.fromCharCode(ch);
+        }
+    }
+
+    return str;
+};
+
+
+
+nifti.Utils.getByteAt = function (data, start) {
+    return data.getInt8(start);
+};
+
+
+
+nifti.Utils.getShortAt = function (data, start, littleEndian) {
+    return data.getInt16(start, littleEndian);
+};
+
+
+
+nifti.Utils.getIntAt = function (data, start, littleEndian) {
+    return data.getInt32(start, littleEndian);
+};
+
+
+
+nifti.Utils.getFloatAt = function (data, start, littleEndian) {
+    return data.getFloat32(start, littleEndian);
+};
+
+
+
+nifti.Utils.getDoubleAt = function (data, start, littleEndian) {
+    return data.getFloat64(start, littleEndian);
+};
+
+
+
+nifti.Utils.getLongAt = function (data, start, littleEndian) {
+    var ctr, array = [], value = 0;
+
+    for (ctr = 0; ctr < 8; ctr += 1) {
+        array[ctr] = nifti.Utils.getByteAt(data, start + ctr, littleEndian);
+    }
+
+    for (ctr = array.length - 1; ctr >= 0; ctr--) {
+        value = (value * 256) + array[ctr];
+    }
+
+    return value;
+};
+
+
+
+nifti.Utils.toArrayBuffer = function (buffer) {
+    var ab, view, i;
+
+    ab = new ArrayBuffer(buffer.length);
+    view = new Uint8Array(ab);
+    for (i = 0; i < buffer.length; i += 1) {
+        view[i] = buffer[i];
+    }
+    return ab;
+};
+
+
+
+nifti.Utils.isString = function (obj) {
+    return (typeof obj === "string" || obj instanceof String);
+};
+
+
+nifti.Utils.formatNumber = function (num, shortFormat) {
+    var val = 0;
+
+    if (nifti.Utils.isString(num)) {
+        val = Number(num);
+    } else {
+        val = num;
+    }
+
+    if (shortFormat) {
+        val = val.toPrecision(5);
+    } else {
+        val = val.toPrecision(7);
+    }
+
+    return parseFloat(val);
+};
+
+
+
+// http://stackoverflow.com/questions/18638900/javascript-crc32
+nifti.Utils.makeCRCTable = function(){
+    var c;
+    var crcTable = [];
+    for(var n =0; n < 256; n++){
+        c = n;
+        for(var k =0; k < 8; k++){
+            c = ((c&1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1));
+        }
+        crcTable[n] = c;
+    }
+    return crcTable;
+};
+
+
+
+nifti.Utils.crc32 = function(dataView) {
+    var crcTable = nifti.Utils.crcTable || (nifti.Utils.crcTable = nifti.Utils.makeCRCTable());
+    var crc = 0 ^ (-1);
+
+    for (var i = 0; i < dataView.byteLength; i++ ) {
+        crc = (crc >>> 8) ^ crcTable[(crc ^ dataView.getUint8(i)) & 0xFF];
+    }
+
+    return (crc ^ (-1)) >>> 0;
+};
+
+
+
+/*** Exports ***/
+
+var moduleType = 'object';
+if ((moduleType !== 'undefined') && module.exports) {
+    module.exports = nifti.Utils;
+}
+});
+
+var nifti1 = createCommonjsModule(function (module) {
+/*jslint browser: true, node: true */
+/*global */
+
+"use strict";
+
+/*** Imports ***/
+
+var nifti = nifti || {};
+nifti.Utils = nifti.Utils || ((typeof commonjsRequire !== 'undefined') ? utilities : null);
+
+
+
+/*** Constructor ***/
+
+/**
+ * The NIFTI1 constructor.
+ * @constructor
+ * @property {boolean} littleEndian
+ * @property {number} dim_info
+ * @property {number[]} dims - image dimensions
+ * @property {number} intent_p1
+ * @property {number} intent_p2
+ * @property {number} intent_p3
+ * @property {number} intent_code
+ * @property {number} datatypeCode
+ * @property {number} numBitsPerVoxel
+ * @property {number} slice_start
+ * @property {number} slice_end
+ * @property {number} slice_code
+ * @property {number[]} pixDims - voxel dimensions
+ * @property {number} vox_offset
+ * @property {number} scl_slope
+ * @property {number} scl_inter
+ * @property {number} xyzt_units
+ * @property {number} cal_max
+ * @property {number} cal_min
+ * @property {number} slice_duration
+ * @property {number} toffset
+ * @property {string} description
+ * @property {string} aux_file
+ * @property {string} intent_name
+ * @property {number} qform_code
+ * @property {number} sform_code
+ * @property {number} quatern_b
+ * @property {number} quatern_c
+ * @property {number} quatern_d
+ * @property {number} quatern_x
+ * @property {number} quatern_y
+ * @property {number} quatern_z
+ * @property {Array.<Array.<number>>} affine
+ * @property {string} magic
+ * @property {boolean} isHDR - if hdr/img format
+ * @property {number[]} extensionFlag
+ * @property {number} extensionSize
+ * @property {number} extensionCode
+ * @type {Function}
+ */
+nifti.NIFTI1 = nifti.NIFTI1 || function () {
+    this.littleEndian = false;
+    this.dim_info = 0;
+    this.dims = [];
+    this.intent_p1 = 0;
+    this.intent_p2 = 0;
+    this.intent_p3 = 0;
+    this.intent_code = 0;
+    this.datatypeCode = 0;
+    this.numBitsPerVoxel = 0;
+    this.slice_start = 0;
+    this.slice_end = 0;
+    this.slice_code = 0;
+    this.pixDims = [];
+    this.vox_offset = 0;
+    this.scl_slope = 1;
+    this.scl_inter = 0;
+    this.xyzt_units = 0;
+    this.cal_max = 0;
+    this.cal_min = 0;
+    this.slice_duration = 0;
+    this.toffset = 0;
+    this.description = "";
+    this.aux_file = "";
+    this.intent_name = "";
+    this.qform_code = 0;
+    this.sform_code = 0;
+    this.quatern_b = 0;
+    this.quatern_c = 0;
+    this.quatern_d = 0;
+    this.qoffset_x = 0;
+    this.qoffset_y = 0;
+    this.qoffset_z = 0;
+    this.affine = [[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]];
+    this.magic = 0;
+    this.isHDR = false;
+    this.extensionFlag = [0, 0, 0, 0];
+    this.extensionSize = 0;
+    this.extensionCode = 0;
+};
+
+
+
+/*** Static Pseudo-constants ***/
+
+// datatype codes
+nifti.NIFTI1.TYPE_NONE            = 0;
+nifti.NIFTI1.TYPE_BINARY          = 1;
+nifti.NIFTI1.TYPE_UINT8           = 2;
+nifti.NIFTI1.TYPE_INT16           = 4;
+nifti.NIFTI1.TYPE_INT32           = 8;
+nifti.NIFTI1.TYPE_FLOAT32        = 16;
+nifti.NIFTI1.TYPE_COMPLEX64      = 32;
+nifti.NIFTI1.TYPE_FLOAT64        = 64;
+nifti.NIFTI1.TYPE_RGB24         = 128;
+nifti.NIFTI1.TYPE_INT8          = 256;
+nifti.NIFTI1.TYPE_UINT16        = 512;
+nifti.NIFTI1.TYPE_UINT32        = 768;
+nifti.NIFTI1.TYPE_INT64        = 1024;
+nifti.NIFTI1.TYPE_UINT64       = 1280;
+nifti.NIFTI1.TYPE_FLOAT128     = 1536;
+nifti.NIFTI1.TYPE_COMPLEX128   = 1792;
+nifti.NIFTI1.TYPE_COMPLEX256   = 2048;
+
+// transform codes
+nifti.NIFTI1.XFORM_UNKNOWN        = 0;
+nifti.NIFTI1.XFORM_SCANNER_ANAT   = 1;
+nifti.NIFTI1.XFORM_ALIGNED_ANAT   = 2;
+nifti.NIFTI1.XFORM_TALAIRACH      = 3;
+nifti.NIFTI1.XFORM_MNI_152        = 4;
+
+// unit codes
+nifti.NIFTI1.SPATIAL_UNITS_MASK = 0x07;
+nifti.NIFTI1.TEMPORAL_UNITS_MASK = 0x38;
+nifti.NIFTI1.UNITS_UNKNOWN        = 0;
+nifti.NIFTI1.UNITS_METER          = 1;
+nifti.NIFTI1.UNITS_MM             = 2;
+nifti.NIFTI1.UNITS_MICRON         = 3;
+nifti.NIFTI1.UNITS_SEC            = 8;
+nifti.NIFTI1.UNITS_MSEC          = 16;
+nifti.NIFTI1.UNITS_USEC          = 24;
+nifti.NIFTI1.UNITS_HZ            = 32;
+nifti.NIFTI1.UNITS_PPM           = 40;
+nifti.NIFTI1.UNITS_RADS          = 48;
+
+// nifti1 codes
+nifti.NIFTI1.MAGIC_COOKIE = 348;
+nifti.NIFTI1.STANDARD_HEADER_SIZE = 348;
+nifti.NIFTI1.MAGIC_NUMBER_LOCATION = 344;
+nifti.NIFTI1.MAGIC_NUMBER = [0x6E, 0x2B, 0x31];  // n+1 (.nii)
+nifti.NIFTI1.MAGIC_NUMBER2 = [0x6E, 0x69, 0x31];  // ni1 (.hdr/.img)
+nifti.NIFTI1.EXTENSION_HEADER_SIZE = 8;
+
+
+/*** Prototype Methods ***/
+
+/**
+ * Reads the header data.
+ * @param {ArrayBuffer} data
+ */
+nifti.NIFTI1.prototype.readHeader = function (data) {
+    var rawData = new DataView(data),
+        magicCookieVal = nifti.Utils.getIntAt(rawData, 0, this.littleEndian),
+        ctr,
+        ctrOut,
+        ctrIn,
+        index;
+
+    if (magicCookieVal !== nifti.NIFTI1.MAGIC_COOKIE) {  // try as little endian
+        this.littleEndian = true;
+        magicCookieVal = nifti.Utils.getIntAt(rawData, 0, this.littleEndian);
+    }
+
+    if (magicCookieVal !== nifti.NIFTI1.MAGIC_COOKIE) {
+        throw new Error("This does not appear to be a NIFTI file!");
+    }
+
+    this.dim_info = nifti.Utils.getByteAt(rawData, 39);
+
+    for (ctr = 0; ctr < 8; ctr += 1) {
+        index = 40 + (ctr * 2);
+        this.dims[ctr] = nifti.Utils.getShortAt(rawData, index, this.littleEndian);
+    }
+
+    this.intent_p1 = nifti.Utils.getFloatAt(rawData, 56, this.littleEndian);
+    this.intent_p2 = nifti.Utils.getFloatAt(rawData, 60, this.littleEndian);
+    this.intent_p3 = nifti.Utils.getFloatAt(rawData, 64, this.littleEndian);
+    this.intent_code = nifti.Utils.getShortAt(rawData, 68, this.littleEndian);
+
+    this.datatypeCode = nifti.Utils.getShortAt(rawData, 70, this.littleEndian);
+    this.numBitsPerVoxel = nifti.Utils.getShortAt(rawData, 72, this.littleEndian);
+
+    this.slice_start = nifti.Utils.getShortAt(rawData, 74, this.littleEndian);
+
+    for (ctr = 0; ctr < 8; ctr += 1) {
+        index = 76 + (ctr * 4);
+        this.pixDims[ctr] = nifti.Utils.getFloatAt(rawData, index, this.littleEndian);
+    }
+
+    this.vox_offset = nifti.Utils.getFloatAt(rawData, 108, this.littleEndian);
+
+    this.scl_slope = nifti.Utils.getFloatAt(rawData, 112, this.littleEndian);
+    this.scl_inter = nifti.Utils.getFloatAt(rawData, 116, this.littleEndian);
+
+    this.slice_end = nifti.Utils.getShortAt(rawData, 120, this.littleEndian);
+    this.slice_code = nifti.Utils.getByteAt(rawData, 122);
+
+    this.xyzt_units = nifti.Utils.getByteAt(rawData, 123);
+
+    this.cal_max = nifti.Utils.getFloatAt(rawData, 124, this.littleEndian);
+    this.cal_min = nifti.Utils.getFloatAt(rawData, 128, this.littleEndian);
+
+    this.slice_duration = nifti.Utils.getFloatAt(rawData, 132, this.littleEndian);
+    this.toffset = nifti.Utils.getFloatAt(rawData, 136, this.littleEndian);
+
+    this.description = nifti.Utils.getStringAt(rawData, 148, 228);
+    this.aux_file = nifti.Utils.getStringAt(rawData, 228, 252);
+
+    this.qform_code = nifti.Utils.getShortAt(rawData, 252, this.littleEndian);
+    this.sform_code = nifti.Utils.getShortAt(rawData, 254, this.littleEndian);
+
+    this.quatern_b = nifti.Utils.getFloatAt(rawData, 256, this.littleEndian);
+    this.quatern_c = nifti.Utils.getFloatAt(rawData, 260, this.littleEndian);
+    this.quatern_d = nifti.Utils.getFloatAt(rawData, 264, this.littleEndian);
+    this.qoffset_x = nifti.Utils.getFloatAt(rawData, 268, this.littleEndian);
+    this.qoffset_y = nifti.Utils.getFloatAt(rawData, 272, this.littleEndian);
+    this.qoffset_z = nifti.Utils.getFloatAt(rawData, 276, this.littleEndian);
+
+    for (ctrOut = 0; ctrOut < 3; ctrOut += 1) {
+        for (ctrIn = 0; ctrIn < 4; ctrIn += 1) {
+            index = 280 + (((ctrOut * 4) + ctrIn) * 4);
+            this.affine[ctrOut][ctrIn] = nifti.Utils.getFloatAt(rawData, index, this.littleEndian);
+        }
+    }
+
+    this.affine[3][0] = 0;
+    this.affine[3][1] = 0;
+    this.affine[3][2] = 0;
+    this.affine[3][3] = 1;
+
+    this.intent_name = nifti.Utils.getStringAt(rawData, 328, 344);
+    this.magic = nifti.Utils.getStringAt(rawData, 344, 348);
+
+    this.isHDR = (this.magic === nifti.NIFTI1.MAGIC_NUMBER2);
+
+    if (rawData.byteLength > nifti.NIFTI1.MAGIC_COOKIE) {
+        this.extensionFlag[0] = nifti.Utils.getByteAt(rawData, 348);
+        this.extensionFlag[1] = nifti.Utils.getByteAt(rawData, 348 + 1);
+        this.extensionFlag[2] = nifti.Utils.getByteAt(rawData, 348 + 2);
+        this.extensionFlag[3] = nifti.Utils.getByteAt(rawData, 348 + 3);
+
+        if (this.extensionFlag[0]) {
+            this.extensionSize = this.getExtensionSize(rawData);
+            this.extensionCode = this.getExtensionCode(rawData);
+        }
+    }
+};
+
+
+/**
+ * Returns a formatted string of header fields.
+ * @returns {string}
+ */
+nifti.NIFTI1.prototype.toFormattedString = function () {
+    var fmt = nifti.Utils.formatNumber,
+        string = "";
+
+    string += ("Dim Info = " + this.dim_info + "\n");
+
+    string += ("Image Dimensions (1-8): " +
+        this.dims[0] + ", " +
+        this.dims[1] + ", " +
+        this.dims[2] + ", " +
+        this.dims[3] + ", " +
+        this.dims[4] + ", " +
+        this.dims[5] + ", " +
+        this.dims[6] + ", " +
+        this.dims[7] + "\n");
+
+    string += ("Intent Parameters (1-3): " +
+        this.intent_p1 + ", " +
+        this.intent_p2 + ", " +
+        this.intent_p3) + "\n";
+
+    string += ("Intent Code = " + this.intent_code + "\n");
+    string += ("Datatype = " + this.datatypeCode +  " (" + this.getDatatypeCodeString(this.datatypeCode) + ")\n");
+    string += ("Bits Per Voxel = " + this.numBitsPerVoxel + "\n");
+    string += ("Slice Start = " + this.slice_start + "\n");
+    string += ("Voxel Dimensions (1-8): " +
+        fmt(this.pixDims[0]) + ", " +
+        fmt(this.pixDims[1]) + ", " +
+        fmt(this.pixDims[2]) + ", " +
+        fmt(this.pixDims[3]) + ", " +
+        fmt(this.pixDims[4]) + ", " +
+        fmt(this.pixDims[5]) + ", " +
+        fmt(this.pixDims[6]) + ", " +
+        fmt(this.pixDims[7]) + "\n");
+
+    string += ("Image Offset = " + this.vox_offset + "\n");
+    string += ("Data Scale:  Slope = " + fmt(this.scl_slope) + "  Intercept = " + fmt(this.scl_inter) + "\n");
+    string += ("Slice End = " + this.slice_end + "\n");
+    string += ("Slice Code = " + this.slice_code + "\n");
+    string += ("Units Code = " + this.xyzt_units + " (" + this.getUnitsCodeString(nifti.NIFTI1.SPATIAL_UNITS_MASK & this.xyzt_units) + ", " + this.getUnitsCodeString(nifti.NIFTI1.TEMPORAL_UNITS_MASK & this.xyzt_units) + ")\n");
+    string += ("Display Range:  Max = " + fmt(this.cal_max) + "  Min = " + fmt(this.cal_min) + "\n");
+    string += ("Slice Duration = " + this.slice_duration + "\n");
+    string += ("Time Axis Shift = " + this.toffset + "\n");
+    string += ("Description: \"" + this.description + "\"\n");
+    string += ("Auxiliary File: \"" + this.aux_file + "\"\n");
+    string += ("Q-Form Code = " + this.qform_code + " (" + this.getTransformCodeString(this.qform_code) + ")\n");
+    string += ("S-Form Code = " + this.sform_code + " (" + this.getTransformCodeString(this.sform_code) + ")\n");
+    string += ("Quaternion Parameters:  " +
+        "b = " + fmt(this.quatern_b) + "  " +
+        "c = " + fmt(this.quatern_c) + "  " +
+        "d = " + fmt(this.quatern_d) + "\n");
+
+    string += ("Quaternion Offsets:  " +
+        "x = " + this.qoffset_x + "  " +
+        "y = " + this.qoffset_y + "  " +
+        "z = " + this.qoffset_z + "\n");
+
+    string += ("S-Form Parameters X: " +
+        fmt(this.affine[0][0]) + ", " +
+        fmt(this.affine[0][1]) + ", " +
+        fmt(this.affine[0][2]) + ", " +
+        fmt(this.affine[0][3]) + "\n");
+
+    string += ("S-Form Parameters Y: " +
+        fmt(this.affine[1][0]) + ", " +
+        fmt(this.affine[1][1]) + ", " +
+        fmt(this.affine[1][2]) + ", " +
+        fmt(this.affine[1][3]) + "\n");
+
+    string += ("S-Form Parameters Z: " +
+        fmt(this.affine[2][0]) + ", " +
+        fmt(this.affine[2][1]) + ", " +
+        fmt(this.affine[2][2]) + ", " +
+        fmt(this.affine[2][3]) + "\n");
+
+    string += ("Intent Name: \"" + this.intent_name + "\"\n");
+
+    if (this.extensionFlag[0]) {
+        string += ("Extension: Size = " + this.extensionSize + "  Code = " + this.extensionCode + "\n");
+
+    }
+
+    return string;
+};
+
+
+/**
+ * Returns a human-readable string of datatype.
+ * @param {number} code
+ * @returns {string}
+ */
+nifti.NIFTI1.prototype.getDatatypeCodeString = function (code) {
+    if (code === nifti.NIFTI1.TYPE_UINT8) {
+        return "1-Byte Unsigned Integer";
+    } else if (code === nifti.NIFTI1.TYPE_INT16) {
+        return "2-Byte Signed Integer";
+    } else if (code === nifti.NIFTI1.TYPE_INT32) {
+        return "4-Byte Signed Integer";
+    } else if (code === nifti.NIFTI1.TYPE_FLOAT32) {
+        return "4-Byte Float";
+    } else if (code === nifti.NIFTI1.TYPE_FLOAT64) {
+        return "8-Byte Float";
+    } else if (code === nifti.NIFTI1.TYPE_RGB24) {
+        return "RGB";
+    } else if (code === nifti.NIFTI1.TYPE_INT8) {
+        return "1-Byte Signed Integer";
+    } else if (code === nifti.NIFTI1.TYPE_UINT16) {
+        return "2-Byte Unsigned Integer";
+    } else if (code === nifti.NIFTI1.TYPE_UINT32) {
+        return "4-Byte Unsigned Integer";
+    } else if (code === nifti.NIFTI1.TYPE_INT64) {
+        return "8-Byte Signed Integer";
+    } else if (code === nifti.NIFTI1.TYPE_UINT64) {
+        return "8-Byte Unsigned Integer";
+    } else {
+        return "Unknown";
+    }
+};
+
+
+/**
+ * Returns a human-readable string of transform type.
+ * @param {number} code
+ * @returns {string}
+ */
+nifti.NIFTI1.prototype.getTransformCodeString = function (code) {
+    if (code === nifti.NIFTI1.XFORM_SCANNER_ANAT) {
+        return "Scanner";
+    } else if (code === nifti.NIFTI1.XFORM_ALIGNED_ANAT) {
+        return "Aligned";
+    } else if (code === nifti.NIFTI1.XFORM_TALAIRACH) {
+        return "Talairach";
+    } else if (code === nifti.NIFTI1.XFORM_MNI_152) {
+        return "MNI";
+    } else {
+        return "Unknown";
+    }
+};
+
+
+/**
+ * Returns a human-readable string of spatial and temporal units.
+ * @param {number} code
+ * @returns {string}
+ */
+nifti.NIFTI1.prototype.getUnitsCodeString = function (code) {
+    if (code === nifti.NIFTI1.UNITS_METER) {
+        return "Meters";
+    } else if (code === nifti.NIFTI1.UNITS_MM) {
+        return "Millimeters";
+    } else if (code === nifti.NIFTI1.UNITS_MICRON) {
+        return "Microns";
+    } else if (code === nifti.NIFTI1.UNITS_SEC) {
+        return "Seconds";
+    } else if (code === nifti.NIFTI1.UNITS_MSEC) {
+        return "Milliseconds";
+    } else if (code === nifti.NIFTI1.UNITS_USEC) {
+        return "Microseconds";
+    } else if (code === nifti.NIFTI1.UNITS_HZ) {
+        return "Hz";
+    } else if (code === nifti.NIFTI1.UNITS_PPM) {
+        return "PPM";
+    } else if (code === nifti.NIFTI1.UNITS_RADS) {
+        return "Rads";
+    } else {
+        return "Unknown";
+    }
+};
+
+
+/**
+ * Returns the qform matrix.
+ * @returns {Array.<Array.<number>>}
+ */
+nifti.NIFTI1.prototype.getQformMat = function () {
+    return this.convertNiftiQFormToNiftiSForm(this.quatern_b, this.quatern_c, this.quatern_d, this.qoffset_x,
+        this.qoffset_y, this.qoffset_z, this.pixDims[1], this.pixDims[2], this.pixDims[3], this.pixDims[0]);
+};
+
+
+
+/**
+ * Converts qform to an affine.  (See http://nifti.nimh.nih.gov/pub/dist/src/niftilib/nifti1_io.c)
+ * @param {number} qb
+ * @param {number} qc
+ * @param {number} qd
+ * @param {number} qx
+ * @param {number} qy
+ * @param {number} qz
+ * @param {number} dx
+ * @param {number} dy
+ * @param {number} dz
+ * @param {number} qfac
+ * @returns {Array.<Array.<number>>}
+ */
+nifti.NIFTI1.prototype.convertNiftiQFormToNiftiSForm = function (qb, qc, qd, qx, qy, qz, dx, dy, dz,
+                                                qfac) {
+    var R = [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]],
+        a,
+        b = qb,
+        c = qc,
+        d = qd,
+        xd,
+        yd,
+        zd;
+
+    // last row is always [ 0 0 0 1 ]
+    R[3][0] = R[3][1] = R[3][2] = 0.0;
+    R[3][3] = 1.0;
+
+    // compute a parameter from b,c,d
+    a = 1.0 - (b * b + c * c + d * d);
+    if (a < 0.0000001) {                   /* special case */
+
+        a = 1.0 / Math.sqrt(b * b + c * c + d * d);
+        b *= a;
+        c *= a;
+        d *= a;        /* normalize (b,c,d) vector */
+        a = 0.0;                        /* a = 0 ==> 180 degree rotation */
+    } else {
+
+        a = Math.sqrt(a);                     /* angle = 2*arccos(a) */
+    }
+
+    // load rotation matrix, including scaling factors for voxel sizes
+    xd = (dx > 0.0) ? dx : 1.0;       /* make sure are positive */
+    yd = (dy > 0.0) ? dy : 1.0;
+    zd = (dz > 0.0) ? dz : 1.0;
+
+    if (qfac < 0.0) {
+        zd = -zd;         /* left handedness? */
+    }
+
+    R[0][0] =       (a * a + b * b - c * c - d * d) * xd;
+    R[0][1] = 2.0 * (b * c - a * d) * yd;
+    R[0][2] = 2.0 * (b * d + a * c) * zd;
+    R[1][0] = 2.0 * (b * c + a * d) * xd;
+    R[1][1] =       (a * a + c * c - b * b - d * d) * yd;
+    R[1][2] = 2.0 * (c * d - a * b) * zd;
+    R[2][0] = 2.0 * (b * d - a * c) * xd;
+    R[2][1] = 2.0 * (c * d + a * b) * yd;
+    R[2][2] =       (a * a + d * d - c * c - b * b) * zd;
+
+    // load offsets
+    R[0][3] = qx;
+    R[1][3] = qy;
+    R[2][3] = qz;
+
+    return R;
+};
+
+
+
+/**
+ * Converts sform to an orientation string (e.g., XYZ+--).  (See http://nifti.nimh.nih.gov/pub/dist/src/niftilib/nifti1_io.c)
+ * @param {Array.<Array.<number>>} R
+ * @returns {string}
+ */
+nifti.NIFTI1.prototype.convertNiftiSFormToNEMA = function (R) {
+    var xi, xj, xk, yi, yj, yk, zi, zj, zk, val, detQ, detP, i, j, k, p, q, r, ibest, jbest, kbest, pbest, qbest, rbest,
+        M, vbest, Q, P, iChar, jChar, kChar, iSense, jSense, kSense;
+    k = 0;
+
+    Q = [[0, 0, 0], [0, 0, 0], [0, 0, 0]];
+    P = [[0, 0, 0], [0, 0, 0], [0, 0, 0]];
+
+    //if( icod == NULL || jcod == NULL || kcod == NULL ) return ; /* bad */
+
+    //*icod = *jcod = *kcod = 0 ; /* this.errorMessage returns, if sh*t happens */
+
+    /* load column vectors for each (i,j,k) direction from matrix */
+
+    /*-- i axis --*/ /*-- j axis --*/ /*-- k axis --*/
+
+    xi = R[0][0];
+    xj = R[0][1];
+    xk = R[0][2];
+
+    yi = R[1][0];
+    yj = R[1][1];
+    yk = R[1][2];
+
+    zi = R[2][0];
+    zj = R[2][1];
+    zk = R[2][2];
+
+    /* normalize column vectors to get unit vectors along each ijk-axis */
+
+    /* normalize i axis */
+    val = Math.sqrt(xi * xi + yi * yi + zi * zi);
+    if (val === 0.0) {  /* stupid input */
+        return null;
+    }
+
+    xi /= val;
+    yi /= val;
+    zi /= val;
+
+    /* normalize j axis */
+    val = Math.sqrt(xj * xj + yj * yj + zj * zj);
+    if (val === 0.0) {  /* stupid input */
+        return null;
+    }
+
+    xj /= val;
+    yj /= val;
+    zj /= val;
+
+    /* orthogonalize j axis to i axis, if needed */
+    val = xi * xj + yi * yj + zi * zj;    /* dot product between i and j */
+    if (Math.abs(val) > 1.E-4) {
+        xj -= val * xi;
+        yj -= val * yi;
+        zj -= val * zi;
+        val = Math.sqrt(xj * xj + yj * yj + zj * zj);  /* must renormalize */
+        if (val === 0.0) {              /* j was parallel to i? */
+            return null;
+        }
+        xj /= val;
+        yj /= val;
+        zj /= val;
+    }
+
+    /* normalize k axis; if it is zero, make it the cross product i x j */
+    val = Math.sqrt(xk * xk + yk * yk + zk * zk);
+    if (val === 0.0) {
+        xk = yi * zj - zi * yj;
+        yk = zi * xj - zj * xi;
+        zk = xi * yj - yi * xj;
+    } else {
+        xk /= val;
+        yk /= val;
+        zk /= val;
+    }
+
+    /* orthogonalize k to i */
+    val = xi * xk + yi * yk + zi * zk;    /* dot product between i and k */
+    if (Math.abs(val) > 1.E-4) {
+        xk -= val * xi;
+        yk -= val * yi;
+        zk -= val * zi;
+        val = Math.sqrt(xk * xk + yk * yk + zk * zk);
+        if (val === 0.0) {    /* bad */
+            return null;
+        }
+        xk /= val;
+        yk /= val;
+        zk /= val;
+    }
+
+    /* orthogonalize k to j */
+    val = xj * xk + yj * yk + zj * zk;    /* dot product between j and k */
+    if (Math.abs(val) > 1.e-4) {
+        xk -= val * xj;
+        yk -= val * yj;
+        zk -= val * zj;
+        val = Math.sqrt(xk * xk + yk * yk + zk * zk);
+        if (val === 0.0) {     /* bad */
+            return null;
+        }
+        xk /= val;
+        yk /= val;
+        zk /= val;
+    }
+
+    Q[0][0] = xi;
+    Q[0][1] = xj;
+    Q[0][2] = xk;
+    Q[1][0] = yi;
+    Q[1][1] = yj;
+    Q[1][2] = yk;
+    Q[2][0] = zi;
+    Q[2][1] = zj;
+    Q[2][2] = zk;
+
+    /* at this point, Q is the rotation matrix from the (i,j,k) to (x,y,z) axes */
+
+    detQ = this.nifti_mat33_determ(Q);
+    if (detQ === 0.0) { /* shouldn't happen unless user is a DUFIS */
+        return null;
+    }
+
+    /* Build and test all possible +1/-1 coordinate permutation matrices P;
+     then find the P such that the rotation matrix M=PQ is closest to the
+     identity, in the sense of M having the smallest total rotation angle. */
+
+    /* Despite the formidable looking 6 nested loops, there are
+     only 3*3*3*2*2*2 = 216 passes, which will run very quickly. */
+
+    vbest = -666.0;
+    ibest = pbest = qbest = rbest = 1;
+    jbest = 2;
+    kbest = 3;
+
+    for (i = 1; i <= 3; i += 1) {     /* i = column number to use for row #1 */
+        for (j = 1; j <= 3; j += 1) {    /* j = column number to use for row #2 */
+            if (i !== j) {
+                for (k = 1; k <= 3; k += 1) {  /* k = column number to use for row #3 */
+                    if (!(i === k || j === k)) {
+                        P[0][0] = P[0][1] = P[0][2] = P[1][0] = P[1][1] = P[1][2] = P[2][0] = P[2][1] = P[2][2] = 0.0;
+                        for (p = -1; p <= 1; p += 2) {    /* p,q,r are -1 or +1      */
+                            for (q = -1; q <= 1; q += 2) {   /* and go into rows #1,2,3 */
+                                for (r = -1; r <= 1; r += 2) {
+                                    P[0][i - 1] = p;
+                                    P[1][j - 1] = q;
+                                    P[2][k - 1] = r;
+                                    detP = this.nifti_mat33_determ(P);           /* sign of permutation */
+                                    if ((detP * detQ) > 0.0) {
+                                        M = this.nifti_mat33_mul(P, Q);
+
+                                        /* angle of M rotation = 2.0*acos(0.5*sqrt(1.0+trace(M)))       */
+                                        /* we want largest trace(M) == smallest angle == M nearest to I */
+
+                                        val = M[0][0] + M[1][1] + M[2][2]; /* trace */
+                                        if (val > vbest) {
+                                            vbest = val;
+                                            ibest = i;
+                                            jbest = j;
+                                            kbest = k;
+                                            pbest = p;
+                                            qbest = q;
+                                            rbest = r;
+                                        }
+                                    }  /* doesn't match sign of Q */
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    /* At this point ibest is 1 or 2 or 3; pbest is -1 or +1; etc.
+
+     The matrix P that corresponds is the best permutation approximation
+     to Q-inverse; that is, P (approximately) takes (x,y,z) coordinates
+     to the (i,j,k) axes.
+
+     For example, the first row of P (which contains pbest in column ibest)
+     determines the way the i axis points relative to the anatomical
+     (x,y,z) axes.  If ibest is 2, then the i axis is along the y axis,
+     which is direction P2A (if pbest > 0) or A2P (if pbest < 0).
+
+     So, using ibest and pbest, we can assign the output code for
+     the i axis.  Mutatis mutandis for the j and k axes, of course. */
+
+    iChar = jChar = kChar = iSense = jSense = kSense = 0;
+
+    switch (ibest * pbest) {
+        case 1: /*i = NIFTI_L2R*/
+            iChar = 'X';
+            iSense = '+';
+            break;
+        case -1: /*i = NIFTI_R2L*/
+            iChar = 'X';
+            iSense = '-';
+            break;
+        case 2: /*i = NIFTI_P2A*/
+            iChar = 'Y';
+            iSense = '+';
+            break;
+        case -2: /*i = NIFTI_A2P*/
+            iChar = 'Y';
+            iSense = '-';
+            break;
+        case 3: /*i = NIFTI_I2S*/
+            iChar = 'Z';
+            iSense = '+';
+            break;
+        case -3: /*i = NIFTI_S2I*/
+            iChar = 'Z';
+            iSense = '-';
+            break;
+    }
+
+    switch (jbest * qbest) {
+        case 1: /*j = NIFTI_L2R*/
+            jChar = 'X';
+            jSense = '+';
+            break;
+        case -1: /*j = NIFTI_R2L*/
+            jChar = 'X';
+            jSense = '-';
+            break;
+        case 2: /*j = NIFTI_P2A*/
+            jChar = 'Y';
+            jSense = '+';
+            break;
+        case -2: /*j = NIFTI_A2P*/
+            jChar = 'Y';
+            jSense = '-';
+            break;
+        case 3: /*j = NIFTI_I2S*/
+            jChar = 'Z';
+            jSense = '+';
+            break;
+        case -3: /*j = NIFTI_S2I*/
+            jChar = 'Z';
+            jSense = '-';
+            break;
+    }
+
+    switch (kbest * rbest) {
+        case 1: /*k = NIFTI_L2R*/
+            kChar = 'X';
+            kSense = '+';
+            break;
+        case -1: /*k = NIFTI_R2L*/
+            kChar = 'X';
+            kSense = '-';
+            break;
+        case 2: /*k = NIFTI_P2A*/
+            kChar = 'Y';
+            kSense = '+';
+            break;
+        case -2: /*k = NIFTI_A2P*/
+            kChar = 'Y';
+            kSense = '-';
+            break;
+        case 3: /*k = NIFTI_I2S*/
+            kChar = 'Z';
+            kSense = '+';
+            break;
+        case -3: /*k = NIFTI_S2I*/
+            kChar = 'Z';
+            kSense = '-';
+            break;
+    }
+
+    return (iChar + jChar + kChar + iSense + jSense + kSense);
+};
+
+
+
+nifti.NIFTI1.prototype.nifti_mat33_mul = function (A, B) {
+    var C = [[0, 0, 0], [0, 0, 0], [0, 0, 0]],
+        i,
+        j;
+
+    for (i = 0; i < 3; i += 1) {
+        for (j = 0; j < 3; j += 1) {
+            C[i][j] =  A[i][0] * B[0][j]  + A[i][1] * B[1][j] + A[i][2] * B[2][j];
+        }
+    }
+
+    return C;
+};
+
+
+
+nifti.NIFTI1.prototype.nifti_mat33_determ = function (R) {
+    var r11, r12, r13, r21, r22, r23, r31, r32, r33;
+    /*  INPUT MATRIX:  */
+    r11 = R[0][0];
+    r12 = R[0][1];
+    r13 = R[0][2];
+    r21 = R[1][0];
+    r22 = R[1][1];
+    r23 = R[1][2];
+    r31 = R[2][0];
+    r32 = R[2][1];
+    r33 = R[2][2];
+
+    return (r11 * r22 * r33 - r11 * r32 * r23 - r21 * r12 * r33 + r21 * r32 * r13 + r31 * r12 * r23 - r31 * r22 * r13);
+};
+
+
+/**
+ * Returns the byte index of the extension.
+ * @returns {number}
+ */
+nifti.NIFTI1.prototype.getExtensionLocation = function() {
+    return nifti.NIFTI1.MAGIC_COOKIE + 4;
+};
+
+
+/**
+ * Returns the extension size.
+ * @param {DataView} data
+ * @returns {number}
+ */
+nifti.NIFTI1.prototype.getExtensionSize = function(data) {
+    return nifti.Utils.getIntAt(data, this.getExtensionLocation(), this.littleEndian);
+};
+
+
+
+/**
+ * Returns the extension code.
+ * @param {DataView} data
+ * @returns {number}
+ */
+nifti.NIFTI1.prototype.getExtensionCode = function(data) {
+    return nifti.Utils.getIntAt(data, this.getExtensionLocation() + 4, this.littleEndian);
+};
+
+
+
+/*** Exports ***/
+
+var moduleType = 'object';
+if ((moduleType !== 'undefined') && module.exports) {
+    module.exports = nifti.NIFTI1;
+}
+});
+
+var nifti2 = createCommonjsModule(function (module) {
+/*jslint browser: true, node: true */
+/*global */
+
+"use strict";
+
+/*** Imports ***/
+
+var nifti = nifti || {};
+nifti.Utils = nifti.Utils || ((typeof commonjsRequire !== 'undefined') ? utilities : null);
+nifti.NIFTI1 = nifti.NIFTI1 || ((typeof commonjsRequire !== 'undefined') ? nifti1 : null);
+
+
+/*** Constructor ***/
+
+/**
+ * The NIFTI2 constructor.
+ * @constructor
+ * @property {boolean} littleEndian
+ * @property {number} dim_info
+ * @property {number[]} dims - image dimensions
+ * @property {number} intent_p1
+ * @property {number} intent_p2
+ * @property {number} intent_p3
+ * @property {number} intent_code
+ * @property {number} datatypeCode
+ * @property {number} numBitsPerVoxel
+ * @property {number} slice_start
+ * @property {number} slice_end
+ * @property {number} slice_code
+ * @property {number[]} pixDims - voxel dimensions
+ * @property {number} vox_offset
+ * @property {number} scl_slope
+ * @property {number} scl_inter
+ * @property {number} xyzt_units
+ * @property {number} cal_max
+ * @property {number} cal_min
+ * @property {number} slice_duration
+ * @property {number} toffset
+ * @property {string} description
+ * @property {string} aux_file
+ * @property {string} intent_name
+ * @property {number} qform_code
+ * @property {number} sform_code
+ * @property {number} quatern_b
+ * @property {number} quatern_c
+ * @property {number} quatern_d
+ * @property {number} quatern_x
+ * @property {number} quatern_y
+ * @property {number} quatern_z
+ * @property {Array.<Array.<number>>} affine
+ * @property {string} magic
+ * @property {number[]} extensionFlag
+ * @type {Function}
+ */
+nifti.NIFTI2 = nifti.NIFTI2 || function () {
+    this.littleEndian = false;
+    this.dim_info = 0;
+    this.dims = [];
+    this.intent_p1 = 0;
+    this.intent_p2 = 0;
+    this.intent_p3 = 0;
+    this.intent_code = 0;
+    this.datatypeCode = 0;
+    this.numBitsPerVoxel = 0;
+    this.slice_start = 0;
+    this.slice_end = 0;
+    this.slice_code = 0;
+    this.pixDims = [];
+    this.vox_offset = 0;
+    this.scl_slope = 1;
+    this.scl_inter = 0;
+    this.xyzt_units = 0;
+    this.cal_max = 0;
+    this.cal_min = 0;
+    this.slice_duration = 0;
+    this.toffset = 0;
+    this.description = "";
+    this.aux_file = "";
+    this.intent_name = "";
+    this.qform_code = 0;
+    this.sform_code = 0;
+    this.quatern_b = 0;
+    this.quatern_c = 0;
+    this.quatern_d = 0;
+    this.qoffset_x = 0;
+    this.qoffset_y = 0;
+    this.qoffset_z = 0;
+    this.affine = [[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]];
+    this.magic = 0;
+    this.extensionFlag = [0, 0, 0, 0];
+};
+
+
+
+/*** Static Pseudo-constants ***/
+
+nifti.NIFTI2.MAGIC_COOKIE = 540;
+nifti.NIFTI2.MAGIC_NUMBER_LOCATION = 4;
+nifti.NIFTI2.MAGIC_NUMBER = [0x6E, 0x2B, 0x32, 0, 0x0D, 0x0A, 0x1A, 0x0A];  // n+2\0
+
+
+
+/*** Prototype Methods ***/
+
+/**
+ * Reads the header data.
+ * @param {ArrayBuffer} data
+ */
+nifti.NIFTI2.prototype.readHeader = function (data) {
+    var rawData = new DataView(data),
+        magicCookieVal = nifti.Utils.getIntAt(rawData, 0, this.littleEndian),
+        ctr,
+        ctrOut,
+        ctrIn,
+        index,
+        array;
+
+    if (magicCookieVal !== nifti.NIFTI2.MAGIC_COOKIE) {  // try as little endian
+        this.littleEndian = true;
+        magicCookieVal = nifti.Utils.getIntAt(rawData, 0, this.littleEndian);
+    }
+
+    if (magicCookieVal !== nifti.NIFTI2.MAGIC_COOKIE) {
+        throw new Error("This does not appear to be a NIFTI file!");
+    }
+
+    this.datatypeCode = nifti.Utils.getShortAt(rawData, 12, this.littleEndian);
+    this.numBitsPerVoxel = nifti.Utils.getShortAt(rawData, 14, this.littleEndian);
+
+    for (ctr = 0; ctr < 8; ctr += 1) {
+        index = 16 + (ctr * 8);
+        this.dims[ctr] = nifti.Utils.getLongAt(rawData, index, this.littleEndian);
+    }
+
+    this.intent_p1 = nifti.Utils.getDoubleAt(rawData, 80, this.littleEndian);
+    this.intent_p2 = nifti.Utils.getDoubleAt(rawData, 88, this.littleEndian);
+    this.intent_p3 = nifti.Utils.getDoubleAt(rawData, 96, this.littleEndian);
+
+    for (ctr = 0; ctr < 8; ctr += 1) {
+        index = 104 + (ctr * 8);
+        this.pixDims[ctr] = nifti.Utils.getDoubleAt(rawData, index, this.littleEndian);
+    }
+
+    this.vox_offset = nifti.Utils.getLongAt(rawData, 168, this.littleEndian);
+
+    this.scl_slope = nifti.Utils.getDoubleAt(rawData, 176, this.littleEndian);
+    this.scl_inter = nifti.Utils.getDoubleAt(rawData, 184, this.littleEndian);
+
+    this.cal_max = nifti.Utils.getDoubleAt(rawData, 192, this.littleEndian);
+    this.cal_min = nifti.Utils.getDoubleAt(rawData, 200, this.littleEndian);
+
+    this.slice_duration = nifti.Utils.getDoubleAt(rawData, 208, this.littleEndian);
+
+    this.toffset = nifti.Utils.getDoubleAt(rawData, 216, this.littleEndian);
+
+    this.slice_start = nifti.Utils.getLongAt(rawData, 224, this.littleEndian);
+    this.slice_end = nifti.Utils.getLongAt(rawData, 232, this.littleEndian);
+
+    this.description = nifti.Utils.getStringAt(rawData, 240, 240 + 80);
+    this.aux_file = nifti.Utils.getStringAt(rawData, 320, 320 + 24);
+
+    this.qform_code = nifti.Utils.getIntAt(rawData, 344, this.littleEndian);
+    this.sform_code = nifti.Utils.getIntAt(rawData, 348, this.littleEndian);
+
+    this.quatern_b = nifti.Utils.getDoubleAt(rawData, 352, this.littleEndian);
+    this.quatern_c = nifti.Utils.getDoubleAt(rawData, 360, this.littleEndian);
+    this.quatern_d = nifti.Utils.getDoubleAt(rawData, 368, this.littleEndian);
+    this.qoffset_x = nifti.Utils.getDoubleAt(rawData, 376, this.littleEndian);
+    this.qoffset_y = nifti.Utils.getDoubleAt(rawData, 384, this.littleEndian);
+    this.qoffset_z = nifti.Utils.getDoubleAt(rawData, 392, this.littleEndian);
+
+    for (ctrOut = 0; ctrOut < 3; ctrOut += 1) {
+        for (ctrIn = 0; ctrIn < 4; ctrIn += 1) {
+            index = 400 + (((ctrOut * 4) + ctrIn) * 8);
+            this.affine[ctrOut][ctrIn] = nifti.Utils.getDoubleAt(rawData, index, this.littleEndian);
+        }
+    }
+
+    this.affine[3][0] = 0;
+    this.affine[3][1] = 0;
+    this.affine[3][2] = 0;
+    this.affine[3][3] = 1;
+
+    this.slice_code = nifti.Utils.getIntAt(rawData, 496, this.littleEndian);
+    this.xyzt_units = nifti.Utils.getIntAt(rawData, 500, this.littleEndian);
+    this.intent_code = nifti.Utils.getIntAt(rawData, 504, this.littleEndian);
+    this.intent_name = nifti.Utils.getStringAt(rawData, 508, 508 + 16);
+
+    this.dim_info = nifti.Utils.getByteAt(rawData, 524);
+
+    if (rawData.byteLength > nifti.NIFTI2.MAGIC_COOKIE) {
+        this.extensionFlag[0] = nifti.Utils.getByteAt(rawData, 540);
+        this.extensionFlag[1] = nifti.Utils.getByteAt(rawData, 540 + 1);
+        this.extensionFlag[2] = nifti.Utils.getByteAt(rawData, 540 + 2);
+        this.extensionFlag[3] = nifti.Utils.getByteAt(rawData, 540 + 3);
+
+        if (this.extensionFlag[0]) {
+            this.extensionSize = this.getExtensionSize(rawData);
+            this.extensionCode = this.getExtensionCode(rawData);
+        }
+    }
+};
+
+
+
+/**
+ * Returns a formatted string of header fields.
+ * @returns {string}
+ */
+nifti.NIFTI2.prototype.toFormattedString = function () {
+    var fmt = nifti.Utils.formatNumber,
+        string = "";
+
+    string += ("Datatype = " +  + this.datatypeCode + " (" + this.getDatatypeCodeString(this.datatypeCode) + ")\n");
+    string += ("Bits Per Voxel = " + " = " + this.numBitsPerVoxel + "\n");
+    string += ("Image Dimensions" + " (1-8): " +
+        this.dims[0] + ", " +
+        this.dims[1] + ", " +
+        this.dims[2] + ", " +
+        this.dims[3] + ", " +
+        this.dims[4] + ", " +
+        this.dims[5] + ", " +
+        this.dims[6] + ", " +
+        this.dims[7] + "\n");
+
+    string += ("Intent Parameters (1-3): " +
+        this.intent_p1 + ", " +
+        this.intent_p2 + ", " +
+        this.intent_p3) + "\n";
+
+    string += ("Voxel Dimensions (1-8): " +
+        fmt(this.pixDims[0]) + ", " +
+        fmt(this.pixDims[1]) + ", " +
+        fmt(this.pixDims[2]) + ", " +
+        fmt(this.pixDims[3]) + ", " +
+        fmt(this.pixDims[4]) + ", " +
+        fmt(this.pixDims[5]) + ", " +
+        fmt(this.pixDims[6]) + ", " +
+        fmt(this.pixDims[7]) + "\n");
+
+    string += ("Image Offset = " + this.vox_offset + "\n");
+    string += ("Data Scale:  Slope = " + fmt(this.scl_slope) + "  Intercept = " + fmt(this.scl_inter) + "\n");
+    string += ("Display Range:  Max = " + fmt(this.cal_max) + "  Min = " + fmt(this.cal_min) + "\n");
+    string += ("Slice Duration = " + this.slice_duration + "\n");
+    string += ("Time Axis Shift = " + this.toffset + "\n");
+    string += ("Slice Start = " + this.slice_start + "\n");
+    string += ("Slice End = " + this.slice_end + "\n");
+    string += ("Description: \"" + this.description + "\"\n");
+    string += ("Auxiliary File: \"" + this.aux_file + "\"\n");
+    string += ("Q-Form Code = " + this.qform_code + " (" + this.getTransformCodeString(this.qform_code) + ")\n");
+    string += ("S-Form Code = " + this.sform_code + " (" + this.getTransformCodeString(this.sform_code) + ")\n");
+    string += ("Quaternion Parameters:  " +
+    "b = " + fmt(this.quatern_b) + "  " +
+    "c = " + fmt(this.quatern_c) + "  " +
+    "d = " + fmt(this.quatern_d) + "\n");
+
+    string += ("Quaternion Offsets:  " +
+    "x = " + this.qoffset_x + "  " +
+    "y = " + this.qoffset_y + "  " +
+    "z = " + this.qoffset_z + "\n");
+
+    string += ("S-Form Parameters X: " +
+    fmt(this.affine[0][0]) + ", " +
+    fmt(this.affine[0][1]) + ", " +
+    fmt(this.affine[0][2]) + ", " +
+    fmt(this.affine[0][3]) + "\n");
+
+    string += ("S-Form Parameters Y: " +
+    fmt(this.affine[1][0]) + ", " +
+    fmt(this.affine[1][1]) + ", " +
+    fmt(this.affine[1][2]) + ", " +
+    fmt(this.affine[1][3]) + "\n");
+
+    string += ("S-Form Parameters Z: " +
+    fmt(this.affine[2][0]) + ", " +
+    fmt(this.affine[2][1]) + ", " +
+    fmt(this.affine[2][2]) + ", " +
+    fmt(this.affine[2][3]) + "\n");
+
+    string += ("Slice Code = " + this.slice_code + "\n");
+    string += ("Units Code = " + this.xyzt_units + " (" + this.getUnitsCodeString(nifti.NIFTI1.SPATIAL_UNITS_MASK & this.xyzt_units) + ", " + this.getUnitsCodeString(nifti.NIFTI1.TEMPORAL_UNITS_MASK & this.xyzt_units) + ")\n");
+    string += ("Intent Code = " + this.intent_code + "\n");
+    string += ("Intent Name: \"" + this.intent_name + "\"\n");
+
+    string += ("Dim Info = " + this.dim_info + "\n");
+
+    return string;
+};
+
+
+
+/**
+ * Returns the byte index of the extension.
+ * @returns {number}
+ */
+nifti.NIFTI2.prototype.getExtensionLocation = function() {
+    return nifti.NIFTI2.MAGIC_COOKIE + 4;
+};
+
+
+
+/**
+ * Returns the extension size.
+ * @param {DataView} data
+ * @returns {number}
+ */
+nifti.NIFTI2.prototype.getExtensionSize = nifti.NIFTI1.prototype.getExtensionSize;
+
+
+
+/**
+ * Returns the extension code.
+ * @param {DataView} data
+ * @returns {number}
+ */
+nifti.NIFTI2.prototype.getExtensionCode = nifti.NIFTI1.prototype.getExtensionCode;
+
+
+
+/**
+ * Returns a human-readable string of datatype.
+ * @param {number} code
+ * @returns {string}
+ */
+nifti.NIFTI2.prototype.getDatatypeCodeString = nifti.NIFTI1.prototype.getDatatypeCodeString;
+
+
+
+/**
+ * Returns a human-readable string of transform type.
+ * @param {number} code
+ * @returns {string}
+ */
+nifti.NIFTI2.prototype.getTransformCodeString = nifti.NIFTI1.prototype.getTransformCodeString;
+
+
+
+/**
+ * Returns a human-readable string of spatial and temporal units.
+ * @param {number} code
+ * @returns {string}
+ */
+nifti.NIFTI2.prototype.getUnitsCodeString = nifti.NIFTI1.prototype.getUnitsCodeString;
+
+
+
+/**
+ * Returns the qform matrix.
+ * @returns {Array.<Array.<number>>}
+ */
+nifti.NIFTI2.prototype.getQformMat = nifti.NIFTI1.prototype.getQformMat;
+
+
+
+/**
+ * Converts qform to an affine.  (See http://nifti.nimh.nih.gov/pub/dist/src/niftilib/nifti1_io.c)
+ * @param {number} qb
+ * @param {number} qc
+ * @param {number} qd
+ * @param {number} qx
+ * @param {number} qy
+ * @param {number} qz
+ * @param {number} dx
+ * @param {number} dy
+ * @param {number} dz
+ * @param {number} qfac
+ * @returns {Array.<Array.<number>>}
+ */
+nifti.NIFTI2.prototype.convertNiftiQFormToNiftiSForm = nifti.NIFTI1.prototype.convertNiftiQFormToNiftiSForm;
+
+
+
+/**
+ * Converts sform to an orientation string (e.g., XYZ+--).  (See http://nifti.nimh.nih.gov/pub/dist/src/niftilib/nifti1_io.c)
+ * @param {Array.<Array.<number>>} R
+ * @returns {string}
+ */
+nifti.NIFTI2.prototype.convertNiftiSFormToNEMA = nifti.NIFTI1.prototype.convertNiftiSFormToNEMA;
+
+
+
+nifti.NIFTI2.prototype.nifti_mat33_mul = nifti.NIFTI1.prototype.nifti_mat33_mul;
+
+
+
+nifti.NIFTI2.prototype.nifti_mat33_determ = nifti.NIFTI1.prototype.nifti_mat33_determ;
+
+
+
+/*** Exports ***/
+
+var moduleType = 'object';
+if ((moduleType !== 'undefined') && module.exports) {
+    module.exports = nifti.NIFTI2;
+}
+});
+
+var nifti_1 = createCommonjsModule(function (module) {
+/*jslint browser: true, node: true */
+/*global require, module */
+
+"use strict";
+
+/*** Imports ***/
+
+/**
+ * nifti
+ * @type {*|{}}
+ */
+var nifti = nifti || {};
+nifti.NIFTI1 = nifti.NIFTI1 || ((typeof commonjsRequire !== 'undefined') ? nifti1 : null);
+nifti.NIFTI2 = nifti.NIFTI2 || ((typeof commonjsRequire !== 'undefined') ? nifti2 : null);
+nifti.Utils = nifti.Utils || ((typeof commonjsRequire !== 'undefined') ? utilities : null);
+
+var pako = pako || ((typeof commonjsRequire !== 'undefined') ? index$1 : null);
+
+
+
+/*** Static Methods ***/
+
+/**
+ * Returns true if this data represents a NIFTI-1 header.
+ * @param {ArrayBuffer} data
+ * @returns {boolean}
+ */
+nifti.isNIFTI1 = function (data) {
+    var buf, mag1, mag2, mag3;
+
+    if (data.byteLength < nifti.NIFTI1.STANDARD_HEADER_SIZE) {
+        return false;
+    }
+
+    buf = new DataView(data);
+
+    if (buf)
+
+    mag1 = buf.getUint8(nifti.NIFTI1.MAGIC_NUMBER_LOCATION);
+    mag2 = buf.getUint8(nifti.NIFTI1.MAGIC_NUMBER_LOCATION + 1);
+    mag3 = buf.getUint8(nifti.NIFTI1.MAGIC_NUMBER_LOCATION + 2);
+
+    return !!((mag1 === nifti.NIFTI1.MAGIC_NUMBER[0]) && (mag2 === nifti.NIFTI1.MAGIC_NUMBER[1]) &&
+        (mag3 === nifti.NIFTI1.MAGIC_NUMBER[2]));
+};
+
+
+/**
+ * Returns true if this data represents a NIFTI-2 header.
+ * @param {ArrayBuffer} data
+ * @returns {boolean}
+ */
+nifti.isNIFTI2 = function (data) {
+    var buf, mag1, mag2, mag3;
+
+    if (data.byteLength < nifti.NIFTI1.STANDARD_HEADER_SIZE) {
+        return false;
+    }
+
+    buf = new DataView(data);
+    mag1 = buf.getUint8(nifti.NIFTI2.MAGIC_NUMBER_LOCATION);
+    mag2 = buf.getUint8(nifti.NIFTI2.MAGIC_NUMBER_LOCATION + 1);
+    mag3 = buf.getUint8(nifti.NIFTI2.MAGIC_NUMBER_LOCATION + 2);
+
+    return !!((mag1 === nifti.NIFTI2.MAGIC_NUMBER[0]) && (mag2 === nifti.NIFTI2.MAGIC_NUMBER[1]) &&
+    (mag3 === nifti.NIFTI2.MAGIC_NUMBER[2]));
+};
+
+
+
+/**
+ * Returns true if this data represents a NIFTI header.
+ * @param {ArrayBuffer} data
+ * @returns {boolean}
+ */
+nifti.isNIFTI = function (data) {
+    return (nifti.isNIFTI1(data) || nifti.isNIFTI2(data));
+};
+
+
+
+/**
+ * Returns true if this data is GZIP compressed.
+ * @param {ArrayBuffer} data
+ * @returns {boolean}
+ */
+nifti.isCompressed = function (data) {
+    var buf, magicCookie1, magicCookie2;
+
+    if (data) {
+        buf = new DataView(data);
+
+        magicCookie1 = buf.getUint8(0);
+        magicCookie2 = buf.getUint8(1);
+
+        if (magicCookie1 === nifti.Utils.GUNZIP_MAGIC_COOKIE1) {
+            return true;
+        }
+
+        if (magicCookie2 === nifti.Utils.GUNZIP_MAGIC_COOKIE2) {
+            return true;
+        }
+    }
+
+    return false;
+};
+
+
+
+/**
+ * Returns decompressed data.
+ * @param {ArrayBuffer} data
+ * @returns {ArrayBuffer}
+ */
+nifti.decompress = function (data) {
+    return pako.inflate(data).buffer;
+};
+
+
+
+/**
+ * Reads and returns the header object.
+ * @param {ArrayBuffer} data
+ * @returns {nifti.NIFTI1|nifti.NIFTI2|null}
+ */
+nifti.readHeader = function (data) {
+    var header = null;
+
+    if (nifti.isCompressed(data)) {
+        data = nifti.decompress(data);
+    }
+
+    if (nifti.isNIFTI1(data)) {
+        header = new nifti.NIFTI1();
+    } else if (nifti.isNIFTI2(data)) {
+        header = new nifti.NIFTI2();
+    }
+
+    if (header) {
+        header.readHeader(data);
+    } else {
+        console.error("That file does not appear to be NIFTI!");
+    }
+
+    return header;
+};
+
+
+
+/**
+ * Returns true if this header contains an extension.
+ * @param {nifti.NIFTI1|nifti.NIFTI2} header
+ * @returns {boolean}
+ */
+nifti.hasExtension = function (header) {
+    return (header.extensionFlag[0] != 0);
+};
+
+
+
+/**
+ * Returns the image data.
+ * @param {nifti.NIFTI1|nifti.NIFTI2} header
+ * @param {ArrayBuffer} data
+ * @returns {ArrayBuffer}
+ */
+nifti.readImage = function (header, data) {
+    var imageOffset = header.vox_offset,
+        timeDim = 1,
+        statDim = 1;
+
+    if (header.dims[4]) {
+        timeDim = header.dims[4];
+    }
+
+    if (header.dims[5]) {
+        statDim = header.dims[5];
+    }
+
+    var imageSize = header.dims[1] * header.dims[2] * header.dims[3] * timeDim * statDim * (header.numBitsPerVoxel / 8);
+    return data.slice(imageOffset, imageOffset + imageSize);
+};
+
+
+
+/**
+ * Returns the extension data (including extension header).
+ * @param {nifti.NIFTI1|nifti.NIFTI2} header
+ * @param {ArrayBuffer} data
+ * @returns {ArrayBuffer}
+ */
+nifti.readExtension = function (header, data) {
+    var loc = header.getExtensionLocation(),
+        size = header.extensionSize;
+
+    return data.slice(loc, loc + size);
+};
+
+
+
+/**
+ * Returns the extension data.
+ * @param {nifti.NIFTI1|nifti.NIFTI2} header
+ * @param {ArrayBuffer} data
+ * @returns {ArrayBuffer}
+ */
+nifti.readExtensionData = function (header, data) {
+    var loc = header.getExtensionLocation(),
+        size = header.extensionSize;
+
+    return data.slice(loc + 8, loc + size - 8);
+};
+
+
+/*** Exports ***/
+
+var moduleType = 'object';
+if ((moduleType !== 'undefined') && module.exports) {
+    module.exports = nifti;
+}
+});
+
+/*
+* Author    Jonathan Lurie - http://me.jonahanlurie.fr
+*
+* License   MIT
+* Link      https://github.com/Pixpipe/pixpipejs
+* Lab       MCIN - Montreal Neurological Institute
+*/
+
+/**
+* Important information:
+* NIfTI dataset are using two indexing methods:
+* - A voxel based system (i, j, k), the most intuitive, where i is the fastest varying dim and k is the sloest varying dim.
+*   Thus for a given (i, j, k) the value is at (i + j*dim[1] + k*dim[1]*dim[2])
+* - A subject based system (x, y, z), where +x is right, +y is anterior, +z is superior (right handed coord system).
+*   This system is CENTER pixel/voxel and is the result of a transformation from (i, j, k) and a scaling given by the size of
+*   each voxel in a world unit (eg. mm)
+*
+* NIfTI provides three alternatives to characterize this transformation:
+*
+* METHOD 1 , when header.qform_code = 0
+* Here, no specific orientation difers in [x, y, z], only spatial scaling based on voxel world dimensions.
+* This method is NOT the default one, neither it is the most common. It is mainly for bacward compatibility
+* to ANALYZE 7.5.
+* Thus we simply have:
+* x = pixdim[1] * i
+* y = pixdim[2] * j
+* z = pixdim[3] * k
+*
+* METHOD 2, the "normal" case, when header.qform_code > 0
+* In this situation, three components are involved in the transformation:
+* 1. voxel dimensions (header.pixDims[]) for the spatial scaling
+* 2. a rotation matrix, for orientation
+* 3. a shift
+* Thus, we have:
+* [ x ]   [ R11 R12 R13 ] [        header.pixDims[1] * i ]   [ header.qoffset_x ]
+* [ y ] = [ R21 R22 R23 ] [        header.pixDims[2] * j ] + [ header.qoffset_y ]
+* [ z ]   [ R31 R32 R33 ] [ qfac * header.pixDims[3] * k ]   [ header.qoffset_z ]
+* Info:
+* The official NIfTI header description ( https://nifti.nimh.nih.gov/pub/dist/src/niftilib/nifti1.h )
+* was used to interpret the data.
+*/
+class NiftiDecoderAlt extends Filter {
+  constructor(){
+    super();
+    this.addInputValidator(0, ArrayBuffer);
+  }
+
+
+  _run(){
+    var that = this;
+    var inputBuffer = this._getInput(0);
+
+    if(!inputBuffer){
+      console.warn("NiftiDecoderAlt requires an ArrayBuffer as input \"0\". Unable to continue.");
+      return;
+    }
+
+    console.log( nifti_1 );
+
+    if(! nifti_1.isNIFTI( inputBuffer )) {
+      console.warn("Not a NIfTI file");
+      return;
+    }
+
+    var metadata = {};
+    var data = null;
+
+    var header = nifti_1.readHeader(inputBuffer);
+    var rawData = nifti_1.readImage(header, inputBuffer);
+
+    console.log( header );
+
+
+    data = this._fetchDataArray(header, rawData);
+
+    if( !data ){
+      console.warn("This NIfTI file is valid but does not contain any readable data.");
+      return;
+    }
+
+    this._scaleData(data, header);
+    var numberOfDimensions = header.dims[0];
+
+    // copying all the original metadata into the field "formatSpecific", for the sake of quality.
+    metadata.formatSpecific = header;
+    metadata.statistics = { upToDate: true, min: "sdfsdf", max: NaN };
+    metadata.ncpp = this._fetchNcpp(header);
+    metadata.description = header.description;
+    metadata.format = "nifti";
+    metadata.spatialUnit = header.getUnitsCodeString(nifti_1.NIFTI1.SPATIAL_UNITS_MASK & header.xyzt_units);
+    metadata.temporalUnit = header.getUnitsCodeString(nifti_1.NIFTI1.TEMPORAL_UNITS_MASK & header.xyzt_units);
+    
+    // the transformation
+    var niftiTransfoMatrix = header.getQformMat(); // the default case (METHOD2)
+    if( header.qform_code == 0){  // though sometimes qform_code is 0, then we have to use affine (METHOD3)
+      niftiTransfoMatrix = header.affine;
+    }
+    
+    // dimensions info ordered from the fastest varying to the slowest varying
+    var voxelSpaceNames = ['k', 'j', 'i', 't'];
+    var worldSpaceNames = ['x', 'y', 'z', 't'];
+    var dimensions = [];
+
+    for(var d=0; d<numberOfDimensions; d++){
+      // compute the stride based on the previous dim
+      var stride = 1;
+      for(var pd=0; pd<d; pd++){
+        stride *= header.dims[pd + 1];
+      }
+
+      var dimension = {
+        length: header.dims[d + 1],
+        widthDimension: -1, // to be filled later
+        heightDimension: -1, // to be filled later
+        nameVoxelSpace: voxelSpaceNames[d],
+        nameWorldSpace: worldSpaceNames[d],
+        worldUnitSize: header.pixDims[d + 1],
+        stride: stride,
+        //direction: niftiTransfoMatrix[d][d] < 0 ? -1 : 1, // to be filled later
+      };
+      dimensions.push( dimension );
+    }
+
+    if( dimensions.length >= 3){
+      // dim x has for width  y and for heigth z
+      dimensions[0].widthDimension = 1;
+      dimensions[0].heightDimension = 2;
+
+      // dim y has for width  x and for heigth z
+      dimensions[1].widthDimension = 0;
+      dimensions[1].heightDimension = 2;
+
+      // dim z has for width  x and for heigth y
+      dimensions[2].widthDimension = 0;
+      dimensions[2].heightDimension = 1;
+    }
+    
+    /*
+    swaping dimensions:
+    In some cases, a NIfTI does not respect the orientation from the specfication.
+    In order to get the proper orientation, we have to swap some dimensions as 
+    well as the corresponding rows in the v2w matrix.
+    The criterion to find what dim is suposed to come first, what is supposed to
+    be last is direction cosine fron the matrix:
+    - the 1st row should be the one with the highest absolute value from all 1st columns
+    - the 2nd row should be the one with the highest absolute value from all 2nd columns
+    - the 3rd row should be the one with the highest absolute value from all 3rd columns
+    */
+    
+    // give the index of the row that has the highest value among a given col
+    function whichRowHasHighestValueFromGivenCol( arrOfArr, col){
+      var cx = Math.abs(arrOfArr[0][col]);
+      var cy = Math.abs(arrOfArr[1][col]);
+      var cz = Math.abs(arrOfArr[2][col]);
+      
+      if( cx > cy && cx > cz){
+        return 0;
+      }else if(cy > cx && cy > cz){
+        return 1;
+      }else{
+        return 2
+      }
+    }
+     
+    
+    
+    function getMagnitude( arr ){
+      return Math.sqrt( arr[0]*arr[0] + arr[1]*arr[1] + arr[2]*arr[2] );
+    }
+    
+    var shouldBeCol0 = whichRowHasHighestValueFromGivenCol(niftiTransfoMatrix, 0);
+    var shouldBeCol1 = whichRowHasHighestValueFromGivenCol(niftiTransfoMatrix, 1);
+    var shouldBeCol2 = whichRowHasHighestValueFromGivenCol(niftiTransfoMatrix, 2);
+    
+    // when we have shouldBeCol[ n ] = m it means that the current original row m 
+    // of transfo-matrix should move to the position n
+    var shouldBeCol = [ shouldBeCol0, shouldBeCol1, shouldBeCol2 ];
+    // this is the inverse lookup of shouldBeCol
+    var wasCol = [ shouldBeCol.indexOf(0), shouldBeCol.indexOf(1), shouldBeCol.indexOf(2) ];
+    
+    console.log("shouldBeCol");
+    console.log(shouldBeCol);
+    console.log( "wasCol");
+    console.log(wasCol);
+    
+    var transfoMatrixToUse = JSON.parse(JSON.stringify(niftiTransfoMatrix));
+    var dimensionsToUse = dimensions;
+    
+    // ******************* BEGIN TO SWAP ***************************************
+    
+    // if so, the dimension list and the matrix need swapping
+    if( shouldBeCol[0] != 0 || shouldBeCol[1] != 1 || shouldBeCol[2] != 2){
+      
+      // swap the matrix cols
+      for (var i = 0; i < 3; i++) {
+        for (var j = 0; j < 4; j++) {
+          var volumeAxis = j;
+          if (j < 3) {
+            volumeAxis = shouldBeCol[j];
+          }
+          transfoMatrixToUse[i][volumeAxis] = niftiTransfoMatrix[i][j];
+        }
+      }
+      
+      // just making a safe copy
+      var dimensionsCp = JSON.parse(JSON.stringify(dimensions));
+
+      // renaming it. Then it seems to already be in the correct order. Not sure why?? TODO: see why!
+      dimensionsCp[0].nameVoxelSpace = "k";
+      dimensionsCp[1].nameVoxelSpace = "j";
+      dimensionsCp[2].nameVoxelSpace = "i";
+      
+      dimensionsCp[wasCol[0]].nameWorldSpace = "x";
+      dimensionsCp[wasCol[1]].nameWorldSpace = "y";
+      dimensionsCp[wasCol[2]].nameWorldSpace = "z";
+
+      
+      
+      // associating width and height
+      dimensionsCp[wasCol[0]].widthDimension = wasCol[1];
+      dimensionsCp[wasCol[0]].heightDimension = wasCol[2];
+      dimensionsCp[wasCol[1]].widthDimension = wasCol[0];
+      dimensionsCp[wasCol[1]].heightDimension = wasCol[2];
+      dimensionsCp[wasCol[2]].widthDimension = wasCol[0];
+      dimensionsCp[wasCol[2]].heightDimension = wasCol[1];
+      
+      
+
+      dimensionsToUse = dimensionsCp;
+    }
+    // ******************* END OF SWAPING **************************************
+    
+    // return the dimsniosn object given its world name ('x', 'y' or 'z')
+    function getDimensionByWorldName( name ){
+      for(var i=0; i<dimensionsToUse.length; i++){
+        if(dimensionsToUse[i].nameWorldSpace === name)
+          return dimensionsToUse[i];
+      }
+      return null;
+    }
+    
+    // set the directions
+    for(var i=0; i<3; i++){
+      var stepSize = getMagnitude( transfoMatrixToUse[i] );
+      var directionSign = Math.sign( transfoMatrixToUse[i][i]);
+      //dimensionsToUse[i].step = stepSize * directionSign;
+      
+      // so that when i==0, dimension is x, etc.
+      var dimension = getDimensionByWorldName(worldSpaceNames[i]);
+      dimension.step = stepSize * directionSign;
+    }
+    
+    
+    
+    metadata.dimensions = dimensionsToUse;
+    
+    var v2wMat = fromValues$3(transfoMatrixToUse[0][0], transfoMatrixToUse[1][0], transfoMatrixToUse[2][0], transfoMatrixToUse[3][0],
+                                 transfoMatrixToUse[0][1], transfoMatrixToUse[1][1], transfoMatrixToUse[2][1], transfoMatrixToUse[3][1],
+                                 transfoMatrixToUse[0][2], transfoMatrixToUse[1][2], transfoMatrixToUse[2][2], transfoMatrixToUse[3][2],
+                                 transfoMatrixToUse[0][3], transfoMatrixToUse[1][3], transfoMatrixToUse[2][3], transfoMatrixToUse[3][3] );
+
+    var w2vMat = create$3();
+    invert$3( w2vMat, v2wMat );
+
+    // register all the transformations available here
+    metadata.transformations = {
+      v2w: v2wMat,
+      w2v: w2vMat
+    };
+
+    var output = new Image3DAlt();
+    output.setRawData( data );
+    output.setRawMetadata( metadata );
+    output.scanDataRange();
+    
+    if(output.metadataIntegrityCheck()){
+      console.log( output );
+      this._output[0] = output;
+    }
+  }
+
+
+  /**
+  * [PRIVATE]
+  * The header field `scl_slope` is used to scale the data, thus if non-0,
+  * we should scale the data.
+  * @param {typed array} data - the nifti data array, WILL BE MODIFIED
+  * @param {Object} header - nifti header
+  */
+  _scaleData( data, header ){
+    // We dont scale in the case RGB24
+    if( header.datatypeCode == nifti_1.NIFTI1.TYPE_RGB24 ){
+      return;
+    }
+
+    // the data scaling wont change anything, thus we dont perform it
+    if( header.scl_slope == 1 && header.scl_inter == 0 ){
+      return;
+    }
+
+    if( header.scl_slope ){
+      for(var i=0; i<data.length; i++){
+        data[i] = data[i] * header.scl_slope + header.scl_inter;
+      }
+    }
+  }
+
+
+  /**
+  * [PRIVATE]
+  * Get the number of components per pixel encoded in the Nifti file
+  * @param {Object} header - Nifti header
+  * @return {number} the ncpp
+  */
+  _fetchNcpp( header ){
+    var ncpp = 0;
+
+    switch ( header.datatypeCode ) {
+      case nifti_1.NIFTI1.TYPE_BINARY:
+        console.warn("The datatype nifti.TYPE_BINARY is not compatible yet.");
+        break;
+      case nifti_1.NIFTI1.TYPE_COMPLEX64:
+        console.warn("The datatype nifti.TYPE_COMPLEX64 is not compatible yet.");
+        break;
+      case nifti_1.NIFTI1.TYPE_COMPLEX128:
+        console.warn("The datatype nifti.TYPE_COMPLEX128 is not compatible yet.");
+        break;
+      case nifti_1.NIFTI1.TYPE_COMPLEX256:
+        console.warn("The datatype nifti.TYPE_COMPLEX256 is not compatible yet.");
+        break;
+      case nifti_1.NIFTI1.TYPE_FLOAT128:
+        console.warn("The datatype nifti.TYPE_FLOAT128 is not compatible yet.");
+        break;
+      case nifti_1.NIFTI1.TYPE_INT64:
+        console.warn("The datatype nifti.TYPE_INT64 is not compatible yet.");
+        break;
+      case nifti_1.NIFTI1.TYPE_NONE:
+        console.warn("The datatype nifti.TYPE_NONE is not compatible.");
+        break;
+      case nifti_1.NIFTI1.TYPE_UINT64:
+        console.warn("The datatype nifti.TYPE_INT64 is not compatible yet.");
+        break;
+
+      case nifti_1.NIFTI1.TYPE_FLOAT32:
+        ncpp = 1;
+        break;
+      case nifti_1.NIFTI1.TYPE_FLOAT64:
+        ncpp = 1;
+        break;
+      case nifti_1.NIFTI1.TYPE_INT8:
+        ncpp = 1;
+        break;
+      case nifti_1.NIFTI1.TYPE_INT16:
+        ncpp = 1;
+        break;
+      case nifti_1.NIFTI1.TYPE_INT32:
+        ncpp = 1;
+        break;
+      case nifti_1.NIFTI1.TYPE_UINT8:
+        ncpp = 1;
+        break;
+      case nifti_1.NIFTI1.TYPE_UINT16:
+        ncpp = 1;
+        break;
+      case nifti_1.NIFTI1.TYPE_UINT32:
+        ncpp = 1;
+        break;
+      case nifti_1.NIFTI1.TYPE_RGB24:
+        ncpp = 3;
+        break;
+
+      default:
+        console.warn("The datatype is unknown.");
+    }
+
+    return ncpp;
+  }
+
+
+  /**
+  * [PRIVATE]
+  * Cast the raw ArrayBuffer into the appropriate type. Some Nifti types are not
+  * compatible with Javascript and cannot be used.
+  * @param {Object} header - the nifti header
+  * @param {ArrayBuffer} rawData - the nifti data buffer
+  * @return {typed array} a typed array with the data
+  */
+  _fetchDataArray( header, rawData ){
+    var typedData = null;
+
+    switch ( header.datatypeCode ) {
+      case nifti_1.NIFTI1.TYPE_BINARY:
+        console.warn("The datatype nifti.TYPE_BINARY is not compatible yet.");
+        break;
+      case nifti_1.NIFTI1.TYPE_COMPLEX64:
+        console.warn("The datatype nifti.TYPE_COMPLEX64 is not compatible yet.");
+        break;
+      case nifti_1.NIFTI1.TYPE_COMPLEX128:
+        console.warn("The datatype nifti.TYPE_COMPLEX128 is not compatible yet.");
+        break;
+      case nifti_1.NIFTI1.TYPE_COMPLEX256:
+        console.warn("The datatype nifti.TYPE_COMPLEX256 is not compatible yet.");
+        break;
+      case nifti_1.NIFTI1.TYPE_FLOAT128:
+        console.warn("The datatype nifti.TYPE_FLOAT128 is not compatible yet.");
+        break;
+      case nifti_1.NIFTI1.TYPE_INT64:
+        console.warn("The datatype nifti.TYPE_INT64 is not compatible yet.");
+        break;
+      case nifti_1.NIFTI1.TYPE_NONE:
+        console.warn("The datatype nifti.TYPE_NONE is not compatible.");
+        break;
+      case nifti_1.NIFTI1.TYPE_UINT64:
+        console.warn("The datatype nifti.TYPE_INT64 is not compatible yet.");
+        break;
+
+      case nifti_1.NIFTI1.TYPE_FLOAT32:
+        typedData = new Float32Array( rawData );
+        break;
+      case nifti_1.NIFTI1.TYPE_FLOAT64:
+        typedData = new Float64Array( rawData );
+        break;
+      case nifti_1.NIFTI1.TYPE_INT8:
+        typedData = new Int8Array( rawData );
+        break;
+      case nifti_1.NIFTI1.TYPE_INT16:
+        typedData = new Int16Array( rawData );
+        break;
+      case nifti_1.NIFTI1.TYPE_INT32:
+        typedData = new Int32Array( rawData );
+        break;
+      case nifti_1.NIFTI1.TYPE_UINT8:
+        typedData = new Uint8Array( rawData );
+        break;
+      case nifti_1.NIFTI1.TYPE_UINT16:
+        typedData = new Uint16Array( rawData );
+        break;
+      case nifti_1.NIFTI1.TYPE_UINT32:
+        typedData = new Uint32Array( rawData );
+        break;
+      case nifti_1.NIFTI1.TYPE_RGB24:
+        typedData = new Uint8Array( rawData );
+        break;
+
+      default:
+        console.warn("The datatype is unknown.");
+    }
+    return typedData;
+  }
+
+
+  _computeSubjsctBasedCoord( header ){
+
+  }
+
+} /* END of class NiftiDecoderAlt */
 
 /*
 * Author    Jonathan Lurie - http://me.jonahanlurie.fr
@@ -17225,7 +32887,7 @@ var sax = {
  * @see http://www.w3.org/TR/2000/REC-DOM-Level-2-Core-20001113/ecma-script-binding.html
  */
 
-function copy(src,dest){
+function copy$8(src,dest){
 	for(var p in src){
 		dest[p] = src[p];
 	}
@@ -17244,7 +32906,7 @@ function _extends(Class,Super){
 		function t(){}
 		t.prototype = Super.prototype;
 		t = new t();
-		copy(pt,t);
+		copy$8(pt,t);
 		Class.prototype = pt = t;
 	}
 	if(pt.constructor != Class){
@@ -17305,7 +32967,7 @@ function DOMException(code, message) {
 	return error;
 }
 DOMException.prototype = Error.prototype;
-copy(ExceptionCode,DOMException);
+copy$8(ExceptionCode,DOMException);
 /**
  * @see http://www.w3.org/TR/2000/REC-DOM-Level-2-Core-20001113/core.html#ID-536297177
  * The NodeList interface provides the abstraction of an ordered collection of nodes, without defining or constraining how this collection is implemented. NodeList objects in the DOM are live.
@@ -17348,7 +33010,7 @@ function _updateLiveList(list){
 		var ls = list._refresh(list._node);
 		//console.log(ls.length)
 		__set__(list,'length',ls.length);
-		copy(ls,list);
+		copy$8(ls,list);
 		list._inc = inc;
 	}
 }
@@ -17638,8 +33300,8 @@ function _xmlEncoder(c){
 }
 
 
-copy(NodeType,Node);
-copy(NodeType,Node.prototype);
+copy$8(NodeType,Node);
+copy$8(NodeType,Node.prototype);
 
 /**
  * @param callback return true for continue,false for break
@@ -20639,6 +36301,734 @@ class TiffDecoder extends Filter {
   
 } /* END of class TiffDecoder */
 
+class Image3DMetadataConverter {
+  
+  static convertOld2New( oldMeta ){
+    var newMeta = {};
+    
+    // we never have RGB from MINC/NIfTI/MGH. Though it could happen...
+    newMeta.ncpp = 1;
+    newMeta.dimensions = [];
+    
+    //var spacenameLUT = {x: "i", y: "j", z: "k", t: "t"};
+    var voxelSpaceNames = ["k", "j", "i", "t"];
+    var spacePosition = {};
+    
+    for(var i=0; i<oldMeta.order.length; i++){
+      var oldDim = oldMeta[ oldMeta.order[i] ];
+      var dimension = {};
+      dimension.length = oldDim.space_length;
+      dimension.nameWorldSpace = oldMeta.order[i][0];
+      dimension.nameVoxelSpace = ''; //voxelSpaceNames[i]; //spacenameLUT[ dimension.nameWorldSpace ];
+      spacePosition[ dimension.nameWorldSpace ] = i;
+      
+      dimension.worldUnitSize = Math.abs(oldDim.step);
+      dimension.step = oldDim.step;
+      dimension.worldStep = oldDim.step;
+      dimension.stride = oldDim.offset;
+      newMeta.dimensions.push( dimension );
+    }
+    
+    
+    newMeta.dimensions.sort( function(a, b){
+      return a.stride > b.stride;
+    });
+    
+    
+    for(var i=0; i<oldMeta.order.length; i++){
+      newMeta.dimensions[i].nameVoxelSpace = voxelSpaceNames[i];
+    }
+    
+    // return the index of a dimension based on the given world axis name
+    function getIndexOfWorld( axisName ){
+      for(var i=0; i<newMeta.dimensions.length; i++){
+        if(newMeta.dimensions[i].nameWorldSpace === axisName){
+          return i;
+        }
+      }
+      return -1;
+    }
+    
+    // given a world axis name, return the the name of the world axis that goes as width
+    function getWidthAxisFrom( axisName ){
+      return axisName === "x" ? "y" : axisName === "y" ? "x" : axisName === "z" ? "x" : null;
+    }
+    
+    
+    // given a world axis name, return the the name of the world axis that goes as heigth
+    function getHeightAxisFrom( axisName ){
+      return axisName === "x" ? "z" : axisName === "y" ? "z" : axisName === "z" ? "y" : null;
+    }
+    
+    
+    for(var i=0; i<newMeta.dimensions.length; i++){
+      var axisName = newMeta.dimensions[i].nameWorldSpace;
+      newMeta.dimensions[i].widthDimension = getIndexOfWorld( getWidthAxisFrom( axisName ) );
+      newMeta.dimensions[i].heightDimension = getIndexOfWorld( getHeightAxisFrom( axisName ) );
+    }
+    
+    console.log( newMeta.dimensions );
+    
+    /*
+    function getWidthHeighDimIndex(dim){
+      switch (dim.nameWorldSpace) {
+        case 'x':
+          return {
+            w: spacePosition.y,
+            h: spacePosition.z
+          }
+          break;
+          
+        case 'y':
+          return {
+            w: spacePosition.x,
+            h: spacePosition.z
+          }
+          break;
+        
+        case 'z':
+          return {
+            w: spacePosition.x,
+            h: spacePosition.y
+          }
+          break;
+        default:
+          return null;
+      }
+    }
+    
+    var dim0Sides = getWidthHeighDimIndex( newMeta.dimensions[0] );
+    newMeta.dimensions[0].widthDimension = dim0Sides.w;
+    newMeta.dimensions[0].heightDimension = dim0Sides.h;
+    
+    var dim1Sides = getWidthHeighDimIndex( newMeta.dimensions[1] );
+    newMeta.dimensions[1].widthDimension = dim1Sides.w;
+    newMeta.dimensions[1].heightDimension = dim1Sides.h;
+    
+    var dim2Sides = getWidthHeighDimIndex( newMeta.dimensions[2] );
+    newMeta.dimensions[2].widthDimension = dim2Sides.w;
+    newMeta.dimensions[2].heightDimension = dim2Sides.h;
+    */
+    
+    newMeta.statistics = {
+      upToDate: false,
+      min: 0,
+      max: 0
+    };
+    
+    newMeta.description = "";
+    newMeta.spatialUnit = "";
+    newMeta.temporalUnit = "";
+    newMeta.format = ("format" in oldMeta) ? oldMeta.format : "generic";
+
+    /*
+    var v2wMat = mat4.fromValues(transfoMatrixToUse[0][0], transfoMatrixToUse[1][0], transfoMatrixToUse[2][0], transfoMatrixToUse[3][0],
+                                 transfoMatrixToUse[0][1], transfoMatrixToUse[1][1], transfoMatrixToUse[2][1], transfoMatrixToUse[3][1],
+                                 transfoMatrixToUse[0][2], transfoMatrixToUse[1][2], transfoMatrixToUse[2][2], transfoMatrixToUse[3][2],
+                                 transfoMatrixToUse[0][3], transfoMatrixToUse[1][3], transfoMatrixToUse[2][3], transfoMatrixToUse[3][3] );
+    */
+    
+    var w2vMat = fromValues$3(oldMeta.w2v[0][0], oldMeta.w2v[1][0], oldMeta.w2v[2][0], 0,
+                                 oldMeta.w2v[0][1], oldMeta.w2v[1][1], oldMeta.w2v[2][1], 0,
+                                 oldMeta.w2v[0][2], oldMeta.w2v[1][2], oldMeta.w2v[2][2], 0,
+                                 oldMeta.w2v[0][3], oldMeta.w2v[1][3], oldMeta.w2v[2][3], 1 );
+
+
+    var v2wMat = create$3();
+    invert$3( v2wMat, w2vMat );
+    
+    newMeta.transformations = {
+      "v2w": v2wMat,
+      "w2v": w2vMat
+    };
+    
+    return newMeta;
+  }
+  
+  
+  
+  /**
+  * Converts the original Image3D metadata into the new
+  * 
+  */
+  static convertImage3DMetadata( oldMeta ){
+    Image3DMetadataConverter.completeHeader( oldMeta );
+    var newMetaObj = Image3DMetadataConverter.convertOld2New( oldMeta );
+    
+    console.log( oldMeta );
+    return newMetaObj;
+  }
+  
+  
+  static completeHeader( oldMetaObj ) {
+    var xspace = oldMetaObj.xspace;
+    var yspace = oldMetaObj.yspace;
+    var zspace = oldMetaObj.zspace;
+
+    var startx = xspace.start;
+    var starty = yspace.start;
+    var startz = zspace.start;
+    var cx = xspace.direction_cosines;
+    var cy = yspace.direction_cosines;
+    var cz = zspace.direction_cosines;
+    var stepx = xspace.step;
+    var stepy = yspace.step;
+    var stepz = zspace.step;
+
+    // voxel_origin
+    var o = {
+      x: startx * cx[0] + starty * cy[0] + startz * cz[0],
+      y: startx * cx[1] + starty * cy[1] + startz * cz[1],
+      z: startx * cx[2] + starty * cy[2] + startz * cz[2]
+    };
+
+    oldMetaObj.voxel_origin = o;
+
+    var tx = (-o.x * cx[0] - o.y * cx[1] - o.z * cx[2]) / stepx;
+    var ty = (-o.x * cy[0] - o.y * cy[1] - o.z * cy[2]) / stepy;
+    var tz = (-o.x * cz[0] - o.y * cz[1] - o.z * cz[2]) / stepz;
+
+    var w2v = [
+      [cx[0] / stepx, cx[1] / stepx, cx[2] / stepx, tx],
+      [cy[0] / stepy, cy[1] / stepy, cy[2] / stepy, ty],
+      [cz[0] / stepz, cz[1] / stepz, cz[2] / stepz, tz]
+    ];
+    
+    /*
+    x: x * cx[0] * stepx + y * cy[0] * stepy + z * cz[0] * stepz + o.x,
+    y: x * cx[1] * stepx + y * cy[1] * stepy + z * cz[1] * stepz + o.y,
+    z: x * cx[2] * stepx + y * cy[2] * stepy + z * cz[2] * stepz + o.z
+    */
+    
+    var v2w =  [
+      cx[0] * stepx,
+      cx[1] * stepx,
+      cx[2] * stepx,
+      0,
+      cy[0] * stepy,
+      cy[1] * stepy,
+      cy[2] * stepy,
+      0,
+      cz[0] * stepz,
+      cz[1] * stepz,
+      cz[2] * stepz,
+      0,
+      o.x,
+      o.y,
+      o.z,
+      1
+    ];
+    
+    console.log("computed v2w:");
+    console.log( v2w );
+
+    oldMetaObj.w2v = w2v;
+
+    xspace.width_space  = JSON.parse( JSON.stringify( yspace ) );//yspace;
+    xspace.width        = yspace.space_length;
+    xspace.height_space = JSON.parse( JSON.stringify( zspace ) );//zspace;
+    xspace.height       = zspace.space_length;
+
+    yspace.width_space  = JSON.parse( JSON.stringify( xspace ) );//xspace;
+    yspace.width        = xspace.space_length;
+    yspace.height_space = JSON.parse( JSON.stringify( zspace ) );//zspace;
+    yspace.height       = zspace.space_length;
+
+    zspace.width_space  = JSON.parse( JSON.stringify( xspace ) );//xspace;
+    zspace.width        = xspace.space_length;
+    zspace.height_space = JSON.parse( JSON.stringify( yspace ) );//yspace;
+    zspace.height       = yspace.space_length;
+    
+    console.log( oldMetaObj );
+  }
+  
+  
+  
+    /**
+    * [STATIC]
+    * mainly used by the ouside world (like from Nifti)
+    */
+    static transformToMinc(transform, header) {
+      var x_dir_cosines = [];
+      var y_dir_cosines = [];
+      var z_dir_cosines = [];
+
+      // A tiny helper function to calculate the magnitude of the rotational
+      // part of the transform.
+      //
+      function magnitude(v) {
+        var dotprod = v[0] * v[0] + v[1] * v[1] + v[2] * v[2];
+        if (dotprod <= 0) {
+          dotprod = 1.0;
+        }
+        return Math.sqrt(dotprod);
+      }
+
+      // Calculate the determinant of a 3x3 matrix, from:
+      // http://www.mathworks.com/help/aeroblks/determinantof3x3matrix.html
+      //
+      // det(A) = A_{11} (A_{22}A_{33} - A_{23}A_{32}) -
+      //          A_{12} (A_{21}A_{33} - A_{23}A_{31}) +
+      //          A_{13} (A_{21}A_{32} - A_{22}A_{31})
+      //
+      // Of course, I had to change the indices from 1-based to 0-based.
+      //
+      function determinant(c0, c1, c2) {
+        return (c0[0] * (c1[1] * c2[2] - c1[2] * c2[1]) -
+                c0[1] * (c1[0] * c2[2] - c1[2] * c2[0]) +
+                c0[2] * (c1[0] * c2[1] - c1[1] * c2[0]));
+      }
+
+      // Now that we have the transform, need to convert it to MINC-like
+      // steps and direction_cosines.
+
+      var xmag = magnitude(transform[0]);
+      var ymag = magnitude(transform[1]);
+      var zmag = magnitude(transform[2]);
+
+      var xstep = (transform[0][0] < 0) ? -xmag : xmag;
+      var ystep = (transform[1][1] < 0) ? -ymag : ymag;
+      var zstep = (transform[2][2] < 0) ? -zmag : zmag;
+
+      for (var i = 0; i < 3; i++) {
+        x_dir_cosines[i] = transform[i][0] / xstep;
+        y_dir_cosines[i] = transform[i][1] / ystep;
+        z_dir_cosines[i] = transform[i][2] / zstep;
+      }
+
+      header.xspace.step = xstep;
+      header.yspace.step = ystep;
+      header.zspace.step = zstep;
+
+      // Calculate the corrected start values.
+      var starts = [transform[0][3],
+                    transform[1][3],
+                    transform[2][3]
+                   ];
+
+      // (bert): I believe that the determinant of the direction
+      // cosines should always work out to 1, so the calculation of
+      // this value should not be needed. But I have no idea if NIfTI
+      // enforces this when sform transforms are written.
+      var denom  = determinant(x_dir_cosines, y_dir_cosines, z_dir_cosines);
+      var xstart = determinant(starts, y_dir_cosines, z_dir_cosines);
+      var ystart = determinant(x_dir_cosines, starts, z_dir_cosines);
+      var zstart = determinant(x_dir_cosines, y_dir_cosines, starts);
+
+      header.xspace.start = xstart / denom;
+      header.yspace.start = ystart / denom;
+      header.zspace.start = zstart / denom;
+
+      header.xspace.direction_cosines = x_dir_cosines;
+      header.yspace.direction_cosines = y_dir_cosines;
+      header.zspace.direction_cosines = z_dir_cosines;
+    };
+  
+  
+    /**
+    * [STATIC]
+    * swap the data to be used from the outside (ie. nifti)
+    */
+    static swapn(byte_data, n_per_item) {
+      for (var d = 0; d < byte_data.length; d += n_per_item) {
+        var hi_offset = n_per_item - 1;
+        var lo_offset = 0;
+        while (hi_offset > lo_offset) {
+          var tmp = byte_data[d + hi_offset];
+          byte_data[d + hi_offset] = byte_data[d + lo_offset];
+          byte_data[d + lo_offset] = tmp;
+          hi_offset--;
+          lo_offset++;
+        }
+      }
+    }
+}
+
+/*
+* Author    Jonathan Lurie - http://me.jonahanlurie.fr
+*           Robert D. Vincent
+*
+* License   MIT
+* Link      https://github.com/Pixpipe/pixpipejs
+* Lab       MCIN - Montreal Neurological Institute
+*/
+
+/**
+* Decodes a MGH file.
+* Takes an ArrayBuffer as input (0) and output a `MniVolume` (which inherit `Image3D`).
+*
+* **Usage**
+* - [examples/fileToMgh.html](../examples/fileToMgh.html)
+*/
+class MghDecoderAlt extends Filter {
+  
+  constructor() {
+    super();
+    this.addInputValidator(0, ArrayBuffer);
+    this.setMetadata("debug", false);
+  }
+  
+  
+  /* Function to parse the basic MGH header. This is a 284-byte binary
+   * object that begins at offset zero in the file.
+   * The resulting header object will contain the following fields:
+   *
+   * header.order[] - An array of strings that gives the order of the
+   * spatial dimensions.
+   * header.xspace - Description of the X axis (patient left to right)
+   * header.yspace - Description of the Y axis (patient posterior to anterior)
+   * header.zspace - Description of the Z axis (patient inferior to superior)
+   * header.time - Description of time axis, if any.
+
+   * Non-standard fields used internally only:
+   *
+   * header.nvoxels - Total number of voxels in the image.
+   * header.datatype - MGH data type of image.
+   * header.little_endian - True if data is little endian (should be false!)
+   */
+  _parseMGHHeader(raw_data, callback) {
+    var header = {
+      order: ["xspace", "yspace", "zspace"],
+      xspace: {},
+      yspace: {},
+      zspace: {}
+    };
+    var error_message;
+    var dview = new DataView(raw_data, 0, 284);
+    var little_endian = true;
+
+    /* Read the header version, which should always have the value
+     * 0x00000001. We use this to test the endian-ness of the data,
+     * but it should always be big-endian.
+     */
+    var hdr_version = dview.getUint32(0, true);
+    if (hdr_version === 0x00000001) {
+      little_endian = true;
+    } else if (hdr_version === 0x01000000) {
+      little_endian = false;    // Generally files are big-endian.
+    }
+    else {
+      console.warn( "This does not look like an MGH file." );
+      return null;
+    }
+
+    /* Now read the dimension lengths. There are at most 4 dimensions
+     * in the file. The lengths fields are always present, but they
+     * unused dimensions may have the value 0 or 1.
+     */
+    var ndims = 0;
+    var sizes = [0, 0, 0, 0];
+    var header_offset = 4;
+    var nvoxels = 1;
+    for (ndims = 0; ndims < 4; ndims++) {
+      sizes[ndims] = dview.getUint32(header_offset, little_endian);
+      if (sizes[ndims] <= 1) {
+        break;
+      }
+      nvoxels *= sizes[ndims];
+      header_offset += 4;
+    }
+
+    if (ndims < 3 || ndims > 4) {
+      console.warn( "Cannot handle " + ndims + "-dimensional images yet." );
+      return null;
+    }
+
+    var datatype = dview.getUint32(20, little_endian);
+    // IGNORED var dof = dview.getUint32(24, little_endian);
+    var good_transform_flag = dview.getUint16(28, little_endian);
+    var spacing = [1.0, 1.0, 1.0];
+    var i, j;
+    var dircos = [
+      [-1.0,  0.0,  0.0],
+      [ 0.0,  0.0, -1.0],
+      [ 0.0,  1.0,  0.0],
+      [ 0.0,  0.0,  0.0]
+    ];
+    if (good_transform_flag) {
+      header_offset = 30;
+      for (i = 0; i < 3; i++) {
+        spacing[i] = dview.getFloat32(header_offset, little_endian);
+        header_offset += 4;
+      }
+      for (i = 0; i < 4; i++) {
+        for (j = 0; j < 3; j++) {
+          dircos[i][j] = dview.getFloat32(header_offset, little_endian);
+          header_offset += 4;
+        }
+      }
+    }
+
+    if ( this._metadata.debug ) {
+      // Prints out the transform in a format similar to the output
+      // of FreeSurfer's mri_info tool.
+      //
+      for (i = 0; i < 3; i++) {
+        var s1 = "";
+        for (j = 0; j < 4; j++) {
+          s1 += "xyzc"[j] + "_" + "ras"[i] + " " + dircos[j][i] + " ";
+        }
+        console.log(s1);
+      }
+    }
+
+    var axis_index_from_file = [0, 1, 2];
+
+    for ( var axis = 0; axis < 3; axis++) {
+      var spatial_axis = 0;
+      var c_x = Math.abs(dircos[axis][0]);
+      var c_y = Math.abs(dircos[axis][1]);
+      var c_z = Math.abs(dircos[axis][2]);
+
+      header.order[axis] = "xspace";
+      if (c_y > c_x && c_y > c_z) {
+        spatial_axis = 1;
+        header.order[axis] = "yspace";
+      }
+      if (c_z > c_x && c_z > c_y) {
+        spatial_axis = 2;
+        header.order[axis] = "zspace";
+      }
+      axis_index_from_file[axis] = spatial_axis;
+    }
+
+    /* If there are four dimensions, assume the last is the time
+     * dimension. I use default values for step and start because as
+     * far as I know MGH files do not carry any descriptive
+     * information about the 4th dimension.
+     */
+    if (ndims === 4) {
+      if (this._metadata.debug) {
+        console.log("Creating time dimension: " + sizes[3]);
+      }
+      header.time = {
+        space_length: sizes[3],
+        step: 1,
+        start: 0,
+        name: "time"
+      };
+      header.order.push("time");
+    }
+
+    /** This is here because there are two different ways of interpreting
+      * the origin of an MGH file. One can ignore the offsets in the
+      * transform, using the centre of the voxel grid. Or you can correct
+      * these naive grid centres using the values stored in the transform.
+      * The first approach is what is used by surface files, so to get them
+      * to register nicely, we want ignore_offsets to be true. However,
+      * getting volumetric files to register correctly implies setting
+      * ignore_offsets to false.
+      */
+    var ignore_offsets = false;
+    var mgh_xform = [
+      [0, 0, 0, 0],
+      [0, 0, 0, 0],
+      [0, 0, 0, 0]
+    ];
+    for (i = 0; i < 3; i++) {
+      for (j = 0; j < 3; j++) {
+        mgh_xform[i][j] = dircos[j][i] * spacing[i];
+      }
+    }
+
+    for (i = 0; i < 3; i++) {
+      var temp = 0.0;
+      for (j = 0; j < 3; j++) {
+        temp += mgh_xform[i][j] * (sizes[j] / 2.0);
+      }
+
+      if (ignore_offsets) {
+        mgh_xform[i][4 - 1] = -temp;
+      }
+      else {
+        mgh_xform[i][4 - 1] = dircos[4 - 1][i] - temp;
+      }
+    }
+
+    var transform = [
+      [0, 0, 0, 0],
+      [0, 0, 0, 0],
+      [0, 0, 0, 0],
+      [0, 0, 0, 0]
+    ];
+
+    for (i = 0; i < 3; i++) {
+      for (j = 0; j < 4; j++) {
+        var volume_axis = j;
+        if (j < 3) {
+          volume_axis = axis_index_from_file[j];
+        }
+        transform[i][volume_axis] = mgh_xform[i][j];
+      }
+    }
+
+    // Now that we have the transform, need to convert it to MINC-like
+    // steps and direction_cosines.
+
+    Image3DMetadataConverter.transformToMinc(transform, header);
+
+    // Save the datatype so that we can refer to it later.
+    header.datatype = datatype;
+    header.little_endian = little_endian;
+    header.nvoxels = nvoxels;
+
+    // Save the voxel dimension lengths.
+    for (i = 0; i < 3; i++) {
+      header[header.order[i]].space_length = sizes[i];
+    }
+
+    return header;
+  }
+  
+  
+  _createMGHData(header, raw_data) {
+    
+    var native_data = null;
+    var bytes_per_voxel = 1;
+
+    switch (header.datatype) {
+    case 0:                     // Unsigned characters.
+      bytes_per_voxel = 1;
+      break;
+    case 1:                     // 4-byte signed integers.
+    case 3:                     // 4-byte float.
+      bytes_per_voxel = 4;
+      break;
+    case 4:                     // 2-byte signed integers.
+      bytes_per_voxel = 2;
+      break;
+    default:
+      console.warn( "Unsupported data type: " + header.datatype );
+      return null;
+    }
+
+    var nbytes = header.nvoxels * bytes_per_voxel;
+
+    if (bytes_per_voxel > 1 && !header.little_endian) {
+      Image3DMetadataConverter.swapn( new Uint8Array(raw_data, 284, nbytes), bytes_per_voxel );
+    }
+
+    switch (header.datatype) {
+    case 0:                     // unsigned char
+      native_data = new Uint8Array(raw_data, 284, header.nvoxels);
+      break;
+    case 1:                     // signed int
+      native_data = new Int32Array(raw_data, 284, header.nvoxels);
+      break;
+    case 3:
+      native_data = new Float32Array(raw_data, 284, header.nvoxels);
+      break;
+    case 4:                     // signed short
+      native_data = new Int16Array(raw_data, 284, header.nvoxels);
+      break;
+    }
+
+    // Incrementation offsets for each dimension of the volume. MGH
+    // files store the fastest-varying dimension _first_, so the
+    // "first" dimension actually has the smallest offset. That is
+    // why this calculation is different from that for NIfTI-1.
+    //
+    var offset = 1;
+    for (var d = 0; d < header.order.length; d++) {
+      header[header.order[d]].offset = offset;
+      offset *= header[header.order[d]].space_length;
+    }
+    return native_data;
+
+  }
+
+  
+  _run(){
+    var inputBuffer = this._getInput(0);
+
+    if(!inputBuffer){
+      console.warn("MghDecoderAlt requires an ArrayBuffer as input \"0\". Unable to continue.");
+      return;
+    }
+
+    var header = null;
+    
+    try{
+      header = this._parseMGHHeader( inputBuffer );
+    }catch(e){
+      //console.warn( e );
+    }
+    
+
+    // abort if header not valid
+    if(!header){
+      console.log("The input file is not a MGH file.");
+      return;
+    }
+      
+
+
+    var dataArray = this._createMGHData(header, inputBuffer);
+    
+    if(!dataArray)
+      return null;
+
+    
+    /*
+    // add the output to this filter
+    this._addOutput(MniVolume);
+    var mniVol = this.getOutput();
+    mniVol.setData(dataArray, header);
+    mniVol.setMetadata("format", "mgh");
+    */
+    
+    
+    var metadata = Image3DMetadataConverter.convertImage3DMetadata( header );
+    
+    // ********** SWAPPING DIM *************
+    
+    var dims = metadata.dimensions;
+    dims.sort( function(a, b){
+      return a.stride < b.stride;
+    });
+    
+    // return the dimsniosn object given its world name ('x', 'y' or 'z')
+    function getWidthDimension( directionDim ){
+      return directionDim === "x" ? "y" : directionDim === "y" ? "x" : directionDim === "z" ? "x" : null;
+    }
+    
+    function getHeightDimension( directionDim ){
+      return directionDim === "x" ? "z" : directionDim === "y" ? "z" : directionDim === "z" ? "y" : null;
+    }
+    
+    function getDimIndexByDimName( dimName ){
+      for(var i=0; i<dims.length; i++){
+        if( dims[i].nameWorldSpace === dimName )
+          return i;
+      }
+      return -1;
+    }
+    
+    for(var i=0; i<dims.length; i++){
+      var dimName = dims[i].nameWorldSpace;
+      dims[i].heightDimension = getDimIndexByDimName( getHeightDimension( dimName ) );
+      dims[i].widthDimension = getDimIndexByDimName( getWidthDimension( dimName ) );
+    }
+    
+    
+    // ********** END OF SWAPPING **********
+    
+    
+    
+    var output = new Image3DAlt();
+    output.setRawData( dataArray );
+    output.setRawMetadata( metadata );
+    output.scanDataRange();
+    
+    if(output.metadataIntegrityCheck()){
+      console.log( output );
+      this._output[0] = output;
+    }
+    
+  }
+  
+} /* END of class MghDecoderAlt */
+
 /*
 * Author    Jonathan Lurie - http://me.jonahanlurie.fr
 * License   MIT
@@ -21276,29 +37666,79 @@ class CodecUtils {
 
   /**
   * convert an ArrayBuffer into a unicode string (2 bytes for each char)
+  * Note: this method was kindly borrowed from Google Closure Compiler:
+  * https://github.com/google/closure-library/blob/master/closure/goog/crypt/crypt.js
   * @param {ArrayBuffer} buf - input ArrayBuffer
   * @return {String} a string compatible with Unicode characters
   */
-  static arrayBufferToString16( buf ) {
-    return String.fromCharCode.apply(null, new Uint16Array(buf));
-  }
+  static arrayBufferToUnicode( buff ) {
+    var buffUint8 = new Uint8Array(buff);
+    var out = [], pos = 0, c = 0;
+    
+    while (pos < buffUint8.length) {
+      var c1 = buffUint8[pos++];
+      if (c1 < 128) {
+        out[c++] = String.fromCharCode(c1);
+      } else if (c1 > 191 && c1 < 224) {
+        var c2 = buffUint8[pos++];
+        out[c++] = String.fromCharCode((c1 & 31) << 6 | c2 & 63);
+      } else if (c1 > 239 && c1 < 365) {
+        // Surrogate Pair
+        var c2 = buffUint8[pos++];
+        var c3 = buffUint8[pos++];
+        var c4 = buffUint8[pos++];
+        var u = ((c1 & 7) << 18 | (c2 & 63) << 12 | (c3 & 63) << 6 | c4 & 63) -
+            0x10000;
+        out[c++] = String.fromCharCode(0xD800 + (u >> 10));
+        out[c++] = String.fromCharCode(0xDC00 + (u & 1023));
+      } else {
+        var c2 = buffUint8[pos++];
+        var c3 = buffUint8[pos++];
+        out[c++] =
+            String.fromCharCode((c1 & 15) << 12 | (c2 & 63) << 6 | c3 & 63);
+      }
+    }
+    return out.join('');
+  };
 
 
   /**
   * convert a unicode string into an ArrayBuffer
   * Note that the str is a regular string but it will be encoded with
-  * 2 bytes per char instead of 1 ( ASCII uses 1 byte/char )
+  * 2 bytes per char instead of 1 ( ASCII uses 1 byte/char ).
+  * Note: this method was kindly borrowed from Google Closure Compiler:
+  * https://github.com/google/closure-library/blob/master/closure/goog/crypt/crypt.js
   * @param {String} str - string to encode
   * @return {ArrayBuffer} the output ArrayBuffer
   */
-  static string16ToArrayBuffer( str ) {
-    var buf = new ArrayBuffer(str.length*2); // 2 bytes for each char
-    var bufView = new Uint16Array(buf);
-    for (var i=0; i < str.length; i++) {
-      bufView[i] = str.charCodeAt(i);
+  static unicodeToArrayBuffer( str ) {
+    var out = [], p = 0;
+    for (var i = 0; i < str.length; i++) {
+      var c = str.charCodeAt(i);
+      if (c < 128) {
+        out[p++] = c;
+      } else if (c < 2048) {
+        out[p++] = (c >> 6) | 192;
+        out[p++] = (c & 63) | 128;
+      } else if (
+          ((c & 0xFC00) == 0xD800) && (i + 1) < str.length &&
+          ((str.charCodeAt(i + 1) & 0xFC00) == 0xDC00)) {
+        // Surrogate Pair
+        c = 0x10000 + ((c & 0x03FF) << 10) + (str.charCodeAt(++i) & 0x03FF);
+        out[p++] = (c >> 18) | 240;
+        out[p++] = ((c >> 12) & 63) | 128;
+        out[p++] = ((c >> 6) & 63) | 128;
+        out[p++] = (c & 63) | 128;
+      } else {
+        out[p++] = (c >> 12) | 224;
+        out[p++] = ((c >> 6) & 63) | 128;
+        out[p++] = (c & 63) | 128;
+      }
     }
-    return buf;
-  }
+
+    // make a buffer out of the array
+    return new Uint8Array(out).buffer;
+  };
 
 
   /**
@@ -21396,7 +37836,7 @@ class CodecUtils {
 
     try{
       var strObj = JSON.stringify( objCleanClone );
-      buff = CodecUtils.string16ToArrayBuffer(strObj);
+      buff = CodecUtils.unicodeToArrayBuffer(strObj);
     }catch(e){
       console.warn(e);
     }
@@ -21415,7 +37855,7 @@ class CodecUtils {
     var obj = null;
 
     try{
-      var strObj = CodecUtils.arrayBufferToString16( buff );
+      var strObj = CodecUtils.arrayBufferToUnicode( buff );
       obj = JSON.parse( strObj );
     }catch(e){
       console.warn(e);
@@ -21584,8 +38024,8 @@ class CodecUtils {
       length: typedArray.length
     }
   }
-  
-  
+
+
   /**
   * Counts the number of typed array obj has as attributes
   * @param {Object} obj - an Object
@@ -21615,8 +38055,8 @@ class CodecUtils {
     });
     return hasCircular;
   }
-  
-  
+
+
   /**
   * Remove circular dependencies from an object and return a circularRef-free version
   * of the object (does not change the original obj), of null if no circular ref was found
@@ -21633,8 +38073,8 @@ class CodecUtils {
     });
     return hasCircular ? noCircRefObj : null;
   }
-  
-  
+
+
   /**
   * Clone the object and replace the typed array attributes by regular Arrays.
   * @param {Object} obj - an object to alter
@@ -21642,14 +38082,14 @@ class CodecUtils {
   */
   static replaceTypedArrayAttributesByArrays( obj ){
     var hasTypedArray = false;
-    
+
     var noTypedArrClone = index$2(obj).map(function (x) {
       if (CodecUtils.isTypedArray(x)){
         // here, we cannot call .length directly because traverse.map already serialized
         // typed arrays into regular objects
         var origSize = Object.keys(x).length;
         var untypedArray = new Array( origSize );
-        
+
         for(var i=0; i<origSize; i++){
           untypedArray[i] = x[i];
         }
@@ -21659,8 +38099,8 @@ class CodecUtils {
     });
     return hasTypedArray ? noTypedArrClone : null;
   }
-  
-  
+
+
   /**
   * Creates a clone, does not alter the original object.
   * Remove circular dependencies and replace typed arrays by regular arrays.
@@ -21671,18 +38111,18 @@ class CodecUtils {
   static makeSerializeFriendly( obj ){
     var newObj = obj;
     var noCircular = CodecUtils.removeCircularReference(newObj);
-    
+
     if( noCircular )
       newObj = noCircular;
-      
+
     var noTypedArr = CodecUtils.replaceTypedArrayAttributesByArrays(newObj);
-    
+
     if( noTypedArr )
       newObj = noTypedArr;
-      
+
     return newObj;
   }
-  
+
 
 } /* END of class CodecUtils */
 
@@ -21971,6 +38411,7 @@ class PixBlockEncoder {
     if( CodecUtils.isTypedArray(subset) ){
       infoObj = CodecUtils.getTypedArrayInfo( subset );
       infoObj.isTypedArray = true;
+      infoObj.compressedByteLength = null;
     }else{
       infoObj = {
         type: subset.constructor.name,
@@ -23464,1986 +39905,6 @@ class PixBinDecoder$1 extends Filter {
 
 } /* END of class PixBinDecoder */
 
-var lookup$1 = [];
-var revLookup$1 = [];
-var Arr$1 = typeof Uint8Array !== 'undefined' ? Uint8Array : Array;
-var inited$1 = false;
-function init$1 () {
-  inited$1 = true;
-  var code = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
-  for (var i = 0, len = code.length; i < len; ++i) {
-    lookup$1[i] = code[i];
-    revLookup$1[code.charCodeAt(i)] = i;
-  }
-
-  revLookup$1['-'.charCodeAt(0)] = 62;
-  revLookup$1['_'.charCodeAt(0)] = 63;
-}
-
-function toByteArray$1 (b64) {
-  if (!inited$1) {
-    init$1();
-  }
-  var i, j, l, tmp, placeHolders, arr;
-  var len = b64.length;
-
-  if (len % 4 > 0) {
-    throw new Error('Invalid string. Length must be a multiple of 4')
-  }
-
-  // the number of equal signs (place holders)
-  // if there are two placeholders, than the two characters before it
-  // represent one byte
-  // if there is only one, then the three characters before it represent 2 bytes
-  // this is just a cheap hack to not do indexOf twice
-  placeHolders = b64[len - 2] === '=' ? 2 : b64[len - 1] === '=' ? 1 : 0;
-
-  // base64 is 4/3 + up to two characters of the original data
-  arr = new Arr$1(len * 3 / 4 - placeHolders);
-
-  // if there are placeholders, only get up to the last complete 4 chars
-  l = placeHolders > 0 ? len - 4 : len;
-
-  var L = 0;
-
-  for (i = 0, j = 0; i < l; i += 4, j += 3) {
-    tmp = (revLookup$1[b64.charCodeAt(i)] << 18) | (revLookup$1[b64.charCodeAt(i + 1)] << 12) | (revLookup$1[b64.charCodeAt(i + 2)] << 6) | revLookup$1[b64.charCodeAt(i + 3)];
-    arr[L++] = (tmp >> 16) & 0xFF;
-    arr[L++] = (tmp >> 8) & 0xFF;
-    arr[L++] = tmp & 0xFF;
-  }
-
-  if (placeHolders === 2) {
-    tmp = (revLookup$1[b64.charCodeAt(i)] << 2) | (revLookup$1[b64.charCodeAt(i + 1)] >> 4);
-    arr[L++] = tmp & 0xFF;
-  } else if (placeHolders === 1) {
-    tmp = (revLookup$1[b64.charCodeAt(i)] << 10) | (revLookup$1[b64.charCodeAt(i + 1)] << 4) | (revLookup$1[b64.charCodeAt(i + 2)] >> 2);
-    arr[L++] = (tmp >> 8) & 0xFF;
-    arr[L++] = tmp & 0xFF;
-  }
-
-  return arr
-}
-
-function tripletToBase64$1 (num) {
-  return lookup$1[num >> 18 & 0x3F] + lookup$1[num >> 12 & 0x3F] + lookup$1[num >> 6 & 0x3F] + lookup$1[num & 0x3F]
-}
-
-function encodeChunk$1 (uint8, start, end) {
-  var tmp;
-  var output = [];
-  for (var i = start; i < end; i += 3) {
-    tmp = (uint8[i] << 16) + (uint8[i + 1] << 8) + (uint8[i + 2]);
-    output.push(tripletToBase64$1(tmp));
-  }
-  return output.join('')
-}
-
-function fromByteArray$1 (uint8) {
-  if (!inited$1) {
-    init$1();
-  }
-  var tmp;
-  var len = uint8.length;
-  var extraBytes = len % 3; // if we have 1 byte left, pad 2 bytes
-  var output = '';
-  var parts = [];
-  var maxChunkLength = 16383; // must be multiple of 3
-
-  // go through the array every three bytes, we'll deal with trailing stuff later
-  for (var i = 0, len2 = len - extraBytes; i < len2; i += maxChunkLength) {
-    parts.push(encodeChunk$1(uint8, i, (i + maxChunkLength) > len2 ? len2 : (i + maxChunkLength)));
-  }
-
-  // pad the end with zeros, but make sure to not forget the extra bytes
-  if (extraBytes === 1) {
-    tmp = uint8[len - 1];
-    output += lookup$1[tmp >> 2];
-    output += lookup$1[(tmp << 4) & 0x3F];
-    output += '==';
-  } else if (extraBytes === 2) {
-    tmp = (uint8[len - 2] << 8) + (uint8[len - 1]);
-    output += lookup$1[tmp >> 10];
-    output += lookup$1[(tmp >> 4) & 0x3F];
-    output += lookup$1[(tmp << 2) & 0x3F];
-    output += '=';
-  }
-
-  parts.push(output);
-
-  return parts.join('')
-}
-
-function read$1 (buffer, offset, isLE, mLen, nBytes) {
-  var e, m;
-  var eLen = nBytes * 8 - mLen - 1;
-  var eMax = (1 << eLen) - 1;
-  var eBias = eMax >> 1;
-  var nBits = -7;
-  var i = isLE ? (nBytes - 1) : 0;
-  var d = isLE ? -1 : 1;
-  var s = buffer[offset + i];
-
-  i += d;
-
-  e = s & ((1 << (-nBits)) - 1);
-  s >>= (-nBits);
-  nBits += eLen;
-  for (; nBits > 0; e = e * 256 + buffer[offset + i], i += d, nBits -= 8) {}
-
-  m = e & ((1 << (-nBits)) - 1);
-  e >>= (-nBits);
-  nBits += mLen;
-  for (; nBits > 0; m = m * 256 + buffer[offset + i], i += d, nBits -= 8) {}
-
-  if (e === 0) {
-    e = 1 - eBias;
-  } else if (e === eMax) {
-    return m ? NaN : ((s ? -1 : 1) * Infinity)
-  } else {
-    m = m + Math.pow(2, mLen);
-    e = e - eBias;
-  }
-  return (s ? -1 : 1) * m * Math.pow(2, e - mLen)
-}
-
-function write$1 (buffer, value, offset, isLE, mLen, nBytes) {
-  var e, m, c;
-  var eLen = nBytes * 8 - mLen - 1;
-  var eMax = (1 << eLen) - 1;
-  var eBias = eMax >> 1;
-  var rt = (mLen === 23 ? Math.pow(2, -24) - Math.pow(2, -77) : 0);
-  var i = isLE ? 0 : (nBytes - 1);
-  var d = isLE ? 1 : -1;
-  var s = value < 0 || (value === 0 && 1 / value < 0) ? 1 : 0;
-
-  value = Math.abs(value);
-
-  if (isNaN(value) || value === Infinity) {
-    m = isNaN(value) ? 1 : 0;
-    e = eMax;
-  } else {
-    e = Math.floor(Math.log(value) / Math.LN2);
-    if (value * (c = Math.pow(2, -e)) < 1) {
-      e--;
-      c *= 2;
-    }
-    if (e + eBias >= 1) {
-      value += rt / c;
-    } else {
-      value += rt * Math.pow(2, 1 - eBias);
-    }
-    if (value * c >= 2) {
-      e++;
-      c /= 2;
-    }
-
-    if (e + eBias >= eMax) {
-      m = 0;
-      e = eMax;
-    } else if (e + eBias >= 1) {
-      m = (value * c - 1) * Math.pow(2, mLen);
-      e = e + eBias;
-    } else {
-      m = value * Math.pow(2, eBias - 1) * Math.pow(2, mLen);
-      e = 0;
-    }
-  }
-
-  for (; mLen >= 8; buffer[offset + i] = m & 0xff, i += d, m /= 256, mLen -= 8) {}
-
-  e = (e << mLen) | m;
-  eLen += mLen;
-  for (; eLen > 0; buffer[offset + i] = e & 0xff, i += d, e /= 256, eLen -= 8) {}
-
-  buffer[offset + i - d] |= s * 128;
-}
-
-var toString$3 = {}.toString;
-
-var isArray$1 = Array.isArray || function (arr) {
-  return toString$3.call(arr) == '[object Array]';
-};
-
-/*!
- * The buffer module from node.js, for the browser.
- *
- * @author   Feross Aboukhadijeh <feross@feross.org> <http://feross.org>
- * @license  MIT
- */
-/* eslint-disable no-proto */
-
-
-var INSPECT_MAX_BYTES$1 = 50;
-
-/**
- * If `Buffer.TYPED_ARRAY_SUPPORT`:
- *   === true    Use Uint8Array implementation (fastest)
- *   === false   Use Object implementation (most compatible, even IE6)
- *
- * Browsers that support typed arrays are IE 10+, Firefox 4+, Chrome 7+, Safari 5.1+,
- * Opera 11.6+, iOS 4.2+.
- *
- * Due to various browser bugs, sometimes the Object implementation will be used even
- * when the browser supports typed arrays.
- *
- * Note:
- *
- *   - Firefox 4-29 lacks support for adding new properties to `Uint8Array` instances,
- *     See: https://bugzilla.mozilla.org/show_bug.cgi?id=695438.
- *
- *   - Chrome 9-10 is missing the `TypedArray.prototype.subarray` function.
- *
- *   - IE10 has a broken `TypedArray.prototype.subarray` function which returns arrays of
- *     incorrect length in some situations.
-
- * We detect these buggy browsers and set `Buffer.TYPED_ARRAY_SUPPORT` to `false` so they
- * get the Object implementation, which is slower but behaves correctly.
- */
-Buffer$1.TYPED_ARRAY_SUPPORT = global$1.TYPED_ARRAY_SUPPORT !== undefined
-  ? global$1.TYPED_ARRAY_SUPPORT
-  : true;
-
-function kMaxLength$1 () {
-  return Buffer$1.TYPED_ARRAY_SUPPORT
-    ? 0x7fffffff
-    : 0x3fffffff
-}
-
-function createBuffer$1 (that, length) {
-  if (kMaxLength$1() < length) {
-    throw new RangeError('Invalid typed array length')
-  }
-  if (Buffer$1.TYPED_ARRAY_SUPPORT) {
-    // Return an augmented `Uint8Array` instance, for best performance
-    that = new Uint8Array(length);
-    that.__proto__ = Buffer$1.prototype;
-  } else {
-    // Fallback: Return an object instance of the Buffer class
-    if (that === null) {
-      that = new Buffer$1(length);
-    }
-    that.length = length;
-  }
-
-  return that
-}
-
-/**
- * The Buffer constructor returns instances of `Uint8Array` that have their
- * prototype changed to `Buffer.prototype`. Furthermore, `Buffer` is a subclass of
- * `Uint8Array`, so the returned instances will have all the node `Buffer` methods
- * and the `Uint8Array` methods. Square bracket notation works as expected -- it
- * returns a single octet.
- *
- * The `Uint8Array` prototype remains unmodified.
- */
-
-function Buffer$1 (arg, encodingOrOffset, length) {
-  if (!Buffer$1.TYPED_ARRAY_SUPPORT && !(this instanceof Buffer$1)) {
-    return new Buffer$1(arg, encodingOrOffset, length)
-  }
-
-  // Common case.
-  if (typeof arg === 'number') {
-    if (typeof encodingOrOffset === 'string') {
-      throw new Error(
-        'If encoding is specified then the first argument must be a string'
-      )
-    }
-    return allocUnsafe$1(this, arg)
-  }
-  return from$1(this, arg, encodingOrOffset, length)
-}
-
-Buffer$1.poolSize = 8192; // not used by this implementation
-
-// TODO: Legacy, not needed anymore. Remove in next major version.
-Buffer$1._augment = function (arr) {
-  arr.__proto__ = Buffer$1.prototype;
-  return arr
-};
-
-function from$1 (that, value, encodingOrOffset, length) {
-  if (typeof value === 'number') {
-    throw new TypeError('"value" argument must not be a number')
-  }
-
-  if (typeof ArrayBuffer !== 'undefined' && value instanceof ArrayBuffer) {
-    return fromArrayBuffer$1(that, value, encodingOrOffset, length)
-  }
-
-  if (typeof value === 'string') {
-    return fromString$1(that, value, encodingOrOffset)
-  }
-
-  return fromObject$1(that, value)
-}
-
-/**
- * Functionally equivalent to Buffer(arg, encoding) but throws a TypeError
- * if value is a number.
- * Buffer.from(str[, encoding])
- * Buffer.from(array)
- * Buffer.from(buffer)
- * Buffer.from(arrayBuffer[, byteOffset[, length]])
- **/
-Buffer$1.from = function (value, encodingOrOffset, length) {
-  return from$1(null, value, encodingOrOffset, length)
-};
-
-if (Buffer$1.TYPED_ARRAY_SUPPORT) {
-  Buffer$1.prototype.__proto__ = Uint8Array.prototype;
-  Buffer$1.__proto__ = Uint8Array;
-  if (typeof Symbol !== 'undefined' && Symbol.species &&
-      Buffer$1[Symbol.species] === Buffer$1) {
-    // Fix subarray() in ES2016. See: https://github.com/feross/buffer/pull/97
-    // Object.defineProperty(Buffer, Symbol.species, {
-    //   value: null,
-    //   configurable: true
-    // })
-  }
-}
-
-function assertSize$1 (size) {
-  if (typeof size !== 'number') {
-    throw new TypeError('"size" argument must be a number')
-  } else if (size < 0) {
-    throw new RangeError('"size" argument must not be negative')
-  }
-}
-
-function alloc$1 (that, size, fill, encoding) {
-  assertSize$1(size);
-  if (size <= 0) {
-    return createBuffer$1(that, size)
-  }
-  if (fill !== undefined) {
-    // Only pay attention to encoding if it's a string. This
-    // prevents accidentally sending in a number that would
-    // be interpretted as a start offset.
-    return typeof encoding === 'string'
-      ? createBuffer$1(that, size).fill(fill, encoding)
-      : createBuffer$1(that, size).fill(fill)
-  }
-  return createBuffer$1(that, size)
-}
-
-/**
- * Creates a new filled Buffer instance.
- * alloc(size[, fill[, encoding]])
- **/
-Buffer$1.alloc = function (size, fill, encoding) {
-  return alloc$1(null, size, fill, encoding)
-};
-
-function allocUnsafe$1 (that, size) {
-  assertSize$1(size);
-  that = createBuffer$1(that, size < 0 ? 0 : checked$1(size) | 0);
-  if (!Buffer$1.TYPED_ARRAY_SUPPORT) {
-    for (var i = 0; i < size; ++i) {
-      that[i] = 0;
-    }
-  }
-  return that
-}
-
-/**
- * Equivalent to Buffer(num), by default creates a non-zero-filled Buffer instance.
- * */
-Buffer$1.allocUnsafe = function (size) {
-  return allocUnsafe$1(null, size)
-};
-/**
- * Equivalent to SlowBuffer(num), by default creates a non-zero-filled Buffer instance.
- */
-Buffer$1.allocUnsafeSlow = function (size) {
-  return allocUnsafe$1(null, size)
-};
-
-function fromString$1 (that, string, encoding) {
-  if (typeof encoding !== 'string' || encoding === '') {
-    encoding = 'utf8';
-  }
-
-  if (!Buffer$1.isEncoding(encoding)) {
-    throw new TypeError('"encoding" must be a valid string encoding')
-  }
-
-  var length = byteLength$1(string, encoding) | 0;
-  that = createBuffer$1(that, length);
-
-  var actual = that.write(string, encoding);
-
-  if (actual !== length) {
-    // Writing a hex string, for example, that contains invalid characters will
-    // cause everything after the first invalid character to be ignored. (e.g.
-    // 'abxxcd' will be treated as 'ab')
-    that = that.slice(0, actual);
-  }
-
-  return that
-}
-
-function fromArrayLike$1 (that, array) {
-  var length = array.length < 0 ? 0 : checked$1(array.length) | 0;
-  that = createBuffer$1(that, length);
-  for (var i = 0; i < length; i += 1) {
-    that[i] = array[i] & 255;
-  }
-  return that
-}
-
-function fromArrayBuffer$1 (that, array, byteOffset, length) {
-  array.byteLength; // this throws if `array` is not a valid ArrayBuffer
-
-  if (byteOffset < 0 || array.byteLength < byteOffset) {
-    throw new RangeError('\'offset\' is out of bounds')
-  }
-
-  if (array.byteLength < byteOffset + (length || 0)) {
-    throw new RangeError('\'length\' is out of bounds')
-  }
-
-  if (byteOffset === undefined && length === undefined) {
-    array = new Uint8Array(array);
-  } else if (length === undefined) {
-    array = new Uint8Array(array, byteOffset);
-  } else {
-    array = new Uint8Array(array, byteOffset, length);
-  }
-
-  if (Buffer$1.TYPED_ARRAY_SUPPORT) {
-    // Return an augmented `Uint8Array` instance, for best performance
-    that = array;
-    that.__proto__ = Buffer$1.prototype;
-  } else {
-    // Fallback: Return an object instance of the Buffer class
-    that = fromArrayLike$1(that, array);
-  }
-  return that
-}
-
-function fromObject$1 (that, obj) {
-  if (internalIsBuffer$1(obj)) {
-    var len = checked$1(obj.length) | 0;
-    that = createBuffer$1(that, len);
-
-    if (that.length === 0) {
-      return that
-    }
-
-    obj.copy(that, 0, 0, len);
-    return that
-  }
-
-  if (obj) {
-    if ((typeof ArrayBuffer !== 'undefined' &&
-        obj.buffer instanceof ArrayBuffer) || 'length' in obj) {
-      if (typeof obj.length !== 'number' || isnan$1(obj.length)) {
-        return createBuffer$1(that, 0)
-      }
-      return fromArrayLike$1(that, obj)
-    }
-
-    if (obj.type === 'Buffer' && isArray$1(obj.data)) {
-      return fromArrayLike$1(that, obj.data)
-    }
-  }
-
-  throw new TypeError('First argument must be a string, Buffer, ArrayBuffer, Array, or array-like object.')
-}
-
-function checked$1 (length) {
-  // Note: cannot use `length < kMaxLength()` here because that fails when
-  // length is NaN (which is otherwise coerced to zero.)
-  if (length >= kMaxLength$1()) {
-    throw new RangeError('Attempt to allocate Buffer larger than maximum ' +
-                         'size: 0x' + kMaxLength$1().toString(16) + ' bytes')
-  }
-  return length | 0
-}
-
-
-Buffer$1.isBuffer = isBuffer$1;
-function internalIsBuffer$1 (b) {
-  return !!(b != null && b._isBuffer)
-}
-
-Buffer$1.compare = function compare (a, b) {
-  if (!internalIsBuffer$1(a) || !internalIsBuffer$1(b)) {
-    throw new TypeError('Arguments must be Buffers')
-  }
-
-  if (a === b) return 0
-
-  var x = a.length;
-  var y = b.length;
-
-  for (var i = 0, len = Math.min(x, y); i < len; ++i) {
-    if (a[i] !== b[i]) {
-      x = a[i];
-      y = b[i];
-      break
-    }
-  }
-
-  if (x < y) return -1
-  if (y < x) return 1
-  return 0
-};
-
-Buffer$1.isEncoding = function isEncoding (encoding) {
-  switch (String(encoding).toLowerCase()) {
-    case 'hex':
-    case 'utf8':
-    case 'utf-8':
-    case 'ascii':
-    case 'latin1':
-    case 'binary':
-    case 'base64':
-    case 'ucs2':
-    case 'ucs-2':
-    case 'utf16le':
-    case 'utf-16le':
-      return true
-    default:
-      return false
-  }
-};
-
-Buffer$1.concat = function concat (list, length) {
-  if (!isArray$1(list)) {
-    throw new TypeError('"list" argument must be an Array of Buffers')
-  }
-
-  if (list.length === 0) {
-    return Buffer$1.alloc(0)
-  }
-
-  var i;
-  if (length === undefined) {
-    length = 0;
-    for (i = 0; i < list.length; ++i) {
-      length += list[i].length;
-    }
-  }
-
-  var buffer = Buffer$1.allocUnsafe(length);
-  var pos = 0;
-  for (i = 0; i < list.length; ++i) {
-    var buf = list[i];
-    if (!internalIsBuffer$1(buf)) {
-      throw new TypeError('"list" argument must be an Array of Buffers')
-    }
-    buf.copy(buffer, pos);
-    pos += buf.length;
-  }
-  return buffer
-};
-
-function byteLength$1 (string, encoding) {
-  if (internalIsBuffer$1(string)) {
-    return string.length
-  }
-  if (typeof ArrayBuffer !== 'undefined' && typeof ArrayBuffer.isView === 'function' &&
-      (ArrayBuffer.isView(string) || string instanceof ArrayBuffer)) {
-    return string.byteLength
-  }
-  if (typeof string !== 'string') {
-    string = '' + string;
-  }
-
-  var len = string.length;
-  if (len === 0) return 0
-
-  // Use a for loop to avoid recursion
-  var loweredCase = false;
-  for (;;) {
-    switch (encoding) {
-      case 'ascii':
-      case 'latin1':
-      case 'binary':
-        return len
-      case 'utf8':
-      case 'utf-8':
-      case undefined:
-        return utf8ToBytes$1(string).length
-      case 'ucs2':
-      case 'ucs-2':
-      case 'utf16le':
-      case 'utf-16le':
-        return len * 2
-      case 'hex':
-        return len >>> 1
-      case 'base64':
-        return base64ToBytes$1(string).length
-      default:
-        if (loweredCase) return utf8ToBytes$1(string).length // assume utf8
-        encoding = ('' + encoding).toLowerCase();
-        loweredCase = true;
-    }
-  }
-}
-Buffer$1.byteLength = byteLength$1;
-
-function slowToString$1 (encoding, start, end) {
-  var loweredCase = false;
-
-  // No need to verify that "this.length <= MAX_UINT32" since it's a read-only
-  // property of a typed array.
-
-  // This behaves neither like String nor Uint8Array in that we set start/end
-  // to their upper/lower bounds if the value passed is out of range.
-  // undefined is handled specially as per ECMA-262 6th Edition,
-  // Section 13.3.3.7 Runtime Semantics: KeyedBindingInitialization.
-  if (start === undefined || start < 0) {
-    start = 0;
-  }
-  // Return early if start > this.length. Done here to prevent potential uint32
-  // coercion fail below.
-  if (start > this.length) {
-    return ''
-  }
-
-  if (end === undefined || end > this.length) {
-    end = this.length;
-  }
-
-  if (end <= 0) {
-    return ''
-  }
-
-  // Force coersion to uint32. This will also coerce falsey/NaN values to 0.
-  end >>>= 0;
-  start >>>= 0;
-
-  if (end <= start) {
-    return ''
-  }
-
-  if (!encoding) encoding = 'utf8';
-
-  while (true) {
-    switch (encoding) {
-      case 'hex':
-        return hexSlice$1(this, start, end)
-
-      case 'utf8':
-      case 'utf-8':
-        return utf8Slice$1(this, start, end)
-
-      case 'ascii':
-        return asciiSlice$1(this, start, end)
-
-      case 'latin1':
-      case 'binary':
-        return latin1Slice$1(this, start, end)
-
-      case 'base64':
-        return base64Slice$1(this, start, end)
-
-      case 'ucs2':
-      case 'ucs-2':
-      case 'utf16le':
-      case 'utf-16le':
-        return utf16leSlice$1(this, start, end)
-
-      default:
-        if (loweredCase) throw new TypeError('Unknown encoding: ' + encoding)
-        encoding = (encoding + '').toLowerCase();
-        loweredCase = true;
-    }
-  }
-}
-
-// The property is used by `Buffer.isBuffer` and `is-buffer` (in Safari 5-7) to detect
-// Buffer instances.
-Buffer$1.prototype._isBuffer = true;
-
-function swap$1 (b, n, m) {
-  var i = b[n];
-  b[n] = b[m];
-  b[m] = i;
-}
-
-Buffer$1.prototype.swap16 = function swap16 () {
-  var len = this.length;
-  if (len % 2 !== 0) {
-    throw new RangeError('Buffer size must be a multiple of 16-bits')
-  }
-  for (var i = 0; i < len; i += 2) {
-    swap$1(this, i, i + 1);
-  }
-  return this
-};
-
-Buffer$1.prototype.swap32 = function swap32 () {
-  var len = this.length;
-  if (len % 4 !== 0) {
-    throw new RangeError('Buffer size must be a multiple of 32-bits')
-  }
-  for (var i = 0; i < len; i += 4) {
-    swap$1(this, i, i + 3);
-    swap$1(this, i + 1, i + 2);
-  }
-  return this
-};
-
-Buffer$1.prototype.swap64 = function swap64 () {
-  var len = this.length;
-  if (len % 8 !== 0) {
-    throw new RangeError('Buffer size must be a multiple of 64-bits')
-  }
-  for (var i = 0; i < len; i += 8) {
-    swap$1(this, i, i + 7);
-    swap$1(this, i + 1, i + 6);
-    swap$1(this, i + 2, i + 5);
-    swap$1(this, i + 3, i + 4);
-  }
-  return this
-};
-
-Buffer$1.prototype.toString = function toString () {
-  var length = this.length | 0;
-  if (length === 0) return ''
-  if (arguments.length === 0) return utf8Slice$1(this, 0, length)
-  return slowToString$1.apply(this, arguments)
-};
-
-Buffer$1.prototype.equals = function equals (b) {
-  if (!internalIsBuffer$1(b)) throw new TypeError('Argument must be a Buffer')
-  if (this === b) return true
-  return Buffer$1.compare(this, b) === 0
-};
-
-Buffer$1.prototype.inspect = function inspect () {
-  var str = '';
-  var max = INSPECT_MAX_BYTES$1;
-  if (this.length > 0) {
-    str = this.toString('hex', 0, max).match(/.{2}/g).join(' ');
-    if (this.length > max) str += ' ... ';
-  }
-  return '<Buffer ' + str + '>'
-};
-
-Buffer$1.prototype.compare = function compare (target, start, end, thisStart, thisEnd) {
-  if (!internalIsBuffer$1(target)) {
-    throw new TypeError('Argument must be a Buffer')
-  }
-
-  if (start === undefined) {
-    start = 0;
-  }
-  if (end === undefined) {
-    end = target ? target.length : 0;
-  }
-  if (thisStart === undefined) {
-    thisStart = 0;
-  }
-  if (thisEnd === undefined) {
-    thisEnd = this.length;
-  }
-
-  if (start < 0 || end > target.length || thisStart < 0 || thisEnd > this.length) {
-    throw new RangeError('out of range index')
-  }
-
-  if (thisStart >= thisEnd && start >= end) {
-    return 0
-  }
-  if (thisStart >= thisEnd) {
-    return -1
-  }
-  if (start >= end) {
-    return 1
-  }
-
-  start >>>= 0;
-  end >>>= 0;
-  thisStart >>>= 0;
-  thisEnd >>>= 0;
-
-  if (this === target) return 0
-
-  var x = thisEnd - thisStart;
-  var y = end - start;
-  var len = Math.min(x, y);
-
-  var thisCopy = this.slice(thisStart, thisEnd);
-  var targetCopy = target.slice(start, end);
-
-  for (var i = 0; i < len; ++i) {
-    if (thisCopy[i] !== targetCopy[i]) {
-      x = thisCopy[i];
-      y = targetCopy[i];
-      break
-    }
-  }
-
-  if (x < y) return -1
-  if (y < x) return 1
-  return 0
-};
-
-// Finds either the first index of `val` in `buffer` at offset >= `byteOffset`,
-// OR the last index of `val` in `buffer` at offset <= `byteOffset`.
-//
-// Arguments:
-// - buffer - a Buffer to search
-// - val - a string, Buffer, or number
-// - byteOffset - an index into `buffer`; will be clamped to an int32
-// - encoding - an optional encoding, relevant is val is a string
-// - dir - true for indexOf, false for lastIndexOf
-function bidirectionalIndexOf$1 (buffer, val, byteOffset, encoding, dir) {
-  // Empty buffer means no match
-  if (buffer.length === 0) return -1
-
-  // Normalize byteOffset
-  if (typeof byteOffset === 'string') {
-    encoding = byteOffset;
-    byteOffset = 0;
-  } else if (byteOffset > 0x7fffffff) {
-    byteOffset = 0x7fffffff;
-  } else if (byteOffset < -0x80000000) {
-    byteOffset = -0x80000000;
-  }
-  byteOffset = +byteOffset;  // Coerce to Number.
-  if (isNaN(byteOffset)) {
-    // byteOffset: it it's undefined, null, NaN, "foo", etc, search whole buffer
-    byteOffset = dir ? 0 : (buffer.length - 1);
-  }
-
-  // Normalize byteOffset: negative offsets start from the end of the buffer
-  if (byteOffset < 0) byteOffset = buffer.length + byteOffset;
-  if (byteOffset >= buffer.length) {
-    if (dir) return -1
-    else byteOffset = buffer.length - 1;
-  } else if (byteOffset < 0) {
-    if (dir) byteOffset = 0;
-    else return -1
-  }
-
-  // Normalize val
-  if (typeof val === 'string') {
-    val = Buffer$1.from(val, encoding);
-  }
-
-  // Finally, search either indexOf (if dir is true) or lastIndexOf
-  if (internalIsBuffer$1(val)) {
-    // Special case: looking for empty string/buffer always fails
-    if (val.length === 0) {
-      return -1
-    }
-    return arrayIndexOf$1(buffer, val, byteOffset, encoding, dir)
-  } else if (typeof val === 'number') {
-    val = val & 0xFF; // Search for a byte value [0-255]
-    if (Buffer$1.TYPED_ARRAY_SUPPORT &&
-        typeof Uint8Array.prototype.indexOf === 'function') {
-      if (dir) {
-        return Uint8Array.prototype.indexOf.call(buffer, val, byteOffset)
-      } else {
-        return Uint8Array.prototype.lastIndexOf.call(buffer, val, byteOffset)
-      }
-    }
-    return arrayIndexOf$1(buffer, [ val ], byteOffset, encoding, dir)
-  }
-
-  throw new TypeError('val must be string, number or Buffer')
-}
-
-function arrayIndexOf$1 (arr, val, byteOffset, encoding, dir) {
-  var indexSize = 1;
-  var arrLength = arr.length;
-  var valLength = val.length;
-
-  if (encoding !== undefined) {
-    encoding = String(encoding).toLowerCase();
-    if (encoding === 'ucs2' || encoding === 'ucs-2' ||
-        encoding === 'utf16le' || encoding === 'utf-16le') {
-      if (arr.length < 2 || val.length < 2) {
-        return -1
-      }
-      indexSize = 2;
-      arrLength /= 2;
-      valLength /= 2;
-      byteOffset /= 2;
-    }
-  }
-
-  function read$$1 (buf, i) {
-    if (indexSize === 1) {
-      return buf[i]
-    } else {
-      return buf.readUInt16BE(i * indexSize)
-    }
-  }
-
-  var i;
-  if (dir) {
-    var foundIndex = -1;
-    for (i = byteOffset; i < arrLength; i++) {
-      if (read$$1(arr, i) === read$$1(val, foundIndex === -1 ? 0 : i - foundIndex)) {
-        if (foundIndex === -1) foundIndex = i;
-        if (i - foundIndex + 1 === valLength) return foundIndex * indexSize
-      } else {
-        if (foundIndex !== -1) i -= i - foundIndex;
-        foundIndex = -1;
-      }
-    }
-  } else {
-    if (byteOffset + valLength > arrLength) byteOffset = arrLength - valLength;
-    for (i = byteOffset; i >= 0; i--) {
-      var found = true;
-      for (var j = 0; j < valLength; j++) {
-        if (read$$1(arr, i + j) !== read$$1(val, j)) {
-          found = false;
-          break
-        }
-      }
-      if (found) return i
-    }
-  }
-
-  return -1
-}
-
-Buffer$1.prototype.includes = function includes (val, byteOffset, encoding) {
-  return this.indexOf(val, byteOffset, encoding) !== -1
-};
-
-Buffer$1.prototype.indexOf = function indexOf (val, byteOffset, encoding) {
-  return bidirectionalIndexOf$1(this, val, byteOffset, encoding, true)
-};
-
-Buffer$1.prototype.lastIndexOf = function lastIndexOf (val, byteOffset, encoding) {
-  return bidirectionalIndexOf$1(this, val, byteOffset, encoding, false)
-};
-
-function hexWrite$1 (buf, string, offset, length) {
-  offset = Number(offset) || 0;
-  var remaining = buf.length - offset;
-  if (!length) {
-    length = remaining;
-  } else {
-    length = Number(length);
-    if (length > remaining) {
-      length = remaining;
-    }
-  }
-
-  // must be an even number of digits
-  var strLen = string.length;
-  if (strLen % 2 !== 0) throw new TypeError('Invalid hex string')
-
-  if (length > strLen / 2) {
-    length = strLen / 2;
-  }
-  for (var i = 0; i < length; ++i) {
-    var parsed = parseInt(string.substr(i * 2, 2), 16);
-    if (isNaN(parsed)) return i
-    buf[offset + i] = parsed;
-  }
-  return i
-}
-
-function utf8Write$1 (buf, string, offset, length) {
-  return blitBuffer$1(utf8ToBytes$1(string, buf.length - offset), buf, offset, length)
-}
-
-function asciiWrite$1 (buf, string, offset, length) {
-  return blitBuffer$1(asciiToBytes$1(string), buf, offset, length)
-}
-
-function latin1Write$1 (buf, string, offset, length) {
-  return asciiWrite$1(buf, string, offset, length)
-}
-
-function base64Write$1 (buf, string, offset, length) {
-  return blitBuffer$1(base64ToBytes$1(string), buf, offset, length)
-}
-
-function ucs2Write$1 (buf, string, offset, length) {
-  return blitBuffer$1(utf16leToBytes$1(string, buf.length - offset), buf, offset, length)
-}
-
-Buffer$1.prototype.write = function write$$1 (string, offset, length, encoding) {
-  // Buffer#write(string)
-  if (offset === undefined) {
-    encoding = 'utf8';
-    length = this.length;
-    offset = 0;
-  // Buffer#write(string, encoding)
-  } else if (length === undefined && typeof offset === 'string') {
-    encoding = offset;
-    length = this.length;
-    offset = 0;
-  // Buffer#write(string, offset[, length][, encoding])
-  } else if (isFinite(offset)) {
-    offset = offset | 0;
-    if (isFinite(length)) {
-      length = length | 0;
-      if (encoding === undefined) encoding = 'utf8';
-    } else {
-      encoding = length;
-      length = undefined;
-    }
-  // legacy write(string, encoding, offset, length) - remove in v0.13
-  } else {
-    throw new Error(
-      'Buffer.write(string, encoding, offset[, length]) is no longer supported'
-    )
-  }
-
-  var remaining = this.length - offset;
-  if (length === undefined || length > remaining) length = remaining;
-
-  if ((string.length > 0 && (length < 0 || offset < 0)) || offset > this.length) {
-    throw new RangeError('Attempt to write outside buffer bounds')
-  }
-
-  if (!encoding) encoding = 'utf8';
-
-  var loweredCase = false;
-  for (;;) {
-    switch (encoding) {
-      case 'hex':
-        return hexWrite$1(this, string, offset, length)
-
-      case 'utf8':
-      case 'utf-8':
-        return utf8Write$1(this, string, offset, length)
-
-      case 'ascii':
-        return asciiWrite$1(this, string, offset, length)
-
-      case 'latin1':
-      case 'binary':
-        return latin1Write$1(this, string, offset, length)
-
-      case 'base64':
-        // Warning: maxLength not taken into account in base64Write
-        return base64Write$1(this, string, offset, length)
-
-      case 'ucs2':
-      case 'ucs-2':
-      case 'utf16le':
-      case 'utf-16le':
-        return ucs2Write$1(this, string, offset, length)
-
-      default:
-        if (loweredCase) throw new TypeError('Unknown encoding: ' + encoding)
-        encoding = ('' + encoding).toLowerCase();
-        loweredCase = true;
-    }
-  }
-};
-
-Buffer$1.prototype.toJSON = function toJSON () {
-  return {
-    type: 'Buffer',
-    data: Array.prototype.slice.call(this._arr || this, 0)
-  }
-};
-
-function base64Slice$1 (buf, start, end) {
-  if (start === 0 && end === buf.length) {
-    return fromByteArray$1(buf)
-  } else {
-    return fromByteArray$1(buf.slice(start, end))
-  }
-}
-
-function utf8Slice$1 (buf, start, end) {
-  end = Math.min(buf.length, end);
-  var res = [];
-
-  var i = start;
-  while (i < end) {
-    var firstByte = buf[i];
-    var codePoint = null;
-    var bytesPerSequence = (firstByte > 0xEF) ? 4
-      : (firstByte > 0xDF) ? 3
-      : (firstByte > 0xBF) ? 2
-      : 1;
-
-    if (i + bytesPerSequence <= end) {
-      var secondByte, thirdByte, fourthByte, tempCodePoint;
-
-      switch (bytesPerSequence) {
-        case 1:
-          if (firstByte < 0x80) {
-            codePoint = firstByte;
-          }
-          break
-        case 2:
-          secondByte = buf[i + 1];
-          if ((secondByte & 0xC0) === 0x80) {
-            tempCodePoint = (firstByte & 0x1F) << 0x6 | (secondByte & 0x3F);
-            if (tempCodePoint > 0x7F) {
-              codePoint = tempCodePoint;
-            }
-          }
-          break
-        case 3:
-          secondByte = buf[i + 1];
-          thirdByte = buf[i + 2];
-          if ((secondByte & 0xC0) === 0x80 && (thirdByte & 0xC0) === 0x80) {
-            tempCodePoint = (firstByte & 0xF) << 0xC | (secondByte & 0x3F) << 0x6 | (thirdByte & 0x3F);
-            if (tempCodePoint > 0x7FF && (tempCodePoint < 0xD800 || tempCodePoint > 0xDFFF)) {
-              codePoint = tempCodePoint;
-            }
-          }
-          break
-        case 4:
-          secondByte = buf[i + 1];
-          thirdByte = buf[i + 2];
-          fourthByte = buf[i + 3];
-          if ((secondByte & 0xC0) === 0x80 && (thirdByte & 0xC0) === 0x80 && (fourthByte & 0xC0) === 0x80) {
-            tempCodePoint = (firstByte & 0xF) << 0x12 | (secondByte & 0x3F) << 0xC | (thirdByte & 0x3F) << 0x6 | (fourthByte & 0x3F);
-            if (tempCodePoint > 0xFFFF && tempCodePoint < 0x110000) {
-              codePoint = tempCodePoint;
-            }
-          }
-      }
-    }
-
-    if (codePoint === null) {
-      // we did not generate a valid codePoint so insert a
-      // replacement char (U+FFFD) and advance only 1 byte
-      codePoint = 0xFFFD;
-      bytesPerSequence = 1;
-    } else if (codePoint > 0xFFFF) {
-      // encode to utf16 (surrogate pair dance)
-      codePoint -= 0x10000;
-      res.push(codePoint >>> 10 & 0x3FF | 0xD800);
-      codePoint = 0xDC00 | codePoint & 0x3FF;
-    }
-
-    res.push(codePoint);
-    i += bytesPerSequence;
-  }
-
-  return decodeCodePointsArray$1(res)
-}
-
-// Based on http://stackoverflow.com/a/22747272/680742, the browser with
-// the lowest limit is Chrome, with 0x10000 args.
-// We go 1 magnitude less, for safety
-var MAX_ARGUMENTS_LENGTH$1 = 0x1000;
-
-function decodeCodePointsArray$1 (codePoints) {
-  var len = codePoints.length;
-  if (len <= MAX_ARGUMENTS_LENGTH$1) {
-    return String.fromCharCode.apply(String, codePoints) // avoid extra slice()
-  }
-
-  // Decode in chunks to avoid "call stack size exceeded".
-  var res = '';
-  var i = 0;
-  while (i < len) {
-    res += String.fromCharCode.apply(
-      String,
-      codePoints.slice(i, i += MAX_ARGUMENTS_LENGTH$1)
-    );
-  }
-  return res
-}
-
-function asciiSlice$1 (buf, start, end) {
-  var ret = '';
-  end = Math.min(buf.length, end);
-
-  for (var i = start; i < end; ++i) {
-    ret += String.fromCharCode(buf[i] & 0x7F);
-  }
-  return ret
-}
-
-function latin1Slice$1 (buf, start, end) {
-  var ret = '';
-  end = Math.min(buf.length, end);
-
-  for (var i = start; i < end; ++i) {
-    ret += String.fromCharCode(buf[i]);
-  }
-  return ret
-}
-
-function hexSlice$1 (buf, start, end) {
-  var len = buf.length;
-
-  if (!start || start < 0) start = 0;
-  if (!end || end < 0 || end > len) end = len;
-
-  var out = '';
-  for (var i = start; i < end; ++i) {
-    out += toHex$1(buf[i]);
-  }
-  return out
-}
-
-function utf16leSlice$1 (buf, start, end) {
-  var bytes = buf.slice(start, end);
-  var res = '';
-  for (var i = 0; i < bytes.length; i += 2) {
-    res += String.fromCharCode(bytes[i] + bytes[i + 1] * 256);
-  }
-  return res
-}
-
-Buffer$1.prototype.slice = function slice (start, end) {
-  var len = this.length;
-  start = ~~start;
-  end = end === undefined ? len : ~~end;
-
-  if (start < 0) {
-    start += len;
-    if (start < 0) start = 0;
-  } else if (start > len) {
-    start = len;
-  }
-
-  if (end < 0) {
-    end += len;
-    if (end < 0) end = 0;
-  } else if (end > len) {
-    end = len;
-  }
-
-  if (end < start) end = start;
-
-  var newBuf;
-  if (Buffer$1.TYPED_ARRAY_SUPPORT) {
-    newBuf = this.subarray(start, end);
-    newBuf.__proto__ = Buffer$1.prototype;
-  } else {
-    var sliceLen = end - start;
-    newBuf = new Buffer$1(sliceLen, undefined);
-    for (var i = 0; i < sliceLen; ++i) {
-      newBuf[i] = this[i + start];
-    }
-  }
-
-  return newBuf
-};
-
-/*
- * Need to make sure that buffer isn't trying to write out of bounds.
- */
-function checkOffset$1 (offset, ext, length) {
-  if ((offset % 1) !== 0 || offset < 0) throw new RangeError('offset is not uint')
-  if (offset + ext > length) throw new RangeError('Trying to access beyond buffer length')
-}
-
-Buffer$1.prototype.readUIntLE = function readUIntLE (offset, byteLength, noAssert) {
-  offset = offset | 0;
-  byteLength = byteLength | 0;
-  if (!noAssert) checkOffset$1(offset, byteLength, this.length);
-
-  var val = this[offset];
-  var mul = 1;
-  var i = 0;
-  while (++i < byteLength && (mul *= 0x100)) {
-    val += this[offset + i] * mul;
-  }
-
-  return val
-};
-
-Buffer$1.prototype.readUIntBE = function readUIntBE (offset, byteLength, noAssert) {
-  offset = offset | 0;
-  byteLength = byteLength | 0;
-  if (!noAssert) {
-    checkOffset$1(offset, byteLength, this.length);
-  }
-
-  var val = this[offset + --byteLength];
-  var mul = 1;
-  while (byteLength > 0 && (mul *= 0x100)) {
-    val += this[offset + --byteLength] * mul;
-  }
-
-  return val
-};
-
-Buffer$1.prototype.readUInt8 = function readUInt8 (offset, noAssert) {
-  if (!noAssert) checkOffset$1(offset, 1, this.length);
-  return this[offset]
-};
-
-Buffer$1.prototype.readUInt16LE = function readUInt16LE (offset, noAssert) {
-  if (!noAssert) checkOffset$1(offset, 2, this.length);
-  return this[offset] | (this[offset + 1] << 8)
-};
-
-Buffer$1.prototype.readUInt16BE = function readUInt16BE (offset, noAssert) {
-  if (!noAssert) checkOffset$1(offset, 2, this.length);
-  return (this[offset] << 8) | this[offset + 1]
-};
-
-Buffer$1.prototype.readUInt32LE = function readUInt32LE (offset, noAssert) {
-  if (!noAssert) checkOffset$1(offset, 4, this.length);
-
-  return ((this[offset]) |
-      (this[offset + 1] << 8) |
-      (this[offset + 2] << 16)) +
-      (this[offset + 3] * 0x1000000)
-};
-
-Buffer$1.prototype.readUInt32BE = function readUInt32BE (offset, noAssert) {
-  if (!noAssert) checkOffset$1(offset, 4, this.length);
-
-  return (this[offset] * 0x1000000) +
-    ((this[offset + 1] << 16) |
-    (this[offset + 2] << 8) |
-    this[offset + 3])
-};
-
-Buffer$1.prototype.readIntLE = function readIntLE (offset, byteLength, noAssert) {
-  offset = offset | 0;
-  byteLength = byteLength | 0;
-  if (!noAssert) checkOffset$1(offset, byteLength, this.length);
-
-  var val = this[offset];
-  var mul = 1;
-  var i = 0;
-  while (++i < byteLength && (mul *= 0x100)) {
-    val += this[offset + i] * mul;
-  }
-  mul *= 0x80;
-
-  if (val >= mul) val -= Math.pow(2, 8 * byteLength);
-
-  return val
-};
-
-Buffer$1.prototype.readIntBE = function readIntBE (offset, byteLength, noAssert) {
-  offset = offset | 0;
-  byteLength = byteLength | 0;
-  if (!noAssert) checkOffset$1(offset, byteLength, this.length);
-
-  var i = byteLength;
-  var mul = 1;
-  var val = this[offset + --i];
-  while (i > 0 && (mul *= 0x100)) {
-    val += this[offset + --i] * mul;
-  }
-  mul *= 0x80;
-
-  if (val >= mul) val -= Math.pow(2, 8 * byteLength);
-
-  return val
-};
-
-Buffer$1.prototype.readInt8 = function readInt8 (offset, noAssert) {
-  if (!noAssert) checkOffset$1(offset, 1, this.length);
-  if (!(this[offset] & 0x80)) return (this[offset])
-  return ((0xff - this[offset] + 1) * -1)
-};
-
-Buffer$1.prototype.readInt16LE = function readInt16LE (offset, noAssert) {
-  if (!noAssert) checkOffset$1(offset, 2, this.length);
-  var val = this[offset] | (this[offset + 1] << 8);
-  return (val & 0x8000) ? val | 0xFFFF0000 : val
-};
-
-Buffer$1.prototype.readInt16BE = function readInt16BE (offset, noAssert) {
-  if (!noAssert) checkOffset$1(offset, 2, this.length);
-  var val = this[offset + 1] | (this[offset] << 8);
-  return (val & 0x8000) ? val | 0xFFFF0000 : val
-};
-
-Buffer$1.prototype.readInt32LE = function readInt32LE (offset, noAssert) {
-  if (!noAssert) checkOffset$1(offset, 4, this.length);
-
-  return (this[offset]) |
-    (this[offset + 1] << 8) |
-    (this[offset + 2] << 16) |
-    (this[offset + 3] << 24)
-};
-
-Buffer$1.prototype.readInt32BE = function readInt32BE (offset, noAssert) {
-  if (!noAssert) checkOffset$1(offset, 4, this.length);
-
-  return (this[offset] << 24) |
-    (this[offset + 1] << 16) |
-    (this[offset + 2] << 8) |
-    (this[offset + 3])
-};
-
-Buffer$1.prototype.readFloatLE = function readFloatLE (offset, noAssert) {
-  if (!noAssert) checkOffset$1(offset, 4, this.length);
-  return read$1(this, offset, true, 23, 4)
-};
-
-Buffer$1.prototype.readFloatBE = function readFloatBE (offset, noAssert) {
-  if (!noAssert) checkOffset$1(offset, 4, this.length);
-  return read$1(this, offset, false, 23, 4)
-};
-
-Buffer$1.prototype.readDoubleLE = function readDoubleLE (offset, noAssert) {
-  if (!noAssert) checkOffset$1(offset, 8, this.length);
-  return read$1(this, offset, true, 52, 8)
-};
-
-Buffer$1.prototype.readDoubleBE = function readDoubleBE (offset, noAssert) {
-  if (!noAssert) checkOffset$1(offset, 8, this.length);
-  return read$1(this, offset, false, 52, 8)
-};
-
-function checkInt$1 (buf, value, offset, ext, max, min) {
-  if (!internalIsBuffer$1(buf)) throw new TypeError('"buffer" argument must be a Buffer instance')
-  if (value > max || value < min) throw new RangeError('"value" argument is out of bounds')
-  if (offset + ext > buf.length) throw new RangeError('Index out of range')
-}
-
-Buffer$1.prototype.writeUIntLE = function writeUIntLE (value, offset, byteLength, noAssert) {
-  value = +value;
-  offset = offset | 0;
-  byteLength = byteLength | 0;
-  if (!noAssert) {
-    var maxBytes = Math.pow(2, 8 * byteLength) - 1;
-    checkInt$1(this, value, offset, byteLength, maxBytes, 0);
-  }
-
-  var mul = 1;
-  var i = 0;
-  this[offset] = value & 0xFF;
-  while (++i < byteLength && (mul *= 0x100)) {
-    this[offset + i] = (value / mul) & 0xFF;
-  }
-
-  return offset + byteLength
-};
-
-Buffer$1.prototype.writeUIntBE = function writeUIntBE (value, offset, byteLength, noAssert) {
-  value = +value;
-  offset = offset | 0;
-  byteLength = byteLength | 0;
-  if (!noAssert) {
-    var maxBytes = Math.pow(2, 8 * byteLength) - 1;
-    checkInt$1(this, value, offset, byteLength, maxBytes, 0);
-  }
-
-  var i = byteLength - 1;
-  var mul = 1;
-  this[offset + i] = value & 0xFF;
-  while (--i >= 0 && (mul *= 0x100)) {
-    this[offset + i] = (value / mul) & 0xFF;
-  }
-
-  return offset + byteLength
-};
-
-Buffer$1.prototype.writeUInt8 = function writeUInt8 (value, offset, noAssert) {
-  value = +value;
-  offset = offset | 0;
-  if (!noAssert) checkInt$1(this, value, offset, 1, 0xff, 0);
-  if (!Buffer$1.TYPED_ARRAY_SUPPORT) value = Math.floor(value);
-  this[offset] = (value & 0xff);
-  return offset + 1
-};
-
-function objectWriteUInt16$1 (buf, value, offset, littleEndian) {
-  if (value < 0) value = 0xffff + value + 1;
-  for (var i = 0, j = Math.min(buf.length - offset, 2); i < j; ++i) {
-    buf[offset + i] = (value & (0xff << (8 * (littleEndian ? i : 1 - i)))) >>>
-      (littleEndian ? i : 1 - i) * 8;
-  }
-}
-
-Buffer$1.prototype.writeUInt16LE = function writeUInt16LE (value, offset, noAssert) {
-  value = +value;
-  offset = offset | 0;
-  if (!noAssert) checkInt$1(this, value, offset, 2, 0xffff, 0);
-  if (Buffer$1.TYPED_ARRAY_SUPPORT) {
-    this[offset] = (value & 0xff);
-    this[offset + 1] = (value >>> 8);
-  } else {
-    objectWriteUInt16$1(this, value, offset, true);
-  }
-  return offset + 2
-};
-
-Buffer$1.prototype.writeUInt16BE = function writeUInt16BE (value, offset, noAssert) {
-  value = +value;
-  offset = offset | 0;
-  if (!noAssert) checkInt$1(this, value, offset, 2, 0xffff, 0);
-  if (Buffer$1.TYPED_ARRAY_SUPPORT) {
-    this[offset] = (value >>> 8);
-    this[offset + 1] = (value & 0xff);
-  } else {
-    objectWriteUInt16$1(this, value, offset, false);
-  }
-  return offset + 2
-};
-
-function objectWriteUInt32$1 (buf, value, offset, littleEndian) {
-  if (value < 0) value = 0xffffffff + value + 1;
-  for (var i = 0, j = Math.min(buf.length - offset, 4); i < j; ++i) {
-    buf[offset + i] = (value >>> (littleEndian ? i : 3 - i) * 8) & 0xff;
-  }
-}
-
-Buffer$1.prototype.writeUInt32LE = function writeUInt32LE (value, offset, noAssert) {
-  value = +value;
-  offset = offset | 0;
-  if (!noAssert) checkInt$1(this, value, offset, 4, 0xffffffff, 0);
-  if (Buffer$1.TYPED_ARRAY_SUPPORT) {
-    this[offset + 3] = (value >>> 24);
-    this[offset + 2] = (value >>> 16);
-    this[offset + 1] = (value >>> 8);
-    this[offset] = (value & 0xff);
-  } else {
-    objectWriteUInt32$1(this, value, offset, true);
-  }
-  return offset + 4
-};
-
-Buffer$1.prototype.writeUInt32BE = function writeUInt32BE (value, offset, noAssert) {
-  value = +value;
-  offset = offset | 0;
-  if (!noAssert) checkInt$1(this, value, offset, 4, 0xffffffff, 0);
-  if (Buffer$1.TYPED_ARRAY_SUPPORT) {
-    this[offset] = (value >>> 24);
-    this[offset + 1] = (value >>> 16);
-    this[offset + 2] = (value >>> 8);
-    this[offset + 3] = (value & 0xff);
-  } else {
-    objectWriteUInt32$1(this, value, offset, false);
-  }
-  return offset + 4
-};
-
-Buffer$1.prototype.writeIntLE = function writeIntLE (value, offset, byteLength, noAssert) {
-  value = +value;
-  offset = offset | 0;
-  if (!noAssert) {
-    var limit = Math.pow(2, 8 * byteLength - 1);
-
-    checkInt$1(this, value, offset, byteLength, limit - 1, -limit);
-  }
-
-  var i = 0;
-  var mul = 1;
-  var sub = 0;
-  this[offset] = value & 0xFF;
-  while (++i < byteLength && (mul *= 0x100)) {
-    if (value < 0 && sub === 0 && this[offset + i - 1] !== 0) {
-      sub = 1;
-    }
-    this[offset + i] = ((value / mul) >> 0) - sub & 0xFF;
-  }
-
-  return offset + byteLength
-};
-
-Buffer$1.prototype.writeIntBE = function writeIntBE (value, offset, byteLength, noAssert) {
-  value = +value;
-  offset = offset | 0;
-  if (!noAssert) {
-    var limit = Math.pow(2, 8 * byteLength - 1);
-
-    checkInt$1(this, value, offset, byteLength, limit - 1, -limit);
-  }
-
-  var i = byteLength - 1;
-  var mul = 1;
-  var sub = 0;
-  this[offset + i] = value & 0xFF;
-  while (--i >= 0 && (mul *= 0x100)) {
-    if (value < 0 && sub === 0 && this[offset + i + 1] !== 0) {
-      sub = 1;
-    }
-    this[offset + i] = ((value / mul) >> 0) - sub & 0xFF;
-  }
-
-  return offset + byteLength
-};
-
-Buffer$1.prototype.writeInt8 = function writeInt8 (value, offset, noAssert) {
-  value = +value;
-  offset = offset | 0;
-  if (!noAssert) checkInt$1(this, value, offset, 1, 0x7f, -0x80);
-  if (!Buffer$1.TYPED_ARRAY_SUPPORT) value = Math.floor(value);
-  if (value < 0) value = 0xff + value + 1;
-  this[offset] = (value & 0xff);
-  return offset + 1
-};
-
-Buffer$1.prototype.writeInt16LE = function writeInt16LE (value, offset, noAssert) {
-  value = +value;
-  offset = offset | 0;
-  if (!noAssert) checkInt$1(this, value, offset, 2, 0x7fff, -0x8000);
-  if (Buffer$1.TYPED_ARRAY_SUPPORT) {
-    this[offset] = (value & 0xff);
-    this[offset + 1] = (value >>> 8);
-  } else {
-    objectWriteUInt16$1(this, value, offset, true);
-  }
-  return offset + 2
-};
-
-Buffer$1.prototype.writeInt16BE = function writeInt16BE (value, offset, noAssert) {
-  value = +value;
-  offset = offset | 0;
-  if (!noAssert) checkInt$1(this, value, offset, 2, 0x7fff, -0x8000);
-  if (Buffer$1.TYPED_ARRAY_SUPPORT) {
-    this[offset] = (value >>> 8);
-    this[offset + 1] = (value & 0xff);
-  } else {
-    objectWriteUInt16$1(this, value, offset, false);
-  }
-  return offset + 2
-};
-
-Buffer$1.prototype.writeInt32LE = function writeInt32LE (value, offset, noAssert) {
-  value = +value;
-  offset = offset | 0;
-  if (!noAssert) checkInt$1(this, value, offset, 4, 0x7fffffff, -0x80000000);
-  if (Buffer$1.TYPED_ARRAY_SUPPORT) {
-    this[offset] = (value & 0xff);
-    this[offset + 1] = (value >>> 8);
-    this[offset + 2] = (value >>> 16);
-    this[offset + 3] = (value >>> 24);
-  } else {
-    objectWriteUInt32$1(this, value, offset, true);
-  }
-  return offset + 4
-};
-
-Buffer$1.prototype.writeInt32BE = function writeInt32BE (value, offset, noAssert) {
-  value = +value;
-  offset = offset | 0;
-  if (!noAssert) checkInt$1(this, value, offset, 4, 0x7fffffff, -0x80000000);
-  if (value < 0) value = 0xffffffff + value + 1;
-  if (Buffer$1.TYPED_ARRAY_SUPPORT) {
-    this[offset] = (value >>> 24);
-    this[offset + 1] = (value >>> 16);
-    this[offset + 2] = (value >>> 8);
-    this[offset + 3] = (value & 0xff);
-  } else {
-    objectWriteUInt32$1(this, value, offset, false);
-  }
-  return offset + 4
-};
-
-function checkIEEE754$1 (buf, value, offset, ext, max, min) {
-  if (offset + ext > buf.length) throw new RangeError('Index out of range')
-  if (offset < 0) throw new RangeError('Index out of range')
-}
-
-function writeFloat$1 (buf, value, offset, littleEndian, noAssert) {
-  if (!noAssert) {
-    checkIEEE754$1(buf, value, offset, 4, 3.4028234663852886e+38, -3.4028234663852886e+38);
-  }
-  write$1(buf, value, offset, littleEndian, 23, 4);
-  return offset + 4
-}
-
-Buffer$1.prototype.writeFloatLE = function writeFloatLE (value, offset, noAssert) {
-  return writeFloat$1(this, value, offset, true, noAssert)
-};
-
-Buffer$1.prototype.writeFloatBE = function writeFloatBE (value, offset, noAssert) {
-  return writeFloat$1(this, value, offset, false, noAssert)
-};
-
-function writeDouble$1 (buf, value, offset, littleEndian, noAssert) {
-  if (!noAssert) {
-    checkIEEE754$1(buf, value, offset, 8, 1.7976931348623157E+308, -1.7976931348623157E+308);
-  }
-  write$1(buf, value, offset, littleEndian, 52, 8);
-  return offset + 8
-}
-
-Buffer$1.prototype.writeDoubleLE = function writeDoubleLE (value, offset, noAssert) {
-  return writeDouble$1(this, value, offset, true, noAssert)
-};
-
-Buffer$1.prototype.writeDoubleBE = function writeDoubleBE (value, offset, noAssert) {
-  return writeDouble$1(this, value, offset, false, noAssert)
-};
-
-// copy(targetBuffer, targetStart=0, sourceStart=0, sourceEnd=buffer.length)
-Buffer$1.prototype.copy = function copy (target, targetStart, start, end) {
-  if (!start) start = 0;
-  if (!end && end !== 0) end = this.length;
-  if (targetStart >= target.length) targetStart = target.length;
-  if (!targetStart) targetStart = 0;
-  if (end > 0 && end < start) end = start;
-
-  // Copy 0 bytes; we're done
-  if (end === start) return 0
-  if (target.length === 0 || this.length === 0) return 0
-
-  // Fatal error conditions
-  if (targetStart < 0) {
-    throw new RangeError('targetStart out of bounds')
-  }
-  if (start < 0 || start >= this.length) throw new RangeError('sourceStart out of bounds')
-  if (end < 0) throw new RangeError('sourceEnd out of bounds')
-
-  // Are we oob?
-  if (end > this.length) end = this.length;
-  if (target.length - targetStart < end - start) {
-    end = target.length - targetStart + start;
-  }
-
-  var len = end - start;
-  var i;
-
-  if (this === target && start < targetStart && targetStart < end) {
-    // descending copy from end
-    for (i = len - 1; i >= 0; --i) {
-      target[i + targetStart] = this[i + start];
-    }
-  } else if (len < 1000 || !Buffer$1.TYPED_ARRAY_SUPPORT) {
-    // ascending copy from start
-    for (i = 0; i < len; ++i) {
-      target[i + targetStart] = this[i + start];
-    }
-  } else {
-    Uint8Array.prototype.set.call(
-      target,
-      this.subarray(start, start + len),
-      targetStart
-    );
-  }
-
-  return len
-};
-
-// Usage:
-//    buffer.fill(number[, offset[, end]])
-//    buffer.fill(buffer[, offset[, end]])
-//    buffer.fill(string[, offset[, end]][, encoding])
-Buffer$1.prototype.fill = function fill (val, start, end, encoding) {
-  // Handle string cases:
-  if (typeof val === 'string') {
-    if (typeof start === 'string') {
-      encoding = start;
-      start = 0;
-      end = this.length;
-    } else if (typeof end === 'string') {
-      encoding = end;
-      end = this.length;
-    }
-    if (val.length === 1) {
-      var code = val.charCodeAt(0);
-      if (code < 256) {
-        val = code;
-      }
-    }
-    if (encoding !== undefined && typeof encoding !== 'string') {
-      throw new TypeError('encoding must be a string')
-    }
-    if (typeof encoding === 'string' && !Buffer$1.isEncoding(encoding)) {
-      throw new TypeError('Unknown encoding: ' + encoding)
-    }
-  } else if (typeof val === 'number') {
-    val = val & 255;
-  }
-
-  // Invalid ranges are not set to a default, so can range check early.
-  if (start < 0 || this.length < start || this.length < end) {
-    throw new RangeError('Out of range index')
-  }
-
-  if (end <= start) {
-    return this
-  }
-
-  start = start >>> 0;
-  end = end === undefined ? this.length : end >>> 0;
-
-  if (!val) val = 0;
-
-  var i;
-  if (typeof val === 'number') {
-    for (i = start; i < end; ++i) {
-      this[i] = val;
-    }
-  } else {
-    var bytes = internalIsBuffer$1(val)
-      ? val
-      : utf8ToBytes$1(new Buffer$1(val, encoding).toString());
-    var len = bytes.length;
-    for (i = 0; i < end - start; ++i) {
-      this[i + start] = bytes[i % len];
-    }
-  }
-
-  return this
-};
-
-// HELPER FUNCTIONS
-// ================
-
-var INVALID_BASE64_RE$1 = /[^+\/0-9A-Za-z-_]/g;
-
-function base64clean$1 (str) {
-  // Node strips out invalid characters like \n and \t from the string, base64-js does not
-  str = stringtrim$1(str).replace(INVALID_BASE64_RE$1, '');
-  // Node converts strings with length < 2 to ''
-  if (str.length < 2) return ''
-  // Node allows for non-padded base64 strings (missing trailing ===), base64-js does not
-  while (str.length % 4 !== 0) {
-    str = str + '=';
-  }
-  return str
-}
-
-function stringtrim$1 (str) {
-  if (str.trim) return str.trim()
-  return str.replace(/^\s+|\s+$/g, '')
-}
-
-function toHex$1 (n) {
-  if (n < 16) return '0' + n.toString(16)
-  return n.toString(16)
-}
-
-function utf8ToBytes$1 (string, units) {
-  units = units || Infinity;
-  var codePoint;
-  var length = string.length;
-  var leadSurrogate = null;
-  var bytes = [];
-
-  for (var i = 0; i < length; ++i) {
-    codePoint = string.charCodeAt(i);
-
-    // is surrogate component
-    if (codePoint > 0xD7FF && codePoint < 0xE000) {
-      // last char was a lead
-      if (!leadSurrogate) {
-        // no lead yet
-        if (codePoint > 0xDBFF) {
-          // unexpected trail
-          if ((units -= 3) > -1) bytes.push(0xEF, 0xBF, 0xBD);
-          continue
-        } else if (i + 1 === length) {
-          // unpaired lead
-          if ((units -= 3) > -1) bytes.push(0xEF, 0xBF, 0xBD);
-          continue
-        }
-
-        // valid lead
-        leadSurrogate = codePoint;
-
-        continue
-      }
-
-      // 2 leads in a row
-      if (codePoint < 0xDC00) {
-        if ((units -= 3) > -1) bytes.push(0xEF, 0xBF, 0xBD);
-        leadSurrogate = codePoint;
-        continue
-      }
-
-      // valid surrogate pair
-      codePoint = (leadSurrogate - 0xD800 << 10 | codePoint - 0xDC00) + 0x10000;
-    } else if (leadSurrogate) {
-      // valid bmp char, but last char was a lead
-      if ((units -= 3) > -1) bytes.push(0xEF, 0xBF, 0xBD);
-    }
-
-    leadSurrogate = null;
-
-    // encode utf8
-    if (codePoint < 0x80) {
-      if ((units -= 1) < 0) break
-      bytes.push(codePoint);
-    } else if (codePoint < 0x800) {
-      if ((units -= 2) < 0) break
-      bytes.push(
-        codePoint >> 0x6 | 0xC0,
-        codePoint & 0x3F | 0x80
-      );
-    } else if (codePoint < 0x10000) {
-      if ((units -= 3) < 0) break
-      bytes.push(
-        codePoint >> 0xC | 0xE0,
-        codePoint >> 0x6 & 0x3F | 0x80,
-        codePoint & 0x3F | 0x80
-      );
-    } else if (codePoint < 0x110000) {
-      if ((units -= 4) < 0) break
-      bytes.push(
-        codePoint >> 0x12 | 0xF0,
-        codePoint >> 0xC & 0x3F | 0x80,
-        codePoint >> 0x6 & 0x3F | 0x80,
-        codePoint & 0x3F | 0x80
-      );
-    } else {
-      throw new Error('Invalid code point')
-    }
-  }
-
-  return bytes
-}
-
-function asciiToBytes$1 (str) {
-  var byteArray = [];
-  for (var i = 0; i < str.length; ++i) {
-    // Node's code seems to be doing this and not & 0x7F..
-    byteArray.push(str.charCodeAt(i) & 0xFF);
-  }
-  return byteArray
-}
-
-function utf16leToBytes$1 (str, units) {
-  var c, hi, lo;
-  var byteArray = [];
-  for (var i = 0; i < str.length; ++i) {
-    if ((units -= 2) < 0) break
-
-    c = str.charCodeAt(i);
-    hi = c >> 8;
-    lo = c % 256;
-    byteArray.push(lo);
-    byteArray.push(hi);
-  }
-
-  return byteArray
-}
-
-
-function base64ToBytes$1 (str) {
-  return toByteArray$1(base64clean$1(str))
-}
-
-function blitBuffer$1 (src, dst, offset, length) {
-  for (var i = 0; i < length; ++i) {
-    if ((i + offset >= dst.length) || (i >= src.length)) break
-    dst[i + offset] = src[i];
-  }
-  return i
-}
-
-function isnan$1 (val) {
-  return val !== val // eslint-disable-line no-self-compare
-}
-
-
-// the following is from is-buffer, also by Feross Aboukhadijeh and with same lisence
-// The _isBuffer check is for Safari 5-7 support, because it's missing
-// Object.prototype.constructor. Remove this eventually
-function isBuffer$1(obj) {
-  return obj != null && (!!obj._isBuffer || isFastBuffer$1(obj) || isSlowBuffer$1(obj))
-}
-
-function isFastBuffer$1 (obj) {
-  return !!obj.constructor && typeof obj.constructor.isBuffer === 'function' && obj.constructor.isBuffer(obj)
-}
-
-// For Node v0.10 support. Remove this eventually.
-function isSlowBuffer$1 (obj) {
-  return typeof obj.readFloatLE === 'function' && typeof obj.slice === 'function' && isFastBuffer$1(obj.slice(0, 0))
-}
-
 /*
   Copyright (c) 2008, Adobe Systems Incorporated
   All rights reserved.
@@ -25482,7 +39943,7 @@ Basic GUI blocking jpeg encoder
 */
 
 var btoa = btoa || function(buf) {
-  return new Buffer$1(buf).toString('base64');
+  return new Buffer(buf).toString('base64');
 };
 
 function JPEGEncoder(quality) {
@@ -26133,7 +40594,7 @@ function JPEGEncoder(quality) {
 			writeWord(0xFFD9); //EOI
 
       //return new Uint8Array(byteout);
-      return new Buffer$1(byteout);
+      return new Buffer(byteout);
 
 			var jpegDataUri = 'data:image/jpeg;base64,' + btoa(byteout.join(''));
 			
@@ -27181,7 +41642,7 @@ function decode(jpegData, useTArray) {
     height: decoder.height,
     data: useTArray ?
       new Uint8Array(decoder.width * decoder.height * 4) :
-      new Buffer$1(decoder.width * decoder.height * 4)
+      new Buffer(decoder.width * decoder.height * 4)
   };
 
   decoder.copyToImageData(image);
@@ -27924,6 +42385,2869 @@ class Image2DGenericDecoder extends Filter {
   
 } /* END of class Image2DGenericDecoder */
 
+/*
+* Author    Jonathan Lurie - http://me.jonahanlurie.fr
+*           Robert D. Vincent
+*
+* License   MIT
+* Link      https://github.com/Pixpipe/pixpipejs
+* Lab       MCIN - Montreal Neurological Institute
+*/
+
+/**
+* Decode a HDF5 file, but is most likely to be restricted to the features that are
+* used for Minc2 file format.
+* The metadata "debug" can be set to true to
+* enable a verbose mode.
+* Takes an ArrayBuffer as input (0) and output a `MniVolume` (which inherit `Image3D`).
+*
+* **Usage**
+* - [examples/fileToMinc2.html](../examples/fileToMinc2.html)
+*/
+class Minc2DecoderAlt extends Filter{
+
+  constructor(){
+    super();
+    this.addInputValidator(0, ArrayBuffer);
+
+    this.setMetadata("debug", false);
+
+    this._type_enum = {
+      INT8: 1,
+      UINT8: 2,
+      INT16: 3,
+      UINT16: 4,
+      INT32: 5,
+      UINT32: 6,
+      FLT: 7,
+      DBL: 8,
+      STR: 9
+    };
+
+    this._type_matching = [
+      "int8",
+      "uint8",
+      "int16",
+      "uint16",
+      "int32",
+      "uint32",
+      "float32",
+      "float64",
+      "undef" // STR type is not compatible with minc
+      // we deal rgb8 manually
+    ];
+
+    this.type_sizes = [0, 1, 1, 2, 2, 4, 4, 4, 8, 0];
+
+    this._dv_offset = 0;
+    this._align = 8;
+    this._little_endian = true;
+    this._continuation_queue = [];
+    this._dv = null;//new DataView(abuf);
+    this._superblk = {};
+    this._start_offset = 0;
+    this._huge_id = 0;
+
+  }
+
+  /**
+  * [PRIVATE]
+  */
+  createLink() {
+    var r = {};
+    // internal/private
+    r.hdr_offset = 0;         // offset to object header.
+    r.data_offset = 0;        // offset to actual data.
+    r.data_length = 0;        // length of data.
+    r.n_filled = 0;           // counts elements written to array
+    r.chunk_size = 0;         // size of chunks
+    r.sym_btree = 0;          // offset of symbol table btree
+    r.sym_lheap = 0;          // offset of symbol table local heap
+    // permanent/global
+    r.name = "";              // name of this group or dataset.
+    r.attributes = {};        // indexed by attribute name.
+    r.children = [];          // not associative for now.
+    r.array = undefined;      // actual data, if dataset.
+    r.type = -1;              // type of data.
+    r.inflate = false;        // true if need to inflate (gzip).
+    r.dims = [];              // dimension sizes.
+    return r;
+  }
+
+
+  /**
+  * [PRIVATE]
+  *
+  * Turns out that alignment of the messages in at least the
+  * version 1 object header is actually relative to the start
+  * of the header. So we update the start position of the
+  * header here, so we can refer to it when calculating the
+  * alignment in this.checkAlignment().
+  */
+  startAlignment() {
+    this._start_offset = this._dv_offset;
+  }
+
+
+  /**
+  * [PRIVATE]
+  */
+  checkAlignment() {
+    var tmp = this._dv_offset - this._start_offset;
+    if ((tmp % this._align) !== 0) {
+      var n = this._align - (tmp % this._align);
+      this._dv_offset += n;
+      if (this.getMetadata("debug")) {
+        console.log('skipping ' + n + ' bytes at ' + tmp + ' for alignmnent');
+      }
+    }
+  }
+
+
+  /**
+  * [PRIVATE]
+  *
+  * helper functions to manipulate the current DataView offset.
+  */
+  skip(n_bytes) {
+    this._dv_offset += n_bytes;
+  }
+
+
+  /**
+  * [PRIVATE]
+  */
+  seek(new_offset) {
+    this._dv_offset = new_offset;
+  }
+
+
+  /**
+  * [PRIVATE]
+  */
+  tell() {
+    return this._dv_offset;
+  }
+
+
+  /**
+  * [PRIVATE]
+  *
+  * helper functions for access to our DataView.
+  */
+  getU8() {
+    var v = this._dv.getUint8(this._dv_offset);
+    this._dv_offset += 1;
+    return v;
+  }
+
+
+  /**
+  * [PRIVATE]
+  */
+  getU16() {
+    var v = this._dv.getUint16(this._dv_offset, this._little_endian);
+    this._dv_offset += 2;
+    return v;
+  }
+
+
+  /**
+  * [PRIVATE]
+  */
+  getU32() {
+    var v = this._dv.getUint32(this._dv_offset, this._little_endian);
+    this._dv_offset += 4;
+    return v;
+  }
+
+
+  /**
+  * [PRIVATE]
+  */
+  getU64() {
+    var v = this._dv.getUint64(this._dv_offset, this._little_endian);
+    this._dv_offset += 8;
+    return v;
+  }
+
+
+  /**
+  * [PRIVATE]
+  */
+  getF32() {
+    var v = this._dv.getFloat32(this._dv_offset, this._little_endian);
+    this._dv_offset += 4;
+    return v;
+  }
+
+
+  /**
+  * [PRIVATE]
+  */
+  getF64() {
+    var v = this._dv.getFloat64(this._dv_offset, this._little_endian);
+    this._dv_offset += 8;
+    return v;
+  }
+
+
+  /**
+  * [PRIVATE]
+  */
+  getOffset(offsz) {
+    var v = 0;
+    offsz = offsz || this._superblk.offsz;
+    if (offsz === 4) {
+      v = this._dv.getUint32(this._dv_offset, this._little_endian);
+    } else if (offsz === 8) {
+      v = this._dv.getUint64(this._dv_offset, this._little_endian);
+    } else {
+      throw new Error('Unsupported value for offset size ' + offsz);
+    }
+    this._dv_offset += offsz;
+    return v;
+  }
+
+
+  /**
+  * [PRIVATE]
+  */
+  getLength() {
+    var v = this._dv.getUint64(this._dv_offset, this._little_endian);
+    this._dv_offset += this._superblk.lensz;
+    return v;
+  }
+
+
+  /**
+  * [PRIVATE]
+  */
+  getString(length) {
+    var r = "";
+    var i;
+    var c;
+    for (i = 0; i < length; i += 1) {
+      c = this.getU8();
+      if (c === 0) {
+        this._dv_offset += (length - i - 1);
+        break;
+      }
+      r += String.fromCharCode(c);
+    }
+    return r;
+  }
+
+
+  /**
+  * [PRIVATE]
+  */
+  getArray(typ, n_bytes, new_off) {
+    var value;
+    var n_values;
+    var new_abuf;
+    var abuf = this._getInput();
+    var i;
+    var spp = this._dv_offset;
+    if (new_off) {
+      this._dv_offset = new_off;
+    }
+    switch (typ) {
+    case this._type_enum.INT8:
+      value = new Int8Array(abuf, this._dv_offset, n_bytes);
+      break;
+    case this._type_enum.UINT8:
+      value = new Uint8Array(abuf, this._dv_offset, n_bytes);
+      break;
+    case this._type_enum.INT16:
+      if ((this._dv_offset % 2) !== 0) {
+        new_abuf = new ArrayBuffer(n_bytes);
+        n_values = n_bytes / 2;
+        value = new Int16Array(new_abuf);
+        for (i = 0; i < n_values; i += 1) {
+          value[i] = this.getU16();
+        }
+      } else {
+        value = new Int16Array(abuf, this._dv_offset, n_bytes / 2);
+        this._dv_offset += n_bytes;
+      }
+      break;
+    case this._type_enum.UINT16:
+      if ((this._dv_offset % 2) !== 0) {
+        new_abuf = new ArrayBuffer(n_bytes);
+        n_values = n_bytes / 2;
+        value = new Uint16Array(new_abuf);
+        for (i = 0; i < n_values; i += 1) {
+          value[i] = this.getU16();
+        }
+      } else {
+        value = new Uint16Array(abuf, this._dv_offset, n_bytes / 2);
+        this._dv_offset += n_bytes;
+      }
+      break;
+    case this._type_enum.INT32:
+      if ((this._dv_offset % 4) !== 0) {
+        new_abuf = new ArrayBuffer(n_bytes);
+        n_values = n_bytes / 4;
+        value = new Int32Array(new_abuf);
+        for (i = 0; i < n_values; i += 1) {
+          value[i] = this.getU32();
+        }
+      } else {
+        value = new Int32Array(abuf, this._dv_offset, n_bytes / 4);
+        this._dv_offset += n_bytes;
+      }
+      break;
+    case this._type_enum.UINT32:
+      if ((this._dv_offset % 4) !== 0) {
+        new_abuf = new ArrayBuffer(n_bytes);
+        n_values = n_bytes / 4;
+        value = new Uint32Array(new_abuf);
+        for (i = 0; i < n_values; i += 1) {
+          value[i] = this.getU32();
+        }
+      } else {
+        value = new Uint32Array(abuf, this._dv_offset, n_bytes / 4);
+        this._dv_offset += n_bytes;
+      }
+      break;
+    case this._type_enum.FLT:
+      if ((this._dv_offset % 4) !== 0) {
+        new_abuf = new ArrayBuffer(n_bytes);
+        n_values = n_bytes / 4;
+        value = new Float32Array(new_abuf);
+        for (i = 0; i < n_values; i += 1) {
+          value[i] = this.getF32();
+        }
+      } else {
+        value = new Float32Array(abuf, this._dv_offset, n_bytes / 4);
+        this._dv_offset += n_bytes;
+      }
+      break;
+    case this._type_enum.DBL:
+      if ((this._dv_offset % 8) !== 0) {
+        new_abuf = new ArrayBuffer(n_bytes);
+        n_values = n_bytes / 8;
+        value = new Float64Array(new_abuf);
+        for (i = 0; i < n_values; i += 1) {
+          value[i] = this.getF64();
+        }
+      } else {
+        value = new Float64Array(abuf, this._dv_offset, n_bytes / 8);
+        this._dv_offset += n_bytes;
+      }
+      break;
+    default:
+      throw new Error('Bad type in this.getArray ' + typ);
+    }
+    if (new_off) {
+      this._dv_offset = spp;
+    }
+    return value;
+  }
+
+
+  /**
+  * [PRIVATE]
+  *
+  * Get a variably-sized integer from the DataView.
+  */
+  getUXX(n) {
+    var v;
+    var i;
+    switch (n) {
+    case 1:
+      v = this._dv.getUint8(this._dv_offset);
+      break;
+    case 2:
+      v = this._dv.getUint16(this._dv_offset, this._little_endian);
+      break;
+    case 4:
+      v = this._dv.getUint32(this._dv_offset, this._little_endian);
+      break;
+    case 8:
+      v = this._dv.getUint64(this._dv_offset, this._little_endian);
+      break;
+    default:
+      /* Certain hdf5 types can have odd numbers of bytes. We try
+       * to deal with that special case here.
+       */
+      v = 0;
+      if (!this._little_endian) {
+        for (i = 0; i < n; i++) {
+          v = (v << 8) + this._dv.getUint8(this._dv_offset + i);
+        }
+      }
+      else {
+        for (i = n - 1; i >= 0; i--) {
+          v = (v << 8) + this._dv.getUint8(this._dv_offset + i);
+        }
+      }
+    }
+    this._dv_offset += n;
+    return v;
+  }
+
+
+  /**
+  * [PRIVATE]
+  *
+  * Verify that the expected signature is found at this offset.
+  */
+  checkSignature(str) {
+    var i;
+    for (i = 0; i < str.length; i += 1) {
+      if (this._dv.getUint8(this._dv_offset + i) !== str.charCodeAt(i)) {
+        return false;
+      }
+    }
+    this.skip(str.length);
+    return true;
+  }
+
+
+  /**
+  * [PRIVATE]
+  */
+  hdf5Superblock() {
+    var sb = {};
+    if (!this.checkSignature("\u0089HDF\r\n\u001A\n")) {
+      throw new Error('Bad magic string in HDF5');
+    }
+    sb.sbver = this.getU8();
+    if (sb.sbver > 2) {
+      throw new Error('Unsupported HDF5 superblock version ' + sb.sbver);
+    }
+    if (sb.sbver <= 1) {
+      sb.fsver = this.getU8();
+      sb.rgver = this.getU8();
+      this.skip(1);            // reserved
+      sb.shver = this.getU8();
+      sb.offsz = this.getU8();
+      sb.lensz = this.getU8();
+      this.skip(1);            // reserved
+      sb.gln_k = this.getU16();
+      sb.gin_k = this.getU16();
+      sb.cflags = this.getU32();
+      if (sb.sbver === 1) {
+        sb.isin_k = this.getU16();
+        this.skip(2);        // reserved
+      }
+      sb.base_addr = this.getOffset(sb.offsz);
+      sb.gfsi_addr = this.getOffset(sb.offsz);
+      sb.eof_addr = this.getOffset(sb.offsz);
+      sb.dib_addr = this.getOffset(sb.offsz);
+      sb.root_ln_offs = this.getOffset(sb.offsz);
+      sb.root_addr = this.getOffset(sb.offsz);
+      sb.root_cache_type = this.getU32();
+      this.skip(4);
+      this.skip(16);
+    } else {
+      sb.offsz = this.getU8();
+      sb.lensz = this.getU8();
+      sb.cflags = this.getU8();
+      sb.base_addr = this.getOffset(sb.offsz);
+      sb.ext_addr = this.getOffset(sb.offsz);
+      sb.eof_addr = this.getOffset(sb.offsz);
+      sb.root_addr = this.getOffset(sb.offsz);
+      sb.checksum = this.getU32();
+    }
+    if (this.getMetadata("debug")) {
+      console.log("HDF5 SB " + sb.sbver + " " + sb.offsz + " " + sb.lensz + " " + sb.cflags);
+    }
+    return sb;
+  }
+
+
+  /**
+  * [PRIVATE]
+  *
+  * read the v2 fractal heap header
+  */
+  hdf5FractalHeapHeader() {
+    var fh = {};
+    if (!this.checkSignature("FRHP")) {
+      throw new Error('Bad or missing FRHP signature');
+    }
+    fh.ver = this.getU8();         // Version
+    fh.idlen = this.getU16();      // Heap ID length
+    fh.iof_el = this.getU16();     // I/O filter's encoded length
+    fh.flags = this.getU8();       // Flags
+    fh.objmax = this.getU32();     // Maximum size of managed objects.
+    fh.objnid = this.getLength();  // Next huge object ID
+    fh.objbta = this.getOffset();  // v2 B-tree address of huge objects
+    fh.nf_blk = this.getLength();  // Amount of free space in managed blocks
+    fh.af_blk = this.getOffset();  // Address of managed block free space manager
+    fh.heap_total = this.getLength(); // Amount of managed space in heap
+    fh.heap_alloc = this.getLength(); // Amount of allocated managed space in heap
+    fh.bai_offset = this.getLength(); // Offset of direct block allocation iterator
+    fh.heap_nobj = this.getLength();  // Number of managed objects in heap
+    fh.heap_chuge = this.getLength(); // Size of huge objects in heap
+    fh.heap_nhuge = this.getLength(); // Number of huge objects in heap
+    fh.heap_ctiny = this.getLength(); // Size of tiny objects in heap
+    fh.heap_ntiny = this.getLength(); // Number of tiny objects in heap
+    fh.table_width = this.getU16();   // Table width
+    fh.start_blksz = this.getLength(); // Starting block size
+    fh.max_blksz = this.getLength();   // Maximum direct block size
+    fh.max_heapsz = this.getU16();     // Maximum heap size
+    fh.rib_srows = this.getU16();      // Starting # of rows in root indirect block
+    fh.root_addr = this.getOffset();   // Address of root block
+    fh.rib_crows = this.getU16();      // Current # of rows in root indirect block
+
+    var max_dblock_rows = Math.log2(fh.max_blksz) - Math.log2(fh.start_blksz) + 2;
+    fh.K = Math.min(fh.rib_crows, max_dblock_rows) * fh.table_width;
+    fh.N = (fh.rib_crows < max_dblock_rows) ? 0 : fh.K - (max_dblock_rows * fh.table_width);
+
+    if (this.getMetadata("debug")) {
+      console.log("FRHP V" + fh.ver + " F" + fh.flags + " " + fh.objbta + " Total:" + fh.heap_total + " Alloc:" + fh.heap_alloc + " #obj:" + fh.heap_nobj + " width:" + fh.table_width + " start_blksz:" + fh.start_blksz + " max_blksz:" + fh.max_blksz + " " + fh.max_heapsz + " srows:" + fh.rib_srows + " crows:" + fh.rib_crows + " " + fh.heap_nhuge);
+      console.log("   K: " + fh.K + " N: " + fh.N);
+    }
+
+    if (fh.iof_el > 0) {
+      throw new Error("Filters present in fractal heap.");
+    }
+    return fh;
+  }
+
+
+  /**
+  * [PRIVATE]
+  *
+  * read the v2 btree header
+  */
+  hdf5V2BtreeHeader() {
+    var bh = {};
+    if (!this.checkSignature("BTHD")) {
+      throw new Error('Bad or missing BTHD signature');
+    }
+    bh.ver = this.getU8();
+    bh.type = this.getU8();
+    bh.nodesz = this.getU32();
+    bh.recsz = this.getU16();
+    bh.depth = this.getU16();
+    bh.splitp = this.getU8();
+    bh.mergep = this.getU8();
+    bh.root_addr = this.getOffset();
+    bh.root_nrec = this.getU16();
+    bh.total_nrec = this.getLength();
+    bh.checksum = this.getU32();
+
+    if (this.getMetadata("debug")) {
+      console.log("BTHD V" + bh.ver + " T" + bh.type + " " + bh.nodesz + " " + bh.recsz + " " + bh.depth + " " + bh.root_addr + " " + bh.root_nrec + " " + bh.total_nrec);
+    }
+    return bh;
+  }
+
+
+
+  /**
+  * [PRIVATE]
+  *
+  * Enumerates btree records in a block. Records are found both in direct
+  * and indirect v2 btree blocks.
+  */
+  hdf5V2BtreeRecords(fh, bt_type, nrec, link) {
+    var i;
+    var spp;                  // saved position pointer
+    var offset;
+    var length;
+    if (bt_type === 1) {
+      for (i = 0; i < nrec; i++) {
+        offset = this.getOffset();
+        length = this.getLength();
+        var id = this.getLength();
+        if (this.getMetadata("debug")) {
+          console.log("  -> " + offset + " " + length + " " + id + " " + this._this._huge_id);
+        }
+        spp = this.tell();
+        if (id === this._this._huge_id) {
+          this.seek(offset);
+          this.hdf5MsgAttribute(length, link);
+        }
+        this.seek(spp);
+      }
+    }
+    else if (bt_type === 8) {
+      var cb_offs;
+      var cb_leng;
+      /* maximum heap size is stored in bits! */
+      cb_offs = fh.max_heapsz / 8;
+      var tmp = Math.min(fh.objmax, fh.max_blksz);
+      if (tmp <= 256) {
+        cb_leng = 1;
+      }
+      else if (tmp <= 65536) {
+        cb_leng = 2;
+      }
+      else {
+        cb_leng = 4;
+      }
+      for (i = 0; i < nrec; i++) {
+        /* Read managed fractal heap ID.
+         */
+        var vt = this.getU8();
+        if ((vt & 0xc0) !== 0) {
+          throw new Error('Bad Fractal Heap ID version ' + vt);
+        }
+        var id_type = (vt & 0x30);
+        var flags;
+        if (id_type === 0x10) {     // huge!
+          this._this._huge_id = this.getUXX(7);
+        }
+        else if (id_type === 0x00) { // managed.
+          offset = this.getUXX(cb_offs);
+          length = this.getUXX(cb_leng);
+        }
+        else {
+          throw new Error("Can't handle this Heap ID: " + vt);
+        }
+        flags = this.getU8();
+
+        /* Read the rest of the record.
+         */
+        this.getU32();               // creation order (IGNORE)
+        this.getU32();               // hash (IGNORE)
+        if (this.getMetadata("debug")) {
+          console.log("  -> " + vt + " " + offset + " " + length + " " + flags);
+        }
+        spp = this.tell();
+        if (id_type === 0x10) {
+          /* A "huge" object is found by indexing through the btree
+           * present in the header
+           */
+          this.seek(fh.objbta);
+          var bh = this.hdf5V2BtreeHeader();
+          if (bh.type === 1) {
+            this.seek(bh.root_addr);
+            this.hdf5V2BtreeLeafNode(fh, bh.root_nrec, link);
+          }
+          else {
+            throw new Error("Can only handle type-1 btrees");
+          }
+        }
+        else {
+          /*
+           * A managed object implies that the attribute message is
+           * found in the associated fractal heap at the specified
+           * offset in the heap. We get the actual address
+           * corresponding to the offset here.
+           */
+          var location = this.hdf5FractalHeapOffset(fh, offset);
+          this.seek(location);
+          this.hdf5MsgAttribute(length, link);
+        }
+        this.seek(spp);
+      }
+    }
+    else {
+      throw new Error("Unhandled V2 btree type.");
+    }
+  }
+
+
+  /**
+  * [PRIVATE]
+  *
+  * read a v2 btree leaf node
+  */
+  hdf5V2BtreeLeafNode(fh, nrec, link) {
+
+    if (!this.checkSignature("BTLF")) {
+      throw new Error('Bad or missing BTLF signature');
+    }
+
+    var ver = this.getU8();
+    var typ = this.getU8();
+
+    if (this.getMetadata("debug")) {
+      console.log("BTLF V" + ver + " T" + typ + " " + this.tell());
+    }
+    this.hdf5V2BtreeRecords(fh, typ, nrec, link);
+  }
+
+
+  /**
+  * [PRIVATE]
+  *
+  * read the hdf5 v2 btree internal node
+  */
+  hdf5V2BtreeInternalNode(fh, nrec, depth, link) {
+
+    if (!this.checkSignature("BTIN")) {
+      throw new Error('Bad or missing BTIN signature');
+    }
+    var ver = this.getU8();
+    var type = this.getU8();
+    var i;
+
+    if (this.getMetadata("debug")) {
+      console.log("BTIN V" + ver + " T" + type);
+    }
+    this.hdf5V2BtreeRecords(fh, type, nrec, link);
+    for (i = 0; i <= nrec; i++) {
+      var child_offset = this.getOffset();
+      var child_nrec = this.getUXX(1); // TODO: calculate real size!!
+      var child_total;
+      /* TODO: unfortunately, this field is optional and
+       * variably-sized. Calculating the size is non-trivial, as it
+       * depends on the total depth and size of the tree. For now
+       * we will just assume it is its minimum size, as I've never
+       * encountered a file with depth > 1 anyway.
+       */
+      if (depth > 1) {
+        child_total = this.getUXX(1);
+      }
+      if (this.getMetadata("debug")) {
+        console.log(" child->" + child_offset + " " + child_nrec + " " + child_total);
+      }
+    }
+  }
+
+
+  /**
+  * [PRIVATE]
+  */
+  hdf5GetMsgName(n) {
+
+    // JO: used to be in the global scope.
+    /* Names of the various HDF5 messages.
+     * Note that MESSAGE23 appears to be illegal. All the rest are defined,
+     * although I've never encountered a BOGUS message!
+     */
+    var msg_names = [
+      "NIL", "Dataspace", "LinkInfo", "Datatype", "FillValue 1", "FillValue 2",
+      "Link", "ExternalFiles", "Layout", "BOGUS", "GroupInfo", "FilterPipeline",
+      "Attribute", "ObjectComment", "ObjectModTime 1", "SharedMsgTable",
+      "ObjHdrContinue", "SymbolTable", "ObjectModTime 2", "BtreeKValue",
+      "DriverInfo", "AttrInfo", "ObjectRefCnt", "MESSAGE23",
+      "FileSpaceInfo"
+    ];
+
+    if (n < msg_names.length) {
+      return msg_names[n];
+    }
+    throw new Error('Unknown message type ' + n + " " + this.tell());
+  }
+
+
+  /**
+  * [PRIVATE]
+  */
+  hdf5V1BtreeNode(link) {
+    var abuf = this._getInput();
+    var i;
+    var bt = {};
+    if (!this.checkSignature("TREE")) {
+      throw new Error('Bad TREE signature at ' + this.tell());
+    }
+
+    bt.keys = [];
+
+    bt.node_type = this.getU8();
+    bt.node_level = this.getU8();
+    bt.entries_used = this.getU16();
+    bt.left_sibling = this.getOffset();
+    bt.right_sibling = this.getOffset();
+
+    if (this.getMetadata("debug")) {
+      console.log("BTREE type " + bt.node_type + " lvl " +
+                  bt.node_level + " n_used " + bt.entries_used + " " +
+                  bt.left_sibling + " " + bt.right_sibling);
+    }
+
+    if (!link) {
+      /* If this BTREE is associated with a group (not a dataset),
+       * then its keys are single "length" value.
+       */
+      for (i = 0; i < bt.entries_used; i += 1) {
+        bt.keys[i] = {};
+        bt.keys[i].key_value = this.getLength();
+        bt.keys[i].child_address = this.getOffset();
+        if (this.getMetadata("debug")) {
+          console.log("  BTREE " + i + " key " +
+                      bt.keys[i].key_value + " adr " +
+                      bt.keys[i].child_address);
+        }
+      }
+    } else {
+      var j;
+
+      /* If this BTREE is a "chunked raw data node" associated
+       * with a dataset, then its keys are complex, consisting
+       * of the chunk size in bytes, a filter mask, and a set of
+       * offsets matching the dimensionality of the chunk layout.
+       * The chunk size stores the actual stored length of the
+       * data, so it may not equal the uncompressed chunk size.
+       */
+      var chunks = [];
+
+      for (i = 0; i < bt.entries_used; i += 1) {
+        bt.keys[i] = {};
+        chunks[i] = {};
+        chunks[i].chunk_size = this.getU32();
+        chunks[i].filter_mask = this.getU32();
+        chunks[i].chunk_offsets = [];
+        for (j = 0; j < link.dims.length + 1; j += 1) {
+          chunks[i].chunk_offsets.push(this.getU64());
+        }
+        bt.keys[i].child_address = this.getOffset();
+        if (i < bt.entries_used) {
+          if (this.getMetadata("debug")) {
+            console.log("  BTREE " + i +
+                        " chunk_size " + chunks[i].chunk_size +
+                        " filter_mask " + chunks[i].filter_mask +
+                        " addr " + bt.keys[i].child_address);
+          }
+        }
+      }
+      chunks[i] = {};
+      chunks[i].chunk_size = this.getU32();
+      chunks[i].filter_mask = this.getU32();
+      chunks[i].chunk_offsets = [];
+      for (j = 0; j < link.dims.length + 1; j += 1) {
+        chunks[i].chunk_offsets.push(this.getU64());
+      }
+
+      /* If we're at a leaf node, we have data to deal with.
+       * We might have to uncompress!
+       */
+      if (bt.node_level === 0) {
+        var length;
+        var offset;
+        var sp;
+        var dp;
+
+        for (i = 0; i < bt.entries_used; i += 1) {
+          length = chunks[i].chunk_size;
+          offset = bt.keys[i].child_address;
+
+          if (link.inflate) {
+            sp = new Uint8Array(abuf, offset, length);
+            dp = index$1.inflate(sp);
+            switch (link.type) {
+            case this._type_enum.INT8:
+              dp = new Int8Array(dp.buffer);
+              break;
+            case this._type_enum.UINT8:
+              dp = new Uint8Array(dp.buffer);
+              break;
+            case this._type_enum.INT16:
+              dp = new Int16Array(dp.buffer);
+              break;
+            case this._type_enum.UINT16:
+              dp = new Uint16Array(dp.buffer);
+              break;
+            case this._type_enum.INT32:
+              dp = new Int32Array(dp.buffer);
+              break;
+            case this._type_enum.UINT32:
+              dp = new Uint32Array(dp.buffer);
+              break;
+            case this._type_enum.FLT:
+              dp = new Float32Array(dp.buffer);
+              break;
+            case this._type_enum.DBL:
+              dp = new Float64Array(dp.buffer);
+              break;
+            default:
+              throw new Error('Unknown type code ' + link.type);
+            }
+            if (link.array.length - link.n_filled < dp.length) {
+              dp = dp.subarray(0, link.array.length - link.n_filled);
+            }
+            link.array.set(dp, link.n_filled);
+            link.n_filled += dp.length;
+            if (this.getMetadata("debug")) {
+              console.log(link.name + " " + sp.length + " " + dp.length + " " + link.n_filled + "/" + link.array.length);
+            }
+          }
+          else {
+            /* no need to inflate data. */
+            dp = this.getArray(link.type, length, offset);
+            link.array.set(dp, link.n_filled);
+            link.n_filled += dp.length;
+          }
+        }
+      } else {
+        for (i = 0; i < bt.entries_used; i += 1) {
+          this.seek(bt.keys[i].child_address);
+          this.hdf5V1BtreeNode(link);
+        }
+      }
+    }
+    return bt;
+  }
+
+
+  /**
+  * [PRIVATE]
+  */
+  hdf5GroupSymbolTable(lh, link) {
+    if (!this.checkSignature("SNOD")) {
+      throw new Error('Bad or missing SNOD signature');
+    }
+    var ver = this.getU8();
+    this.skip(1);
+    var n_sym = this.getU16();
+    if (this.getMetadata("debug")) {
+      console.log("this.hdf5GroupSymbolTable V" + ver + " #" + n_sym +
+                  " '" + link.name + "'");
+    }
+    var i;
+    var link_name_offset;
+    var ohdr_address;
+    var cache_type;
+    var child;
+    var spp;
+
+    for (i = 0; i < 2 * this._superblk.gln_k; i += 1) {
+      link_name_offset = this.getOffset();
+      ohdr_address = this.getOffset();
+      cache_type = this.getU32();
+      this.skip(20);
+
+      if (i < n_sym) {
+        child = this.createLink();
+        child.hdr_offset = ohdr_address;
+        if (lh) {
+          spp = this.tell();
+          /* The link name is a zero-terminated string
+           * starting at the link_name_off relative to
+           * the beginning of the data segment of the local
+           * heap.
+           */
+          this.seek(lh.lh_dseg_off + link_name_offset);
+          child.name = this.getString(lh.lh_dseg_len);
+          this.seek(spp);
+        }
+        if (this.getMetadata("debug")) {
+          console.log("    " + i + " O " + link_name_offset + " A " +
+                      ohdr_address + " T " + cache_type + " '" +
+                      child.name + "'");
+        }
+        link.children.push(child);
+      }
+    }
+  }
+
+
+  /**
+  * [PRIVATE]
+  *
+  * Read a v1 local heap header. These define relatively small
+  * regions used primarily for storing symbol names associated with
+  * a symbol table message.
+  */
+  hdf5LocalHeap() {
+    var lh = {};
+    if (!this.checkSignature("HEAP")) {
+      throw new Error('Bad or missing HEAP signature');
+    }
+    lh.lh_ver = this.getU8();
+    this.skip(3);
+    lh.lh_dseg_len = this.getLength();
+    lh.lh_flst_len = this.getLength();
+    lh.lh_dseg_off = this.getOffset();
+    if (this.getMetadata("debug")) {
+      console.log("LHEAP V" + lh.lh_ver + " " + lh.lh_dseg_len + " " +
+                  lh.lh_flst_len + " " + lh.lh_dseg_off);
+    }
+    return lh;
+  }
+
+
+  /**
+  * [PRIVATE]
+  *
+  * Process a "dataspace" message. Dataspaces define the
+  * dimensionality of a dataset or attribute. They define the
+  * number of dimensions (rank) and the current length of each
+  * dimension. It is possible to specify a "maximum" length that is
+  * greater than or equal to the current length, but MINC doesn't
+  * rely on that feature so these values are ignored.  Finally it
+  * is also possible to specify a "permutation index" that alters
+  * storage order of the dataset, but again, MINC doesn't rely on
+  * this feature, so the values are ignored.
+  */
+  hdf5MsgDataspace(sz, link) {
+    var cb;
+    var ver = this.getU8();
+    var n_dim = this.getU8();
+    var flag = this.getU8();
+    if (ver <= 1) {
+      this.skip(5);
+    } else {
+      this.skip(1);
+    }
+
+    var n_items = 1;
+    var dlen = [];
+    var i;
+    for (i = 0; i < n_dim; i += 1) {
+      dlen[i] = this.getLength();
+      n_items *= dlen[i];
+    }
+
+    cb = (n_dim * this._superblk.lensz) + ((ver <= 1) ? 8 : 4);
+
+    var dmax = [];
+    if ((flag & 1) !== 0) {
+      cb += n_dim * this._superblk.lensz;
+      for (i = 0; i < n_dim; i += 1) {
+        dmax[i] = this.getLength();
+      }
+    }
+
+    var dind = [];
+    if ((flag & 2) !== 0) {
+      cb += n_dim * this._superblk.lensz;
+      for (i = 0; i < n_dim; i += 1) {
+        dind[i] = this.getLength();
+      }
+    }
+    var msg = "this.hdf5MsgDataspace V" + ver + " N" + n_dim + " F" + flag;
+    if (this.getMetadata("debug")) {
+      if (n_dim !== 0) {
+        msg += "[" + dlen.join(', ') + "]";
+      }
+      console.log(msg);
+    }
+    if (cb < sz) {
+      this.skip(sz - cb);
+    }
+    if (link) {
+      link.dims = dlen;
+    }
+    return n_items;
+  }
+
+
+  /**
+  * [PRIVATE]
+  *
+  *
+  * link info messages may contain a fractal heap address where we
+  * can find additional link messages for this object. This
+  * happens, for example, when there are lots of links in a
+  * particular group.
+  */
+  hdf5MsgLinkInfo(link) {
+    var that = this;
+
+    var ver = this.getU8();
+    var flags = this.getU8();
+    if ((flags & 1) !== 0) {
+      this.getU64();          // max. creation index (IGNORE).
+    }
+    var fh_address = this.getOffset(); // fractal heap address
+    var bt_address = this.getOffset(); // v2 btree for name index
+    if ((flags & 2) !== 0) {
+      this.getOffset();       // creation order index (IGNORE).
+    }
+    if (this.getMetadata("debug")) {
+      console.log("this.hdf5MsgLinkInfo V" + ver + " F" + flags +
+                  " FH " + fh_address + " BT " + bt_address);
+    }
+    var spp = this.tell();
+    if (fh_address < this._superblk.eof_addr) {
+      this.seek(fh_address);
+      /* If there is a valid fractal heap address in the link info message, that
+       * means the fractal heap is a collection of link messages. We can ignore
+       * the btree address because we can get the names from the link messages.
+       */
+      var fh = this.hdf5FractalHeapHeader();
+      var n_msg = 0;
+      this.hdf5FractalHeapEnumerate( fh, function(row, address, block_offset, block_length) {
+        var end_address = address + block_length;
+        while (n_msg < fh.heap_nobj && that.tell() < end_address) {
+          that.hdf5MsgLink(link);
+          n_msg += 1;
+        }
+        return true;          // continue with enumeration.
+      });
+    }
+    this.seek(spp);
+  }
+
+
+  /**
+  * [PRIVATE]
+  */
+  dt_class_name(cls) {
+    var names = [
+      "Fixed-Point", "Floating-Point", "Time", "String",
+      "BitField", "Opaque", "Compound", "Reference",
+      "Enumerated", "Variable-Length", "Array"
+    ];
+
+    if (cls < names.length) {
+      return names[cls];
+    }
+    throw new Error('Unknown datatype class: ' + cls);
+  }
+
+
+  /**
+  * [PRIVATE]
+  *
+  * Process a "datatype" message. These messages specify the data
+  * type of a single element within a dataset or attribute. Data
+  * types are extremely flexible, HDF5 supports a range of options
+  * for bit widths and organization atomic types. We support only
+  * fixed, float, and string atomic types, and those only for
+  * certain restricted (but common) cases.  At this point we
+  * provide no support for more exotic types such as bit field,
+  * enumerated, array, opaque, compound, time, reference,
+  * variable-length, etc.
+  *
+  * TODO: should support enumerated types, possibly a few others.
+  */
+  hdf5MsgDatatype(sz) {
+    var type = {};
+    var cb = 8;
+    var msg = "";
+    var bit_offs;
+    var bit_prec;
+    var exp_loc;
+    var exp_sz;
+    var mnt_loc;
+    var mnt_sz;
+    var exp_bias;
+
+    var cv = this.getU8();
+    var ver = cv >> 4;
+    var cls = cv & 15;
+    var bf = [];
+    var i;
+    for (i = 0; i < 3; i += 1) {
+      bf[i] = this.getU8();
+    }
+    var dt_size = this.getU32();
+
+    if (this.getMetadata("debug")) {
+      console.log("this.hdf5MsgDatatype V" + ver + " C" + cls +
+                  " " + this.dt_class_name(cls) +
+                  " " + bf[0] + "." + bf[1] + "." + bf[2] +
+                  " " + dt_size);
+    }
+
+    switch (cls) {
+    case 0:      /* Fixed (integer): bit 0 for byte order, bit 3 for signed */
+      bit_offs = this.getU16();
+      bit_prec = this.getU16();
+      switch (dt_size) {
+      case 4:
+        type.typ_type = (bf[0] & 8) ? this._type_enum.INT32 : this._type_enum.UINT32;
+        break;
+      case 2:
+        type.typ_type = (bf[0] & 8) ? this._type_enum.INT16 : this._type_enum.UINT16;
+        break;
+      case 1:
+        type.typ_type = (bf[0] & 8) ? this._type_enum.INT8 : this._type_enum.UINT8;
+        break;
+      default:
+        throw new Error('Unknown type size ' + dt_size);
+      }
+      type.typ_length = dt_size;
+      cb += 4;
+      if (this.getMetadata("debug")) {
+        console.log('  (' + bit_offs + ' ' + bit_prec + ')');
+      }
+      break;
+    case 1:                /* Float: uses bits 0,6 for byte order */
+      msg = "";
+      if (this.getMetadata("debug")) {
+        switch (bf[0] & 0x41) {
+        case 0:
+          msg += "LE ";
+          break;
+        case 1:
+          msg += "BE ";
+          break;
+        case 0x41:
+          msg += "VX ";
+          break;
+        default:
+          throw new Error('Reserved fp byte order: ' + bf[0]);
+        }
+      }
+      bit_offs = this.getU16();
+      bit_prec = this.getU16();
+      exp_loc = this.getU8();
+      exp_sz = this.getU8();
+      mnt_loc = this.getU8();
+      mnt_sz = this.getU8();
+      exp_bias = this.getU32();
+      if (this.getMetadata("debug")) {
+        msg += (bit_offs + " " + bit_prec + " " + exp_loc + " " + exp_sz +
+                " " + mnt_loc + " " + mnt_sz + " " + exp_bias);
+      }
+      /* See if it's one of the formats we recognize.
+         IEEE 64-bit or IEEE 32-bit are the only two we handle.
+      */
+      if (bit_prec === 64 && bit_offs === 0 &&
+          exp_loc === 52 && exp_sz === 11 &&
+          mnt_loc === 0 && mnt_sz === 52 &&
+          exp_bias === 1023 && dt_size === 8) {
+        type.typ_type = this._type_enum.DBL;
+      } else if (bit_prec === 32 && bit_offs === 0 &&
+                 exp_loc === 23 && exp_sz === 8 &&
+                 mnt_loc === 0 && mnt_sz === 23 &&
+                 exp_bias === 127 && dt_size === 4) {
+        type.typ_type = this._type_enum.FLT;
+      } else {
+        throw new Error("Unsupported floating-point type");
+      }
+      if (this.getMetadata("debug")) {
+        console.log(msg);
+      }
+      type.typ_length = dt_size;
+      cb += 12;
+      break;
+
+    case 3:                   // string
+      /* bits 0-3 = 0: null terminate, 1: null pad, 2: space pad */
+      /* bits 4-7 = 0: ASCII, 1: UTF-8 */
+      type.typ_type = this._type_enum.STR;
+      type.typ_length = dt_size;
+      break;
+
+    default:
+      throw new Error('Unimplemented HDF5 data class ' + cls);
+    }
+    if (sz > cb) {
+      this.skip(sz - cb);
+    }
+    return type;
+  }
+
+
+  /**
+  * [PRIVATE]
+  *
+  * Process a "layout" message. These messages specify the location and organization
+  * of data in a dataset. The organization can be either compact, contiguous, or
+  * chunked. Compact data is stored in the message as a contiguous block. Contiguous
+  * data is stored elsewhere in the file in a single chunk. Chunked data is stored within
+  * a V1 Btree as a series of possibly filtered (e.g. compressed) chunks.
+  */
+  hdf5MsgLayout(link) {
+    var msg = "";
+
+    var ver = this.getU8();
+    var cls;
+    var n_dim;
+    var cdsz;
+    var dim = [];
+    var i;
+    var dtadr;
+    var dtsz;
+    var elsz;
+
+    var n_items = 1;
+    if (ver === 1 || ver === 2) {
+      n_dim = this.getU8();
+      cls = this.getU8();
+      this.skip(5);
+      if (this.getMetadata("debug")) {
+        msg += "this.hdf5MsgLayout V" + ver + " N" + n_dim + " C" + cls;
+      }
+      if (cls === 1 || cls === 2) { // contiguous or chunked
+        var addr = this.getOffset();
+        if (this.getMetadata("debug")) {
+          msg += " A" + addr;
+        }
+        link.data_offset = addr;
+      }
+
+      for (i = 0; i < n_dim; i += 1) {
+        dim[i] = this.getU32();
+        n_items *= dim[i];
+      }
+
+      if (this.getMetadata("debug")) {
+        msg += "[" + dim.join(', ') + "]";
+      }
+
+      if (cls === 2) {        // chunked
+        elsz = this.getU32();
+        link.chunk_size = n_items * elsz;
+        if (this.getMetadata("debug")) {
+          msg += " E" + elsz;
+        }
+      }
+      if (cls === 0) {        // compact
+        cdsz = this.getU32();
+        if (this.getMetadata("debug")) {
+          msg += "(" + cdsz + ")";
+        }
+        link.data_offset = this.tell();
+        link.data_length = cdsz;
+      } else if (cls === 1) {
+        link.data_length = n_items;
+      }
+    } else if (ver === 3) {
+      cls = this.getU8();
+      msg = "this.hdf5MsgLayout V" + ver + " C" + cls;
+
+      if (cls === 0) {
+        cdsz = this.getU16();
+        if (this.getMetadata("debug")) {
+          msg += "(" + cdsz + ")";
+        }
+        link.data_offset = this.tell();
+        link.data_length = cdsz;
+      } else if (cls === 1) {
+        dtadr = this.getOffset();
+        dtsz = this.getLength();
+        if (this.getMetadata("debug")) {
+          msg += "(" + dtadr + ", " + dtsz + ")";
+        }
+        link.data_offset = dtadr;
+        link.data_length = dtsz;
+      } else if (cls === 2) {
+        n_dim = this.getU8();
+        dtadr = this.getOffset();
+        link.data_offset = dtadr;
+        link.chunk_size = 1;
+        for (i = 0; i < n_dim - 1; i += 1) {
+          dim[i] = this.getU32();
+          n_items *= dim[i];
+        }
+        if (this.getMetadata("debug")) {
+          msg += "(N" + n_dim + ", A" + dtadr + " [" + dim.join(',') + "]";
+        }
+        elsz = this.getU32();
+        link.chunk_size = n_items * elsz;
+        if (this.getMetadata("debug")) {
+          msg += " E" + elsz;
+        }
+      }
+    } else {
+      throw new Error("Illegal layout version " + ver);
+    }
+    if (this.getMetadata("debug")) {
+      console.log(msg);
+    }
+  }
+
+
+  /**
+  * [PRIVATE]
+  *
+  * Read a "filter pipeline" message. At the moment we _only_ handle
+  * deflate/inflate. Anything else will cause us to throw an exception.
+  */
+  hdf5MsgPipeline(link) {
+    var ver = this.getU8();
+    var nflt = this.getU8();
+
+    var msg = "this.hdf5MsgPipeline V" + ver + " N" + nflt;
+    if (ver === 1) {
+      this.skip(6);
+    }
+
+    if (this.getMetadata("debug")) {
+      console.log(msg);
+    }
+
+    var i;
+    var fiv;
+    var nlen;
+    var flags;
+    var ncdv;
+    for (i = 0; i < nflt; i += 1) {
+      fiv = this.getU16();
+      if (fiv !== 1) {             /* deflate */
+        throw new Error("Unimplemented HDF5 filter " + fiv);
+      }
+      else {
+        if (typeof index$1 !== 'object') {
+          throw new Error('Need pako to inflate data.');
+        }
+        link.inflate = true;
+      }
+      if (ver === 1 || fiv > 256) {
+        nlen = this.getU16();
+      } else {
+        nlen = 0;
+      }
+
+      flags = this.getU16();
+      ncdv = this.getU16();
+      if ((ncdv & 1) !== 0) {
+        ncdv += 1;
+      }
+      if (nlen !== 0) {
+        this.skip(nlen);     // ignore name.
+      }
+
+      this.skip(ncdv * 4);
+
+      if (this.getMetadata("debug")) {
+        console.log("  " + i + " ID" + fiv + " F" + flags + " " + ncdv);
+      }
+    }
+  }
+
+
+  /**
+  * [PRIVATE]
+  *
+  * Process an "attribute" message. This actually defines an attribute that is
+  * to be associated with a group or dataset (what I generally call a "link"
+  * in this code. Attributes include a name, a datatype, and a dataspace, followed
+  * by the actual data.
+  */
+  hdf5MsgAttribute(sz, link) {
+    var ver = this.getU8();
+    var flags = this.getU8();
+    var nm_len = this.getU16();
+    var dt_len = this.getU16();
+    var ds_len = this.getU16();
+    var msg = "this.hdf5MsgAttribute V" + ver + " F" + flags + " " + sz + ": ";
+
+    if ((flags & 3) !== 0) {
+      throw new Error('Shared dataspaces and datatypes are not supported.');
+    }
+
+    if (ver === 3) {
+      var cset = this.getU8();
+      if (this.getMetadata("debug")) {
+        msg += (cset === 0) ? "ASCII" : "UTF-8";
+      }
+    }
+    if (this.getMetadata("debug")) {
+      msg += "(" + nm_len + " " + dt_len + " " + ds_len + ")";
+    }
+    if (ver < 3) {
+      nm_len = Math.floor((nm_len + 7) / 8) * 8;
+      dt_len = Math.floor((dt_len + 7) / 8) * 8;
+      ds_len = Math.floor((ds_len + 7) / 8) * 8;
+
+      if (this.getMetadata("debug")) {
+        msg += "/(" + nm_len + " " + dt_len + " " + ds_len + ")";
+      }
+    }
+
+    var att_name = this.getString(nm_len);
+    if (this.getMetadata("debug")) {
+      msg += " Name: " + att_name;
+      console.log(msg);
+    }
+    var val_type = this.hdf5MsgDatatype(dt_len);
+    var n_items = this.hdf5MsgDataspace(ds_len);
+    var val_len = 0;
+    if (sz > 0) {
+      if (ver < 3) {
+        val_len = sz - (8 + nm_len + dt_len + ds_len);
+      } else {
+        val_len = sz - (9 + nm_len + dt_len + ds_len);
+      }
+    } else {
+      val_len = val_type.typ_length * n_items;
+    }
+    if (this.getMetadata("debug")) {
+      console.log("  attribute data size " + val_len + " " + this.tell());
+    }
+    var att_value;
+    if (val_type.typ_type === this._type_enum.STR) {
+      att_value = this.getString(val_len);
+    } else {
+      att_value = this.getArray(val_type.typ_type, val_len);
+    }
+    link.attributes[att_name] = att_value;
+  }
+
+
+  /**
+  * [PRIVATE]
+  *
+  * Process a "group info" message. We don't actually do anything with these.
+  */
+  hdf5MsgGroupInfo() {
+    var n_ent = 4;
+    var n_lnl = 8;
+    var ver = this.getU8();
+    var flags = this.getU8();
+    if ((flags & 1) !== 0) {
+      this.getU16();          // link phase change: max compact value (IGNORE)
+      this.getU16();          // link phase cange: max dense value (IGNORE)
+    }
+    if ((flags & 2) !== 0) {
+      n_ent = this.getU16();
+      n_lnl = this.getU16();
+    }
+    if (this.getMetadata("debug")) {
+      console.log("this.hdf5MsgGroupInfo V" + ver + " F" + flags + " ENT " + n_ent + " LNL " + n_lnl);
+    }
+  }
+
+
+  /**
+  * [PRIVATE]
+  *
+  * Process a "link" message. This specifies the name and header location of either a
+  * group or a dataset within the current group. It is probably also used to implement
+  * internal links but we don't really support that.
+  */
+  hdf5MsgLink(link) {
+    var ver = this.getU8();
+    var ltype = 0;
+    if (ver !== 1) {
+      throw new Error("Bad link message version " + ver);
+    }
+    var flags = this.getU8();
+    if ((flags & 8) !== 0) {
+      ltype = this.getU8();
+    }
+    if ((flags & 4) !== 0) {
+      this.getU64();               // creation order (IGNORE)
+    }
+    if ((flags & 16) !== 0) {
+      this.getU8();                // link name character set (IGNORE)
+    }
+    var cb = 1 << (flags & 3);
+    var lnsz = this.getUXX(cb);
+
+    var child = this.createLink();
+
+    child.name = this.getString(lnsz);
+
+    if ((flags & 8) === 0) {
+      child.hdr_offset = this.getOffset();
+    }
+
+    if (this.getMetadata("debug")) {
+      console.log("this.hdf5MsgLink V" + ver + " F" + flags + " T" + ltype +
+                  " NM " + child.name + " OF " + child.hdr_offset);
+    }
+    link.children.push(child);
+  }
+
+
+  /**
+  * [PRIVATE]
+  *
+  * The fractal heap direct block contains:
+  * 1. A signature.
+  * 2. a byte version.
+  * 3. an offset pointing to the header (for integrity checking).
+  * 4. A variably-sized block offset that gives (_I think_) the mininum block offset
+  * associated with this block.
+  * 5. Variably-sized data. Block size varies with row number in a slightly tricky
+  * fashion. Each "row" consists of "table_width" blocks. The first two rows, row 0 and 1,
+  * have blocks of the "starting block size". Row 2-N have blocks of size 2^(row-1) times
+  * the starting block size.
+  */
+  hdf5FractalHeapDirectBlock(fh, row, address, callback) {
+    if (!this.checkSignature("FHDB")) {
+      throw new Error("Bad or missing FHDB signature");
+    }
+    var ver = this.getU8();
+    if (ver !== 0) {
+      throw new Error('Bad FHDB version: ' + ver);
+    }
+    this.getOffset();              // heap header address (IGNORE)
+    var cb = Math.ceil(fh.max_heapsz / 8.0);
+    var block_offset = this.getUXX(cb); // block offset
+    if ((fh.flags & 2) !== 0) {
+      this.getU32();               // checksum (IGNORE)
+    }
+
+    if (this.getMetadata("debug")) {
+      console.log("FHDB V:" + ver + " R:" + row + " O:" + block_offset + " A:" + address);
+    }
+    var header_length = 5 + this._superblk.offsz + cb;
+    if ((fh.flags & 2) !== 0) {
+      header_length += 4;
+    }
+    var block_length;
+    if (row <= 1) {
+      block_length = fh.start_blksz;
+    }
+    else {
+      block_length = Math.pow(2, row - 1) * fh.start_blksz;
+    }
+    if (callback) {
+      return callback(row, address, block_offset, block_length);
+    }
+    else {
+      return true;            // continue enumeration.
+    }
+  }
+
+
+  /**
+  * [PRIVATE]
+  *
+  * The fractal heap indirect block contains:
+  * 1. A signature.
+  * 2. a byte version
+  * 3. an offset pointing to the header (for integrity checking).
+  * 4. a variably-sized block offset that gives (_I think_) the mininum block offset
+  * associated with children of this block.
+  * 5. pointers to K direct blocks
+  * 6. pointers to N indirect blocks
+  * 7. A checksum. This code completely ignores checksums.
+  * See calculations of K and N in this.hdf5FractalHeapHeader(). Note that there can also
+  * be additional information in the header if "filtered" direct blocks are used. I have
+  * made no attempt to support this.
+  */
+  hdf5FractalHeapIndirectBlock(fh, callback) {
+    if (!this.checkSignature("FHIB")) {
+      throw new Error("Bad or missing FHIB signature");
+    }
+    var ver = this.getU8();
+    if (ver !== 0) {
+      throw new Error('Bad FHIB version: ' + ver);
+    }
+    this.getOffset();              // heap header address (IGNORE)
+    var cb = Math.ceil(fh.max_heapsz / 8.0);
+    var block_offset = this.getUXX(cb); // block offset
+
+    if (this.getMetadata("debug")) {
+      console.log("FHIB V:" + ver + " O:" + block_offset);
+    }
+    var i;
+    var address;
+    var db_addrs = [];
+    for (i = 0; i < fh.K; i += 1) {
+      address = this.getOffset();
+      if (address < this._superblk.eof_addr) {
+        if (this.getMetadata("debug")) {
+          console.log("direct block at " + address);
+        }
+        db_addrs.push(address);
+      }
+    }
+
+    var ib_addrs = [];
+    for (i = 0; i < fh.N; i += 1) {
+      address = this.getOffset();
+      if (address < this._superblk.eof_addr) {
+        if (this.getMetadata("debug")) {
+          console.log("indirect block at " + address);
+        }
+        ib_addrs.push(address);
+      }
+    }
+    this.getU32();                 // checksum (IGNORE)
+
+    /* Finished reading the indirect block, now go read its children.
+     */
+    for (i = 0; i < db_addrs.length; i++) {
+      this.seek(db_addrs[i]);
+      /* TODO: check row calculation!
+       */
+      if (!this.hdf5FractalHeapDirectBlock(fh, i / fh.table_width, db_addrs[i], callback)) {
+        return false;
+      }
+    }
+    for (i = 0; i < ib_addrs.length; i++) {
+      this.seek(ib_addrs[i]);
+      if (!this.hdf5FractalHeapIndirectBlock(fh, callback)) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+
+  /**
+  * [PRIVATE]
+  *
+  * enumerate over all of the direct blocks in the fractal heap.
+  */
+  hdf5FractalHeapEnumerate(fh, callback) {
+    this.seek(fh.root_addr);
+    if (fh.K === 0) {
+      this.hdf5FractalHeapDirectBlock(fh, 0, fh.root_addr, callback);
+    }
+    else {
+      this.hdf5FractalHeapIndirectBlock(fh, callback);
+    }
+  }
+
+
+  /**
+  * [PRIVATE]
+  */
+  hdf5FractalHeapOffset(fh, offset) {
+    var location;
+    this.hdf5FractalHeapEnumerate(fh, function(row, address, block_offset, block_length) {
+      if (offset >= block_offset && offset < block_offset + block_length) {
+        location = address + (offset - block_offset);
+        return false;         // stop enumeration.
+      }
+      return true;            // continue enumeration.
+    });
+    return location;
+  }
+
+
+  /**
+  * [PRIVATE]
+  *
+  * Attribute info messages contain pointers to a fractal heap and a v2 btree.
+  * If these pointers are valid, we must follow them to find more attributes.
+  * The attributes are indexed by records in the "type 8" btree. These btree
+  * records
+  */
+  hdf5MsgAttrInfo(link) {
+    var ver = this.getU8();
+    if (ver !== 0) {
+      throw new Error('Bad attribute information message version: ' + ver);
+    }
+
+    var flags = this.getU8();
+
+    if ((flags & 1) !== 0) {
+      this.getU16();          // maximum creation index (IGNORE)
+    }
+    var fh_addr = this.getOffset();
+    var bt_addr = this.getOffset();
+    if ((flags & 2) !== 0) {
+      this.getOffset();       // attribute creation order (IGNORE)
+    }
+
+    if (this.getMetadata("debug")) {
+      console.log("this.hdf5MsgAttrInfo V" + ver + " F" + flags + " HP " + fh_addr +
+                  " AN " + bt_addr);
+    }
+
+    var spp = this.tell();
+    var fh;                   // fractal heap header.
+    if (fh_addr < this._superblk.eof_addr) {
+      this.seek(fh_addr);
+      fh = this.hdf5FractalHeapHeader();
+    }
+    if (bt_addr < this._superblk.eof_addr) {
+      this.seek(bt_addr);
+      var bh = this.hdf5V2BtreeHeader();
+      if (bh.type !== 8) {
+        throw new Error("Can only handle indexed attributes.");
+      }
+      this.seek(bh.root_addr);
+      if (bh.depth > 0) {
+        this.hdf5V2BtreeInternalNode(fh, bh.root_nrec, bh.depth, link);
+      }
+      else {
+        this.hdf5V2BtreeLeafNode(fh, bh.root_nrec, link);
+      }
+    }
+    this.seek(spp);
+  }
+
+
+  /**
+  * [PRIVATE]
+  *
+  * Process a single message, given a message header. Assumes that
+  * the data view offset is pointing to the remainder of the
+  * message.
+  *
+  * V1 and V2 files use different sets of messages to accomplish
+  * similar things. For example, V1 files tend to use "symbol
+  * table" messages to describe links within a group, whereas V2
+  * files use "link" and "linkinfo" messages.
+  */
+  hdf5ProcessMessage(msg, link) {
+    var cq_new = {};
+    var val_type;
+
+    switch (msg.hm_type) {
+    case 1:
+      this.hdf5MsgDataspace(msg.hm_size, link);
+      break;
+    case 2:
+      this.hdf5MsgLinkInfo(link);
+      break;
+    case 3:
+      val_type = this.hdf5MsgDatatype(msg.hm_size);
+      if (link) {
+        link.type = val_type.typ_type;
+      }
+      break;
+    case 6:
+      this.hdf5MsgLink(link);
+      break;
+    case 8:
+      this.hdf5MsgLayout(link);
+      break;
+    case 10:
+      this.hdf5MsgGroupInfo();
+      break;
+    case 11:
+      this.hdf5MsgPipeline(link);
+      break;
+    case 12:
+      this.hdf5MsgAttribute(msg.hm_size, link);
+      break;
+    case 16:
+      /* Process an object header continuation message. These
+       * basically just say this header continues with a new segment
+       * with a given location and length. They can come before the
+       * end of the current message segment, and multiple
+       * continuation messages can occur in any particular segment.
+       * This means we have to enqueue them and shift them off the
+       * queue when we finish processing the current segment.
+       */
+      cq_new.cq_off = this.getOffset();
+      cq_new.cq_len = this.getLength();
+      this._continuation_queue.push(cq_new);
+      if (this.getMetadata("debug")) {
+        console.log("hdf5MsgObjHdrContinue " + cq_new.cq_off + " " + cq_new.cq_len);
+      }
+      break;
+    case 17: // SymbolTable
+      link.sym_btree = this.getOffset();
+      link.sym_lheap = this.getOffset();
+      if (this.getMetadata("debug")) {
+        console.log("hdf5MsgSymbolTable " + link.sym_btree + " " + link.sym_lheap);
+      }
+      break;
+    case 21:
+      this.hdf5MsgAttrInfo(link);
+      break;
+    case 0:
+    case 4:
+    case 5:
+    case 7:
+    case 18:
+    case 19:
+    case 20:
+    case 22:
+    case 24:
+      this.skip(msg.hm_size);
+      break;
+    default:
+      throw new Error('Unknown message type: ' + msg.hm_type);
+    }
+  }
+
+
+  /**
+  * [PRIVATE]
+  *
+  * Read a V2 object header. Object headers contain a series of messages that define
+  * an HDF5 object, primarily a group or a dataset. V2 object headers, and V2 objects
+  * generally, are much less concerned about alignment than V1 objects.
+  */
+  hdf5V2ObjectHeader(link) {
+    if (!this.checkSignature("OHDR")) {
+      throw new Error('Bad or missing OHDR signature');
+    }
+
+    var that = this;
+    var ver = this.getU8();
+    var flags = this.getU8();
+
+    if ((flags & 0x20) !== 0) {
+      this.getU32();          // access time (IGNORE)
+      this.getU32();          // modify time (IGNORE)
+      this.getU32();          // change time (IGNORE)
+      this.getU32();          // birth time (IGNORE)
+    }
+
+    if ((flags & 0x10) !== 0) {
+      this.getU16(); // maximum number of compact attributes (IGNORE)
+      this.getU16(); // maximum number of dense attributes (IGNORE)
+    }
+
+    var cb = 1 << (flags & 3);
+    var ck0_size = this.getUXX(cb);
+
+    var msg_num = 0;
+    var msg_offs = 0;
+    var msg_bytes = ck0_size;
+
+    if (this.getMetadata("debug")) {
+      console.log("this.hdf5V2ObjectHeader V" + ver + " F" + flags + " HS" + ck0_size);
+    }
+
+    var hmsg;
+    var cq_head;
+    var spp;
+
+    while (true) {
+      while (msg_bytes - msg_offs >= 8) {
+        hmsg = {};
+        hmsg.hm_type = this.getU8();
+        hmsg.hm_size = this.getU16();
+        hmsg.hm_flags = this.getU8();
+        if (this.getMetadata("debug")) {
+          console.log("  msg" + msg_num + " F" + hmsg.hm_flags + " T " +
+                      hmsg.hm_type + " S " + hmsg.hm_size +
+                      " (" + msg_offs + "/" + msg_bytes + ") " +
+                      this.hdf5GetMsgName(hmsg.hm_type));
+        }
+        if ((flags & 0x04) !== 0) {
+          hmsg.hm_corder = this.getU16();
+        }
+        spp = this.tell();
+        this.hdf5ProcessMessage(hmsg, link);
+        this.seek(spp + hmsg.hm_size); // this.skip past message.
+
+        msg_offs += hmsg.hm_size + 4;
+
+        msg_num += 1;
+      }
+
+      if ((msg_bytes - msg_offs) > 4) {
+        this.skip(msg_bytes - (msg_offs + 4));
+      }
+
+      this.getU32();          // checksum (IGNORE)
+
+      if (this._continuation_queue.length !== 0) {
+        cq_head = this._continuation_queue.shift();
+        this.seek(cq_head.cq_off);
+        msg_bytes = cq_head.cq_len - 4;
+        msg_offs = 0;
+        if (this.getMetadata("debug")) {
+          console.log('continuing with ' + cq_head.cq_len + ' bytes at ' + this.tell());
+        }
+        if (!this.checkSignature("OCHK")) {
+          throw new Error("Bad v2 object continuation");
+        }
+      } else {
+        break;
+      }
+    }
+
+    link.children.forEach(function (child, link_num) {
+      that.seek(child.hdr_offset);
+      if (that.getMetadata("debug")) {
+        console.log(link_num + " " + child.hdr_offset + " " + child.name);
+      }
+      if (that.checkSignature("OHDR")) {
+        that.seek(child.hdr_offset);
+        that.hdf5V2ObjectHeader(child);
+      }
+      else {
+        that.seek(child.hdr_offset);
+        that.hdf5V1ObjectHeader(child);
+      }
+    });
+  }
+
+
+  /**
+  * [PRIVATE]
+  */
+  loadData(link) {
+    var that = this;
+
+    if (link.chunk_size !== 0) {
+      this.seek(link.data_offset);
+
+      var n_bytes = 1;
+      var i;
+      for (i = 0; i < link.dims.length; i += 1) {
+        n_bytes *= link.dims[i];
+      }
+      n_bytes *= this.typeSize(link.type);
+      if (this.getMetadata("debug")) {
+        console.log('allocating ' + n_bytes + ' bytes');
+      }
+      var ab = new ArrayBuffer(n_bytes);
+      link.n_filled = 0;
+      switch (link.type) {
+      case this._type_enum.INT8:
+        link.array = new Int8Array(ab);
+        break;
+      case this._type_enum.UINT8:
+        link.array = new Uint8Array(ab);
+        break;
+      case this._type_enum.INT16:
+        link.array = new Int16Array(ab);
+        break;
+      case this._type_enum.UINT16:
+        link.array = new Uint16Array(ab);
+        break;
+      case this._type_enum.INT32:
+        link.array = new Int32Array(ab);
+        break;
+      case this._type_enum.UINT32:
+        link.array = new Uint32Array(ab);
+        break;
+      case this._type_enum.FLT:
+        link.array = new Float32Array(ab);
+        break;
+      case this._type_enum.DBL:
+        link.array = new Float64Array(ab);
+        break;
+      default:
+        throw new Error('Illegal type: ' + link.type);
+      }
+      this.hdf5V1BtreeNode(link);
+    } else {
+      if (link.data_offset > 0 && link.data_offset < this._superblk.eof_addr) {
+        if (this.getMetadata("debug")) {
+          console.log('loading ' + link.data_length + ' bytes from ' + link.data_offset + ' to ' + link.name);
+        }
+        link.array = this.getArray(link.type, link.data_length,
+                                   link.data_offset);
+      } else {
+        if (this.getMetadata("debug")) {
+          console.log('data not present for /' + link.name + '/');
+        }
+      }
+    }
+
+    link.children.forEach(function (child) {
+      that.loadData(child);
+    });
+  }
+
+
+  /**
+  * [PRIVATE]
+  *
+  * Read a v1 object header. Object headers contain a series of
+  * messages that define an HDF5 object, primarily a group or a
+  * dataset. The v1 object header, like most of the v1 format, is
+  * very careful about alignment. Every message must be on an
+  * 8-byte alignment RELATIVE TO THE START OF THE HEADER. So if the
+  * header starts on an odd boundary, messages may start on odd
+  * boundaries as well. No, this doesn't make much sense.
+  */
+  hdf5V1ObjectHeader(link) {
+    var that = this;
+    var oh = {};
+    this.startAlignment();
+    oh.oh_ver = this.getU8();
+    this.skip(1);                // reserved
+    oh.oh_n_msgs = this.getU16();
+    oh.oh_ref_cnt = this.getU32();
+    oh.oh_hdr_sz = this.getU32();
+    if (oh.oh_ver !== 1) {
+      throw new Error("Bad v1 object header version: " + oh.oh_ver);
+    }
+    if (this.getMetadata("debug")) {
+      console.log("this.hdf5V1ObjectHeader V" + oh.oh_ver +
+                  " #M " + oh.oh_n_msgs +
+                  " RC " + oh.oh_ref_cnt +
+                  " HS " + oh.oh_hdr_sz);
+    }
+
+    var msg_bytes = oh.oh_hdr_sz;
+    var cq_head;
+    var msg_num;
+    var hmsg;
+    var spp;
+
+    for (msg_num = 0; msg_num < oh.oh_n_msgs; msg_num += 1) {
+      if (msg_bytes <= 8) {
+        if (this._continuation_queue.length !== 0) {
+          cq_head = this._continuation_queue.shift();
+          this.seek(cq_head.cq_off);
+          msg_bytes = cq_head.cq_len;
+          if (this.getMetadata("debug")) {
+            console.log('continuing with ' + msg_bytes + ' bytes at ' + this.tell());
+          }
+          this.startAlignment();
+        } else {
+          break;
+        }
+      }
+
+      this.checkAlignment();
+
+      hmsg = {};
+      hmsg.hm_type = this.getU16();
+      hmsg.hm_size = this.getU16();
+      hmsg.hm_flags = this.getU8();
+
+      if ((hmsg.hm_size % 8) !== 0) {
+        throw new Error('Size is not 8-byte aligned: ' + hmsg.hm_size);
+      }
+      this.skip(3);            // this.skip reserved
+      msg_bytes -= (8 + hmsg.hm_size);
+      if (this.getMetadata("debug")) {
+        console.log("  msg" + msg_num +
+                    " F " + hmsg.hm_flags +
+                    " T " + hmsg.hm_type +
+                    " S " + hmsg.hm_size +
+                    "(" + msg_bytes + ") " + this.hdf5GetMsgName(hmsg.hm_type));
+      }
+
+      spp = this.tell();
+      this.hdf5ProcessMessage(hmsg, link);
+      this.seek(spp + hmsg.hm_size); // this.skip whole message.
+    }
+
+    if (link.sym_btree !== 0 && link.sym_lheap !== 0) {
+      this.seek(link.sym_btree);
+      var bt = this.hdf5V1BtreeNode();
+      this.seek(link.sym_lheap);
+      var lh = this.hdf5LocalHeap();
+      var i;
+      for (i = 0; i < bt.entries_used; i += 1) {
+        this.seek(bt.keys[i].child_address);
+        if (this.checkSignature("SNOD")) {
+          this.seek(bt.keys[i].child_address);
+          this.hdf5GroupSymbolTable(lh, link);
+        } else {
+          this.seek(bt.keys[i].child_address);
+          this.hdf5V1ObjectHeader(link);
+        }
+      }
+
+      link.children.forEach(function (child) {
+        that.seek(child.hdr_offset);
+        that.hdf5V1ObjectHeader(child);
+      });
+    }
+  }
+
+
+//------------------------------------------------------------------------------
+//      FROM hdf5_tools.js
+
+  getTypeMatchMinc(typeEnumVal){
+    return this._type_matching[typeEnumVal - 1];
+  }
+
+
+
+  defined(x) {
+      return typeof x !== 'undefined';
+  }
+
+
+  typeName(x) {
+      if (! this.defined(x)) {
+          return "undefined";
+      }
+      return x.constructor.name;
+  }
+
+
+
+  typeSize(typ) {
+      if (typ >= this._type_enum.INT8 && typ < this.type_sizes.length) {
+          return this.type_sizes[typ];
+      }
+      throw new Error('Unknown type ' + typ);
+  }
+
+
+  typeIsFloat(typ) {
+      return (typ >= this._type_enum.FLT && typ <=this._type_enum.DBL);
+  }
+
+
+    /*
+     * The remaining code after this point is not truly HDF5 specific -
+     * it's mostly about converting the MINC file into the form
+     * BrainBrowser is able to use. Therefore it is used for both HDF5
+     * and NetCDF files.
+     */
+
+    /*
+     * Join does not seem to be defined on the typed arrays in
+     * javascript, so I've re-implemented it here, sadly.
+     */
+    join(array, string) {
+      var result = "";
+      if (array && array.length) {
+        var i;
+        for (i = 0; i < array.length - 1; i += 1) {
+          result += array[i];
+          result += string;
+        }
+        result += array[i];
+      }
+      return result;
+    }
+
+    /*
+     * Recursively print out the structure and contents of the file.
+     * Primarily useful for debugging.
+     */
+    printStructure(link, level) {
+      var that = this;
+
+      var i;
+      var msg = "";
+      for (i = 0; i < level * 2; i += 1) {
+        msg += " ";
+      }
+      msg += link.name + (link.children.length ? "/" : "");
+      if (link.type > 0) {
+        msg += ' ' + this.typeName(link.array);
+        if (link.dims.length) {
+          msg += '[' + link.dims.join(', ') + ']';
+        }
+        if (link.array) {
+          msg += ":" + link.array.length;
+        } else {
+          msg += " NULL";
+        }
+      }
+      console.log(msg);
+
+      Object.keys(link.attributes).forEach(function (name) {
+        var value = link.attributes[name];
+
+        msg = "";
+        for (i = 0; i < level * 2 + 1; i += 1) {
+          msg += " ";
+        }
+        msg += link.name + ':' + name + " " +
+          that.typeName(value) + "[" + value.length + "] ";
+        if (typeof value === "string") {
+          msg += JSON.stringify(value);
+        } else {
+          msg += "{" + that.join(value.slice(0, 16), ', ');
+          if (value.length > 16) {
+            msg += ", ...";
+          }
+          msg += "}";
+        }
+        console.log(msg);
+      });
+
+      link.children.forEach(function (child) {
+        that.printStructure(child, level + 1);
+      });
+    }
+
+    /* Find a dataset with a given name, by recursively searching through
+     * the links. Groups will have 'type' fields of -1, since they contain
+     * no data.
+     * TODO (maybe): Use associative array for children?
+     */
+    findDataset(link, name, level) {
+      var that = this;
+      var result;
+      if (link && link.name === name && link.type > 0) {
+        result = link;
+      } else {
+        link.children.find( function( child ) {
+          result = that.findDataset(child, name, level + 1);
+          return that.defined(result);
+        });
+      }
+      return result;
+    }
+
+    /* Find an attribute with a given name.
+     */
+    findAttribute(link, name, level) {
+      var that = this;
+      var result = link.attributes[name];
+      if (result)
+        return result;
+
+      link.children.find( function (child ) {
+        result = that.findAttribute( child, name, level + 1);
+        return that.defined(result);
+      });
+      return result;
+    }
+
+    /**
+     * @doc function
+     * @name hdf5.this.scaleVoxels
+     * @param {object} image The link object corresponding to the image data.
+     * @param {object} image_min The link object corresponding to the image-min
+     * data.
+     * @param {object} image_max The link object corresponding to the image-max
+     * data.
+     * @param {object} valid_range An array of exactly two items corresponding
+     * to the minimum and maximum valid _raw_ voxel values.
+     * @param {boolean} debug True if we should print debugging information.
+     * @returns A new ArrayBuffer containing the rescaled data.
+     * @description
+     * Convert the MINC data from voxel to real range. This returns a
+     * new buffer that contains the "real" voxel values. It does less
+     * work for floating-point volumes, since they don't need scaling.
+     *
+     * For debugging/testing purposes, also gathers basic voxel statistics,
+     * for comparison against mincstats.
+     */
+    scaleVoxels(image, image_min, image_max, valid_range, debug) {
+      /*
+      var new_abuf = new ArrayBuffer(image.array.length *
+                                     Float32Array.BYTES_PER_ELEMENT);
+      var new_data = new Float32Array(new_abuf);
+
+      */
+
+      // 1D array to store the voxel data,
+      // not initialized yet because it depends on the hdf5 type.
+      var new_abuf = null;
+      var new_data = null;
+
+      // we could simply use image.type, but written types are easier to read...
+      switch (this.getTypeMatchMinc(image.type)) {
+        case 'int8':
+          new_abuf = new ArrayBuffer(image.array.length * Int8Array.BYTES_PER_ELEMENT);
+          new_data = new Int8Array(new_abuf);
+          break;
+
+        case 'int16':
+          new_abuf = new ArrayBuffer(image.array.length * Int16Array.BYTES_PER_ELEMENT);
+          new_data = new Int16Array(new_abuf);
+          break;
+
+        case 'int32':
+          new_abuf = new ArrayBuffer(image.array.length * Int32Array.BYTES_PER_ELEMENT);
+          new_data = new Int32Array(new_abuf);
+          break;
+
+        case 'float32':
+          new_abuf = new ArrayBuffer(image.array.length * Float32Array.BYTES_PER_ELEMENT);
+          new_data = new Float32Array(new_abuf);
+          break;
+
+        case 'float64':
+          new_abuf = new ArrayBuffer(image.array.length * Float64Array.BYTES_PER_ELEMENT);
+          new_data = new Float64Array(new_abuf);
+          break;
+
+        case 'uint8':
+          new_abuf = new ArrayBuffer(image.array.length * Uint8Array.BYTES_PER_ELEMENT);
+          new_data = new Uint8Array(new_abuf);
+          break;
+
+        case 'uint16':
+          new_abuf = new ArrayBuffer(image.array.length * Uint16Array.BYTES_PER_ELEMENT);
+          new_data = new Uint16Array(new_abuf);
+          break;
+
+        case 'uint32':
+          new_abuf = new ArrayBuffer(image.array.length * Uint32Array.BYTES_PER_ELEMENT);
+          new_data = new Uint32Array(new_abuf);
+          break;
+
+        default:
+          var error_message = "Unsupported data type: " + header.datatype;
+          console.log({ message: error_message } );
+          //BrainBrowser.events.triggerEvent("error", { message: error_message } );
+          throw new Error(error_message);
+
+      }
+
+
+      var n_slice_dims = image.dims.length - image_min.dims.length;
+
+      if (n_slice_dims < 1) {
+        throw new Error("Too few slice dimensions: " + image.dims.length +
+                        " " + image_min.dims.length);
+      }
+      var n_slice_elements = 1;
+      var i;
+      for (i = image_min.dims.length; i < image.dims.length; i += 1) {
+        n_slice_elements *= image.dims[i];
+      }
+      if (debug) {
+        console.log(n_slice_elements + " voxels in slice.");
+      }
+      var s = 0;
+      var c = 0;
+      var x = -Number.MAX_VALUE;
+      var n = Number.MAX_VALUE;
+      var im = image.array;
+      var im_max = image_max.array;
+      var im_min = image_min.array;
+      if (debug) {
+        console.log("valid range is " + valid_range[0] + " to " + valid_range[1]);
+      }
+
+      var vrange;
+      var rrange;
+      var vmin = valid_range[0];
+      var rmin;
+      var j;
+      var v;
+      var is_float = this.typeIsFloat(image.type);
+      for (i = 0; i < image_min.array.length; i += 1) {
+        if (debug) {
+          console.log(i + " " + im_min[i] + " " + im_max[i] + " " +
+                      im[i * n_slice_elements]);
+        }
+        if (is_float) {
+          /* For floating-point volumes there is no scaling to be performed.
+           * We do scan the data and make sure voxels are within the valid
+           * range, and collect our statistics.
+           */
+          for (j = 0; j < n_slice_elements; j += 1) {
+            v = im[c];
+            if (v < valid_range[0] || v > valid_range[1]) {
+              new_data[c] = 0.0;
+            }
+            else {
+              new_data[c] = v;
+              s += v;
+              if (v > x) {
+                x = v;
+              }
+              if (v < n) {
+                n = v;
+              }
+            }
+            c += 1;
+          }
+        }
+        else {
+          /* For integer volumes we have to scale each slice according to image-min,
+           * image-max, and valid_range.
+           */
+          vrange = (valid_range[1] - valid_range[0]);
+          rrange = (im_max[i] - im_min[i]);
+          rmin = im_min[i];
+
+          /*
+          console.log(n_slice_elements);
+          console.log(vrange);
+          console.log(rrange);
+          console.log(rmin);
+          console.log("-----------------");
+          */
+
+
+          for (j = 0; j < n_slice_elements; j += 1) {
+
+            // v normalization to avoid "flickering".
+            // v is scaled to the range [0, im_max[i]]
+            // (possibly uint16 if the original per-slice min-max was not scaled up/down)
+            v = (im[c] - vmin) / vrange * rrange + rmin;
+
+            // we scale up/down to match the type of the target array
+            v = v / im_max[i] * valid_range[1];
+
+
+            new_data[c] = v;
+            s += v;
+            c += 1;
+            if (v > x) {
+              x = v;
+            }
+            if (v < n) {
+              n = v;
+            }
+
+          }
+
+        }
+      }
+
+      if (debug) {
+        console.log("Min: " + n);
+        console.log("Max: " + x);
+        console.log("Sum: " + s);
+        console.log("Mean: " + s / c);
+      }
+
+      return new_abuf;
+    }
+
+    /**
+     * @doc function
+     * @name hdf5.this.isRgbVolume
+     * @param {object} header The header object representing the structure
+     * of the MINC file.
+     * @param {object} image The typed array object used to represent the
+     * image data.
+     * @returns {boolean} True if this is an RGB volume.
+     * @description
+     * A MINC volume is an RGB volume if all three are true:
+     * 1. The voxel type is unsigned byte.
+     * 2. It has a vector_dimension in the last (fastest-varying) position.
+     * 3. The vector dimension has length 3.
+     */
+    isRgbVolume(header, image) {
+      var order = header.order;
+      return (image.array.constructor.name === 'Uint8Array' &&
+              order.length > 0 &&
+              order[order.length - 1] === "vector_dimension" &&
+              header.vector_dimension.space_length === 3);
+    }
+
+    /**
+     * @doc function
+     * @name hdf5.this.rgbVoxels
+     * @param {object} image The 'link' object created using createLink(),
+     * that corresponds to the image within the HDF5 or NetCDF file.
+     * @returns {object} A new ArrayBuffer that contains the original RGB
+     * data augmented with alpha values.
+     * @description
+     * This function copies the RGB voxels to the destination buffer.
+     * Essentially we just convert from 24 to 32 bits per voxel. This
+     * is another MINC-specific function.
+     */
+    rgbVoxels(image) {
+      var im = image.array;
+      var n = im.length;
+      var new_abuf = new ArrayBuffer(n / 3 * 4);
+      var new_byte = new Uint8Array(new_abuf);
+      var i, j = 0;
+      for (i = 0; i < n; i += 3) {
+        new_byte[j+0] = im[i+0];
+        new_byte[j+1] = im[i+1];
+        new_byte[j+2] = im[i+2];
+        new_byte[j+3] = 255;
+        j += 4;
+      }
+      return new_abuf;
+    }
+
+
+  //----------------------------------------------------------------------------
+  // FROM minc_reader.js
+  parseHeader(header_text) {
+    var header;
+    var error_message;
+
+    try{
+      header = JSON.parse(header_text);
+    } catch(error) {
+      error_message = "server did not respond with valid JSON" + "\n" +
+      "Response was: \n" + header_text;
+
+      console.log( { message: error_message });
+
+      //  BrainBrowser.events.triggerEvent("error", { message: error_message });
+      throw new Error(error_message);
+    }
+
+    if(header.order.length === 4) {
+      header.order = header.order.slice(1);
+    }
+
+    header.datatype = header.datatype || "uint8";
+
+    header.xspace.space_length = parseFloat(header.xspace.space_length);
+    header.yspace.space_length = parseFloat(header.yspace.space_length);
+    header.zspace.space_length = parseFloat(header.zspace.space_length);
+
+    header.xspace.start = parseFloat(header.xspace.start);
+    header.yspace.start = parseFloat(header.yspace.start);
+    header.zspace.start = parseFloat(header.zspace.start);
+
+    header.xspace.step = parseFloat(header.xspace.step);
+    header.yspace.step = parseFloat(header.yspace.step);
+    header.zspace.step = parseFloat(header.zspace.step);
+
+    header.xspace.direction_cosines = header.xspace.direction_cosines || [1, 0, 0];
+    header.yspace.direction_cosines = header.yspace.direction_cosines || [0, 1, 0];
+    header.zspace.direction_cosines = header.zspace.direction_cosines || [0, 0, 1];
+
+    header.xspace.direction_cosines = header.xspace.direction_cosines.map(parseFloat);
+    header.yspace.direction_cosines = header.yspace.direction_cosines.map(parseFloat);
+    header.zspace.direction_cosines = header.zspace.direction_cosines.map(parseFloat);
+
+    /* Incrementation offsets for each dimension of the volume.
+    * Note that this somewhat format-specific, so it does not
+    * belong in the generic "createVolume()" code.
+    */
+    header[header.order[0]].offset = header[header.order[1]].space_length * header[header.order[2]].space_length;
+    header[header.order[1]].offset = header[header.order[2]].space_length;
+    header[header.order[2]].offset = 1;
+
+    if(header.time) {
+      header.time.space_length = parseFloat(header.time.space_length);
+      header.time.start = parseFloat(header.time.start);
+      header.time.step = parseFloat(header.time.step);
+      header.time.offset = header.xspace.space_length * header.yspace.space_length * header.zspace.space_length;
+    }
+
+    return header;
+  }
+
+
+/*
+  createMincVolume(header, raw_data){
+    var volume = createVolume(header, this.createMincData(header, raw_data));
+    volume.type = "minc";
+
+    volume.saveOriginAndTransform(header);
+    volume.intensity_min = header.voxel_min;
+    volume.intensity_max = header.voxel_max;
+
+    return volume;
+
+  }
+*/
+
+
+  /*
+    initialize the large 1D array of data depending on the type found.
+    Rearange the original ArrayBuffer into a typed array.
+    args:
+      header: obj - header of the data
+      raw_data: ArrayBuffer - sub object given by hdf5Loader
+  */
+  createMincData(header, raw_data){
+
+    var native_data = null;
+
+    switch (header.datatype) {
+      case 'int8':
+      native_data = new Int8Array(raw_data);
+      break;
+      case 'int16':
+      native_data = new Int16Array(raw_data);
+      break;
+      case 'int32':
+      native_data = new Int32Array(raw_data);
+      break;
+      case 'float32':
+      native_data = new Float32Array(raw_data);
+      break;
+      case 'float64':
+      native_data = new Float64Array(raw_data);
+      break;
+      case 'uint8':
+      native_data = new Uint8Array(raw_data);
+      break;
+      case 'uint16':
+      native_data = new Uint16Array(raw_data);
+      break;
+      case 'uint32':
+      case 'rgb8':
+      native_data = new Uint32Array(raw_data);
+      break;
+      default:
+      var error_message = "Unsupported data type: " + header.datatype;
+      console.log({ message: error_message } );
+      //BrainBrowser.events.triggerEvent("error", { message: error_message } );
+      throw new Error(error_message);
+    }
+
+    return native_data;
+  }
+
+
+
+
+  //----------------------------------------------------------------------------
+
+  _run(){
+    var that = this;
+
+    var inputBuffer = this._getInput(0);
+
+    if(!inputBuffer){
+      console.warn("Minc2DecoderAlt requires an ArrayBuffer as input \"0\". Unable to continue.");
+      return;
+    }
+
+    this._dv = new DataView(inputBuffer);
+
+
+    /* Patch in the missing function to get 64-bit integers.
+     * Note: this won't really quite work b/c Javascript doesn't
+     * have support for 64-bit integers.
+     */
+    this._dv.getUint64 = function (off, little_endian) {
+      var l4 = that._dv.getUint32(off + 0, little_endian);
+      var u4 = that._dv.getUint32(off + 4, little_endian);
+      if (little_endian) {
+        return (u4 << 32) + l4;
+      } else {
+        return (l4 << 32) + u4;
+      }
+    };
+
+
+    var root = this.createLink();
+
+    try{
+      this._superblk = this.hdf5Superblock();
+    }catch(e){
+      //console.error(e);
+      console.warn("The input file is not a Minc2 file.");
+      return;
+    }
+
+
+    this.seek(this._superblk.root_addr);
+
+    if (this._superblk.sbver <= 1) {
+      this.hdf5V1ObjectHeader(root);
+    } else {
+      this.hdf5V2ObjectHeader(root);
+    }
+
+    this.loadData(root);
+
+
+
+
+
+    if (this.getMetadata("debug")) {
+      this.printStructure(root, 0);
+    }
+
+    /* The rest of this code is MINC-specific, so like some of the
+     * functions above, it can migrate into minc.js once things have
+     * stabilized.
+     *
+     * This code is responsible for collecting up the various pieces
+     * of important data and metadata, and reorganizing them into the
+     * form the volume viewer can handle.
+     */
+    var image = this.findDataset(root, "image");
+    if (!this.defined(image)) {
+      throw new Error("Can't find image dataset.");
+    }
+
+    var valid_range = this.findAttribute(image, "valid_range", 0);
+    /* If no valid_range is found, we substitute our own. */
+    if (!this.defined(valid_range)) {
+      var min_val;
+      var max_val;
+      switch (image.type) {
+      case this._type_enum.INT8:
+        min_val = -(1 << 7);
+        max_val = (1 << 7) - 1;
+        break;
+      case this._type_enum.UINT8:
+        min_val = 0;
+        max_val = (1 << 8) - 1;
+        break;
+      case this._type_enum.INT16:
+        min_val = -(1 << 15);
+        max_val = (1 << 15) - 1;
+        break;
+      case this._type_enum.UINT16:
+        min_val = 0;
+        max_val = (1 << 16) - 1;
+        break;
+      case this._type_enum.INT32:
+        min_val = -(1 << 31);
+        max_val = (1 << 31) - 1;
+        break;
+      case this._type_enum.UINT32:
+        min_val = 0;
+        max_val = (1 << 32) - 1;
+        break;
+      }
+      valid_range = Float32Array.of(min_val, max_val);
+    }
+
+
+    var image_min = this.findDataset(root, "image-min");
+    if (!this.defined(image_min)) {
+      image_min = {
+        array: Float32Array.of(0),
+        dims: []
+      };
+    }
+
+    var image_max = this.findDataset(root, "image-max");
+    if (!this.defined(image_max)) {
+      image_max = {
+        array: Float32Array.of(1),
+        dims: []
+      };
+    }
+
+
+    /* Create the header expected by the existing brainbrowser code.
+     */
+    var header = {};
+    var tmp = this.findAttribute(image, "dimorder", 0);
+    if (typeof tmp !== 'string') {
+      throw new Error("Can't find dimension order.");
+    }
+    header.order = tmp.split(',');
+
+    header.order.forEach(function(dimname) {
+      var dim = that.findDataset(root, dimname);
+      if (!that.defined(dim)) {
+        throw new Error("Can't find dimension variable " + dimname);
+      }
+
+      header[dimname] = {};
+
+      tmp = that.findAttribute(dim, "step", 0);
+      if (!that.defined(tmp)) {
+        tmp = Float32Array.of(1);
+      }
+      header[dimname].step = tmp[0];
+
+      tmp = that.findAttribute(dim, "start", 0);
+      if (!that.defined(tmp)) {
+        tmp = Float32Array.of(0);
+      }
+      header[dimname].start = tmp[0];
+
+      tmp = that.findAttribute(dim, "length", 0);
+      if (!that.defined(tmp)) {
+        throw new Error("Can't find length for " + dimname);
+      }
+      header[dimname].space_length = tmp[0];
+
+      tmp = that.findAttribute(dim, "direction_cosines", 0);
+      if (that.defined(tmp)) {
+        // why is the bizarre call to slice needed?? it seems to work, though!
+        header[dimname].direction_cosines = Array.prototype.slice.call(tmp);
+      }
+      else {
+        if (dimname === "xspace") {
+          header[dimname].direction_cosines = [1, 0, 0];
+        } else if (dimname === "yspace") {
+          header[dimname].direction_cosines = [0, 1, 0];
+        } else if (dimname === "zspace") {
+          header[dimname].direction_cosines = [0, 0, 1];
+        }
+      }
+    });
+
+    var new_abuf;
+
+    if (this.isRgbVolume(header, image)) {
+      header.order.pop();
+      header.datatype = 'rgb8';
+      new_abuf = this.rgbVoxels(image);
+    }
+    else {
+
+      //header.datatype = 'float32';
+      header.datatype = this.getTypeMatchMinc(image.type);
+
+      new_abuf = this.scaleVoxels(image, image_min, image_max, valid_range, this.getMetadata("debug"));
+    }
+
+    
+
+    var minc_header = this.parseHeader( JSON.stringify(header) );
+    minc_header.format = "minc2";
+    var dataArray = this.createMincData(minc_header, new_abuf);
+
+    /*
+    // add the output to this filter
+    this._addOutput(MniVolume);
+    var mniVol = this.getOutput();
+    mniVol.setData(dataArray, minc_header);
+    mniVol.setMetadata("format", "minc2");
+    */
+    
+    var metadata = Image3DMetadataConverter.convertImage3DMetadata( minc_header );
+    
+    var output = new Image3DAlt();
+    output.setRawData( dataArray );
+    output.setRawMetadata( metadata );
+    output.scanDataRange();
+    
+    if(output.metadataIntegrityCheck()){
+      console.log( output );
+      this._output[0] = output;
+    }
+  }
+
+
+
+
+
+} /* END of class Minc2DecoderAlt */
+
 function iota(n) {
   var result = new Array(n);
   for(var i=0; i<n; ++i) {
@@ -27944,16 +45268,16 @@ var iota_1 = iota;
 // The _isBuffer check is for Safari 5-7 support, because it's missing
 // Object.prototype.constructor. Remove this eventually
 var index$4 = function (obj) {
-  return obj != null && (isBuffer$2(obj) || isSlowBuffer$2(obj) || !!obj._isBuffer)
+  return obj != null && (isBuffer$1(obj) || isSlowBuffer$1(obj) || !!obj._isBuffer)
 };
 
-function isBuffer$2 (obj) {
+function isBuffer$1 (obj) {
   return !!obj.constructor && typeof obj.constructor.isBuffer === 'function' && obj.constructor.isBuffer(obj)
 }
 
 // For Node v0.10 support. Remove this eventually.
-function isSlowBuffer$2 (obj) {
-  return typeof obj.readFloatLE === 'function' && typeof obj.slice === 'function' && isBuffer$2(obj.slice(0, 0))
+function isSlowBuffer$1 (obj) {
+  return typeof obj.readFloatLE === 'function' && typeof obj.slice === 'function' && isBuffer$1(obj.slice(0, 0))
 }
 
 var hasTypedArrays  = ((typeof Float64Array) !== "undefined");
@@ -29527,12 +46851,12 @@ var abs = function(v) {
 };
 
 //Computes minimum of integers x and y
-var min = function(x, y) {
+var min$3 = function(x, y) {
   return y ^ ((x ^ y) & -(x < y));
 };
 
 //Computes maximum of integers x and y
-var max = function(x, y) {
+var max$3 = function(x, y) {
   return x ^ ((x ^ y) & -(x < y));
 };
 
@@ -29706,8 +47030,8 @@ var twiddle = {
 	INT_MIN: INT_MIN,
 	sign: sign,
 	abs: abs,
-	min: min,
-	max: max,
+	min: min$3,
+	max: max$3,
 	isPow2: isPow2,
 	log2: log2,
 	log10: log10,
@@ -29811,7 +47135,7 @@ var DATA    = POOL.DATA
   , BUFFER  = POOL.BUFFER;
 
 exports.free = function free(array) {
-  if(isBuffer$1(array)) {
+  if(isBuffer(array)) {
     BUFFER[twiddle.log2(array.length)].push(array);
   } else {
     if(Object.prototype.toString.call(array) !== '[object ArrayBuffer]') {
@@ -29968,7 +47292,7 @@ function mallocBuffer(n) {
   if(cache.length > 0) {
     return cache.pop()
   }
-  return new Buffer$1(n)
+  return new Buffer(n)
 }
 exports.mallocBuffer = mallocBuffer;
 
@@ -30597,7 +47921,7 @@ class SpectralScaleImageFilter extends ImageToImageFilter {
 
 var bundle = createCommonjsModule(function (module, exports) {
 (function (global, factory) {
-  module.exports = factory();
+	module.exports = factory();
 }(commonjsGlobal, (function () { 'use strict';
 
 /*!
@@ -31568,31 +48892,16 @@ TokenStream.prototype.parseError = function (msg) {
   throw new Error('parse error [' + (this.line + 1) + ':' + (this.column + 1) + ']: ' + msg);
 };
 
-var unaryInstructionCache = {};
 function unaryInstruction(value) {
-  var inst = unaryInstructionCache[value];
-  if (!inst) {
-    inst = unaryInstructionCache[value] = new Instruction(IOP1, value);
-  }
-  return inst;
+  return new Instruction(IOP1, value);
 }
 
-var binaryInstructionCache = {};
 function binaryInstruction(value) {
-  var inst = binaryInstructionCache[value];
-  if (!inst) {
-    inst = binaryInstructionCache[value] = new Instruction(IOP2, value);
-  }
-  return inst;
+  return new Instruction(IOP2, value);
 }
 
-var ternaryInstructionCache = {};
 function ternaryInstruction(value) {
-  var inst = ternaryInstructionCache[value];
-  if (!inst) {
-    inst = ternaryInstructionCache[value] = new Instruction(IOP3, value);
-  }
-  return inst;
+  return new Instruction(IOP3, value);
 }
 
 function ParserState(parser, tokenStream) {
@@ -34803,15 +52112,18 @@ class Image3DToMosaicFilter extends Filter{
 
     // the 3 following functions are a work around to fetch voxel along the right axis
     function fetchAlongXspace(i, j, sliceIndex, time){
-      return inputImage3D.getIntensity_xyz(sliceIndex, i, j, time)
+      //return inputImage3D.getIntensity_xyz(sliceIndex, i, j, time)
+      return inputImage3D.getIntensity_xyzOrientation(sliceIndex, i, j, time)
     }
 
     function fetchAlongYspace(i, j, sliceIndex, time){
-      return inputImage3D.getIntensity_xyz(i, sliceIndex, j, time)
+      //return inputImage3D.getIntensity_xyz(i, sliceIndex, j, time)
+      return inputImage3D.getIntensity_xyzOrientation(i, sliceIndex, j, time)
     }
 
     function fetchAlongZspace(i, j, sliceIndex, time){
-      return inputImage3D.getIntensity_xyz(i, j,  sliceIndex, time)
+      //return inputImage3D.getIntensity_xyz(i, j,  sliceIndex, time)
+      return inputImage3D.getIntensity_xyzOrientation(i, j,  sliceIndex, time)
     }
 
     var fetchAlongAxis = null;
@@ -34858,7 +52170,7 @@ class Image3DToMosaicFilter extends Filter{
             var voxelValue = [fetchAlongAxis(x, y,  sliceIndex, t)];
             
             outImage.setPixel(
-              {x: offsetPixelCol+x, y: offsetPixelRow+y},
+              {x: offsetPixelCol+x, y: offsetPixelRow+(height - y - 1)},
               voxelValue
             );
           }
@@ -34873,6 +52185,10 @@ class Image3DToMosaicFilter extends Filter{
 
 } /* END of class Image3DToMosaicFilter */
 
+// defines the type of array to be used by glMatrix. Default would be Float32Array
+// but typed arrays cause issue when serialized, this is why we'd rather use regular Array.
+setMatrixArrayType( Array );
+
 exports.CoreTypes = CoreTypes;
 exports.PixpipeObject = PixpipeObject;
 exports.Filter = Filter;
@@ -34882,6 +52198,7 @@ exports.Image3D = Image3D;
 exports.ImageToImageFilter = ImageToImageFilter;
 exports.MniVolume = MniVolume;
 exports.LineString = LineString;
+exports.Image3DAlt = Image3DAlt;
 exports.CanvasImageWriter = CanvasImageWriter;
 exports.UrlImageReader = UrlImageReader;
 exports.FileImageReader = FileImageReader;
@@ -34890,17 +52207,20 @@ exports.UrlToArrayBufferReader = UrlToArrayBufferReader;
 exports.BrowserDownloadBuffer = BrowserDownloadBuffer;
 exports.Minc2Decoder = Minc2Decoder;
 exports.NiftiDecoder = NiftiDecoder;
+exports.NiftiDecoderAlt = NiftiDecoderAlt;
 exports.PixpEncoder = PixpEncoder;
 exports.PixpDecoder = PixpDecoder;
 exports.Image3DGenericDecoder = Image3DGenericDecoder;
 exports.TiffDecoder = TiffDecoder;
 exports.MghDecoder = MghDecoder;
+exports.MghDecoderAlt = MghDecoderAlt;
 exports.EegModDecoder = EegModDecoder;
 exports.PixBinEncoder = PixBinEncoder$$1;
 exports.PixBinDecoder = PixBinDecoder$1;
 exports.JpegDecoder = JpegDecoder;
 exports.PngDecoder = PngDecoder;
 exports.Image2DGenericDecoder = Image2DGenericDecoder;
+exports.Minc2DecoderAlt = Minc2DecoderAlt;
 exports.ComponentProjectionImage2DFilter = ComponentProjectionImage2DFilter;
 exports.ComponentMergeImage2DFilter = ComponentMergeImage2DFilter;
 exports.ForwardFourierSignalFilter = ForwardFourierSignalFilter;
@@ -34930,6 +52250,7 @@ exports.AngleToHueWheelHelper = AngleToHueWheelHelper;
 exports.LineStringPrinterOnImage2DHelper = LineStringPrinterOnImage2DHelper;
 exports.Colormap = Colormap;
 exports.Image3DToMosaicFilter = Image3DToMosaicFilter;
+exports.Image3DMetadataConverter = Image3DMetadataConverter;
 
 Object.defineProperty(exports, '__esModule', { value: true });
 

@@ -9,7 +9,8 @@
 
 import pako from 'pako'
 import { Filter } from '../core/Filter.js';
-import { MniVolume } from '../core/MniVolume.js';
+import { Image3DAlt } from '../core/Image3DAlt.js';
+import { Image3DMetadataConverter } from '../utils/Image3DMetadataConverter.js';
 
 
 /**
@@ -22,7 +23,7 @@ import { MniVolume } from '../core/MniVolume.js';
 * **Usage**
 * - [examples/fileToMinc2.html](../examples/fileToMinc2.html)
 */
-class Minc2Decoder extends Filter{
+class Minc2DecoderAlt extends Filter{
 
   constructor(){
     super();
@@ -1856,7 +1857,7 @@ class Minc2Decoder extends Filter{
     if (!this.checkSignature("OHDR")) {
       throw new Error('Bad or missing OHDR signature');
     }
-    
+
     var that = this;
     var ver = this.getU8();
     var flags = this.getU8();
@@ -2651,7 +2652,7 @@ class Minc2Decoder extends Filter{
     var inputBuffer = this._getInput(0);
 
     if(!inputBuffer){
-      console.warn("Minc2Decoder requires an ArrayBuffer as input \"0\". Unable to continue.");
+      console.warn("Minc2DecoderAlt requires an ArrayBuffer as input \"0\". Unable to continue.");
       return;
     }
 
@@ -2833,18 +2834,37 @@ class Minc2Decoder extends Filter{
       new_abuf = this.scaleVoxels(image, image_min, image_max, valid_range, this.getMetadata("debug"));
     }
 
+    
+
     var minc_header = this.parseHeader( JSON.stringify(header) );
+    minc_header.format = "minc2";
     var dataArray = this.createMincData(minc_header, new_abuf)
 
+    /*
     // add the output to this filter
     this._addOutput(MniVolume);
     var mniVol = this.getOutput();
     mniVol.setData(dataArray, minc_header);
     mniVol.setMetadata("format", "minc2");
+    */
+    
+    var metadata = Image3DMetadataConverter.convertImage3DMetadata( minc_header );
+    
+    var output = new Image3DAlt();
+    output.setRawData( dataArray );
+    output.setRawMetadata( metadata );
+    output.scanDataRange();
+    
+    if(output.metadataIntegrityCheck()){
+      console.log( output );
+      this._output[0] = output;
+    }
   }
 
 
 
-} /* END of class Minc2Decoder */
 
-export { Minc2Decoder }
+
+} /* END of class Minc2DecoderAlt */
+
+export { Minc2DecoderAlt }
