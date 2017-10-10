@@ -13,7 +13,7 @@ export default {
   format: config.moduleFormat,
   moduleName: config.moduleName,
   sourceMap: true,
-  dest: config.moduleBuildDir + '/' + config.moduleName + '.module.js',
+  dest: config.moduleBuildDir + '/' + config.moduleName + '.' + config.moduleFormat + '.js',
   plugins: [
     nodeResolve({
       preferBuiltins: false

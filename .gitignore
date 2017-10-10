@@ -1,6 +1,8 @@
 # Build files
-dist/*.module.js
-dist/*.module.js.map
+dist/*.cjs.js
+dist/*.cjs.js.map
+dist/*.es.js
+dist/*.es.js.map
 
 # Logs
 logs
