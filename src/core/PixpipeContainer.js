@@ -29,15 +29,6 @@ class PixpipeContainer extends PixpipeObject {
     this._data = d;
   }
 
-
-  /**
-  * Associate the internal metadata object with the one in args.
-  * @param {Object} m - metadata. Should NOT contain TypedArray
-  */
-  setRawMetadata( m ){
-    this._metadata = m;
-  }
-
 } /* END of class PixpipeContainer */
 
 export { PixpipeContainer }

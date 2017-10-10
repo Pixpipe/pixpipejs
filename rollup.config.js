@@ -15,7 +15,7 @@ export default {
   dest: config.moduleBuildDir + '/' + config.moduleName + '.js',
   plugins: [
     nodeResolve({
-      /*preferBuiltins: false*/
+      preferBuiltins: false
     }),
     commonjs(),
     //bundleWorker(),

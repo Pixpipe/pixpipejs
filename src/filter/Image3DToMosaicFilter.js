@@ -108,15 +108,18 @@ class Image3DToMosaicFilter extends Filter{
 
     // the 3 following functions are a work around to fetch voxel along the right axis
     function fetchAlongXspace(i, j, sliceIndex, time){
-      return inputImage3D.getIntensity_xyz(sliceIndex, i, j, time)
+      //return inputImage3D.getIntensity_xyz(sliceIndex, i, j, time)
+      return inputImage3D.getIntensity_xyzOrientation(sliceIndex, i, j, time)
     }
 
     function fetchAlongYspace(i, j, sliceIndex, time){
-      return inputImage3D.getIntensity_xyz(i, sliceIndex, j, time)
+      //return inputImage3D.getIntensity_xyz(i, sliceIndex, j, time)
+      return inputImage3D.getIntensity_xyzOrientation(i, sliceIndex, j, time)
     }
 
     function fetchAlongZspace(i, j, sliceIndex, time){
-      return inputImage3D.getIntensity_xyz(i, j,  sliceIndex, time)
+      //return inputImage3D.getIntensity_xyz(i, j,  sliceIndex, time)
+      return inputImage3D.getIntensity_xyzOrientation(i, j,  sliceIndex, time)
     }
 
     var fetchAlongAxis = null;
@@ -163,7 +166,7 @@ class Image3DToMosaicFilter extends Filter{
             var voxelValue = [fetchAlongAxis(x, y,  sliceIndex, t)]
             
             outImage.setPixel(
-              {x: offsetPixelCol+x, y: offsetPixelRow+y},
+              {x: offsetPixelCol+x, y: offsetPixelRow+(height - y - 1)},
               voxelValue
             )
           }

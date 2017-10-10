@@ -448,6 +448,39 @@ class Image3D extends PixpipeContainer{
   }
 
   
+  getIntensity_xyzOrientation( x, y, z, time=0){
+    var time_offset = this.hasMetadata("time") ? time * this.getMetadata("time").offset : 0;
+    
+    var xspace = this.getMetadata("xspace");
+    var yspace = this.getMetadata("yspace");
+    var zspace = this.getMetadata("zspace");
+    
+    // Whether the dimension steps positively or negatively.
+    var x_positive = xspace.step > 0;
+    var y_positive = yspace.step > 0;
+    var z_positive = zspace.step > 0;
+    
+    var xOrent = x_positive ? x : xspace.space_length - x - 1;
+    var yOrent = y_positive ? y : yspace.space_length - y - 1;
+    //var yOrent = y_positive ? yspace.space_length - y - 1 : y;
+    var zOrent = z_positive ? z : zspace.space_length - z - 1;
+    
+    if (x >= 0 && x < xspace.space_length &&
+        y >= 0 && y < yspace.space_length &&
+        z >= 0 && z < zspace.space_length )
+    {
+      var offset = time_offset + 
+                   xOrent * xspace.offset +
+                   yOrent * yspace.offset +
+                   zOrent * zspace.offset;
+      return this._data[offset];
+    }else{
+      return null;
+    }
+    
+  }
+  
+  
   /**
   * Get the number of samples over time
   */

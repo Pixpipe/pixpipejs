@@ -1856,7 +1856,8 @@ class Minc2Decoder extends Filter{
     if (!this.checkSignature("OHDR")) {
       throw new Error('Bad or missing OHDR signature');
     }
-
+    
+    var that = this;
     var ver = this.getU8();
     var flags = this.getU8();
 
@@ -1938,7 +1939,7 @@ class Minc2Decoder extends Filter{
       if (that.getMetadata("debug")) {
         console.log(link_num + " " + child.hdr_offset + " " + child.name);
       }
-      if (this.checkSignature("OHDR")) {
+      if (that.checkSignature("OHDR")) {
         that.seek(child.hdr_offset);
         that.hdf5V2ObjectHeader(child);
       }

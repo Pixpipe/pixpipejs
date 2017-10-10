@@ -62,17 +62,17 @@
 
         // display sagital
         imageToCanvasFilter.setMetadata( "parentDivID", "myDiv_x" );
-        imageToCanvasFilter.addInput( mniVolume.getSlice("xspace", 80) );
+        imageToCanvasFilter.addInput( mniVolume.getSlice("xspace", Math.round(mniVolume.getMetadata("xspace").space_length/3)) );
         imageToCanvasFilter.update();
 
         // display coronal
         imageToCanvasFilter.setMetadata( "parentDivID", "myDiv_y" );
-        imageToCanvasFilter.addInput( mniVolume.getSlice("yspace", 128) );
+        imageToCanvasFilter.addInput( mniVolume.getSlice("yspace", Math.round(mniVolume.getMetadata("yspace").space_length/3)) );
         imageToCanvasFilter.update();
 
         // display axial
         imageToCanvasFilter.setMetadata( "parentDivID", "myDiv_z" );
-        imageToCanvasFilter.addInput( mniVolume.getSlice("zspace", 128) );
+        imageToCanvasFilter.addInput( mniVolume.getSlice("zspace", Math.round(mniVolume.getMetadata("zspace").space_length/3)) );
         imageToCanvasFilter.update();
       }else{
         console.warn("Non-existant output for niftiDecoder.");
