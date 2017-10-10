@@ -5,6 +5,8 @@
 * Lab       MCIN - Montreal Neurological Institute
 */
 
+// Object schema validation
+import joi from 'joi-browser';
 
 /**
 * PixpipeObject is the base object of all. It creates a uuid and has few
@@ -23,8 +25,16 @@ class PixpipeObject {
     // Metadata can be anything, a name, an ID, a description, a DOM element.
     // everything that is not an input but rather a setting
     this._metadata = {};
+    
+    // a joi schema to validate the _metadata integrity. If null, integrity not validated.
+    // I has to be overloaded when a class inherits from PixpipeObject
+    this._metadataSchema = this._buildMetadataSchema();
 
     this._type = PixpipeObject.TYPE();
+    
+    // to leasure time. The 2 default values are added by _beforeRun and _afterRun
+    // under the name of "begin" and "end"
+    this._timer = {};
   }
 
 
@@ -131,12 +141,33 @@ class PixpipeObject {
 
 
   /**
+  * Get a copy of the metadata object using a serialization middle step (no reference shared).
   * @return {Object} a copy of local metadata
   */
   getMetadataCopy(){
     return JSON.parse( JSON.stringify( this._metadata ) );
   }
   
+  
+  /**
+  * Associate the internal metadata object with the one in args.
+  * @param {Object} m - metadata. Should NOT contain TypedArray
+  */
+  setRawMetadata( m ){
+    this._metadata = m;
+    this._metadataRawCopied();
+  }
+  
+  
+  /**
+  * Called just after metadata were raw-copied. Useful to perform checkings and pre processing.
+  * To be overwriten
+  */
+  _metadataRawCopied(){
+    /*
+          *** TO BE OVERWRITTEN ***
+    */
+  }
   
   /**
   * [PRIVATE]
@@ -168,6 +199,75 @@ class PixpipeObject {
     return false;
   }
 
+
+  /**
+  * Set a time measurement (from an arbitrary starting point)
+  * @param {String} recordName - name of the record
+  */
+  addTimeRecord( recordName ){
+    this._timer[ recordName ] = performance.now();
+  }
+
+
+  /**
+  * @return {Number} the elapsed time in ms between fromRecord and toRecord.
+  * Return -1 if one or both time record
+  */
+  getTime(fromRecord, toRecord, print=false){
+    if( fromRecord in this._timer && toRecord in this._timer ){
+      var t = Math.abs(this._timer[toRecord] - this._timer[fromRecord])
+
+      if(print){
+        console.log("> Time: [" + fromRecord + " , " + toRecord + "] is " + t + " millisec.");
+      }
+
+      return t;
+    }else{
+      console.warn("The two given record name must exist in the time record table.");
+      return -1;
+    }
+  }
+  
+  
+  /**
+  * Build the joi validation schema for the _metadata object.
+  * This method has to be overwriten and return a proper validation object, though
+  * this metadata check is optional.
+  * If not overwriten, metadata will always be considered valid
+  * @return {Object} the joi schema
+  */
+  _buildMetadataSchema(){
+    /*
+          *** TO BE OVERWRITTEN ***
+    */
+    return null;
+  }
+  
+  
+  /**
+  * Performs an inetgrity check of a metadata object. If none is given in argument,
+  * integrity check is performed on this._metadata.
+  * @param {Object} a metadata object to perform the integrity check on.
+  * @return {Boolean} true if metadata obj is valid, false if not.
+  */
+  metadataIntegrityCheck( metadataObj = null ){
+    if( metadataObj == null ){
+      metadataObj = this._metadata;
+    }
+    
+    if( metadataObj ){
+      var validationResults = joi.validate( metadataObj, this._metadataSchema );
+      if(validationResults.error){
+        console.warn("SCHEMA VALIDATION: " + validationResults.error );
+        return false;
+      }
+      return true;
+    }else{
+      console.warn("Validation schema not available. Metadata considered to be valid.");
+      return true;
+    }
+  }
+  
 }
 
 export { PixpipeObject }
