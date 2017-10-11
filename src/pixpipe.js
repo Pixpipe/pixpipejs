@@ -75,6 +75,7 @@ export { Colormap } from './helper/Colormap.js';
 
 // filters - processing of Image3D
 export { Image3DToMosaicFilter } from './filter/Image3DToMosaicFilter.js';
+export { Image3DToMosaicFilterAlt } from './filter/Image3DToMosaicFilterAlt.js'; 
 
 
 // utils

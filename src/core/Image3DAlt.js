@@ -350,8 +350,35 @@ class Image3DAlt extends PixpipeContainer{
     }
     metaStat.min = min;
     metaStat.max = max;
+    metaStat.upToDate = true;
   }
 
+
+  /**
+  * Get the minimum voxel value. If stats are not up to date, scanDataRange() is called.
+  * Hook to metadata.
+  * @return {Number} the minimum
+  */
+  getMinValue(){
+    if( !this._metadata.statistics.upToDate ){
+      this.scanDataRange();
+    }
+    return this._metadata.statistics.min;    
+  }
+  
+  
+  /**
+  * Get the maximum voxel value. If stats are not up to date, scanDataRange() is called.
+  * Hook to metadata.
+  * @return {Number} the minimum
+  */
+  getMaxValue(){
+    if( !this._metadata.statistics.upToDate ){
+      this.scanDataRange();
+    }
+    return this._metadata.statistics.max;    
+  }
+  
 
   /**
   * Get the voxel value from a voxel position (in a voxel-coordinate sytem) with NO
@@ -392,6 +419,49 @@ class Image3DAlt extends PixpipeContainer{
   
   
   /**
+  * Set the value of a voxel
+  * @param {Object} position - 3D position like {i, j, k}, i being the fastest varying, k being the slowest varying
+  * @param {Number} value - the value to give to this voxel
+  * @param {Number} time - position along T axis (time dim, the very slowest varying dim when present)
+  */
+  setVoxel( position, value, time=0 ){
+    var dimensions = this._metadata.dimensions;
+    var i = position.i;
+    var j = position.j;
+    var k = position.k;
+    
+    if(i<0 || j<0 || k<0 || time<0 || 
+       i>=dimensions[0].length  ||
+       j>=dimensions[1].length  ||
+       k>=dimensions[2].length  ||
+       ( dimensions.length>3 && time>=dimensions[3].length) )
+    {
+      console.warn("Voxel query is out of bound.");
+      return null;
+    }
+    
+    var ncpp = this._metadata.ncpp;
+    
+    var tOffset = dimensions.length > 3 ? time*dimensions[3].stride * time : 0;
+    var iOffset = i * dimensions[2].stride;
+    var jOffset = j * dimensions[1].stride;
+    var kOffset = k * dimensions[0].stride;
+    
+    var positionBuffer = tOffset + iOffset + jOffset + kOffset;
+    positionBuffer *= ncpp;
+    this._data[ positionBuffer ] = value;
+    
+    // updating range
+    if( value > this._metadata.statistics.max ){
+      this._metadata.statistics.max = value;
+    }else if( value < this._metadata.statistics.min ){
+      this._metadata.statistics.min = value;
+    }
+  }
+  
+  
+  /**
+  * [DON'T USE]
   * Get a voxel value at a given position with regards of the direction the data are
   * supposed to be read. In other word, dimension.step is taken into account.
   * @param {Object} position - 3D position like {i, j, k}, i being the fastest varying, k being the slowest varying
@@ -402,6 +472,10 @@ class Image3DAlt extends PixpipeContainer{
     var i = position.i;
     var j = position.j;
     var k = position.k;
+    
+    if( i== 10 && j==30 && k==20){
+      console.log("stop");
+    }
     
     if(i<0 || j<0 || k<0 || time<0 || 
        i>=dimensions[0].length  ||
@@ -531,13 +605,35 @@ class Image3DAlt extends PixpipeContainer{
   }
   
   
-  getValueTransfoSpace( spaceToVoxelTransfoName, spacePosition, time=0 ){
+  /**
+  * Get a value from the dataset using {x, y, z} coordinates of a transformed space.
+  * Keep in mind world (or subject) are floating point but voxel coordinates are integers.
+  * This does not perform interpolation.
+  * @param {String} spaceToVoxelTransfoName - name of the affine transformation - must exist
+  * @param {Object} spacePosition - non-voxel-space 3D coordinates, most likely world coordinates
+  * @param {Number} time - Position on time (default: 0)
+  * @return {Number} value at this position
+  */
+  getVoxelTransfoSpace( spaceToVoxelTransfoName, spacePosition, time=0 ){
     // transform to voxel space
     var voxPos = this.getPositionFromTransfoSpaceToVoxelSpace( spacePosition, spaceToVoxelTransfoName );
-    var color = this.getVoxel( voxPos, time );
+    var color = this.getVoxel( voxPos, time ); 
     return color;
   }
   
+  
+  /**
+  * Get a value from the dataset using {x, y, z} coordinates of a transformed space.
+  * Keep in mind world (or subject) are floating point but voxel coordinates are integers.
+  * This does not perform interpolation.
+  * @param {String} spaceToVoxelTransfoName - name of the affine transformation - must exist
+  * @param {Object} spacePosition - non-voxel-space 3D coordinates, most likely world coordinates
+  * @param {Number} time - Position on time (default: 0)
+  */
+  setVoxelTransfoSpace( spaceToVoxelTransfoName, spacePosition, value, time=0 ){
+    var voxPos = this.getPositionFromTransfoSpaceToVoxelSpace( spacePosition, spaceToVoxelTransfoName );
+    var color = this.setVoxel( voxPos, value, time );
+  }
   
   
   /**

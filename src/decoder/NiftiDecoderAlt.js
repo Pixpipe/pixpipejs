@@ -273,14 +273,20 @@ class NiftiDecoderAlt extends Filter {
       v2w: v2wMat,
       w2v: w2vMat
     }
+    
+    metadata.statistics = {
+      upToDate: false,
+      min: 0,
+      max: 0
+    }
 
     var output = new Image3DAlt();
     output.setRawData( data );
     output.setRawMetadata( metadata );
-    output.scanDataRange();
     
     if(output.metadataIntegrityCheck()){
       console.log( output );
+      output.scanDataRange();
       this._output[0] = output;
     }
   }
