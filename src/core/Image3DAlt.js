@@ -1,5 +1,5 @@
 /*
-* Author   Jonathan Lurie - http://me.jonahanlurie.fr
+* Author   Jonathan Lurie - http://me.jonathanlurie.fr
 * License  MIT
 * Link      https://github.com/Pixpipe/pixpipejs
 * Lab       MCIN - Montreal Neurological Institute
@@ -653,6 +653,9 @@ class Image3DAlt extends PixpipeContainer{
     }
     transformations[ name ] = transform;
   }
+
+  
+  //getSliceSize( normalAxis )
 
 
   /**

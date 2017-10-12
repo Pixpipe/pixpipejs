@@ -67,6 +67,8 @@ export { IDWSparseInterpolationImageFilter } from './filter/IDWSparseInterpolati
 export { TriangulationSparseInterpolationImageFilter } from './filter/TriangulationSparseInterpolationImageFilter.js';
 export { CropImageFilter } from './filter/CropImageFilter.js';
 export { SimplifyLineStringFilter } from './filter/SimplifyLineStringFilter.js';
+export { PatchImageFilter } from './filter/PatchImageFilter.js'; 
+
 
 // helpers
 export { AngleToHueWheelHelper } from './helper/AngleToHueWheelHelper.js';

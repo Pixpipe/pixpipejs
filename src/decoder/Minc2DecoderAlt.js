@@ -1,5 +1,5 @@
 /*
-* Author    Jonathan Lurie - http://me.jonahanlurie.fr
+* Author    Jonathan Lurie - http://me.jonathanlurie.fr
 *           Robert D. Vincent
 *
 * License   MIT
