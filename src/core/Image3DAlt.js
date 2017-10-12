@@ -654,9 +654,6 @@ class Image3DAlt extends PixpipeContainer{
     transformations[ name ] = transform;
   }
 
-  
-  //getSliceSize( normalAxis )
-
 
   /**
   * Get a slice from the dataset
@@ -724,6 +721,71 @@ class Image3DAlt extends PixpipeContainer{
 
 
   /**
+  * Get the size (width and height) of a slice along a given axis
+  * @param {Number|String} dimIndex - can be 0, 1, 2 or "i", "j", "k"
+  * @return {Object} width and height as an object like {w: Number, h: Number};
+  */ 
+  getSliceSize( normalAxis ){
+    if( typeof normalAxis === "string" ){
+      // if string/name replace by its equivalent numerical index
+      normalAxis = this.getDimensionIndexFromName( normalAxis );
+      if(normalAxis == -1){
+        console.warn("dimensions " + normalAxis + " does not exist.");
+        return;
+      }
+    }
+      
+    var dimensions = this._metadata.dimensions;
+    
+    // The dimension of the normalAxis must exist (and not be time)
+    if( normalAxis > 2 ){
+      console.warn("The dimension of a slice should be lower than 3.");
+      return null;
+    }
+    
+    // the final slice image has for normal vector the sliceDimension.
+    // In other words, the width and height of the slice will be the "lenght" of
+    // the sliceDimension.widthDimension and sliceDimension.heightDimension respectively
+    var sliceDimension = dimensions[normalAxis];
+    var widthDimension = dimensions[sliceDimension.widthDimension];
+    var heightDimension = dimensions[sliceDimension.heightDimension];
+    
+    return {w: widthDimension.length, h: heightDimension.length};
+  }
+
+  
+  /**
+  * Get the number of slices along a given axis
+  * @param {Number|String} dimIndex - can be 0, 1, 2 or "i", "j", "k"
+  * @return {Number} number of slices
+  */ 
+  getNumberOfSlices( normalAxis ){
+    if( typeof normalAxis === "string" ){
+      // if string/name replace by its equivalent numerical index
+      normalAxis = this.getDimensionIndexFromName( normalAxis );
+      if(normalAxis == -1){
+        console.warn("dimensions " + normalAxis + " does not exist.");
+        return;
+      }
+    }
+      
+    var dimensions = this._metadata.dimensions;
+    
+    // The dimension of the normalAxis must exist (and not be time)
+    if( normalAxis > 2 ){
+      console.warn("The dimension of a slice should be lower than 3.");
+      return null;
+    }
+    
+    // the final slice image has for normal vector the sliceDimension.
+    // In other words, the width and height of the slice will be the "lenght" of
+    // the sliceDimension.widthDimension and sliceDimension.heightDimension respectively
+    var sliceDimension = dimensions[normalAxis];
+    
+    return sliceDimension.length;
+  }
+
+  /**
   * Get the number of samples over time
   * @return {number} the number of time samples
   */
@@ -733,7 +795,21 @@ class Image3DAlt extends PixpipeContainer{
   }
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
   /**
+  * #TODO make it voxel and world!!!!
   * Tells if a given point is inside or outside the image
   * @param {Object} pos - position like {x: Number, y: Number, z: Number}
   * @return {Boolean} true for inside, false for outside
@@ -747,6 +823,7 @@ class Image3DAlt extends PixpipeContainer{
 
 
   /**
+  * #TODO TO BE REDONE!
   * Sample the color along a segment
   * @param {Object} posFrom - starting position of type {x: Number, y: Number, z: Number}
   * @param {Object} posFrom - ending position of type {x: Number, y: Number, z: Number}

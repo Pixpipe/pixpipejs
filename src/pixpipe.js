@@ -37,7 +37,7 @@ export { MghDecoder } from './decoder/MghDecoder.js';
 export { MghDecoderAlt } from './decoder/MghDecoderAlt.js';
 export { EegModDecoder } from './decoder/EegModDecoder.js';
 export { PixBinEncoder } from './decoder/PixBinEncoder.js';
-export { PixBinDecoder } from './decoder/PixBinDecoder.js';
+export { PixBinDecoder } from './decoder/PixBinDecoder.js'; 
 export { JpegDecoder } from './decoder/JpegDecoder.js';
 export { PngDecoder } from './decoder/PngDecoder.js';
 export { Image2DGenericDecoder } from './decoder/Image2DGenericDecoder.js';

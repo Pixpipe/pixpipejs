@@ -9,6 +9,8 @@
 import { Filter } from '../core/Filter.js';
 import { Image2D } from '../core/Image2D.js';
 import { Image3DAlt } from '../core/Image3DAlt.js';
+import { PatchImageFilter } from '../filter/PatchImageFilter.js';
+
 
 
 /**
@@ -48,158 +50,109 @@ class Image3DToMosaicFilterAlt extends Filter{
 
 
   _run(){
-    /*
-    if(! this.hasValidInput() ){
-      return;
-    }
-    */
+    
     
     var inputImage3D = this._getInput(0);
-    var dimensions = inputImage3D.getMetadata( "dimensions" );
-    var dimIndex = inputImage3D.getDimensionIndexFromName( this.getMetadata("axis") );
-    var dim = dimensions[ dimIndex ];
-    var widthDim = dimensions[ dim.widthDimension ];
-    var heightDim = dimensions[ dim.heightDimension ];
-    var timeDimIndex = inputImage3D.getDimensionIndexFromName( "t" ); // possibly -1 if time is non existent
-    var timeDim = null;
-    if( timeDimIndex > -1 ){
-      timeDim = dimensions[ timeDimIndex ];
-    }
     
-    //var spaceInfo = inputImage3D.getMetadata( this.getMetadata("axis") );
-    
-    /*
-    if(!spaceInfo){
-      console.warn("Sampling axis for mosaicing was not poperly set. Has to be 'x', 'y' or 'z'.");
+    if( !inputImage3D ){
+      console.warn("An Image3D is expected as input.");
       return;
     }
-    */
     
-    var numOfSlices = dim.length;
-    var width = widthDim.length;
-    var height = heightDim.length;
+    var axis = this.getMetadata("axis");
+    var sliceDimension = inputImage3D.getSliceSize( axis );
+    var numberOfSlices = inputImage3D.getNumberOfSlices( axis );
+    var numberOfTimeSamples = inputImage3D.getTimeLength();
     
-    // dealing with time series
+    // dealing with time
     var startTime = 0;
     var endTime = 1;
-    
-    if( timeDim ){
-      var timeLength = timeDim.length;
-      
-      if(this._metadata.time == -1 ){
-        startTime = 0;
-        endTime = timeLength;
-      }else if( this._metadata.time < timeLength){
-        startTime = this._metadata.time;
-        endTime = startTime + 1;
-      }
+    // we want slices of all the time samples
+    if( this._metadata.time == -1 ){
+      startTime = 0;
+      endTime = numberOfTimeSamples;
+    }else if( this._metadata.time >= 0 && this._metadata.time < numberOfTimeSamples){
+      startTime = this._metadata.time;
+      endTime = startTime + 1;
+    }else{
+      console.warn( `The required time sample is out of bound. Must be 0 <= t < ${numberOfTimeSamples}` );
+      return;
     }
+    var numberOfSlicesWithTime = numberOfSlices * (endTime-startTime);
     
-    var numberOfSlicesWithTime = numOfSlices * (endTime-startTime);
-
-    // number of image we can fit in the with and heigth of an output image
-    var widthFit = Math.floor( this.getMetadata("maxWidth") / width );
-    var heightFit = Math.floor( this.getMetadata("maxHeight") / height );
-
+    
+    // dealing with output size and number of output
+    var widthFit = Math.floor( this.getMetadata("maxWidth") / sliceDimension.w );
+    var heightFit = Math.floor( this.getMetadata("maxHeight") / sliceDimension.h );
+    
     // size of the ouput image(s)
-    var outputWidth = widthFit * width;
-    var outputHeight = heightFit * height;
-    var slicePerOutputIm = widthFit * heightFit;
+    var outputWidth = widthFit * sliceDimension.w;
+    var outputHeight = heightFit * sliceDimension.h;
+    var nbOfSlicesPerOutputImg = widthFit * heightFit;
 
-    // Number of output image(s) necessary to cover the whole Image3D dataset
-    //var outputNecessary = Math.ceil( numOfSlices / slicePerOutputIm ); // does not work for time series
-    var outputNecessary = Math.ceil( numberOfSlicesWithTime / slicePerOutputIm );
-
+    // Number of output image(s) necessary to cover the whole Image3D dataset (on the time interval we want)
+    var outputImagesNecessary = Math.ceil( numberOfSlicesWithTime / nbOfSlicesPerOutputImg );
+    
     // if only one output, maybe it's not filled entirely, so we can make it a bit smaller
-    if( outputNecessary == 1){
-      outputHeight = Math.ceil( numberOfSlicesWithTime / widthFit ) * height;
+    if( outputImagesNecessary == 1){
+      outputHeight = Math.ceil( numberOfSlicesWithTime / widthFit ) * sliceDimension.h;
     }
 
-    this.setMetadata("gridWidth", outputWidth / width);
-    this.setMetadata("gridHeight", outputHeight / height);
-
+    this.setMetadata("gridWidth", outputWidth / sliceDimension.w);
+    this.setMetadata("gridHeight", outputHeight / sliceDimension.h);
+    
+    // to make it works no matter the ncpp
+    var initPixel = new Array( inputImage3D.getMetadata("ncpp") ).fill(0);
+    
+    var patchFilter = new PatchImageFilter();
+    patchFilter.setMetadata( "outputSize", {w: outputWidth, h: outputHeight} );
+    //patchFilter.setMetadata( "outputColor", initPixel );
+    patchFilter.setMetadata( "outputColor", [500] );
+    
     var outputCounter = 0;
     var sliceCounter = 0;
     var sliceIndexCurrentOutput = 0;
 
     var outImage = null;
-
-    // the 3 following functions are a work around to fetch voxel along the right axis
-    function fetchAlongx(i, j, sliceIndex, time){
-      //return inputImage3D.getIntensity_xyz(sliceIndex, i, j, time)
-      //return inputImage3D.getIntensity_xyzOrientation(sliceIndex, i, j, time)
-      return inputImage3D.getVoxelSafe({i: sliceIndex, j: i , k: j});
-    }
-
-    function fetchAlongy(i, j, sliceIndex, time){
-      //return inputImage3D.getIntensity_xyz(i, sliceIndex, j, time)
-      //return inputImage3D.getIntensity_xyzOrientation(i, sliceIndex, j, time)
-      return inputImage3D.getVoxelSafe({i: i, j: sliceIndex, k: j});
-    }
-
-    function fetchAlongz(i, j, sliceIndex, time){
-      //return inputImage3D.getIntensity_xyz(i, j,  sliceIndex, time)
-      //return inputImage3D.getIntensity_xyzOrientation(i, j,  sliceIndex, time);
-      return inputImage3D.getVoxelSafe({i: i, j: j, k: sliceIndex});
-    }
-
-    var fetchAlongAxis = null;
-
-    if( this._metadata.axis === "x")
-      fetchAlongAxis = fetchAlongx;
-    else if( this._metadata.axis === "y")
-      fetchAlongAxis = fetchAlongy;
-    else if( this._metadata.axis === "z")
-      fetchAlongAxis = fetchAlongz;
     
-    if( !fetchAlongAxis ){
-      console.warn("The axis to sample along for the mosaic was not properly set.");
-      return;
-    }
-
-    // to make it works no matter the ncpp
-    var initPixel = new Array( inputImage3D.getMetadata("ncpp") ).fill(0);
     
+    
+    // for each time sample
     for(var t=startTime; t<endTime; t++){
-
       // for each slice
-      for(var sliceIndex=0; sliceIndex<numOfSlices; sliceIndex++){
-        
-        // create a new output image when the current is full (or not init)
-        if( sliceCounter%slicePerOutputIm == 0 ){
-          outImage = new Image2D({width: outputWidth, height: outputHeight, color: initPixel});
-          this._output[ outputCounter ] = outImage;
-          sliceIndexCurrentOutput = 0;
-          outputCounter++;
-        }
+      for(var sliceIndex=0; sliceIndex<numberOfSlices; sliceIndex++){
 
         var col = sliceIndexCurrentOutput % widthFit;
         var row = Math.floor( sliceIndexCurrentOutput / widthFit );
+        
+
+        var offsetPixelCol = col * sliceDimension.w;
+        var offsetPixelRow = row * sliceDimension.h;
+        
+        // fetching the right slice
+        var slice = inputImage3D.getSlice( axis, sliceIndex, t );
+        patchFilter.addInput( slice );
+        patchFilter.setMetadata( "patchPosition", {x: offsetPixelCol , y: offsetPixelRow} ); 
+        patchFilter.update();
+        
+        // TODO this has to come first
+        // create a new output image when the current is full (or not init)
+        if( sliceCounter%nbOfSlicesPerOutputImg == 0 ){
+          var patchedOutput = patchFilter.getOutput();
+          patchFilter.setMetadata( "resetOutput", true );
+          this._output[ outputCounter ] = patchedOutput;
+          sliceIndexCurrentOutput = 0;
+          outputCounter++;
+        }
+        
         sliceIndexCurrentOutput ++;
-
-        var offsetPixelCol = col * width;
-        var offsetPixelRow = row * height;
-
-        // for each row of the input slice
-        for(var y=0; y<height; y++){
-          // for each col of the output image
-          for(var x=0; x<width; x++){
-            var voxelValue = [fetchAlongAxis(x, y,  sliceIndex, t)]
-            
-            outImage.setPixel(
-              {x: offsetPixelCol+x, y: offsetPixelRow+(height - y - 1)},
-              voxelValue
-            )
-          }
-        } 
-        sliceCounter ++;
-
-      } /* END for each slice*/
+        sliceCounter++;
+      }
+    }
     
-    } /* END for each time sample */
-
   }
+    
 
 } /* END of class Image3DToMosaicFilterAlt */
 
-export { Image3DToMosaicFilterAlt }
+export { Image3DToMosaicFilterAlt };
