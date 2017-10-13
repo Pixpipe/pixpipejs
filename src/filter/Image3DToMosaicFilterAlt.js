@@ -33,7 +33,7 @@ import { PatchImageFilter } from '../filter/PatchImageFilter.js';
 * series.
 *
 * **Usage**
-* - [examples/niftiToMosaic.html](../examples/niftiToMosaic.html)
+* - [examples/niftiToMosaicAlt.html](../examples/niftiToMosaicAlt.html)
 */
 class Image3DToMosaicFilterAlt extends Filter{
 
@@ -105,9 +105,10 @@ class Image3DToMosaicFilterAlt extends Filter{
     var initPixel = new Array( inputImage3D.getMetadata("ncpp") ).fill(0);
     
     var patchFilter = new PatchImageFilter();
+    patchFilter.setMetadata( "time", false ); // we dont want to display the timer
     patchFilter.setMetadata( "outputSize", {w: outputWidth, h: outputHeight} );
-    //patchFilter.setMetadata( "outputColor", initPixel );
-    patchFilter.setMetadata( "outputColor", [500] );
+    patchFilter.setMetadata( "outputColor", initPixel );
+
     
     var outputCounter = 0;
     var sliceCounter = 0;
@@ -121,6 +122,14 @@ class Image3DToMosaicFilterAlt extends Filter{
     for(var t=startTime; t<endTime; t++){
       // for each slice
       for(var sliceIndex=0; sliceIndex<numberOfSlices; sliceIndex++){
+        
+        // TODO this has to come first
+        // create a new output image when the current is full (or not init)
+        if( sliceCounter%nbOfSlicesPerOutputImg == 0 ){
+          patchFilter.setMetadata( "resetOutput", true );
+          sliceIndexCurrentOutput = 0;
+
+        }
 
         var col = sliceIndexCurrentOutput % widthFit;
         var row = Math.floor( sliceIndexCurrentOutput / widthFit );
@@ -135,13 +144,9 @@ class Image3DToMosaicFilterAlt extends Filter{
         patchFilter.setMetadata( "patchPosition", {x: offsetPixelCol , y: offsetPixelRow} ); 
         patchFilter.update();
         
-        // TODO this has to come first
-        // create a new output image when the current is full (or not init)
+        
         if( sliceCounter%nbOfSlicesPerOutputImg == 0 ){
-          var patchedOutput = patchFilter.getOutput();
-          patchFilter.setMetadata( "resetOutput", true );
-          this._output[ outputCounter ] = patchedOutput;
-          sliceIndexCurrentOutput = 0;
+          this._output[ outputCounter ] = patchFilter.getOutput();
           outputCounter++;
         }
         
@@ -149,6 +154,12 @@ class Image3DToMosaicFilterAlt extends Filter{
         sliceCounter++;
       }
     }
+    
+    
+    // TODO to be tested on larger series
+    //if(outputCounter == 0){
+    //  this._output[ outputCounter ] = patchFilter.getOutput();
+    //}
     
   }
     

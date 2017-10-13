@@ -67,8 +67,8 @@ class Image3DAlt extends PixpipeContainer{
       dimensions: joi.array().min(3).max(4).items(
         joi.object({
           length: joi.number().integer().min(1).required(),
-          widthDimension: joi.number().integer().min(0).max(2).required(),
-          heightDimension: joi.number().integer().min(0).max(2).required(),
+          widthDimension: joi.number().integer().min(-1).max(2).required(), // -1 means "does not apply" --> time series
+          heightDimension: joi.number().integer().min(-1).max(2).required(), // idem
           nameVoxelSpace: joi.string().regex(/(i|j|k|t)/).required(),
           nameWorldSpace: joi.string().regex(/(x|y|z|t)/).required(),
           worldUnitSize: joi.number().required(),

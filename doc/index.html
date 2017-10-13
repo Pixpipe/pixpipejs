@@ -218,6 +218,11 @@
                   getMinValue
                 </a>
                 <a
+                  href='#Image3DAlt.getNumberOfSlices'
+                  class='regular block'>
+                  getNumberOfSlices
+                </a>
+                <a
                   href='#Image3DAlt.getPositionFromTransfoSpaceToVoxelSpace'
                   class='regular block'>
                   getPositionFromTransfoSpaceToVoxelSpace
@@ -236,6 +241,11 @@
                   href='#Image3DAlt.getSlice'
                   class='regular block'>
                   getSlice
+                </a>
+                <a
+                  href='#Image3DAlt.getSliceSize'
+                  class='regular block'>
+                  getSliceSize
                 </a>
                 <a
                   href='#Image3DAlt.getTimeLength'
@@ -1593,6 +1603,11 @@
                 Image3DGenericDecoder
               </a>
               <a
+                href='#Image3DGenericDecoderAlt'
+                class='block bold h3 bg-pink-alpha'>
+                Image3DGenericDecoderAlt
+              </a>
+              <a
                 href='#Image3DToMosaicFilter'
                 class='block bold h3 bg-pink-alpha'>
                 Image3DToMosaicFilter
@@ -2888,6 +2903,49 @@ Hook to metadata.</p>
 </section>
           </div>
         </div>
+        <div class='collapsible' id='Image3DAlt.getNumberOfSlices'>
+          <a href='#Image3DAlt.getNumberOfSlices'>
+            <code>
+              getNumberOfSlices<span class='gray'>(dimIndex, normalAxis)</span>
+            </code>
+            <div class='force-inline'>
+              <p>Get the number of slices along a given axis</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2'>
+<section class='py2 clearfix'>
+  <h2 id='Image3DAlt.getNumberOfSlices' class='mt0'>
+    getNumberOfSlices<span class='gray'>(dimIndex, normalAxis)</span>
+  </h2>
+  <p>Get the number of slices along a given axis</p>
+
+    <h4>Parameters</h4>
+    <ul class='suppress-p-margin'>
+        <li><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">Number</a></code> or <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a></code> <strong>dimIndex</strong>
+          :
+          <div class='force-inline'>
+            <p>can be 0, 1, 2 or &quot;i&quot;, &quot;j&quot;, &quot;k&quot;</p>
+
+          </div>
+        </li>
+        <li> <strong>normalAxis</strong>
+          :
+          <div class='force-inline'>
+            
+          </div>
+        </li>
+    </ul>
+      <h4>Returns</h4>
+      <code><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">Number</a></code></code>
+      :
+      <div class='force-inline'>
+        <p>number of slices</p>
+
+      </div>
+</section>
+          </div>
+        </div>
         <div class='collapsible' id='Image3DAlt.getPositionFromTransfoSpaceToVoxelSpace'>
           <a href='#Image3DAlt.getPositionFromTransfoSpaceToVoxelSpace'>
             <code>
@@ -2982,7 +3040,8 @@ Hook to metadata.</p>
               getSegmentSample<span class='gray'>(posFrom, posFrom, posTo, time)</span>
             </code>
             <div class='force-inline'>
-              <p>Sample the color along a segment</p>
+              <p>#TODO TO BE REDONE!
+Sample the color along a segment</p>
 
             </div>
           </a>
@@ -2991,7 +3050,8 @@ Hook to metadata.</p>
   <h2 id='Image3DAlt.getSegmentSample' class='mt0'>
     getSegmentSample<span class='gray'>(posFrom, posFrom, posTo, time)</span>
   </h2>
-  <p>Sample the color along a segment</p>
+  <p>#TODO TO BE REDONE!
+Sample the color along a segment</p>
 
     <h4>Parameters</h4>
     <ul class='suppress-p-margin'>
@@ -3102,6 +3162,49 @@ return null if posFrom or posTo is outside</p>
       :
       <div class='force-inline'>
         <p>the slice</p>
+
+      </div>
+</section>
+          </div>
+        </div>
+        <div class='collapsible' id='Image3DAlt.getSliceSize'>
+          <a href='#Image3DAlt.getSliceSize'>
+            <code>
+              getSliceSize<span class='gray'>(dimIndex, normalAxis)</span>
+            </code>
+            <div class='force-inline'>
+              <p>Get the size (width and height) of a slice along a given axis</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2'>
+<section class='py2 clearfix'>
+  <h2 id='Image3DAlt.getSliceSize' class='mt0'>
+    getSliceSize<span class='gray'>(dimIndex, normalAxis)</span>
+  </h2>
+  <p>Get the size (width and height) of a slice along a given axis</p>
+
+    <h4>Parameters</h4>
+    <ul class='suppress-p-margin'>
+        <li><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">Number</a></code> or <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a></code> <strong>dimIndex</strong>
+          :
+          <div class='force-inline'>
+            <p>can be 0, 1, 2 or &quot;i&quot;, &quot;j&quot;, &quot;k&quot;</p>
+
+          </div>
+        </li>
+        <li> <strong>normalAxis</strong>
+          :
+          <div class='force-inline'>
+            
+          </div>
+        </li>
+    </ul>
+      <h4>Returns</h4>
+      <code><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a></code></code>
+      :
+      <div class='force-inline'>
+        <p>width and height as an object like {w: Number, h: Number};</p>
 
       </div>
 </section>
@@ -3284,7 +3387,8 @@ This does not perform interpolation.</p>
               isInside<span class='gray'>(pos)</span>
             </code>
             <div class='force-inline'>
-              <p>Tells if a given point is inside or outside the image</p>
+              <p>#TODO make it voxel and world!!!!
+Tells if a given point is inside or outside the image</p>
 
             </div>
           </a>
@@ -3293,7 +3397,8 @@ This does not perform interpolation.</p>
   <h2 id='Image3DAlt.isInside' class='mt0'>
     isInside<span class='gray'>(pos)</span>
   </h2>
-  <p>Tells if a given point is inside or outside the image</p>
+  <p>#TODO make it voxel and world!!!!
+Tells if a given point is inside or outside the image</p>
 
     <h4>Parameters</h4>
     <ul class='suppress-p-margin'>
@@ -11657,6 +11762,21 @@ this filter will not have any output.</p>
 
 </section>
 </div><div class='py1'><section class='py2 clearfix'>
+  <h2 id='Image3DGenericDecoderAlt' class='mt0'>
+    Image3DGenericDecoderAlt<span class='gray'></span>
+  </h2>
+  <p>An instance of Image3DGenericDecoderAlt takes a ArrayBuffer
+as input 0 (<code>.addInput(myArrayBuffer)</code>) and output an Image3D.
+The <code>update</code> method will perform several decoding attempts, using the readers
+specified in the constructor.
+In case of success (one of the registered decoder was compatible to the data)
+the metadata <code>decoderConstructor</code> and <code>decoderName</code> are made accessible and give
+information about the file format. If no decoder managed to decode the input buffer,
+this filter will not have any output.</p>
+<p>Developers: if a new 3D dataset decoder is added, reference it here.</p>
+
+</section>
+</div><div class='py1'><section class='py2 clearfix'>
   <h2 id='Image3DToMosaicFilter' class='mt0'>
     Image3DToMosaicFilter<span class='gray'></span>
   </h2>
@@ -11701,7 +11821,7 @@ the default being <code>0</code>. If set to <code>-1</code>, then the filter out
 series.</p>
 <p><strong>Usage</strong></p>
 <ul>
-<li><a href="../examples/niftiToMosaic.html">examples/niftiToMosaic.html</a></li>
+<li><a href="../examples/niftiToMosaicAlt.html">examples/niftiToMosaicAlt.html</a></li>
 </ul>
 
 </section>
@@ -11759,17 +11879,7 @@ but this is compatible with Node and not rely on HTML5 Canvas.</p>
   <h2 id='PixBinEncoder' class='mt0'>
     PixBinEncoder<span class='gray'></span>
   </h2>
-  <p>A PixBinEncoder instance takes an Image2D or Image3D as input with <code>addInput(...)</code>
-and encode it so that it can be saved as a *.pixp file.
-An output filename can be specified using <code>.setMetadata(&quot;filename&quot;, &quot;yourName.pixp&quot;);</code>,
-by default, the name is &quot;untitled.pixp&quot;.
-When <code>update()</code> is called, a gzip blog is prepared as output[0] and can then be downloaded
-when calling the method <code>.download()</code>. The gzip blob could also be sent over AJAX
-using a third party library.</p>
-<p><strong>Usage</strong></p>
-<ul>
-<li><a href="../examples/savePixpFile.html">examples/savePixpFile.html</a></li>
-</ul>
+  <p>Download the generated file</p>
 
       <h4>Static members</h4>
         <div class='collapsible' id='PixBinEncoder.MAGIC_NUMBER'>
@@ -11799,7 +11909,17 @@ the first sequence of bytes for a pixbin file is this ASCII string</p>
   <h2 id='PixBinEncoder' class='mt0'>
     PixBinEncoder<span class='gray'></span>
   </h2>
-  <p>Download the generated file</p>
+  <p>A PixBinEncoder instance takes an Image2D or Image3D as input with <code>addInput(...)</code>
+and encode it so that it can be saved as a *.pixp file.
+An output filename can be specified using <code>.setMetadata(&quot;filename&quot;, &quot;yourName.pixp&quot;);</code>,
+by default, the name is &quot;untitled.pixp&quot;.
+When <code>update()</code> is called, a gzip blog is prepared as output[0] and can then be downloaded
+when calling the method <code>.download()</code>. The gzip blob could also be sent over AJAX
+using a third party library.</p>
+<p><strong>Usage</strong></p>
+<ul>
+<li><a href="../examples/savePixpFile.html">examples/savePixpFile.html</a></li>
+</ul>
 
       <h4>Static members</h4>
         <div class='collapsible' id='PixBinEncoder.MAGIC_NUMBER'>

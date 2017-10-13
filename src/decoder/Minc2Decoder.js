@@ -2578,21 +2578,6 @@ class Minc2Decoder extends Filter{
   }
 
 
-/*
-  createMincVolume(header, raw_data){
-    var volume = createVolume(header, this.createMincData(header, raw_data));
-    volume.type = "minc";
-
-    volume.saveOriginAndTransform(header);
-    volume.intensity_min = header.voxel_min;
-    volume.intensity_max = header.voxel_max;
-
-    return volume;
-
-  }
-*/
-
-
   /*
     initialize the large 1D array of data depending on the type found.
     Rearange the original ArrayBuffer into a typed array.

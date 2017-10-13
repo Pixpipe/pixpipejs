@@ -2855,7 +2855,6 @@ class Minc2DecoderAlt extends Filter{
     output.setRawMetadata( metadata );
     
     if(output.metadataIntegrityCheck()){
-      console.log( output );
       output.scanDataRange();
       this._output[0] = output;
     }

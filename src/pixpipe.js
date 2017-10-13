@@ -32,6 +32,7 @@ export { NiftiDecoderAlt } from './decoder/NiftiDecoderAlt.js';
 export { PixpEncoder } from './decoder/PixpEncoder.js';
 export { PixpDecoder } from './decoder/PixpDecoder.js';
 export { Image3DGenericDecoder } from './decoder/Image3DGenericDecoder.js';
+export { Image3DGenericDecoderAlt } from './decoder/Image3DGenericDecoderAlt.js';
 export { TiffDecoder } from './decoder/TiffDecoder.js';
 export { MghDecoder } from './decoder/MghDecoder.js';
 export { MghDecoderAlt } from './decoder/MghDecoderAlt.js';

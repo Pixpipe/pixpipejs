@@ -48,7 +48,7 @@
       var buff = this.getOutput();
 
       //var image3DDecoder = new pixpipe.Image3DGenericDecoder();
-      var image3DDecoder = new pixpipe.NiftiDecoderAlt(); 
+      var image3DDecoder = new pixpipe.Image3DGenericDecoderAlt(); 
       image3DDecoder.addInput( buff );
       image3DDecoder.update();
 
@@ -63,7 +63,7 @@
         mosaicFilter.addInput( mniVolume );
 
         // which axis do we want the picture of?
-        var space = "x";
+        var space = "y";
         mosaicFilter.setMetadata( "axis", space);
 
         /*
