@@ -50,20 +50,20 @@ class Image3DToMosaicFilterAlt extends Filter{
 
 
   _run(){
-    
-    
+
+
     var inputImage3D = this._getInput(0);
-    
+
     if( !inputImage3D ){
       console.warn("An Image3D is expected as input.");
       return;
     }
-    
+
     var axis = this.getMetadata("axis");
     var sliceDimension = inputImage3D.getSliceSize( axis );
     var numberOfSlices = inputImage3D.getNumberOfSlices( axis );
     var numberOfTimeSamples = inputImage3D.getTimeLength();
-    
+
     // dealing with time
     var startTime = 0;
     var endTime = 1;
@@ -79,12 +79,12 @@ class Image3DToMosaicFilterAlt extends Filter{
       return;
     }
     var numberOfSlicesWithTime = numberOfSlices * (endTime-startTime);
-    
-    
+
+
     // dealing with output size and number of output
     var widthFit = Math.floor( this.getMetadata("maxWidth") / sliceDimension.w );
     var heightFit = Math.floor( this.getMetadata("maxHeight") / sliceDimension.h );
-    
+
     // size of the ouput image(s)
     var outputWidth = widthFit * sliceDimension.w;
     var outputHeight = heightFit * sliceDimension.h;
@@ -92,7 +92,7 @@ class Image3DToMosaicFilterAlt extends Filter{
 
     // Number of output image(s) necessary to cover the whole Image3D dataset (on the time interval we want)
     var outputImagesNecessary = Math.ceil( numberOfSlicesWithTime / nbOfSlicesPerOutputImg );
-    
+
     // if only one output, maybe it's not filled entirely, so we can make it a bit smaller
     if( outputImagesNecessary == 1){
       outputHeight = Math.ceil( numberOfSlicesWithTime / widthFit ) * sliceDimension.h;
@@ -100,29 +100,31 @@ class Image3DToMosaicFilterAlt extends Filter{
 
     this.setMetadata("gridWidth", outputWidth / sliceDimension.w);
     this.setMetadata("gridHeight", outputHeight / sliceDimension.h);
-    
+
     // to make it works no matter the ncpp
     var initPixel = new Array( inputImage3D.getMetadata("ncpp") ).fill(0);
-    
+
     var patchFilter = new PatchImageFilter();
     patchFilter.setMetadata( "time", false ); // we dont want to display the timer
     patchFilter.setMetadata( "outputSize", {w: outputWidth, h: outputHeight} );
     patchFilter.setMetadata( "outputColor", initPixel );
 
-    
+
     var outputCounter = 0;
     var sliceCounter = 0;
     var sliceIndexCurrentOutput = 0;
 
     var outImage = null;
-    
-    
-    
+
+
+
     // for each time sample
     for(var t=startTime; t<endTime; t++){
+
+      console.log( t );
       // for each slice
       for(var sliceIndex=0; sliceIndex<numberOfSlices; sliceIndex++){
-        
+
         // TODO this has to come first
         // create a new output image when the current is full (or not init)
         if( sliceCounter%nbOfSlicesPerOutputImg == 0 ){
@@ -133,36 +135,36 @@ class Image3DToMosaicFilterAlt extends Filter{
 
         var col = sliceIndexCurrentOutput % widthFit;
         var row = Math.floor( sliceIndexCurrentOutput / widthFit );
-        
+
 
         var offsetPixelCol = col * sliceDimension.w;
         var offsetPixelRow = row * sliceDimension.h;
-        
+
         // fetching the right slice
         var slice = inputImage3D.getSlice( axis, sliceIndex, t );
         patchFilter.addInput( slice );
-        patchFilter.setMetadata( "patchPosition", {x: offsetPixelCol , y: offsetPixelRow} ); 
+        patchFilter.setMetadata( "patchPosition", {x: offsetPixelCol , y: offsetPixelRow} );
         patchFilter.update();
-        
-        
+
+
         if( sliceCounter%nbOfSlicesPerOutputImg == 0 ){
           this._output[ outputCounter ] = patchFilter.getOutput();
           outputCounter++;
         }
-        
+
         sliceIndexCurrentOutput ++;
         sliceCounter++;
       }
     }
-    
-    
+
+
     // TODO to be tested on larger series
     //if(outputCounter == 0){
     //  this._output[ outputCounter ] = patchFilter.getOutput();
     //}
-    
+
   }
-    
+
 
 } /* END of class Image3DToMosaicFilterAlt */
 

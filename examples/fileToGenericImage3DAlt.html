@@ -11,9 +11,9 @@
   <p>
   This does the following :
   <ul>
-    <li>open a local NIfTI file, using <code>pixpipe.FileToArrayBufferReader</code></li>
-    <li>redirect the file buffer into a <code>pixpipe.NiftiDecoder</code> to extract NIfTI dataset and metadata</li>
-    <li>get the output as a generique <code>pixpipe.MniVolume</code> object</li>
+    <li>open a local NIfTI/Minc2/MGH file, using <code>pixpipe.FileToArrayBufferReader</code></li>
+    <li>redirect the file buffer into a <code>pixpipe.Image3DGenericDecoderAlt</code> to extract the dataset and metadata</li>
+    <li>get the output as a generic <code>pixpipe.Image3DAlt</code> object</li>
     <li><code>slice()</code> the volume 3 times, along 3 given axis to get 3 <code>pixpipe.Image2D</code> objects</li>
     <li>display the images in separate canvas using a single instance of <code>pixpipe.CanvasImageWriter</code></li>
   </ul>
@@ -45,39 +45,57 @@
 
       var filenames = this.getMetadata("filenames");
 
-      var niftiBuff = this.getOutput();
+      var buff = this.getOutput();
 
-      var niftiDecoder = new pixpipe.NiftiDecoder();
-      niftiDecoder.addInput( niftiBuff );
-      niftiDecoder.update();
+      var generic3DDecoder = new pixpipe.Image3DGenericDecoderAlt();
+      generic3DDecoder.addInput( buff );
+      generic3DDecoder.update();
 
-      var mniVolume = niftiDecoder.getOutput();
+      var mniVolume = generic3DDecoder.getOutput();
 
       if(mniVolume){
+        console.log( mniVolume.getPositionFromVoxelSpaceToTransfoSpace({i:20, j:10, k:30}, "v2w") );
+        console.log( "color ar world coord {x:20, y:10, z:30}: " + mniVolume.getVoxelTransfoSpace( "w2v", {x:20, y:10, z:30} ) );
+        //console.log( mniVolume.getPositionFromVoxelSpaceToTransfoSpaceEXP1({i:20, j:10, k:30}, "v2w") );
+
+        //console.log( mniVolume.getPositionFromTransfoSpaceToVoxelSpace({x:20, y:10, z:30}, "w2v") );
+        //console.log( mniVolume.getValueTransfoSpace( "w2v", {x:20, y:10, z:30} ));
+
+        //var voxelOrigInWorld = mniVolume.getPositionFromVoxelSpaceToTransfoSpace({i:20, j:30, k:10}, "v2w");
+        //console.log( voxelOrigInWorld );
+
+        //var voxelOrigInWorld = mniVolume.getPositionFromTransfoSpaceToVoxelSpace({x:20, y:30, z:10}, "w2v");
+        //console.log( voxelOrigInWorld );
+
+        //console.log( "safe: " + mniVolume.getVoxelSafe({i:25, j:35, k: 15}));
+        //console.log( "unsafe: " + mniVolume.getVoxel({i:80, j:120, k: 150}));
+
+
         // create a filter to write the image into a canvas
         var imageToCanvasFilter = new pixpipe.CanvasImageWriter( );
         // replace the default min max values of [0, 255]
-        imageToCanvasFilter.setMetadata("min", mniVolume.getMetadata("voxel_min"));
-        imageToCanvasFilter.setMetadata("max", mniVolume.getMetadata("voxel_max"));
+        imageToCanvasFilter.setMetadata("min", mniVolume.getMinValue());
+        imageToCanvasFilter.setMetadata("max", mniVolume.getMaxValue());
 
         var timeSample = 10;
 
         // display sagital
         imageToCanvasFilter.setMetadata( "parentDivID", "myDiv_x" );
-        imageToCanvasFilter.addInput( mniVolume.getSlice("xspace", Math.round(mniVolume.getMetadata("xspace").space_length/2), timeSample) );
+        imageToCanvasFilter.addInput( mniVolume.getSlice('x', Math.round(mniVolume.getDimensionSize('x')/2 ), timeSample) );
+        //imageToCanvasFilter.addInput( mniVolume.getSliceDim0( Math.round(mniVolume.getDimensionSize(0)/3 )) );
         imageToCanvasFilter.update();
 
         // display coronal
         imageToCanvasFilter.setMetadata( "parentDivID", "myDiv_y" );
-        imageToCanvasFilter.addInput( mniVolume.getSlice("yspace", Math.round(mniVolume.getMetadata("yspace").space_length/2), timeSample) );
+        imageToCanvasFilter.addInput( mniVolume.getSlice('y', Math.round(mniVolume.getDimensionSize('y')/2 ), timeSample) );
         imageToCanvasFilter.update();
 
         // display axial
         imageToCanvasFilter.setMetadata( "parentDivID", "myDiv_z" );
-        imageToCanvasFilter.addInput( mniVolume.getSlice("zspace", Math.round(mniVolume.getMetadata("zspace").space_length/2), timeSample) );
+        imageToCanvasFilter.addInput( mniVolume.getSlice('z', Math.round(mniVolume.getDimensionSize('z')/2 ), timeSample) );
         imageToCanvasFilter.update();
       }else{
-        console.warn("Non-existant output for niftiDecoder.");
+        console.warn("Non-existant output for generic3DDecoder.");
       }
     });
 
