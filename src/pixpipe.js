@@ -32,12 +32,13 @@ export { NiftiDecoderAlt } from './decoder/NiftiDecoderAlt.js';
 export { PixpEncoder } from './decoder/PixpEncoder.js';
 export { PixpDecoder } from './decoder/PixpDecoder.js';
 export { Image3DGenericDecoder } from './decoder/Image3DGenericDecoder.js';
+export { Image3DGenericDecoderAlt } from './decoder/Image3DGenericDecoderAlt.js';
 export { TiffDecoder } from './decoder/TiffDecoder.js';
 export { MghDecoder } from './decoder/MghDecoder.js';
 export { MghDecoderAlt } from './decoder/MghDecoderAlt.js';
 export { EegModDecoder } from './decoder/EegModDecoder.js';
 export { PixBinEncoder } from './decoder/PixBinEncoder.js';
-export { PixBinDecoder } from './decoder/PixBinDecoder.js';
+export { PixBinDecoder } from './decoder/PixBinDecoder.js'; 
 export { JpegDecoder } from './decoder/JpegDecoder.js';
 export { PngDecoder } from './decoder/PngDecoder.js';
 export { Image2DGenericDecoder } from './decoder/Image2DGenericDecoder.js';
@@ -67,6 +68,8 @@ export { IDWSparseInterpolationImageFilter } from './filter/IDWSparseInterpolati
 export { TriangulationSparseInterpolationImageFilter } from './filter/TriangulationSparseInterpolationImageFilter.js';
 export { CropImageFilter } from './filter/CropImageFilter.js';
 export { SimplifyLineStringFilter } from './filter/SimplifyLineStringFilter.js';
+export { PatchImageFilter } from './filter/PatchImageFilter.js'; 
+
 
 // helpers
 export { AngleToHueWheelHelper } from './helper/AngleToHueWheelHelper.js';
@@ -75,6 +78,7 @@ export { Colormap } from './helper/Colormap.js';
 
 // filters - processing of Image3D
 export { Image3DToMosaicFilter } from './filter/Image3DToMosaicFilter.js';
+export { Image3DToMosaicFilterAlt } from './filter/Image3DToMosaicFilterAlt.js'; 
 
 
 // utils

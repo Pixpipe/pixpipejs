@@ -1,5 +1,5 @@
 /*
-* Author    Jonathan Lurie - http://me.jonahanlurie.fr
+* Author    Jonathan Lurie - http://me.jonathanlurie.fr
 *           Robert D. Vincent
 *
 * License   MIT
@@ -2853,10 +2853,9 @@ class Minc2DecoderAlt extends Filter{
     var output = new Image3DAlt();
     output.setRawData( dataArray );
     output.setRawMetadata( metadata );
-    output.scanDataRange();
     
     if(output.metadataIntegrityCheck()){
-      console.log( output );
+      output.scanDataRange();
       this._output[0] = output;
     }
   }

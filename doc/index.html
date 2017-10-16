@@ -208,6 +208,21 @@
                   getDimensionSize
                 </a>
                 <a
+                  href='#Image3DAlt.getMaxValue'
+                  class='regular block'>
+                  getMaxValue
+                </a>
+                <a
+                  href='#Image3DAlt.getMinValue'
+                  class='regular block'>
+                  getMinValue
+                </a>
+                <a
+                  href='#Image3DAlt.getNumberOfSlices'
+                  class='regular block'>
+                  getNumberOfSlices
+                </a>
+                <a
                   href='#Image3DAlt.getPositionFromTransfoSpaceToVoxelSpace'
                   class='regular block'>
                   getPositionFromTransfoSpaceToVoxelSpace
@@ -228,6 +243,11 @@
                   getSlice
                 </a>
                 <a
+                  href='#Image3DAlt.getSliceSize'
+                  class='regular block'>
+                  getSliceSize
+                </a>
+                <a
                   href='#Image3DAlt.getTimeLength'
                   class='regular block'>
                   getTimeLength
@@ -243,6 +263,11 @@
                   getVoxelSafe
                 </a>
                 <a
+                  href='#Image3DAlt.getVoxelTransfoSpace'
+                  class='regular block'>
+                  getVoxelTransfoSpace
+                </a>
+                <a
                   href='#Image3DAlt.isInside'
                   class='regular block'>
                   isInside
@@ -256,6 +281,16 @@
                   href='#Image3DAlt.setData'
                   class='regular block'>
                   setData
+                </a>
+                <a
+                  href='#Image3DAlt.setVoxel'
+                  class='regular block'>
+                  setVoxel
+                </a>
+                <a
+                  href='#Image3DAlt.setVoxelTransfoSpace'
+                  class='regular block'>
+                  setVoxelTransfoSpace
                 </a>
               <a
                 href='#PixpipeObject'
@@ -578,6 +613,16 @@
                   _loadUrl
                 </a>
               <a
+                href='#SpectralScaleImageFilter'
+                class='block bold h3 bg-pink-alpha'>
+                SpectralScaleImageFilter
+              </a>
+                <a
+                  href='#SpectralScaleImageFilter._run'
+                  class='regular block'>
+                  _run
+                </a>
+              <a
                 href='#FileImageReader'
                 class='block bold h3 bg-pink-alpha'>
                 FileImageReader
@@ -591,16 +636,6 @@
                   href='#FileImageReader.hasValidInput'
                   class='regular block'>
                   hasValidInput
-                </a>
-              <a
-                href='#SpectralScaleImageFilter'
-                class='block bold h3 bg-pink-alpha'>
-                SpectralScaleImageFilter
-              </a>
-                <a
-                  href='#SpectralScaleImageFilter._run'
-                  class='regular block'>
-                  _run
                 </a>
               <a
                 href='#MniVolume'
@@ -1463,6 +1498,16 @@
                 convertImage3DMetadata
               </a>
               <a
+                href='#swapn'
+                class='block bold h3 bg-pink-alpha'>
+                swapn
+              </a>
+              <a
+                href='#transformToMinc'
+                class='block bold h3 bg-pink-alpha'>
+                transformToMinc
+              </a>
+              <a
                 href='#NiftiDecoder'
                 class='block bold h3 bg-pink-alpha'>
                 NiftiDecoder
@@ -1543,6 +1588,11 @@
                 ignore_offsets
               </a>
               <a
+                href='#ignore_offsets'
+                class='block bold h3 bg-pink-alpha'>
+                ignore_offsets
+              </a>
+              <a
                 href='#Image2DGenericDecoder'
                 class='block bold h3 bg-pink-alpha'>
                 Image2DGenericDecoder
@@ -1553,9 +1603,19 @@
                 Image3DGenericDecoder
               </a>
               <a
+                href='#Image3DGenericDecoderAlt'
+                class='block bold h3 bg-pink-alpha'>
+                Image3DGenericDecoderAlt
+              </a>
+              <a
                 href='#Image3DToMosaicFilter'
                 class='block bold h3 bg-pink-alpha'>
                 Image3DToMosaicFilter
+              </a>
+              <a
+                href='#Image3DToMosaicFilterAlt'
+                class='block bold h3 bg-pink-alpha'>
+                Image3DToMosaicFilterAlt
               </a>
               <a
                 href='#ImageBlendExpressionFilter'
@@ -1598,6 +1658,11 @@
                 MghDecoder
               </a>
               <a
+                href='#MghDecoderAlt'
+                class='block bold h3 bg-pink-alpha'>
+                MghDecoderAlt
+              </a>
+              <a
                 href='#MultiplyImageFilter'
                 class='block bold h3 bg-pink-alpha'>
                 MultiplyImageFilter
@@ -1611,6 +1676,11 @@
                 href='#NormalizeImageFilter'
                 class='block bold h3 bg-pink-alpha'>
                 NormalizeImageFilter
+              </a>
+              <a
+                href='#PatchImageFilter'
+                class='block bold h3 bg-pink-alpha'>
+                PatchImageFilter
               </a>
               <a
                 href='#PixBinDecoder'
@@ -2775,6 +2845,107 @@ Looks up in the world dim and then in the voxel-based coord</p>
 </section>
           </div>
         </div>
+        <div class='collapsible' id='Image3DAlt.getMaxValue'>
+          <a href='#Image3DAlt.getMaxValue'>
+            <code>
+              getMaxValue<span class='gray'></span>
+            </code>
+            <div class='force-inline'>
+              <p>Get the maximum voxel value. If stats are not up to date, scanDataRange() is called.
+Hook to metadata.</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2'>
+<section class='py2 clearfix'>
+  <h2 id='Image3DAlt.getMaxValue' class='mt0'>
+    getMaxValue<span class='gray'></span>
+  </h2>
+  <p>Get the maximum voxel value. If stats are not up to date, scanDataRange() is called.
+Hook to metadata.</p>
+
+      <h4>Returns</h4>
+      <code><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">Number</a></code></code>
+      :
+      <div class='force-inline'>
+        <p>the minimum</p>
+
+      </div>
+</section>
+          </div>
+        </div>
+        <div class='collapsible' id='Image3DAlt.getMinValue'>
+          <a href='#Image3DAlt.getMinValue'>
+            <code>
+              getMinValue<span class='gray'></span>
+            </code>
+            <div class='force-inline'>
+              <p>Get the minimum voxel value. If stats are not up to date, scanDataRange() is called.
+Hook to metadata.</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2'>
+<section class='py2 clearfix'>
+  <h2 id='Image3DAlt.getMinValue' class='mt0'>
+    getMinValue<span class='gray'></span>
+  </h2>
+  <p>Get the minimum voxel value. If stats are not up to date, scanDataRange() is called.
+Hook to metadata.</p>
+
+      <h4>Returns</h4>
+      <code><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">Number</a></code></code>
+      :
+      <div class='force-inline'>
+        <p>the minimum</p>
+
+      </div>
+</section>
+          </div>
+        </div>
+        <div class='collapsible' id='Image3DAlt.getNumberOfSlices'>
+          <a href='#Image3DAlt.getNumberOfSlices'>
+            <code>
+              getNumberOfSlices<span class='gray'>(dimIndex, normalAxis)</span>
+            </code>
+            <div class='force-inline'>
+              <p>Get the number of slices along a given axis</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2'>
+<section class='py2 clearfix'>
+  <h2 id='Image3DAlt.getNumberOfSlices' class='mt0'>
+    getNumberOfSlices<span class='gray'>(dimIndex, normalAxis)</span>
+  </h2>
+  <p>Get the number of slices along a given axis</p>
+
+    <h4>Parameters</h4>
+    <ul class='suppress-p-margin'>
+        <li><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">Number</a></code> or <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a></code> <strong>dimIndex</strong>
+          :
+          <div class='force-inline'>
+            <p>can be 0, 1, 2 or &quot;i&quot;, &quot;j&quot;, &quot;k&quot;</p>
+
+          </div>
+        </li>
+        <li> <strong>normalAxis</strong>
+          :
+          <div class='force-inline'>
+            
+          </div>
+        </li>
+    </ul>
+      <h4>Returns</h4>
+      <code><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">Number</a></code></code>
+      :
+      <div class='force-inline'>
+        <p>number of slices</p>
+
+      </div>
+</section>
+          </div>
+        </div>
         <div class='collapsible' id='Image3DAlt.getPositionFromTransfoSpaceToVoxelSpace'>
           <a href='#Image3DAlt.getPositionFromTransfoSpaceToVoxelSpace'>
             <code>
@@ -2869,7 +3040,8 @@ Looks up in the world dim and then in the voxel-based coord</p>
               getSegmentSample<span class='gray'>(posFrom, posFrom, posTo, time)</span>
             </code>
             <div class='force-inline'>
-              <p>Sample the color along a segment</p>
+              <p>#TODO TO BE REDONE!
+Sample the color along a segment</p>
 
             </div>
           </a>
@@ -2878,7 +3050,8 @@ Looks up in the world dim and then in the voxel-based coord</p>
   <h2 id='Image3DAlt.getSegmentSample' class='mt0'>
     getSegmentSample<span class='gray'>(posFrom, posFrom, posTo, time)</span>
   </h2>
-  <p>Sample the color along a segment</p>
+  <p>#TODO TO BE REDONE!
+Sample the color along a segment</p>
 
     <h4>Parameters</h4>
     <ul class='suppress-p-margin'>
@@ -2994,6 +3167,49 @@ return null if posFrom or posTo is outside</p>
 </section>
           </div>
         </div>
+        <div class='collapsible' id='Image3DAlt.getSliceSize'>
+          <a href='#Image3DAlt.getSliceSize'>
+            <code>
+              getSliceSize<span class='gray'>(dimIndex, normalAxis)</span>
+            </code>
+            <div class='force-inline'>
+              <p>Get the size (width and height) of a slice along a given axis</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2'>
+<section class='py2 clearfix'>
+  <h2 id='Image3DAlt.getSliceSize' class='mt0'>
+    getSliceSize<span class='gray'>(dimIndex, normalAxis)</span>
+  </h2>
+  <p>Get the size (width and height) of a slice along a given axis</p>
+
+    <h4>Parameters</h4>
+    <ul class='suppress-p-margin'>
+        <li><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">Number</a></code> or <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a></code> <strong>dimIndex</strong>
+          :
+          <div class='force-inline'>
+            <p>can be 0, 1, 2 or &quot;i&quot;, &quot;j&quot;, &quot;k&quot;</p>
+
+          </div>
+        </li>
+        <li> <strong>normalAxis</strong>
+          :
+          <div class='force-inline'>
+            
+          </div>
+        </li>
+    </ul>
+      <h4>Returns</h4>
+      <code><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a></code></code>
+      :
+      <div class='force-inline'>
+        <p>width and height as an object like {w: Number, h: Number};</p>
+
+      </div>
+</section>
+          </div>
+        </div>
         <div class='collapsible' id='Image3DAlt.getTimeLength'>
           <a href='#Image3DAlt.getTimeLength'>
             <code>
@@ -3075,7 +3291,8 @@ is ignored.</p>
               getVoxelSafe<span class='gray'>(position, time)</span>
             </code>
             <div class='force-inline'>
-              <p>Get a voxel value at a given position with regards of the direction the data are
+              <p>[DON&apos;T USE]
+Get a voxel value at a given position with regards of the direction the data are
 supposed to be read. In other word, dimension.step is taken into account.</p>
 
             </div>
@@ -3085,7 +3302,8 @@ supposed to be read. In other word, dimension.step is taken into account.</p>
   <h2 id='Image3DAlt.getVoxelSafe' class='mt0'>
     getVoxelSafe<span class='gray'>(position, time)</span>
   </h2>
-  <p>Get a voxel value at a given position with regards of the direction the data are
+  <p>[DON&apos;T USE]
+Get a voxel value at a given position with regards of the direction the data are
 supposed to be read. In other word, dimension.step is taken into account.</p>
 
     <h4>Parameters</h4>
@@ -3108,13 +3326,69 @@ supposed to be read. In other word, dimension.step is taken into account.</p>
 </section>
           </div>
         </div>
+        <div class='collapsible' id='Image3DAlt.getVoxelTransfoSpace'>
+          <a href='#Image3DAlt.getVoxelTransfoSpace'>
+            <code>
+              getVoxelTransfoSpace<span class='gray'>(spaceToVoxelTransfoName, spacePosition, time)</span>
+            </code>
+            <div class='force-inline'>
+              <p>Get a value from the dataset using {x, y, z} coordinates of a transformed space.
+Keep in mind world (or subject) are floating point but voxel coordinates are integers.
+This does not perform interpolation.</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2'>
+<section class='py2 clearfix'>
+  <h2 id='Image3DAlt.getVoxelTransfoSpace' class='mt0'>
+    getVoxelTransfoSpace<span class='gray'>(spaceToVoxelTransfoName, spacePosition, time)</span>
+  </h2>
+  <p>Get a value from the dataset using {x, y, z} coordinates of a transformed space.
+Keep in mind world (or subject) are floating point but voxel coordinates are integers.
+This does not perform interpolation.</p>
+
+    <h4>Parameters</h4>
+    <ul class='suppress-p-margin'>
+        <li><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a></code> <strong>spaceToVoxelTransfoName</strong>
+          :
+          <div class='force-inline'>
+            <p>name of the affine transformation - must exist</p>
+
+          </div>
+        </li>
+        <li><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a></code> <strong>spacePosition</strong>
+          :
+          <div class='force-inline'>
+            <p>non-voxel-space 3D coordinates, most likely world coordinates</p>
+
+          </div>
+        </li>
+        <li><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">Number</a></code> <strong>time</strong>
+          :
+          <div class='force-inline'>
+            <p>Position on time (default: 0)</p>
+
+          </div>
+        </li>
+    </ul>
+      <h4>Returns</h4>
+      <code><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">Number</a></code></code>
+      :
+      <div class='force-inline'>
+        <p>value at this position</p>
+
+      </div>
+</section>
+          </div>
+        </div>
         <div class='collapsible' id='Image3DAlt.isInside'>
           <a href='#Image3DAlt.isInside'>
             <code>
               isInside<span class='gray'>(pos)</span>
             </code>
             <div class='force-inline'>
-              <p>Tells if a given point is inside or outside the image</p>
+              <p>#TODO make it voxel and world!!!!
+Tells if a given point is inside or outside the image</p>
 
             </div>
           </a>
@@ -3123,7 +3397,8 @@ supposed to be read. In other word, dimension.step is taken into account.</p>
   <h2 id='Image3DAlt.isInside' class='mt0'>
     isInside<span class='gray'>(pos)</span>
   </h2>
-  <p>Tells if a given point is inside or outside the image</p>
+  <p>#TODO make it voxel and world!!!!
+Tells if a given point is inside or outside the image</p>
 
     <h4>Parameters</h4>
     <ul class='suppress-p-margin'>
@@ -3205,6 +3480,104 @@ Look for min and max on the dataset and add them to the header metadata</p>
 <li>options.ncpp {Number} number of components per pixel. Default = 1</li>
 <li>options.deepCopy {Boolean} perform a deep copy if true. Simple association if false</li>
 </ul>
+
+          </div>
+        </li>
+    </ul>
+</section>
+          </div>
+        </div>
+        <div class='collapsible' id='Image3DAlt.setVoxel'>
+          <a href='#Image3DAlt.setVoxel'>
+            <code>
+              setVoxel<span class='gray'>(position, value, time)</span>
+            </code>
+            <div class='force-inline'>
+              <p>Set the value of a voxel</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2'>
+<section class='py2 clearfix'>
+  <h2 id='Image3DAlt.setVoxel' class='mt0'>
+    setVoxel<span class='gray'>(position, value, time)</span>
+  </h2>
+  <p>Set the value of a voxel</p>
+
+    <h4>Parameters</h4>
+    <ul class='suppress-p-margin'>
+        <li><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a></code> <strong>position</strong>
+          :
+          <div class='force-inline'>
+            <p>3D position like {i, j, k}, i being the fastest varying, k being the slowest varying</p>
+
+          </div>
+        </li>
+        <li><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">Number</a></code> <strong>value</strong>
+          :
+          <div class='force-inline'>
+            <p>the value to give to this voxel</p>
+
+          </div>
+        </li>
+        <li><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">Number</a></code> <strong>time</strong>
+          :
+          <div class='force-inline'>
+            <p>position along T axis (time dim, the very slowest varying dim when present)</p>
+
+          </div>
+        </li>
+    </ul>
+</section>
+          </div>
+        </div>
+        <div class='collapsible' id='Image3DAlt.setVoxelTransfoSpace'>
+          <a href='#Image3DAlt.setVoxelTransfoSpace'>
+            <code>
+              setVoxelTransfoSpace<span class='gray'>(spaceToVoxelTransfoName, spacePosition, value, time)</span>
+            </code>
+            <div class='force-inline'>
+              <p>Get a value from the dataset using {x, y, z} coordinates of a transformed space.
+Keep in mind world (or subject) are floating point but voxel coordinates are integers.
+This does not perform interpolation.</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2'>
+<section class='py2 clearfix'>
+  <h2 id='Image3DAlt.setVoxelTransfoSpace' class='mt0'>
+    setVoxelTransfoSpace<span class='gray'>(spaceToVoxelTransfoName, spacePosition, value, time)</span>
+  </h2>
+  <p>Get a value from the dataset using {x, y, z} coordinates of a transformed space.
+Keep in mind world (or subject) are floating point but voxel coordinates are integers.
+This does not perform interpolation.</p>
+
+    <h4>Parameters</h4>
+    <ul class='suppress-p-margin'>
+        <li><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a></code> <strong>spaceToVoxelTransfoName</strong>
+          :
+          <div class='force-inline'>
+            <p>name of the affine transformation - must exist</p>
+
+          </div>
+        </li>
+        <li><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a></code> <strong>spacePosition</strong>
+          :
+          <div class='force-inline'>
+            <p>non-voxel-space 3D coordinates, most likely world coordinates</p>
+
+          </div>
+        </li>
+        <li> <strong>value</strong>
+          :
+          <div class='force-inline'>
+            
+          </div>
+        </li>
+        <li><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">Number</a></code> <strong>time</strong>
+          :
+          <div class='force-inline'>
+            <p>Position on time (default: 0)</p>
 
           </div>
         </li>
@@ -5310,6 +5683,42 @@ Perform a XMLHttpRequest with the given url and adds it to the output</p>
         </div>
 </section>
 </div><div class='py1'><section class='py2 clearfix'>
+  <h2 id='SpectralScaleImageFilter' class='mt0'>
+    SpectralScaleImageFilter<span class='gray'></span>
+  </h2>
+  <p>Multiply an image by the other, like a scaling function.
+The image requires two inputs named &quot;0&quot; and &quot;1&quot;.
+Simply use <code>addInput( myImg1, &quot;0&quot; )</code>
+and <code>addInput( myImg2, &quot;1&quot; )</code>. The input &quot;0&quot; can have 1 or more bands while
+the input &quot;1&quot; can have only one band since the same scale is apply to each band.</p>
+<p><strong>Usage</strong></p>
+<ul>
+<li><a href="../examples/forEachPixelGadient.html">examples/forEachPixelGadient.html</a></li>
+</ul>
+
+      <h4>Instance members</h4>
+        <div class='collapsible' id='SpectralScaleImageFilter._run'>
+          <a href='#SpectralScaleImageFilter._run'>
+            <code>
+              _run<span class='gray'></span>
+            </code>
+            <div class='force-inline'>
+              <p>Run the filter</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2'>
+<section class='py2 clearfix'>
+  <h2 id='SpectralScaleImageFilter._run' class='mt0'>
+    _run<span class='gray'></span>
+  </h2>
+  <p>Run the filter</p>
+
+</section>
+          </div>
+        </div>
+</section>
+</div><div class='py1'><section class='py2 clearfix'>
   <h2 id='FileImageReader' class='mt0'>
     FileImageReader<span class='gray'></span>
   </h2>
@@ -5366,42 +5775,6 @@ file2ImgFilter.update();</pre>
     hasValidInput<span class='gray'></span>
   </h2>
   <p>Overload the default method because HTML5 File is not a Pixpipe type</p>
-
-</section>
-          </div>
-        </div>
-</section>
-</div><div class='py1'><section class='py2 clearfix'>
-  <h2 id='SpectralScaleImageFilter' class='mt0'>
-    SpectralScaleImageFilter<span class='gray'></span>
-  </h2>
-  <p>Multiply an image by the other, like a scaling function.
-The image requires two inputs named &quot;0&quot; and &quot;1&quot;.
-Simply use <code>addInput( myImg1, &quot;0&quot; )</code>
-and <code>addInput( myImg2, &quot;1&quot; )</code>. The input &quot;0&quot; can have 1 or more bands while
-the input &quot;1&quot; can have only one band since the same scale is apply to each band.</p>
-<p><strong>Usage</strong></p>
-<ul>
-<li><a href="../examples/forEachPixelGadient.html">examples/forEachPixelGadient.html</a></li>
-</ul>
-
-      <h4>Instance members</h4>
-        <div class='collapsible' id='SpectralScaleImageFilter._run'>
-          <a href='#SpectralScaleImageFilter._run'>
-            <code>
-              _run<span class='gray'></span>
-            </code>
-            <div class='force-inline'>
-              <p>Run the filter</p>
-
-            </div>
-          </a>
-          <div class='collapser border px2'>
-<section class='py2 clearfix'>
-  <h2 id='SpectralScaleImageFilter._run' class='mt0'>
-    _run<span class='gray'></span>
-  </h2>
-  <p>Run the filter</p>
 
 </section>
           </div>
@@ -10900,6 +11273,52 @@ Two options are availble for neighbour connexity: 4 or 8. Set this option using
     </ul>
 </section>
 </div><div class='py1'><section class='py2 clearfix'>
+  <h2 id='swapn' class='mt0'>
+    swapn<span class='gray'>(byte_data, n_per_item)</span>
+  </h2>
+  <p>[STATIC]
+swap the data to be used from the outside (ie. nifti)</p>
+
+    <h4>Parameters</h4>
+    <ul class='suppress-p-margin'>
+        <li> <strong>byte_data</strong>
+          :
+          <div class='force-inline'>
+            
+          </div>
+        </li>
+        <li> <strong>n_per_item</strong>
+          :
+          <div class='force-inline'>
+            
+          </div>
+        </li>
+    </ul>
+</section>
+</div><div class='py1'><section class='py2 clearfix'>
+  <h2 id='transformToMinc' class='mt0'>
+    transformToMinc<span class='gray'>(transform, header)</span>
+  </h2>
+  <p>[STATIC]
+mainly used by the ouside world (like from Nifti)</p>
+
+    <h4>Parameters</h4>
+    <ul class='suppress-p-margin'>
+        <li> <strong>transform</strong>
+          :
+          <div class='force-inline'>
+            
+          </div>
+        </li>
+        <li> <strong>header</strong>
+          :
+          <div class='force-inline'>
+            
+          </div>
+        </li>
+    </ul>
+</section>
+</div><div class='py1'><section class='py2 clearfix'>
   <h2 id='NiftiDecoder' class='mt0'>
     NiftiDecoder<span class='gray'></span>
   </h2>
@@ -11295,6 +11714,20 @@ ignore_offsets to false.</p>
 
 </section>
 </div><div class='py1'><section class='py2 clearfix'>
+  <h2 id='ignore_offsets' class='mt0'>
+    ignore_offsets<span class='gray'></span>
+  </h2>
+  <p>This is here because there are two different ways of interpreting
+the origin of an MGH file. One can ignore the offsets in the
+transform, using the centre of the voxel grid. Or you can correct
+these naive grid centres using the values stored in the transform.
+The first approach is what is used by surface files, so to get them
+to register nicely, we want ignore_offsets to be true. However,
+getting volumetric files to register correctly implies setting
+ignore_offsets to false.</p>
+
+</section>
+</div><div class='py1'><section class='py2 clearfix'>
   <h2 id='Image2DGenericDecoder' class='mt0'>
     Image2DGenericDecoder<span class='gray'></span>
   </h2>
@@ -11329,6 +11762,21 @@ this filter will not have any output.</p>
 
 </section>
 </div><div class='py1'><section class='py2 clearfix'>
+  <h2 id='Image3DGenericDecoderAlt' class='mt0'>
+    Image3DGenericDecoderAlt<span class='gray'></span>
+  </h2>
+  <p>An instance of Image3DGenericDecoderAlt takes a ArrayBuffer
+as input 0 (<code>.addInput(myArrayBuffer)</code>) and output an Image3D.
+The <code>update</code> method will perform several decoding attempts, using the readers
+specified in the constructor.
+In case of success (one of the registered decoder was compatible to the data)
+the metadata <code>decoderConstructor</code> and <code>decoderName</code> are made accessible and give
+information about the file format. If no decoder managed to decode the input buffer,
+this filter will not have any output.</p>
+<p>Developers: if a new 3D dataset decoder is added, reference it here.</p>
+
+</section>
+</div><div class='py1'><section class='py2 clearfix'>
   <h2 id='Image3DToMosaicFilter' class='mt0'>
     Image3DToMosaicFilter<span class='gray'></span>
   </h2>
@@ -11348,6 +11796,32 @@ horizontal and vertical respectively.</p>
 <p><strong>Usage</strong></p>
 <ul>
 <li><a href="../examples/niftiToMosaic.html">examples/niftiToMosaic.html</a></li>
+</ul>
+
+</section>
+</div><div class='py1'><section class='py2 clearfix'>
+  <h2 id='Image3DToMosaicFilterAlt' class='mt0'>
+    Image3DToMosaicFilterAlt<span class='gray'></span>
+  </h2>
+  <p>An instance of Image3DToMosaicFilterAlt takes an Image3D as Input and output a
+mosaic composed of each slice. The axis: &quot;x&quot;, &quot;y&quot; or &quot;z&quot; can be
+specified with <code>setMetadata(&quot;axis&quot;, &quot;x&quot;)</code>, the default being x.
+The default output image is 4096x4096 but these boundaries can be changed using
+<code>setMetadata(&quot;maxWidth&quot;, n)</code> and <code>setMetadata(&quot;maxHeight&quot;, m)</code>.
+These are boundaries so the size of the output image(s) will possibly be lower
+to not contain unused space.
+If mosaicing the whole given Image3D does not fit in maxWidth*maxHeight, more
+Image2D will be created and accessible through <code>getOutput(n)</code>.
+All output image have the same size so that the last one may have dead space.
+To know precisely the size of the output mosaic use <code>getMetadata(&quot;gridWidth&quot;)</code>
+and <code>getMetadata(&quot;gridHeight&quot;)</code>, this will give the number of slices used in
+horizontal and vertical respectively.</p>
+<p>By setting the <code>time</code> metadata we can get a mosaic at a given time position,
+the default being <code>0</code>. If set to <code>-1</code>, then the filter outputs the whole time
+series.</p>
+<p><strong>Usage</strong></p>
+<ul>
+<li><a href="../examples/niftiToMosaicAlt.html">examples/niftiToMosaicAlt.html</a></li>
 </ul>
 
 </section>
@@ -11484,6 +11958,18 @@ Takes an ArrayBuffer as input (0) and output a <code>MniVolume</code> (which inh
 
 </section>
 </div><div class='py1'><section class='py2 clearfix'>
+  <h2 id='MghDecoderAlt' class='mt0'>
+    MghDecoderAlt<span class='gray'></span>
+  </h2>
+  <p>Decodes a MGH file.
+Takes an ArrayBuffer as input (0) and output a <code>MniVolume</code> (which inherit <code>Image3D</code>).</p>
+<p><strong>Usage</strong></p>
+<ul>
+<li><a href="../examples/fileToMgh.html">examples/fileToMgh.html</a></li>
+</ul>
+
+</section>
+</div><div class='py1'><section class='py2 clearfix'>
   <h2 id='MultiplyImageFilter' class='mt0'>
     MultiplyImageFilter<span class='gray'></span>
   </h2>
@@ -11527,6 +12013,19 @@ but an manual max value can be given to this filter using <code>.setMetadata(&qu
 <p><strong>Usage</strong></p>
 <ul>
 <li><a href="../examples/gradientHueWheelImage2D.html">examples/gradientHueWheelImage2D.html</a></li>
+</ul>
+
+</section>
+</div><div class='py1'><section class='py2 clearfix'>
+  <h2 id='PatchImageFilter' class='mt0'>
+    PatchImageFilter<span class='gray'></span>
+  </h2>
+  <p>A instance of PatchImageFilter will copy an Image2D into another at a given position.
+The same process can be repeated mutiple times so that the output is the result
+of several patched applied on a image with a solid color background.</p>
+<p><strong>Usage</strong></p>
+<ul>
+<li><a href="../examples/patchImage2D.html">examples/patchImage2D.html</a></li>
 </ul>
 
 </section>

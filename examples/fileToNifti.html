@@ -60,19 +60,21 @@
         imageToCanvasFilter.setMetadata("min", mniVolume.getMetadata("voxel_min"));
         imageToCanvasFilter.setMetadata("max", mniVolume.getMetadata("voxel_max"));
 
+        var timeSample = 10;
+
         // display sagital
         imageToCanvasFilter.setMetadata( "parentDivID", "myDiv_x" );
-        imageToCanvasFilter.addInput( mniVolume.getSlice("xspace", Math.round(mniVolume.getMetadata("xspace").space_length/3)) );
+        imageToCanvasFilter.addInput( mniVolume.getSlice("xspace", Math.round(mniVolume.getMetadata("xspace").space_length/2), timeSample) );
         imageToCanvasFilter.update();
 
         // display coronal
         imageToCanvasFilter.setMetadata( "parentDivID", "myDiv_y" );
-        imageToCanvasFilter.addInput( mniVolume.getSlice("yspace", Math.round(mniVolume.getMetadata("yspace").space_length/3)) );
+        imageToCanvasFilter.addInput( mniVolume.getSlice("yspace", Math.round(mniVolume.getMetadata("yspace").space_length/2), timeSample) );
         imageToCanvasFilter.update();
 
         // display axial
         imageToCanvasFilter.setMetadata( "parentDivID", "myDiv_z" );
-        imageToCanvasFilter.addInput( mniVolume.getSlice("zspace", Math.round(mniVolume.getMetadata("zspace").space_length/3)) );
+        imageToCanvasFilter.addInput( mniVolume.getSlice("zspace", Math.round(mniVolume.getMetadata("zspace").space_length/2), timeSample) );
         imageToCanvasFilter.update();
       }else{
         console.warn("Non-existant output for niftiDecoder.");

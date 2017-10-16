@@ -58,6 +58,8 @@
         //console.log( mniVolume.getPositionFromVoxelSpaceToTransfoSpaceEXP1({i:20, j:10, k:30}, "v2w") );
         
         console.log( mniVolume.getPositionFromTransfoSpaceToVoxelSpace({x:20, y:10, z:30}, "w2v") );
+        console.log( "color ar world coord {x:20, y:10, z:30}: " + mniVolume.getVoxelTransfoSpace( "w2v", {x:20, y:10, z:30} ) );
+        
         
         //var voxelOrigInWorld = mniVolume.getPositionFromTransfoSpaceToVoxelSpace({x:20, y:30, z:10}, "w2v");
         //console.log( voxelOrigInWorld );
@@ -69,8 +71,8 @@
         // create a filter to write the image into a canvas
         var imageToCanvasFilter = new pixpipe.CanvasImageWriter( );
         // replace the default min max values of [0, 255]
-        imageToCanvasFilter.setMetadata("min", mniVolume.getMetadata("statistics").min);
-        imageToCanvasFilter.setMetadata("max", mniVolume.getMetadata("statistics").max);
+        imageToCanvasFilter.setMetadata("min", mniVolume.getMinValue());
+        imageToCanvasFilter.setMetadata("max", mniVolume.getMaxValue());
 
         // display sagital
         imageToCanvasFilter.setMetadata( "parentDivID", "myDiv_x" );

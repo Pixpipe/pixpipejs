@@ -1,5 +1,5 @@
 /*
-* Author    Jonathan Lurie - http://me.jonahanlurie.fr
+* Author    Jonathan Lurie - http://me.jonathanlurie.fr
 *
 * License   MIT
 * Link      https://github.com/Pixpipe/pixpipejs
@@ -61,8 +61,6 @@ class NiftiDecoderAlt extends Filter {
       return;
     }
 
-    console.log( nifti );
-
     if(! nifti.isNIFTI( inputBuffer )) {
       console.warn("Not a NIfTI file");
       return;
@@ -73,9 +71,6 @@ class NiftiDecoderAlt extends Filter {
 
     var header = nifti.readHeader(inputBuffer);
     var rawData = nifti.readImage(header, inputBuffer);
-
-    console.log( header );
-
 
     data = this._fetchDataArray(header, rawData);
 
@@ -102,6 +97,8 @@ class NiftiDecoderAlt extends Filter {
       niftiTransfoMatrix = header.affine;
     }
     
+    console.log( header );
+    
     // dimensions info ordered from the fastest varying to the slowest varying
     var voxelSpaceNames = ['k', 'j', 'i', 't'];
     var worldSpaceNames = ['x', 'y', 'z', 't'];
@@ -122,6 +119,7 @@ class NiftiDecoderAlt extends Filter {
         nameWorldSpace: worldSpaceNames[d],
         worldUnitSize: header.pixDims[d + 1],
         stride: stride,
+        step: header.pixDims[d + 1], // same to worldUnitSize but will prob be changed if swapped, except for time
         //direction: niftiTransfoMatrix[d][d] < 0 ? -1 : 1, // to be filled later
       }
       dimensions.push( dimension )
@@ -167,8 +165,6 @@ class NiftiDecoderAlt extends Filter {
         return 2
       }
     }
-     
-    
     
     function getMagnitude( arr ){
       return Math.sqrt( arr[0]*arr[0] + arr[1]*arr[1] + arr[2]*arr[2] );
@@ -183,11 +179,6 @@ class NiftiDecoderAlt extends Filter {
     var shouldBeCol = [ shouldBeCol0, shouldBeCol1, shouldBeCol2 ];
     // this is the inverse lookup of shouldBeCol
     var wasCol = [ shouldBeCol.indexOf(0), shouldBeCol.indexOf(1), shouldBeCol.indexOf(2) ];
-    
-    console.log("shouldBeCol");
-    console.log(shouldBeCol);
-    console.log( "wasCol");
-    console.log(wasCol);
     
     var transfoMatrixToUse = JSON.parse(JSON.stringify(niftiTransfoMatrix));
     var dimensionsToUse = dimensions;
@@ -220,8 +211,6 @@ class NiftiDecoderAlt extends Filter {
       dimensionsCp[wasCol[1]].nameWorldSpace = "y";
       dimensionsCp[wasCol[2]].nameWorldSpace = "z";
 
-      
-      
       // associating width and height
       dimensionsCp[wasCol[0]].widthDimension = wasCol[1];
       dimensionsCp[wasCol[0]].heightDimension = wasCol[2];
@@ -230,8 +219,6 @@ class NiftiDecoderAlt extends Filter {
       dimensionsCp[wasCol[2]].widthDimension = wasCol[0];
       dimensionsCp[wasCol[2]].heightDimension = wasCol[1];
       
-      
-
       dimensionsToUse = dimensionsCp;
     }
     // ******************* END OF SWAPING **************************************
@@ -273,14 +260,21 @@ class NiftiDecoderAlt extends Filter {
       v2w: v2wMat,
       w2v: w2vMat
     }
+    
+    metadata.statistics = {
+      upToDate: false,
+      min: 0,
+      max: 0
+    }
 
     var output = new Image3DAlt();
     output.setRawData( data );
     output.setRawMetadata( metadata );
-    output.scanDataRange();
+    
+    console.log( metadata );
     
     if(output.metadataIntegrityCheck()){
-      console.log( output );
+      output.scanDataRange();
       this._output[0] = output;
     }
   }

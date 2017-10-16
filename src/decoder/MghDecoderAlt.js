@@ -1,5 +1,5 @@
 /*
-* Author    Jonathan Lurie - http://me.jonahanlurie.fr
+* Author    Jonathan Lurie - http://me.jonathanlurie.fr
 *           Robert D. Vincent
 *
 * License   MIT
@@ -127,7 +127,6 @@ class MghDecoderAlt extends Filter {
         for (j = 0; j < 4; j++) {
           s1 += "xyzc"[j] + "_" + "ras"[i] + " " + dircos[j][i] + " ";
         }
-        console.log(s1);
       }
     }
 
@@ -385,10 +384,9 @@ class MghDecoderAlt extends Filter {
     var output = new Image3DAlt();
     output.setRawData( dataArray );
     output.setRawMetadata( metadata );
-    output.scanDataRange();
     
     if(output.metadataIntegrityCheck()){
-      console.log( output );
+      output.scanDataRange();
       this._output[0] = output;
     }
     

@@ -1,5 +1,5 @@
 /*
-* Author    Jonathan Lurie - http://me.jonahanlurie.fr
+* Author    Jonathan Lurie - http://me.jonathanlurie.fr
 *           Robert D. Vincent
 *
 * License   MIT
@@ -2576,21 +2576,6 @@ class Minc2Decoder extends Filter{
 
     return header;
   }
-
-
-/*
-  createMincVolume(header, raw_data){
-    var volume = createVolume(header, this.createMincData(header, raw_data));
-    volume.type = "minc";
-
-    volume.saveOriginAndTransform(header);
-    volume.intensity_min = header.voxel_min;
-    volume.intensity_max = header.voxel_max;
-
-    return volume;
-
-  }
-*/
 
 
   /*

@@ -437,7 +437,7 @@ class PointCollection {
 } /* END of class PointCollection */
 
 /*
-* Author    Jonathan Lurie - http://me.jonahanlurie.fr
+* Author    Jonathan Lurie - http://me.jonathanlurie.fr
 * License   MIT
 * Link      https://github.com/jonathanlurie/es6module
 * Lab       MCIN - http://mcin.ca/ - Montreal Neurological Institute

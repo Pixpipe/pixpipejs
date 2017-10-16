@@ -8,18 +8,18 @@
 
 
 import { Filter } from '../core/Filter.js';
-import { Image3D } from '../core/Image3D.js';
+import { Image3DAlt } from '../core/Image3DAlt.js';
 
 // decoders
-import { Minc2Decoder } from './Minc2Decoder.js';
-import { NiftiDecoder } from './NiftiDecoder.js';
-import { MghDecoder } from './MghDecoder.js';
-import { PixpDecoder } from './PixpDecoder.js';
+import { Minc2DecoderAlt } from './Minc2DecoderAlt.js';
+import { NiftiDecoderAlt } from './NiftiDecoderAlt.js';
+import { MghDecoderAlt } from './MghDecoderAlt.js';
+//import { PixpDecoder } from './PixpDecoder.js';
 //import { PixBinDecoder } from './PixBinDecoder.js';
 
 
 /**
-* An instance of Image3DGenericDecoder takes a ArrayBuffer 
+* An instance of Image3DGenericDecoderAlt takes a ArrayBuffer 
 * as input 0 (`.addInput(myArrayBuffer)`) and output an Image3D.
 * The `update` method will perform several decoding attempts, using the readers
 * specified in the constructor.
@@ -30,16 +30,16 @@ import { PixpDecoder } from './PixpDecoder.js';
 *
 * Developers: if a new 3D dataset decoder is added, reference it here.
 */
-class Image3DGenericDecoder extends Filter {
+class Image3DGenericDecoderAlt extends Filter {
   
   constructor(){
     super();
     
     this._decoders = [
-      Minc2Decoder,
-      NiftiDecoder,
-      MghDecoder,
-      PixpDecoder,
+      Minc2DecoderAlt,
+      NiftiDecoderAlt,
+      MghDecoderAlt,
+      //PixpDecoder,
       //PixBinDecoder
     ];
   }
@@ -61,6 +61,7 @@ class Image3DGenericDecoder extends Filter {
       
       if(decoder.getNumberOfOutputs()){
         this._output[0] = decoder.getOutput();
+        console.log( this._output[0] );
         this.setMetadata("decoderConstructor", this._decoders[d]);
         this.setMetadata("decoderName", this._decoders[d].name);
         break;
@@ -69,6 +70,6 @@ class Image3DGenericDecoder extends Filter {
   }
   
   
-} /* END of class Image3DGenericDecoder */
+} /* END of class Image3DGenericDecoderAlt */
 
-export { Image3DGenericDecoder }
+export { Image3DGenericDecoderAlt }

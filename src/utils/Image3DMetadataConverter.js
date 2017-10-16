@@ -65,50 +65,7 @@ class Image3DMetadataConverter {
       newMeta.dimensions[i].widthDimension = getIndexOfWorld( getWidthAxisFrom( axisName ) );
       newMeta.dimensions[i].heightDimension = getIndexOfWorld( getHeightAxisFrom( axisName ) );
     }
-    
-    console.log( newMeta.dimensions );
-    
-    /*
-    function getWidthHeighDimIndex(dim){
-      switch (dim.nameWorldSpace) {
-        case 'x':
-          return {
-            w: spacePosition.y,
-            h: spacePosition.z
-          }
-          break;
-          
-        case 'y':
-          return {
-            w: spacePosition.x,
-            h: spacePosition.z
-          }
-          break;
-        
-        case 'z':
-          return {
-            w: spacePosition.x,
-            h: spacePosition.y
-          }
-          break;
-        default:
-          return null;
-      }
-    }
-    
-    var dim0Sides = getWidthHeighDimIndex( newMeta.dimensions[0] );
-    newMeta.dimensions[0].widthDimension = dim0Sides.w;
-    newMeta.dimensions[0].heightDimension = dim0Sides.h;
-    
-    var dim1Sides = getWidthHeighDimIndex( newMeta.dimensions[1] );
-    newMeta.dimensions[1].widthDimension = dim1Sides.w;
-    newMeta.dimensions[1].heightDimension = dim1Sides.h;
-    
-    var dim2Sides = getWidthHeighDimIndex( newMeta.dimensions[2] );
-    newMeta.dimensions[2].widthDimension = dim2Sides.w;
-    newMeta.dimensions[2].heightDimension = dim2Sides.h;
-    */
-    
+  
     newMeta.statistics = {
       upToDate: false,
       min: 0,
@@ -153,8 +110,7 @@ class Image3DMetadataConverter {
   static convertImage3DMetadata( oldMeta ){
     Image3DMetadataConverter.completeHeader( oldMeta );
     var newMetaObj = Image3DMetadataConverter.convertOld2New( oldMeta );
-    
-    console.log( oldMeta );
+
     return newMetaObj;
   }
   
@@ -217,9 +173,6 @@ class Image3DMetadataConverter {
       o.z,
       1
     ];
-    
-    console.log("computed v2w:");
-    console.log( v2w );
 
     oldMetaObj.w2v = w2v;
 
@@ -237,8 +190,6 @@ class Image3DMetadataConverter {
     zspace.width        = xspace.space_length;
     zspace.height_space = JSON.parse( JSON.stringify( yspace ) );//yspace;
     zspace.height       = yspace.space_length;
-    
-    console.log( oldMetaObj );
   }
   
   

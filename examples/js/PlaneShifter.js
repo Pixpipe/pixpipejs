@@ -1,5 +1,5 @@
 /*
-* Author   Jonathan Lurie - http://me.jonahanlurie.fr
+* Author   Jonathan Lurie - http://me.jonathanlurie.fr
 * License  MIT
 * Link      https://github.com/jonathanlurie/PlaneDrag
 * Lab       MCIN - Montreal Neurological Institute

@@ -1,0 +1,74 @@
+<html>
+<head>
+  <title>Image2D To Canvas</title>
+
+  <script src="../dist/pixpipe.js"></script>
+
+  <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700,900" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+
+</head>
+<body>
+  <h1><a href="https://github.com/Pixpipe/pixpipejs"><span style="color: #ff91d7">Pixpipe</span><span style="color: #FFFFFF">js</span></a></h1>
+  <p>
+  This does the following :
+  <ul>
+    <li>creating a <code>pixpipe.Image2D</code> with a given size and color</li>
+    <li>displaying it in a canvas using <code>pixpipe.CanvasImageWriter</code></li>
+  </ul>
+
+  </p>
+
+  <div id="myDiv"></div>
+
+  <script>
+
+  // create some patches
+  var patches = [
+    new pixpipe.Image2D({width: 100, height: 50, color: [255, 128, 64, 255]}),
+    new pixpipe.Image2D({width: 30, height: 60, color: [0, 255, 0, 255]}),
+    new pixpipe.Image2D({width: 10, height: 20, color: [128, 64, 255, 255]}),
+    new pixpipe.Image2D({width: 80, height: 100, color: [0, 0, 255, 255]})
+  ]
+  
+  var patchFilter = new pixpipe.PatchImageFilter();
+  
+  // the final image size
+  patchFilter.setMetadata( "outputSize", {w: 600, h:350} );
+  
+  // the default is black but we rather want if white (with alpha also to 255)
+  patchFilter.setMetadata( "outputColor", [255, 255, 255, 255] );
+  
+  // we now dispose each patch
+  for(var i=0; i<patches.length; i++){
+    
+    // We tell the filter patch to add, alway as the default input (position 0)
+    patchFilter.addInput( patches[i] );
+    
+    // at a random position, still we make sure it does not go outside the boundaries
+    // of the output size we specified.
+    // Remember 'patchPosition' is the top left corner position of a patch.
+    // A patch can be partly or partially out of bound but a warning will show in console.
+    patchFilter.setMetadata( "patchPosition", {x: Math.random()*500 , y: Math.random()*250} ); 
+    
+    // we apply the patch
+    patchFilter.update()
+    
+    // this last options will reset the output so that the next patching will be
+    // on a blank image. This is convenient when we want to create multiple outputs,
+    // but in our case, it really make no sense.
+    //patchFilter.setMetadata( "resetOutput", true );
+  }
+  
+  var patchedOutput = patchFilter.getOutput();
+  
+  // create a filter to write the image into a canvas
+  var imageToCanvasFilter = new pixpipe.CanvasImageWriter( );
+  imageToCanvasFilter.setMetadata( "parentDivID", "myDiv" );
+  imageToCanvasFilter.addInput( patchedOutput );
+  imageToCanvasFilter.update();
+
+  </script>
+
+</body>
+</html>

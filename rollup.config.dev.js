@@ -1,6 +1,10 @@
 var config = require('./package.json');
 
-import babel from 'rollup-plugin-babel';
+/*
+    The dev version of the Rollup config does not transpile to ES5
+    and outputs a single umd package.
+*/
+
 import commonjs from 'rollup-plugin-commonjs';
 import nodeResolve from 'rollup-plugin-node-resolve';
 //import bundleWorker from 'rollup-plugin-bundle-worker';
@@ -9,29 +13,6 @@ import globals from 'rollup-plugin-node-globals';
 
 
 export default [
-  {
-
-    input: config.entry,
-    output: {
-      file: config.moduleBuildDir + '/' + config.moduleName + '.' + config.moduleFormat + '.js',
-      format: config.moduleFormat
-    },
-    name: config.moduleName,
-    sourcemap: true,
-    plugins: [
-      nodeResolve({
-        preferBuiltins: false
-      }),
-      commonjs(),
-      //bundleWorker(),
-      globals(),
-      builtins(),
-      babel({
-        babelrc: false,
-        presets: [ 'es2015-rollup' ]
-      })
-    ]
-  },
   {
     input: config.entry,
     output: {
@@ -47,11 +28,7 @@ export default [
       commonjs(),
       //bundleWorker(),
       globals(),
-      builtins(),
-      babel({
-        babelrc: false,
-        presets: [ 'es2015-rollup' ]
-      })
+      builtins()
     ]
   }
 ];

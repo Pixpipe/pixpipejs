@@ -1,5 +1,5 @@
 /*
-* Author   Jonathan Lurie - http://me.jonahanlurie.fr
+* Author   Jonathan Lurie - http://me.jonathanlurie.fr
 * License  MIT
 * Link      https://github.com/Pixpipe/pixpipejs
 * Lab       MCIN - Montreal Neurological Institute
@@ -67,8 +67,8 @@ class Image3DAlt extends PixpipeContainer{
       dimensions: joi.array().min(3).max(4).items(
         joi.object({
           length: joi.number().integer().min(1).required(),
-          widthDimension: joi.number().integer().min(0).max(2).required(),
-          heightDimension: joi.number().integer().min(0).max(2).required(),
+          widthDimension: joi.number().integer().min(-1).max(2).required(), // -1 means "does not apply" --> time series
+          heightDimension: joi.number().integer().min(-1).max(2).required(), // idem
           nameVoxelSpace: joi.string().regex(/(i|j|k|t)/).required(),
           nameWorldSpace: joi.string().regex(/(x|y|z|t)/).required(),
           worldUnitSize: joi.number().required(),
@@ -350,8 +350,35 @@ class Image3DAlt extends PixpipeContainer{
     }
     metaStat.min = min;
     metaStat.max = max;
+    metaStat.upToDate = true;
   }
 
+
+  /**
+  * Get the minimum voxel value. If stats are not up to date, scanDataRange() is called.
+  * Hook to metadata.
+  * @return {Number} the minimum
+  */
+  getMinValue(){
+    if( !this._metadata.statistics.upToDate ){
+      this.scanDataRange();
+    }
+    return this._metadata.statistics.min;    
+  }
+  
+  
+  /**
+  * Get the maximum voxel value. If stats are not up to date, scanDataRange() is called.
+  * Hook to metadata.
+  * @return {Number} the minimum
+  */
+  getMaxValue(){
+    if( !this._metadata.statistics.upToDate ){
+      this.scanDataRange();
+    }
+    return this._metadata.statistics.max;    
+  }
+  
 
   /**
   * Get the voxel value from a voxel position (in a voxel-coordinate sytem) with NO
@@ -392,6 +419,49 @@ class Image3DAlt extends PixpipeContainer{
   
   
   /**
+  * Set the value of a voxel
+  * @param {Object} position - 3D position like {i, j, k}, i being the fastest varying, k being the slowest varying
+  * @param {Number} value - the value to give to this voxel
+  * @param {Number} time - position along T axis (time dim, the very slowest varying dim when present)
+  */
+  setVoxel( position, value, time=0 ){
+    var dimensions = this._metadata.dimensions;
+    var i = position.i;
+    var j = position.j;
+    var k = position.k;
+    
+    if(i<0 || j<0 || k<0 || time<0 || 
+       i>=dimensions[0].length  ||
+       j>=dimensions[1].length  ||
+       k>=dimensions[2].length  ||
+       ( dimensions.length>3 && time>=dimensions[3].length) )
+    {
+      console.warn("Voxel query is out of bound.");
+      return null;
+    }
+    
+    var ncpp = this._metadata.ncpp;
+    
+    var tOffset = dimensions.length > 3 ? time*dimensions[3].stride * time : 0;
+    var iOffset = i * dimensions[2].stride;
+    var jOffset = j * dimensions[1].stride;
+    var kOffset = k * dimensions[0].stride;
+    
+    var positionBuffer = tOffset + iOffset + jOffset + kOffset;
+    positionBuffer *= ncpp;
+    this._data[ positionBuffer ] = value;
+    
+    // updating range
+    if( value > this._metadata.statistics.max ){
+      this._metadata.statistics.max = value;
+    }else if( value < this._metadata.statistics.min ){
+      this._metadata.statistics.min = value;
+    }
+  }
+  
+  
+  /**
+  * [DON'T USE]
   * Get a voxel value at a given position with regards of the direction the data are
   * supposed to be read. In other word, dimension.step is taken into account.
   * @param {Object} position - 3D position like {i, j, k}, i being the fastest varying, k being the slowest varying
@@ -402,6 +472,10 @@ class Image3DAlt extends PixpipeContainer{
     var i = position.i;
     var j = position.j;
     var k = position.k;
+    
+    if( i== 10 && j==30 && k==20){
+      console.log("stop");
+    }
     
     if(i<0 || j<0 || k<0 || time<0 || 
        i>=dimensions[0].length  ||
@@ -531,13 +605,35 @@ class Image3DAlt extends PixpipeContainer{
   }
   
   
-  getValueTransfoSpace( spaceToVoxelTransfoName, spacePosition, time=0 ){
+  /**
+  * Get a value from the dataset using {x, y, z} coordinates of a transformed space.
+  * Keep in mind world (or subject) are floating point but voxel coordinates are integers.
+  * This does not perform interpolation.
+  * @param {String} spaceToVoxelTransfoName - name of the affine transformation - must exist
+  * @param {Object} spacePosition - non-voxel-space 3D coordinates, most likely world coordinates
+  * @param {Number} time - Position on time (default: 0)
+  * @return {Number} value at this position
+  */
+  getVoxelTransfoSpace( spaceToVoxelTransfoName, spacePosition, time=0 ){
     // transform to voxel space
     var voxPos = this.getPositionFromTransfoSpaceToVoxelSpace( spacePosition, spaceToVoxelTransfoName );
-    var color = this.getVoxel( voxPos, time );
+    var color = this.getVoxel( voxPos, time ); 
     return color;
   }
   
+  
+  /**
+  * Get a value from the dataset using {x, y, z} coordinates of a transformed space.
+  * Keep in mind world (or subject) are floating point but voxel coordinates are integers.
+  * This does not perform interpolation.
+  * @param {String} spaceToVoxelTransfoName - name of the affine transformation - must exist
+  * @param {Object} spacePosition - non-voxel-space 3D coordinates, most likely world coordinates
+  * @param {Number} time - Position on time (default: 0)
+  */
+  setVoxelTransfoSpace( spaceToVoxelTransfoName, spacePosition, value, time=0 ){
+    var voxPos = this.getPositionFromTransfoSpaceToVoxelSpace( spacePosition, spaceToVoxelTransfoName );
+    var color = this.setVoxel( voxPos, value, time );
+  }
   
   
   /**
@@ -625,6 +721,71 @@ class Image3DAlt extends PixpipeContainer{
 
 
   /**
+  * Get the size (width and height) of a slice along a given axis
+  * @param {Number|String} dimIndex - can be 0, 1, 2 or "i", "j", "k"
+  * @return {Object} width and height as an object like {w: Number, h: Number};
+  */ 
+  getSliceSize( normalAxis ){
+    if( typeof normalAxis === "string" ){
+      // if string/name replace by its equivalent numerical index
+      normalAxis = this.getDimensionIndexFromName( normalAxis );
+      if(normalAxis == -1){
+        console.warn("dimensions " + normalAxis + " does not exist.");
+        return;
+      }
+    }
+      
+    var dimensions = this._metadata.dimensions;
+    
+    // The dimension of the normalAxis must exist (and not be time)
+    if( normalAxis > 2 ){
+      console.warn("The dimension of a slice should be lower than 3.");
+      return null;
+    }
+    
+    // the final slice image has for normal vector the sliceDimension.
+    // In other words, the width and height of the slice will be the "lenght" of
+    // the sliceDimension.widthDimension and sliceDimension.heightDimension respectively
+    var sliceDimension = dimensions[normalAxis];
+    var widthDimension = dimensions[sliceDimension.widthDimension];
+    var heightDimension = dimensions[sliceDimension.heightDimension];
+    
+    return {w: widthDimension.length, h: heightDimension.length};
+  }
+
+  
+  /**
+  * Get the number of slices along a given axis
+  * @param {Number|String} dimIndex - can be 0, 1, 2 or "i", "j", "k"
+  * @return {Number} number of slices
+  */ 
+  getNumberOfSlices( normalAxis ){
+    if( typeof normalAxis === "string" ){
+      // if string/name replace by its equivalent numerical index
+      normalAxis = this.getDimensionIndexFromName( normalAxis );
+      if(normalAxis == -1){
+        console.warn("dimensions " + normalAxis + " does not exist.");
+        return;
+      }
+    }
+      
+    var dimensions = this._metadata.dimensions;
+    
+    // The dimension of the normalAxis must exist (and not be time)
+    if( normalAxis > 2 ){
+      console.warn("The dimension of a slice should be lower than 3.");
+      return null;
+    }
+    
+    // the final slice image has for normal vector the sliceDimension.
+    // In other words, the width and height of the slice will be the "lenght" of
+    // the sliceDimension.widthDimension and sliceDimension.heightDimension respectively
+    var sliceDimension = dimensions[normalAxis];
+    
+    return sliceDimension.length;
+  }
+
+  /**
   * Get the number of samples over time
   * @return {number} the number of time samples
   */
@@ -634,7 +795,21 @@ class Image3DAlt extends PixpipeContainer{
   }
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
   /**
+  * #TODO make it voxel and world!!!!
   * Tells if a given point is inside or outside the image
   * @param {Object} pos - position like {x: Number, y: Number, z: Number}
   * @return {Boolean} true for inside, false for outside
@@ -648,6 +823,7 @@ class Image3DAlt extends PixpipeContainer{
 
 
   /**
+  * #TODO TO BE REDONE!
   * Sample the color along a segment
   * @param {Object} posFrom - starting position of type {x: Number, y: Number, z: Number}
   * @param {Object} posFrom - ending position of type {x: Number, y: Number, z: Number}
