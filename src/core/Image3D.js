@@ -1,5 +1,5 @@
 /*
-* Author   Jonathan Lurie - http://me.jonahanlurie.fr
+* Author   Jonathan Lurie - http://me.jonathanlurie.fr
 * License  MIT
 * Link      https://github.com/Pixpipe/pixpipejs
 * Lab       MCIN - Montreal Neurological Institute
@@ -450,6 +450,10 @@ class Image3D extends PixpipeContainer{
   
   getIntensity_xyzOrientation( x, y, z, time=0){
     var time_offset = this.hasMetadata("time") ? time * this.getMetadata("time").offset : 0;
+    
+    if( x== 10 && y==30 && z==20){
+      console.log("stop");
+    }
     
     var xspace = this.getMetadata("xspace");
     var yspace = this.getMetadata("yspace");

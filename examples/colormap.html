@@ -32,7 +32,9 @@
 
   <p>
     <select id="colormapStyles" onchange="updateStyle(event)"></select>
+    <input id="flipCheck" onchange="updateStyle(event)" type="checkbox" style="margin-left: 50px"> flip
   </p>
+  
   <p>
     <label>Number of samples</label><input id="slider" type="range" min="4" max="100" value="30" oninput="updateNbSamples(event)" onchange="updateNbSamples(event)" width="200px"/><span id="sliderFeedback"></span>
   </p>
@@ -63,15 +65,17 @@
 
   // create an instance of colormap using an existing style
   var cm = new pixpipe.Colormap();
+  
 
   refreshColormap();
 
 
   function updateStyle(evt){
-    currentStyle = evt.target.value;
-
+    currentStyle = document.getElementById( "colormapStyles" ).value;
+    cm.setMetadata("flip", document.getElementById( "flipCheck" ).checked );
     refreshColormap();
   }
+
 
   function updateNbSamples(evt){
     currentNbSamples = evt.target.value;

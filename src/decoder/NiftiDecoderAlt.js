@@ -1,5 +1,5 @@
 /*
-* Author    Jonathan Lurie - http://me.jonahanlurie.fr
+* Author    Jonathan Lurie - http://me.jonathanlurie.fr
 *
 * License   MIT
 * Link      https://github.com/Pixpipe/pixpipejs
@@ -61,8 +61,6 @@ class NiftiDecoderAlt extends Filter {
       return;
     }
 
-    console.log( nifti );
-
     if(! nifti.isNIFTI( inputBuffer )) {
       console.warn("Not a NIfTI file");
       return;
@@ -73,9 +71,6 @@ class NiftiDecoderAlt extends Filter {
 
     var header = nifti.readHeader(inputBuffer);
     var rawData = nifti.readImage(header, inputBuffer);
-
-    console.log( header );
-
 
     data = this._fetchDataArray(header, rawData);
 
@@ -102,8 +97,10 @@ class NiftiDecoderAlt extends Filter {
       niftiTransfoMatrix = header.affine;
     }
     
+    console.log( header );
+    
     // dimensions info ordered from the fastest varying to the slowest varying
-    var voxelSpaceNames = ['i', 'j', 'k', 't'];
+    var voxelSpaceNames = ['k', 'j', 'i', 't'];
     var worldSpaceNames = ['x', 'y', 'z', 't'];
     var dimensions = [];
 
@@ -122,6 +119,7 @@ class NiftiDecoderAlt extends Filter {
         nameWorldSpace: worldSpaceNames[d],
         worldUnitSize: header.pixDims[d + 1],
         stride: stride,
+        step: header.pixDims[d + 1], // same to worldUnitSize but will prob be changed if swapped, except for time
         //direction: niftiTransfoMatrix[d][d] < 0 ? -1 : 1, // to be filled later
       }
       dimensions.push( dimension )
@@ -153,14 +151,15 @@ class NiftiDecoderAlt extends Filter {
     - the 3rd row should be the one with the highest absolute value from all 3rd columns
     */
     
-    function whichRowHasHighestCol( arrOfArr, col){
-      var r0 = Math.abs(arrOfArr[0][col]);
-      var r1 = Math.abs(arrOfArr[1][col]);
-      var r2 = Math.abs(arrOfArr[2][col]);
+    // give the index of the row that has the highest value among a given col
+    function whichRowHasHighestValueFromGivenCol( arrOfArr, col){
+      var cx = Math.abs(arrOfArr[0][col]);
+      var cy = Math.abs(arrOfArr[1][col]);
+      var cz = Math.abs(arrOfArr[2][col]);
       
-      if( r0 > r1 && r0 > r2){
+      if( cx > cy && cx > cz){
         return 0;
-      }else if(r1 > r0 && r1 > r2){
+      }else if(cy > cx && cy > cz){
         return 1;
       }else{
         return 2
@@ -171,63 +170,80 @@ class NiftiDecoderAlt extends Filter {
       return Math.sqrt( arr[0]*arr[0] + arr[1]*arr[1] + arr[2]*arr[2] );
     }
     
-    var shouldBeRow0 = whichRowHasHighestCol(niftiTransfoMatrix, 0);
-    var shouldBeRow1 = whichRowHasHighestCol(niftiTransfoMatrix, 1);
-    var shouldBeRow2 = whichRowHasHighestCol(niftiTransfoMatrix, 2);
+    var shouldBeCol0 = whichRowHasHighestValueFromGivenCol(niftiTransfoMatrix, 0);
+    var shouldBeCol1 = whichRowHasHighestValueFromGivenCol(niftiTransfoMatrix, 1);
+    var shouldBeCol2 = whichRowHasHighestValueFromGivenCol(niftiTransfoMatrix, 2);
     
-    // when we have shouldBeRow[ n ] = m it means that the current original row m 
+    // when we have shouldBeCol[ n ] = m it means that the current original row m 
     // of transfo-matrix should move to the position n
-    var shouldBeRow = [ shouldBeRow0, shouldBeRow1, shouldBeRow2 ];
-    // this is the inverse lookup of shouldBeRow
-    var wasRow = [ shouldBeRow.indexOf(0), shouldBeRow.indexOf(1), shouldBeRow.indexOf(2) ];
+    var shouldBeCol = [ shouldBeCol0, shouldBeCol1, shouldBeCol2 ];
+    // this is the inverse lookup of shouldBeCol
+    var wasCol = [ shouldBeCol.indexOf(0), shouldBeCol.indexOf(1), shouldBeCol.indexOf(2) ];
     
-    var transfoMatrixToUse = niftiTransfoMatrix;
+    var transfoMatrixToUse = JSON.parse(JSON.stringify(niftiTransfoMatrix));
     var dimensionsToUse = dimensions;
     
     // ******************* BEGIN TO SWAP ***************************************
     
     // if so, the dimension list and the matrix need swapping
-    if( shouldBeRow[0] != 0 || shouldBeRow[1] != 1 || shouldBeRow[2] != 2){
-      // swap the matrix rows
-      transfoMatrixToUse = [
-        [niftiTransfoMatrix[shouldBeRow[0]][0], niftiTransfoMatrix[shouldBeRow[0]][1], niftiTransfoMatrix[shouldBeRow[0]][2], niftiTransfoMatrix[shouldBeRow[0]][3]],
-        [niftiTransfoMatrix[shouldBeRow[1]][0], niftiTransfoMatrix[shouldBeRow[1]][1], niftiTransfoMatrix[shouldBeRow[1]][2], niftiTransfoMatrix[shouldBeRow[1]][3]],
-        [niftiTransfoMatrix[shouldBeRow[2]][0], niftiTransfoMatrix[shouldBeRow[2]][1], niftiTransfoMatrix[shouldBeRow[2]][2], niftiTransfoMatrix[shouldBeRow[2]][3]],
-        [niftiTransfoMatrix[3][0], niftiTransfoMatrix[3][1], niftiTransfoMatrix[3][2], niftiTransfoMatrix[3][3]],
-      ]
-  
+    if( shouldBeCol[0] != 0 || shouldBeCol[1] != 1 || shouldBeCol[2] != 2){
+      
+      // swap the matrix cols
+      for (var i = 0; i < 3; i++) {
+        for (var j = 0; j < 4; j++) {
+          var volumeAxis = j;
+          if (j < 3) {
+            volumeAxis = shouldBeCol[j];
+          }
+          transfoMatrixToUse[i][volumeAxis] = niftiTransfoMatrix[i][j];
+        }
+      }
+      
       // just making a safe copy
       var dimensionsCp = JSON.parse(JSON.stringify(dimensions))
 
       // renaming it. Then it seems to already be in the correct order. Not sure why?? TODO: see why!
-      dimensionsCp[wasRow[0]].nameVoxelSpace = "i";
-      dimensionsCp[wasRow[1]].nameVoxelSpace = "j";
-      dimensionsCp[wasRow[2]].nameVoxelSpace = "k";
-      dimensionsCp[wasRow[0]].nameWorldSpace = "x";
-      dimensionsCp[wasRow[1]].nameWorldSpace = "y";
-      dimensionsCp[wasRow[2]].nameWorldSpace = "z";
+      dimensionsCp[0].nameVoxelSpace = "k";
+      dimensionsCp[1].nameVoxelSpace = "j";
+      dimensionsCp[2].nameVoxelSpace = "i";
+      
+      dimensionsCp[wasCol[0]].nameWorldSpace = "x";
+      dimensionsCp[wasCol[1]].nameWorldSpace = "y";
+      dimensionsCp[wasCol[2]].nameWorldSpace = "z";
 
       // associating width and height
-      dimensionsCp[wasRow[0]].widthDimension = wasRow[1];
-      dimensionsCp[wasRow[0]].heightDimension = wasRow[2];
-      dimensionsCp[wasRow[1]].widthDimension = wasRow[0];
-      dimensionsCp[wasRow[1]].heightDimension = wasRow[2];
-      dimensionsCp[wasRow[2]].widthDimension = wasRow[0];
-      dimensionsCp[wasRow[2]].heightDimension = wasRow[1];
-
+      dimensionsCp[wasCol[0]].widthDimension = wasCol[1];
+      dimensionsCp[wasCol[0]].heightDimension = wasCol[2];
+      dimensionsCp[wasCol[1]].widthDimension = wasCol[0];
+      dimensionsCp[wasCol[1]].heightDimension = wasCol[2];
+      dimensionsCp[wasCol[2]].widthDimension = wasCol[0];
+      dimensionsCp[wasCol[2]].heightDimension = wasCol[1];
       
-
       dimensionsToUse = dimensionsCp;
     }
     // ******************* END OF SWAPING **************************************
     
+    // return the dimsniosn object given its world name ('x', 'y' or 'z')
+    function getDimensionByWorldName( name ){
+      for(var i=0; i<dimensionsToUse.length; i++){
+        if(dimensionsToUse[i].nameWorldSpace === name)
+          return dimensionsToUse[i];
+      }
+      return null;
+    }
     
     // set the directions
     for(var i=0; i<3; i++){
       var stepSize = getMagnitude( transfoMatrixToUse[i] )
       var directionSign = Math.sign( transfoMatrixToUse[i][i]);
-      dimensionsToUse[i].step = stepSize * directionSign;
+      //dimensionsToUse[i].step = stepSize * directionSign;
+      
+      // so that when i==0, dimension is x, etc.
+      var dimension = getDimensionByWorldName(worldSpaceNames[i])
+      dimension.step = stepSize * directionSign;
     }
+    
+    
     
     metadata.dimensions = dimensionsToUse;
     
@@ -244,14 +260,21 @@ class NiftiDecoderAlt extends Filter {
       v2w: v2wMat,
       w2v: w2vMat
     }
+    
+    metadata.statistics = {
+      upToDate: false,
+      min: 0,
+      max: 0
+    }
 
     var output = new Image3DAlt();
     output.setRawData( data );
     output.setRawMetadata( metadata );
-    output.scanDataRange();
+    
+    console.log( metadata );
     
     if(output.metadataIntegrityCheck()){
-      console.log( output );
+      output.scanDataRange();
       this._output[0] = output;
     }
   }
