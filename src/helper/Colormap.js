@@ -17,6 +17,7 @@ import { ColorScales } from './ColorScales.js';
 * by building en entire LUT with a given granularity and then getting back these values.
 * In case of intensive use (ie. applying fake colors), building a LUT is a faster option.
 * Once a LUT is built,  an image of this LUT can be created (horizontal or vertical, flipped or not).
+* The image will be flipped is the `flip` matadata is set to `true`;
 * This image, which is an Image2D is not supposed to be used as a LUT but just as a visual reference.
 *
 * **Usage**
@@ -38,6 +39,8 @@ class Colormap extends PixpipeObject {
     this._type = Colormap.TYPE();
     this._colormapDescription = null;
     this._LUT = [];
+
+    this.setMetadata("flip", false);
 
     var style = this._getOption(options, "style", null);
 
@@ -239,15 +242,16 @@ class Colormap extends PixpipeObject {
   /**
   * Creates a horizontal Image2D of the colormap. The height is 1px and
   * the width is the size of the LUT currently in use.
-  * @param {Boolean} flip - flips the colormap image
+  * The image can be horizontally flipped when the "flip" metadata is true;
   * @return {Image2D} the result image
   */
-  createHorizontalLutImage( flip=false ){
+  createHorizontalLutImage(){
     if(! this._LUT ){
       console.warn("The LUT must be built before creating a LUT image.");
       return;
     }
-
+    
+    var flip = this.getMetadata("flip");
     var LutSize = this._LUT.length;
     var colorStrip = new Image2D({width: LutSize, height: 1, color: [0, 0, 0]});
 
@@ -263,15 +267,16 @@ class Colormap extends PixpipeObject {
   /**
   * Creates a vertical Image2D of the colormap. The height is 1px and
   * the width is the size of the LUT currently in use.
-  * @param {Boolean} flip - flips the colormap image
+  * The image can be vertically flipped when the "flip" metadata is true;
   * @return {Image2D} the result image
   */
-  createVerticalLutImage( flip=false ){
+  createVerticalLutImage(){
     if(! this._LUT ){
       console.warn("The LUT must be built before creating a LUT image.");
       return;
     }
 
+    var flip = this.getMetadata("flip");
     var LutSize = this._LUT.length;
     var colorStrip = new Image2D({width: 1, height: LutSize, color: [0, 0, 0]});
 

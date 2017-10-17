@@ -231,6 +231,22 @@ class Image3DAlt extends PixpipeContainer{
 
   /**
   * [PRIVATE]
+  * Get an 4x4 identity matrix. This is used as the default transformations w2v
+  * and v2w, which means "no transformation"
+  * @return {Array} the 4x4 identity as a 1D array
+  */
+  _get4x4IdentityMatrix(){
+    return [
+      1, 0, 0, 0,
+      0, 1, 0, 0,
+      0, 0, 1, 0,
+      0, 0, 0, 1
+    ];
+  }
+
+
+  /**
+  * [PRIVATE]
   * Called from the constructor or the setData method
   */
   _initData( options, buffer = null ){
@@ -292,6 +308,14 @@ class Image3DAlt extends PixpipeContainer{
           dimensions.push( timeDim );
           this.setMetadata("dimensions", dimensions);
         }
+        
+        // default transformations
+        var transformations = {
+          "v2w": this._get4x4IdentityMatrix(),
+          "w2v": this._get4x4IdentityMatrix()
+        }
+        this.setMetadata("transformations", transformations);
+        
 
         // if a buffer is provided, we perform a size-check
         if( buffer ){
@@ -567,7 +591,7 @@ class Image3DAlt extends PixpipeContainer{
   /**
   * Convert a position from voxel coordinates to another space
   * @param {Object} voxelPosition - voxel coordinates like {i: Number, j: Number, k: Number} where i is the slowest varying and k is the fastest varying
-  * @param {String} transformName - name of a transformation registered in the metadata as a child property of "transformations"
+  * @param {String} transformName - name of a transformation registered in the metadata as a child property of "transformations", "v2*"
   * @return {Object} coordinates {x: Number, y: Number, z: Number} in the space coorinate given in argument
   */
   getPositionFromVoxelSpaceToTransfoSpace(  voxelPosition, transformName ){
@@ -590,7 +614,7 @@ class Image3DAlt extends PixpipeContainer{
   /**
   * Convert coordinates from a a given (non-voxel based) position into a voxel based coord
   * @param {Object} spacePosition - a non-voxel based coordinate as {x: Number, y: Number, z: Number}
-  * @param {String} transformName - name of the transformation to use
+  * @param {String} transformName - name of the transformation to use, "*2v"
   * @return {Object} coordinates {i: Number, j: Number, k: Number} in the space coorinate given in argument
   */
   getPositionFromTransfoSpaceToVoxelSpace( spacePosition , transformName ){
@@ -609,8 +633,8 @@ class Image3DAlt extends PixpipeContainer{
   * Get a value from the dataset using {x, y, z} coordinates of a transformed space.
   * Keep in mind world (or subject) are floating point but voxel coordinates are integers.
   * This does not perform interpolation.
-  * @param {String} spaceToVoxelTransfoName - name of the affine transformation - must exist
-  * @param {Object} spacePosition - non-voxel-space 3D coordinates, most likely world coordinates
+  * @param {String} spaceToVoxelTransfoName - name of the affine transformation "*2v" - must exist
+  * @param {Object} spacePosition - non-voxel-space 3D coordinates, most likely world coordinates {x: Number, y: Number, z: Number}
   * @param {Number} time - Position on time (default: 0)
   * @return {Number} value at this position
   */
@@ -626,13 +650,13 @@ class Image3DAlt extends PixpipeContainer{
   * Get a value from the dataset using {x, y, z} coordinates of a transformed space.
   * Keep in mind world (or subject) are floating point but voxel coordinates are integers.
   * This does not perform interpolation.
-  * @param {String} spaceToVoxelTransfoName - name of the affine transformation - must exist
-  * @param {Object} spacePosition - non-voxel-space 3D coordinates, most likely world coordinates
+  * @param {String} spaceToVoxelTransfoName - name of the affine transformation "*2v" - must exist
+  * @param {Object} spacePosition - non-voxel-space 3D coordinates, most likely world coordinates {x: Number, y: Number, z: Number}
   * @param {Number} time - Position on time (default: 0)
   */
   setVoxelTransfoSpace( spaceToVoxelTransfoName, spacePosition, value, time=0 ){
     var voxPos = this.getPositionFromTransfoSpaceToVoxelSpace( spacePosition, spaceToVoxelTransfoName );
-    var color = this.setVoxel( voxPos, value, time );
+    this.setVoxel( voxPos, value, time );
   }
 
 
@@ -801,25 +825,44 @@ class Image3DAlt extends PixpipeContainer{
 
 
 
-
-
-
-
-
-
-
   /**
-  * #TODO make it voxel and world!!!!
-  * Tells if a given point is inside or outside the image
-  * @param {Object} pos - position like {x: Number, y: Number, z: Number}
-  * @return {Boolean} true for inside, false for outside
+  * Tells whether or not the given position is within the boundaries or the datacube.
+  * This works with voxel coordinates ijk
+  * @param {Object} pos - Voxel coordinates as {i: Number, j: Number, k: Number}
+  * where i is along the slowest varying dimension and k is along the fastest.
+  * @return {Boolean} true if inside, false if outside
   */
-  isInside( pos ){
+  isInsideVoxelSpace( pos ){
     var dimensions = this._metadata.dimensions;
-    return !(pos.x < 0 || pos.x >= dimensions[0].length ||
-             pos.y < 0 || pos.y >= dimensions[1].length ||
-             pos.z < 0 || pos.z >= dimensions[2].length)
+    var isInside = false;
+    
+    try{
+    isInside = !(pos.i < 0 || pos.i >= dimensions[2].length ||
+                 pos.j < 0 || pos.j >= dimensions[1].length ||
+                 pos.k < 0 || pos.k >= dimensions[0].length);
+    }catch(e){
+      console.warn( e );
+    }
+    return isInside;    
   }
+
+  
+  /**
+  * Is the given point in a transform coordinates system (world or subject) inside the dataset?
+  * This is achieved by converting the transformed coordinates into voxel coordinates.
+  * @param {Object} pos - transformed coordinates (world or subject) as {x: Number, y: Number, z: Number}
+  * @param {String} transformName - id or a registered transformation "*2v"
+  */
+  isInsideTransfoSpace( pos, transformName){
+    var voxelSpacePosition = this.getPositionFromTransfoSpaceToVoxelSpace( pos, transformName );
+    return this.isInsideVoxelSpace( voxelSpacePosition );
+  }
+
+
+
+
+  
+
 
 
   /**

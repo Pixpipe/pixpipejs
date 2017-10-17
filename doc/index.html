@@ -153,6 +153,11 @@
                   _buildMetadataSchema
                 </a>
                 <a
+                  href='#Image3DAlt._get4x4IdentityMatrix'
+                  class='regular block'>
+                  _get4x4IdentityMatrix
+                </a>
+                <a
                   href='#Image3DAlt._getTransformedPosition'
                   class='regular block'>
                   _getTransformedPosition
@@ -268,9 +273,14 @@
                   getVoxelTransfoSpace
                 </a>
                 <a
-                  href='#Image3DAlt.isInside'
+                  href='#Image3DAlt.isInsideTransfoSpace'
                   class='regular block'>
-                  isInside
+                  isInsideTransfoSpace
+                </a>
+                <a
+                  href='#Image3DAlt.isInsideVoxelSpace'
+                  class='regular block'>
+                  isInsideVoxelSpace
                 </a>
                 <a
                   href='#Image3DAlt.scanDataRange'
@@ -613,6 +623,16 @@
                   _loadUrl
                 </a>
               <a
+                href='#SpectralScaleImageFilter'
+                class='block bold h3 bg-pink-alpha'>
+                SpectralScaleImageFilter
+              </a>
+                <a
+                  href='#SpectralScaleImageFilter._run'
+                  class='regular block'>
+                  _run
+                </a>
+              <a
                 href='#FileImageReader'
                 class='block bold h3 bg-pink-alpha'>
                 FileImageReader
@@ -626,16 +646,6 @@
                   href='#FileImageReader.hasValidInput'
                   class='regular block'>
                   hasValidInput
-                </a>
-              <a
-                href='#SpectralScaleImageFilter'
-                class='block bold h3 bg-pink-alpha'>
-                SpectralScaleImageFilter
-              </a>
-                <a
-                  href='#SpectralScaleImageFilter._run'
-                  class='regular block'>
-                  _run
                 </a>
               <a
                 href='#MniVolume'
@@ -2487,6 +2497,37 @@ Build the LUT to fetch dimensions easier = using their name as index rather than
 </section>
           </div>
         </div>
+        <div class='collapsible' id='Image3DAlt._get4x4IdentityMatrix'>
+          <a href='#Image3DAlt._get4x4IdentityMatrix'>
+            <code>
+              _get4x4IdentityMatrix<span class='gray'></span>
+            </code>
+            <div class='force-inline'>
+              <p>[PRIVATE]
+Get an 4x4 identity matrix. This is used as the default transformations w2v
+and v2w, which means &quot;no transformation&quot;</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2'>
+<section class='py2 clearfix'>
+  <h2 id='Image3DAlt._get4x4IdentityMatrix' class='mt0'>
+    _get4x4IdentityMatrix<span class='gray'></span>
+  </h2>
+  <p>[PRIVATE]
+Get an 4x4 identity matrix. This is used as the default transformations w2v
+and v2w, which means &quot;no transformation&quot;</p>
+
+      <h4>Returns</h4>
+      <code><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a></code></code>
+      :
+      <div class='force-inline'>
+        <p>the 4x4 identity as a 1D array</p>
+
+      </div>
+</section>
+          </div>
+        </div>
         <div class='collapsible' id='Image3DAlt._getTransformedPosition'>
           <a href='#Image3DAlt._getTransformedPosition'>
             <code>
@@ -2975,7 +3016,7 @@ Hook to metadata.</p>
         <li><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a></code> <strong>transformName</strong>
           :
           <div class='force-inline'>
-            <p>name of the transformation to use</p>
+            <p>name of the transformation to use, &quot;*2v&quot;</p>
 
           </div>
         </li>
@@ -3019,7 +3060,7 @@ Hook to metadata.</p>
         <li><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a></code> <strong>transformName</strong>
           :
           <div class='force-inline'>
-            <p>name of a transformation registered in the metadata as a child property of &quot;transformations&quot;</p>
+            <p>name of a transformation registered in the metadata as a child property of &quot;transformations&quot;, &quot;v2*&quot;</p>
 
           </div>
         </li>
@@ -3352,14 +3393,14 @@ This does not perform interpolation.</p>
         <li><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a></code> <strong>spaceToVoxelTransfoName</strong>
           :
           <div class='force-inline'>
-            <p>name of the affine transformation - must exist</p>
+            <p>name of the affine transformation &quot;*2v&quot; - must exist</p>
 
           </div>
         </li>
         <li><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a></code> <strong>spacePosition</strong>
           :
           <div class='force-inline'>
-            <p>non-voxel-space 3D coordinates, most likely world coordinates</p>
+            <p>non-voxel-space 3D coordinates, most likely world coordinates {x: Number, y: Number, z: Number}</p>
 
           </div>
         </li>
@@ -3381,31 +3422,71 @@ This does not perform interpolation.</p>
 </section>
           </div>
         </div>
-        <div class='collapsible' id='Image3DAlt.isInside'>
-          <a href='#Image3DAlt.isInside'>
+        <div class='collapsible' id='Image3DAlt.isInsideTransfoSpace'>
+          <a href='#Image3DAlt.isInsideTransfoSpace'>
             <code>
-              isInside<span class='gray'>(pos)</span>
+              isInsideTransfoSpace<span class='gray'>(pos, transformName)</span>
             </code>
             <div class='force-inline'>
-              <p>#TODO make it voxel and world!!!!
-Tells if a given point is inside or outside the image</p>
+              <p>Is the given point in a transform coordinates system (world or subject) inside the dataset?
+This is achieved by converting the transformed coordinates into voxel coordinates.</p>
 
             </div>
           </a>
           <div class='collapser border px2'>
 <section class='py2 clearfix'>
-  <h2 id='Image3DAlt.isInside' class='mt0'>
-    isInside<span class='gray'>(pos)</span>
+  <h2 id='Image3DAlt.isInsideTransfoSpace' class='mt0'>
+    isInsideTransfoSpace<span class='gray'>(pos, transformName)</span>
   </h2>
-  <p>#TODO make it voxel and world!!!!
-Tells if a given point is inside or outside the image</p>
+  <p>Is the given point in a transform coordinates system (world or subject) inside the dataset?
+This is achieved by converting the transformed coordinates into voxel coordinates.</p>
 
     <h4>Parameters</h4>
     <ul class='suppress-p-margin'>
         <li><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a></code> <strong>pos</strong>
           :
           <div class='force-inline'>
-            <p>position like {x: Number, y: Number, z: Number}</p>
+            <p>transformed coordinates (world or subject) as {x: Number, y: Number, z: Number}</p>
+
+          </div>
+        </li>
+        <li><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a></code> <strong>transformName</strong>
+          :
+          <div class='force-inline'>
+            <p>id or a registered transformation &quot;*2v&quot;</p>
+
+          </div>
+        </li>
+    </ul>
+</section>
+          </div>
+        </div>
+        <div class='collapsible' id='Image3DAlt.isInsideVoxelSpace'>
+          <a href='#Image3DAlt.isInsideVoxelSpace'>
+            <code>
+              isInsideVoxelSpace<span class='gray'>(pos)</span>
+            </code>
+            <div class='force-inline'>
+              <p>Tells whether or not the given position is within the boundaries or the datacube.
+This works with voxel coordinates ijk</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2'>
+<section class='py2 clearfix'>
+  <h2 id='Image3DAlt.isInsideVoxelSpace' class='mt0'>
+    isInsideVoxelSpace<span class='gray'>(pos)</span>
+  </h2>
+  <p>Tells whether or not the given position is within the boundaries or the datacube.
+This works with voxel coordinates ijk</p>
+
+    <h4>Parameters</h4>
+    <ul class='suppress-p-margin'>
+        <li><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a></code> <strong>pos</strong>
+          :
+          <div class='force-inline'>
+            <p>Voxel coordinates as {i: Number, j: Number, k: Number}
+where i is along the slowest varying dimension and k is along the fastest.</p>
 
           </div>
         </li>
@@ -3414,7 +3495,7 @@ Tells if a given point is inside or outside the image</p>
       <code><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean">Boolean</a></code></code>
       :
       <div class='force-inline'>
-        <p>true for inside, false for outside</p>
+        <p>true if inside, false if outside</p>
 
       </div>
 </section>
@@ -3557,14 +3638,14 @@ This does not perform interpolation.</p>
         <li><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a></code> <strong>spaceToVoxelTransfoName</strong>
           :
           <div class='force-inline'>
-            <p>name of the affine transformation - must exist</p>
+            <p>name of the affine transformation &quot;*2v&quot; - must exist</p>
 
           </div>
         </li>
         <li><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a></code> <strong>spacePosition</strong>
           :
           <div class='force-inline'>
-            <p>non-voxel-space 3D coordinates, most likely world coordinates</p>
+            <p>non-voxel-space 3D coordinates, most likely world coordinates {x: Number, y: Number, z: Number}</p>
 
           </div>
         </li>
@@ -5683,6 +5764,42 @@ Perform a XMLHttpRequest with the given url and adds it to the output</p>
         </div>
 </section>
 </div><div class='py1'><section class='py2 clearfix'>
+  <h2 id='SpectralScaleImageFilter' class='mt0'>
+    SpectralScaleImageFilter<span class='gray'></span>
+  </h2>
+  <p>Multiply an image by the other, like a scaling function.
+The image requires two inputs named &quot;0&quot; and &quot;1&quot;.
+Simply use <code>addInput( myImg1, &quot;0&quot; )</code>
+and <code>addInput( myImg2, &quot;1&quot; )</code>. The input &quot;0&quot; can have 1 or more bands while
+the input &quot;1&quot; can have only one band since the same scale is apply to each band.</p>
+<p><strong>Usage</strong></p>
+<ul>
+<li><a href="../examples/forEachPixelGadient.html">examples/forEachPixelGadient.html</a></li>
+</ul>
+
+      <h4>Instance members</h4>
+        <div class='collapsible' id='SpectralScaleImageFilter._run'>
+          <a href='#SpectralScaleImageFilter._run'>
+            <code>
+              _run<span class='gray'></span>
+            </code>
+            <div class='force-inline'>
+              <p>Run the filter</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2'>
+<section class='py2 clearfix'>
+  <h2 id='SpectralScaleImageFilter._run' class='mt0'>
+    _run<span class='gray'></span>
+  </h2>
+  <p>Run the filter</p>
+
+</section>
+          </div>
+        </div>
+</section>
+</div><div class='py1'><section class='py2 clearfix'>
   <h2 id='FileImageReader' class='mt0'>
     FileImageReader<span class='gray'></span>
   </h2>
@@ -5739,42 +5856,6 @@ file2ImgFilter.update();</pre>
     hasValidInput<span class='gray'></span>
   </h2>
   <p>Overload the default method because HTML5 File is not a Pixpipe type</p>
-
-</section>
-          </div>
-        </div>
-</section>
-</div><div class='py1'><section class='py2 clearfix'>
-  <h2 id='SpectralScaleImageFilter' class='mt0'>
-    SpectralScaleImageFilter<span class='gray'></span>
-  </h2>
-  <p>Multiply an image by the other, like a scaling function.
-The image requires two inputs named &quot;0&quot; and &quot;1&quot;.
-Simply use <code>addInput( myImg1, &quot;0&quot; )</code>
-and <code>addInput( myImg2, &quot;1&quot; )</code>. The input &quot;0&quot; can have 1 or more bands while
-the input &quot;1&quot; can have only one band since the same scale is apply to each band.</p>
-<p><strong>Usage</strong></p>
-<ul>
-<li><a href="../examples/forEachPixelGadient.html">examples/forEachPixelGadient.html</a></li>
-</ul>
-
-      <h4>Instance members</h4>
-        <div class='collapsible' id='SpectralScaleImageFilter._run'>
-          <a href='#SpectralScaleImageFilter._run'>
-            <code>
-              _run<span class='gray'></span>
-            </code>
-            <div class='force-inline'>
-              <p>Run the filter</p>
-
-            </div>
-          </a>
-          <div class='collapser border px2'>
-<section class='py2 clearfix'>
-  <h2 id='SpectralScaleImageFilter._run' class='mt0'>
-    _run<span class='gray'></span>
-  </h2>
-  <p>Run the filter</p>
 
 </section>
           </div>
@@ -6421,6 +6502,7 @@ is by getting a single color using <code>.getValueAt(p)</code> where <code>p</co
 by building en entire LUT with a given granularity and then getting back these values.
 In case of intensive use (ie. applying fake colors), building a LUT is a faster option.
 Once a LUT is built,  an image of this LUT can be created (horizontal or vertical, flipped or not).
+The image will be flipped is the <code>flip</code> matadata is set to <code>true</code>;
 This image, which is an Image2D is not supposed to be used as a LUT but just as a visual reference.</p>
 <p><strong>Usage</strong></p>
 <ul>
@@ -6637,32 +6719,24 @@ Note: &quot;style&quot; and &quot;description&quot; are mutually exclusive and &
         <div class='collapsible' id='Colormap.createHorizontalLutImage'>
           <a href='#Colormap.createHorizontalLutImage'>
             <code>
-              createHorizontalLutImage<span class='gray'>(flip)</span>
+              createHorizontalLutImage<span class='gray'></span>
             </code>
             <div class='force-inline'>
               <p>Creates a horizontal Image2D of the colormap. The height is 1px and
-the width is the size of the LUT currently in use.</p>
+the width is the size of the LUT currently in use.
+The image can be horizontally flipped when the &quot;flip&quot; metadata is true;</p>
 
             </div>
           </a>
           <div class='collapser border px2'>
 <section class='py2 clearfix'>
   <h2 id='Colormap.createHorizontalLutImage' class='mt0'>
-    createHorizontalLutImage<span class='gray'>(flip)</span>
+    createHorizontalLutImage<span class='gray'></span>
   </h2>
   <p>Creates a horizontal Image2D of the colormap. The height is 1px and
-the width is the size of the LUT currently in use.</p>
+the width is the size of the LUT currently in use.
+The image can be horizontally flipped when the &quot;flip&quot; metadata is true;</p>
 
-    <h4>Parameters</h4>
-    <ul class='suppress-p-margin'>
-        <li><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean">Boolean</a></code> <strong>flip</strong>
-          :
-          <div class='force-inline'>
-            <p>flips the colormap image</p>
-
-          </div>
-        </li>
-    </ul>
       <h4>Returns</h4>
       <code><code><a href="#Image2D">Image2D</a></code></code>
       :
@@ -6676,32 +6750,24 @@ the width is the size of the LUT currently in use.</p>
         <div class='collapsible' id='Colormap.createVerticalLutImage'>
           <a href='#Colormap.createVerticalLutImage'>
             <code>
-              createVerticalLutImage<span class='gray'>(flip)</span>
+              createVerticalLutImage<span class='gray'></span>
             </code>
             <div class='force-inline'>
               <p>Creates a vertical Image2D of the colormap. The height is 1px and
-the width is the size of the LUT currently in use.</p>
+the width is the size of the LUT currently in use.
+The image can be vertically flipped when the &quot;flip&quot; metadata is true;</p>
 
             </div>
           </a>
           <div class='collapser border px2'>
 <section class='py2 clearfix'>
   <h2 id='Colormap.createVerticalLutImage' class='mt0'>
-    createVerticalLutImage<span class='gray'>(flip)</span>
+    createVerticalLutImage<span class='gray'></span>
   </h2>
   <p>Creates a vertical Image2D of the colormap. The height is 1px and
-the width is the size of the LUT currently in use.</p>
+the width is the size of the LUT currently in use.
+The image can be vertically flipped when the &quot;flip&quot; metadata is true;</p>
 
-    <h4>Parameters</h4>
-    <ul class='suppress-p-margin'>
-        <li><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean">Boolean</a></code> <strong>flip</strong>
-          :
-          <div class='force-inline'>
-            <p>flips the colormap image</p>
-
-          </div>
-        </li>
-    </ul>
       <h4>Returns</h4>
       <code><code><a href="#Image2D">Image2D</a></code></code>
       :
@@ -11879,7 +11945,17 @@ but this is compatible with Node and not rely on HTML5 Canvas.</p>
   <h2 id='PixBinEncoder' class='mt0'>
     PixBinEncoder<span class='gray'></span>
   </h2>
-  <p>Download the generated file</p>
+  <p>A PixBinEncoder instance takes an Image2D or Image3D as input with <code>addInput(...)</code>
+and encode it so that it can be saved as a *.pixp file.
+An output filename can be specified using <code>.setMetadata(&quot;filename&quot;, &quot;yourName.pixp&quot;);</code>,
+by default, the name is &quot;untitled.pixp&quot;.
+When <code>update()</code> is called, a gzip blog is prepared as output[0] and can then be downloaded
+when calling the method <code>.download()</code>. The gzip blob could also be sent over AJAX
+using a third party library.</p>
+<p><strong>Usage</strong></p>
+<ul>
+<li><a href="../examples/savePixpFile.html">examples/savePixpFile.html</a></li>
+</ul>
 
       <h4>Static members</h4>
         <div class='collapsible' id='PixBinEncoder.MAGIC_NUMBER'>
@@ -11909,17 +11985,7 @@ the first sequence of bytes for a pixbin file is this ASCII string</p>
   <h2 id='PixBinEncoder' class='mt0'>
     PixBinEncoder<span class='gray'></span>
   </h2>
-  <p>A PixBinEncoder instance takes an Image2D or Image3D as input with <code>addInput(...)</code>
-and encode it so that it can be saved as a *.pixp file.
-An output filename can be specified using <code>.setMetadata(&quot;filename&quot;, &quot;yourName.pixp&quot;);</code>,
-by default, the name is &quot;untitled.pixp&quot;.
-When <code>update()</code> is called, a gzip blog is prepared as output[0] and can then be downloaded
-when calling the method <code>.download()</code>. The gzip blob could also be sent over AJAX
-using a third party library.</p>
-<p><strong>Usage</strong></p>
-<ul>
-<li><a href="../examples/savePixpFile.html">examples/savePixpFile.html</a></li>
-</ul>
+  <p>Download the generated file</p>
 
       <h4>Static members</h4>
         <div class='collapsible' id='PixBinEncoder.MAGIC_NUMBER'>
