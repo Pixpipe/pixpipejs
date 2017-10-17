@@ -25,7 +25,7 @@ export { FileToArrayBufferReader } from './io/FileToArrayBufferReader.js';
 export { UrlToArrayBufferReader } from './io/UrlToArrayBufferReader.js';
 export { BrowserDownloadBuffer } from './io/BrowserDownloadBuffer.js';
 
-// decoders
+// decoders 
 export { Minc2Decoder } from './decoder/Minc2Decoder.js';
 export { NiftiDecoder } from './decoder/NiftiDecoder.js';
 export { NiftiDecoderAlt } from './decoder/NiftiDecoderAlt.js';

@@ -39,7 +39,7 @@ class Image3DToMosaicFilterAlt extends Filter{
 
   constructor(){
     super();
-    //this.addInputValidator(0, Image3D);
+    this.addInputValidator(0, Image3DAlt);
 
     // default settings
     this.setMetadata("maxWidth", 4096);
@@ -51,14 +51,12 @@ class Image3DToMosaicFilterAlt extends Filter{
 
   _run(){
 
-
-    var inputImage3D = this._getInput(0);
-
-    if( !inputImage3D ){
-      console.warn("An Image3D is expected as input.");
+    if( ! this.hasValidInput()){
+      console.warn("A filter of type Image3DToMosaicFilterAlt requires 1 input of category '0' (Image3DAlt)"); 
       return;
     }
 
+    var inputImage3D = this._getInput(0);
     var axis = this.getMetadata("axis");
     var sliceDimension = inputImage3D.getSliceSize( axis );
     var numberOfSlices = inputImage3D.getNumberOfSlices( axis );
@@ -79,7 +77,6 @@ class Image3DToMosaicFilterAlt extends Filter{
       return;
     }
     var numberOfSlicesWithTime = numberOfSlices * (endTime-startTime);
-
 
     // dealing with output size and number of output
     var widthFit = Math.floor( this.getMetadata("maxWidth") / sliceDimension.w );
@@ -109,19 +106,13 @@ class Image3DToMosaicFilterAlt extends Filter{
     patchFilter.setMetadata( "outputSize", {w: outputWidth, h: outputHeight} );
     patchFilter.setMetadata( "outputColor", initPixel );
 
-
     var outputCounter = 0;
     var sliceCounter = 0;
     var sliceIndexCurrentOutput = 0;
-
     var outImage = null;
-
-
 
     // for each time sample
     for(var t=startTime; t<endTime; t++){
-
-      console.log( t );
       // for each slice
       for(var sliceIndex=0; sliceIndex<numberOfSlices; sliceIndex++){
 
@@ -130,13 +121,10 @@ class Image3DToMosaicFilterAlt extends Filter{
         if( sliceCounter%nbOfSlicesPerOutputImg == 0 ){
           patchFilter.setMetadata( "resetOutput", true );
           sliceIndexCurrentOutput = 0;
-
         }
 
         var col = sliceIndexCurrentOutput % widthFit;
         var row = Math.floor( sliceIndexCurrentOutput / widthFit );
-
-
         var offsetPixelCol = col * sliceDimension.w;
         var offsetPixelRow = row * sliceDimension.h;
 
@@ -145,7 +133,6 @@ class Image3DToMosaicFilterAlt extends Filter{
         patchFilter.addInput( slice );
         patchFilter.setMetadata( "patchPosition", {x: offsetPixelCol , y: offsetPixelRow} );
         patchFilter.update();
-
 
         if( sliceCounter%nbOfSlicesPerOutputImg == 0 ){
           this._output[ outputCounter ] = patchFilter.getOutput();
