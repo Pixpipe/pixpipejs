@@ -1,0 +1,142 @@
+<html>
+<head>
+  <title>Nifti/minc/mgh</title>
+
+  <script src="../dist/pixpipe.js"></script>
+  <script src="http://me.jonathanlurie.fr/SpectrumPlot2/dist/SpectrumPlot2.js"></script>
+  
+  <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700,900" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  
+</head>
+<body>
+  <h1><a href="https://github.com/Pixpipe/pixpipejs"><span style="color: #ff91d7">Pixpipe</span><span style="color: #FFFFFF">js</span></a></h1>
+  <p>
+  This does the following :
+  <ul>
+    <li>open a local NIfTI/Minc2/MGH file, using <code>pixpipe.FileToArrayBufferReader</code></li>
+    <li>redirect the file buffer into a <code>pixpipe.Image3DGenericDecoderAlt</code> to extract the dataset and metadata</li>
+    <li>get the output as a generic <code>pixpipe.Image3DAlt</code> object</li>
+    <li>perform a voxel sampling along the large diagonal</li>
+  </ul>
+
+  </p>
+
+  <div>
+		Select an file:
+		<input type="file" id="fileInput">
+    <br>
+    <span id="fileInfo"></span>
+	</div>
+
+  <div id="plotVoxel" class="white-bg padding-10px" style="color: #666; margin: 20px 0 20px 0;">Intensities based on voxel coordinates</div>
+  <div id="plotWorld" class="white-bg padding-10px" style="color: #666">Intensities based on world coordinates</div>
+  
+  <script>
+  window.onload = function() {
+
+    var fileInput = document.getElementById('fileInput');
+
+    // The filter to read image from URL
+    var file2Buff = new pixpipe.FileToArrayBufferReader();
+
+    // the image is loaded...
+    // here, this = url2ImgFilter
+    file2Buff.on("ready", function(){
+
+      var filenames = this.getMetadata("filenames");
+
+      var buff = this.getOutput();
+
+      var generic3DDecoder = new pixpipe.Image3DGenericDecoderAlt();
+      generic3DDecoder.addInput( buff );
+      generic3DDecoder.update();
+
+      var volume = generic3DDecoder.getOutput();
+
+      if(volume){
+
+        var start = {
+          i: 0,
+          j: 0,
+          k: 0
+        }
+        
+        var end = {
+          i: volume.getNumberOfSlices( "i" ) - 1 ,
+          j: volume.getNumberOfSlices( "j" ) - 1 ,
+          k: volume.getNumberOfSlices( "k" ) - 1
+        }
+        
+        console.log( "start" );
+        console.log( start );
+        console.log( "end" );
+        console.log( end );
+        
+        var lineSample = volume.getSegmentSampleVoxelSpace( start, end );
+        console.log( lineSample );
+        
+        
+        var volumeCornersWorld = volume.getTransfoVolumeCorners("v2w");
+        console.log( "world corners:" );
+        console.log( volumeCornersWorld );
+        
+        console.log( "start world" );
+        console.log( volumeCornersWorld[0] );
+        console.log( "end world" );
+        console.log( volumeCornersWorld[6] );
+        
+        var lineSampleWorld = volume.getSegmentSampleTransfoSpace( "w2v", "v2w", volumeCornersWorld[0], volumeCornersWorld[6])
+        console.log( lineSampleWorld ); 
+        
+        
+        
+        // displaying the spectrum in voxel coordinates
+        var voxelPlot = new SpectrumPlot2.SpectrumPlot2( "plotVoxel", 400, 300 );
+        // giving the data
+        voxelPlot.addSpectrum( 
+          "Intensities", // name
+          lineSample.colors[0], // the data
+          "#FF0000" // the color
+        )
+        voxelPlot.setLabels(lineSample.labels);
+        voxelPlot.draw();
+        
+        // displaying the spectrum in world coordinates
+        var worldPlot = new SpectrumPlot2.SpectrumPlot2( "plotWorld", 400, 300 );
+        // giving the data
+        worldPlot.addSpectrum( 
+          "Intensities", // name
+          lineSampleWorld.colors[0], // the data
+          "#FF0000" // the color
+        )
+        worldPlot.setLabels(lineSampleWorld.labels);
+        worldPlot.draw();
+      }else{
+        console.warn("Non-existant output for generic3DDecoder.");
+      }
+    });
+
+
+    // event listener of the file input
+    fileInput.addEventListener('change', function(e) {
+      var files = e.target.files;
+      var filenames = {};
+
+      for(var i=0; i<files.length; i++){
+        // set the input, an HTML5 File object and a category (ID)
+        file2Buff.addInput(files[i], i);
+        filenames[i] = files[i].name ;
+      }
+
+      file2Buff.setMetadata("filenames", filenames);
+
+      // Perform the reading + conversion ibto ArrayBuffer
+      file2Buff.update();
+		});
+
+  }
+  </script>
+
+</body>
+</html>
