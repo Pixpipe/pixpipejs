@@ -420,12 +420,12 @@ class Image3DAlt extends PixpipeContainer{
     var k = position.k;
 
     if(i<0 || j<0 || k<0 || time<0 ||
-       i>=dimensions[0].length  ||
+       i>=dimensions[2].length  ||
        j>=dimensions[1].length  ||
-       k>=dimensions[2].length  ||
+       k>=dimensions[0].length  ||
        ( dimensions.length>3 && time>=dimensions[3].length) )
     {
-      console.warn("Voxel query is out of bound.");
+      console.warn(`Voxel {i:${position.i}, j:${position.j}, k:${position.k}} is out of bound.`);
       return null;
     }
 
@@ -522,8 +522,8 @@ class Image3DAlt extends PixpipeContainer{
 
 
   /**
-  * Get the size of a dimension in the voxel-based coord system
-  * @param {Number|String} dimIndex - can be 0, 1, 2, 3 or "i", "j", "k", "t"
+  * Get the size of a dimension in number of voxel (or in number of time samples in case of "t" or 3)
+  * @param {Number|String} dimIndex - can be 0, 1, 2, 3 or "i", "j", "k", "t", or "x", "y", "z", "t"
   * @return {Number} the length of this dimension
   */
   getDimensionSize( dimIndex ){
@@ -562,6 +562,16 @@ class Image3DAlt extends PixpipeContainer{
     return new this._data.constructor( this._data );
   }
 
+
+  /**
+  * Does this volume has the given transform registered?
+  * @param {String} transformName - the name of the transformation matrix to check
+  * @return {Boolean} true if has, false if hasnt
+  */
+  hasTransform( transformName ){
+    return (transformName in this._metadata.transformations);
+  }
+  
 
   /**
   * [PRIVATE]
@@ -615,16 +625,25 @@ class Image3DAlt extends PixpipeContainer{
   * Convert coordinates from a a given (non-voxel based) position into a voxel based coord
   * @param {Object} spacePosition - a non-voxel based coordinate as {x: Number, y: Number, z: Number}
   * @param {String} transformName - name of the transformation to use, "*2v"
+  * @param {Boolean} round - round to the closest voxel coord integer (default: true)
   * @return {Object} coordinates {i: Number, j: Number, k: Number} in the space coorinate given in argument
   */
-  getPositionFromTransfoSpaceToVoxelSpace( spacePosition , transformName ){
+  getPositionFromTransfoSpaceToVoxelSpace( spacePosition , transformName, round = true ){
     var inputPosArray = [spacePosition.x, spacePosition.y, spacePosition.z];
     var transPosUnordered = this._getTransformedPosition( inputPosArray, transformName);
 
-    return {
-      i: Math.round(transPosUnordered[ this._worldPositionOrder[2] ]),
-      j: Math.round(transPosUnordered[ this._worldPositionOrder[1] ]),
-      k: Math.round(transPosUnordered[ this._worldPositionOrder[0] ])
+    if( round ){
+      return {
+        i: Math.round(transPosUnordered[ this._worldPositionOrder[2] ]),
+        j: Math.round(transPosUnordered[ this._worldPositionOrder[1] ]),
+        k: Math.round(transPosUnordered[ this._worldPositionOrder[0] ])
+      }
+    }else{
+      return {
+        i: transPosUnordered[ this._worldPositionOrder[2] ],
+        j: transPosUnordered[ this._worldPositionOrder[1] ],
+        k: transPosUnordered[ this._worldPositionOrder[0] ]
+      }
     }
   }
 
@@ -746,7 +765,7 @@ class Image3DAlt extends PixpipeContainer{
 
   /**
   * Get the size (width and height) of a slice along a given axis
-  * @param {Number|String} dimIndex - can be 0, 1, 2 or "i", "j", "k"
+  * @param {Number|String} dimIndex - can be 0, 1, 2 or "i", "j", "k" or "x", "y", "z"
   * @return {Object} width and height as an object like {w: Number, h: Number};
   */
   getSliceSize( normalAxis ){
@@ -809,6 +828,7 @@ class Image3DAlt extends PixpipeContainer{
     return sliceDimension.length;
   }
 
+
   /**
   * Get the number of samples over time
   * @return {number} the number of time samples
@@ -817,12 +837,6 @@ class Image3DAlt extends PixpipeContainer{
     var dimensions = this._metadata.dimensions;
     return ( dimensions.length == 4 ? dimensions[3].length : 1 );
   }
-
-
-
-
-
-
 
 
   /**
@@ -859,26 +873,19 @@ class Image3DAlt extends PixpipeContainer{
   }
 
 
-
-
-  
-
-
-
   /**
-  * #TODO TO BE REDONE!
   * Sample the color along a segment
-  * @param {Object} posFrom - starting position of type {x: Number, y: Number, z: Number}
-  * @param {Object} posFrom - ending position of type {x: Number, y: Number, z: Number}
+  * @param {Object} posFrom - starting position of type {i: Number, j: Number, k: Number}
+  * @param {Object} posFrom - ending position of type {i: Number, j: Number, k: Number}
   * @return {Object} array of Array like that: {
                                                   positions: [
-                                                    {x: x0, y: y0, z: z0},
-                                                    {x: x1, y: y1, z: z1},
-                                                    {x: x2, y: y2, z: z2},
+                                                    {i: i0, j: j0, k: k0},
+                                                    {i: i1, j: j1, k: k1},
+                                                    {i: i2, j: j2, k: k2},
                                                     ...
                                                   ],
                                                   labels: [
-                                                    "(x0, y0, z0)", "(x1, y1, z1)", "(x2, y2, z2)", ...
+                                                    "(i0, j0, k0)", "(i1, j1, k1)", "(i2, j2, k2)", ...
                                                   ],
                                                   colors: [
                                                             [r0, r1, r2 ...],
@@ -888,14 +895,14 @@ class Image3DAlt extends PixpipeContainer{
                                                 }
      return null if posFrom or posTo is outside
   */
-  getSegmentSample( posFrom, posTo, time = 0 ){
+  getSegmentSampleVoxelSpace( posFrom, posTo, time = 0 ){ 
     // both position must be inside the image
-    if( !this.isInside(posFrom) || !this.isInside(posTo) )
-      return null;
+    //if( !this.isInsideVoxelSpace(posFrom) || !this.isInsideVoxelSpace(posTo) )
+    //  return null;
 
-    var dx = posTo.x - posFrom.x;
-    var dy = posTo.y - posFrom.y;
-    var dz = posTo.z - posFrom.z;
+    var dx = posTo.i - posFrom.i;
+    var dy = posTo.j - posFrom.j;
+    var dz = posTo.k - posFrom.k;
     var euclidianDistance = Math.sqrt( Math.pow(dx , 2) + Math.pow(dy , 2) + Math.pow(dz , 2) );
     var numberOfSamples = Math.floor( euclidianDistance + 1 );
 
@@ -917,15 +924,15 @@ class Image3DAlt extends PixpipeContainer{
     // walk along the segment, from posFrom to posTo
     for(var i=0; i<numberOfSamples; i++){
       var currentPos = {
-        x: Math.round(posFrom.x + i*stepX),
-        y: Math.round(posFrom.y + i*stepY),
-        z: Math.round(posFrom.z + i*stepZ)
+        i: Math.round(posFrom.i + i*stepX),
+        j: Math.round(posFrom.j + i*stepY),
+        k: Math.round(posFrom.k + i*stepZ)
       };
 
       positions[i] = currentPos;
-      labels[i] = "(" + currentPos.x + ", " + currentPos.y + ", " + currentPos.z + ")";
+      labels[i] = "(" + currentPos.i + ", " + currentPos.j + ", " + currentPos.k + ")";
 
-      var pixValue = [this.getVoxel( currentPos.x, currentPos.y, currentPos.z, time )];
+      var pixValue = [this.getVoxel( currentPos, time )];
 
       // each channel is dispatched in its array
       for(var c=0; c<ncpp; c++){
@@ -940,6 +947,157 @@ class Image3DAlt extends PixpipeContainer{
     }
   } /* END of method getLineSample */
 
+
+  /**
+  * Sample voxels along a segment in a transform coordinates system (world or subject).
+  * This is achieved by converting the transformed coordinates into voxel coordinates, 
+  * then samples are taken respecting a voxel unit rather than the transform unit so that
+  * it is more fine.
+  * @param {String} space2voxelTransformName - id of a registered transformation that goes from arbitrary space to voxel space (aka. "*2v")
+  * @param {String} voxel2spaceTransformName - id of a registered transformation that goes from voxel space to arbitrary space (aka. "v2*" or the inverse of space2voxelTransformName)
+  * @param {Object} posFrom - starting sampling point in transformed coordinates (world or subject) as {x: Number, y: Number, z: Number}
+  * @param {Object} posTo - end sampling point in transformed coordinates (world or subject) as {x: Number, y: Number, z: Number}
+  * @param {Number} time - time sample index to sample (default: 0)
+  * @return {Object} array of Array like that: {
+                                                  positions: [
+                                                    {x: x0, y: y0, z: z0},
+                                                    {x: x1, y: y1, z: z1},
+                                                    {x: x2, y: y2, z: z2},
+                                                    ...
+                                                  ],
+                                                  labels: [
+                                                    "(x0, y0, z0)", "(x1, y1, z1)", "(x2, y2, z2)", ...
+                                                  ],
+                                                  colors: [
+                                                            [r0, r1, r2 ...],
+                                                            [g0, g1, g2 ...],
+                                                            [b0, b1, b2 ...]
+                                                  ]
+                                                }
+     return null if posFrom or posTo is outside
+  */
+  getSegmentSampleTransfoSpace( space2voxelTransformName, voxel2spaceTransformName, posFrom, posTo, time = 0 ){ 
+    if( !this.hasTransform(space2voxelTransformName) ){
+      console.warn(`The transform ${space2voxelTransformName} is not available.`);
+      return null;
+    }
+    
+    var posFromVoxel = this.getPositionFromTransfoSpaceToVoxelSpace( posFrom, space2voxelTransformName, false );
+    var posToVoxel = this.getPositionFromTransfoSpaceToVoxelSpace( posTo, space2voxelTransformName, false );
+    
+    console.log(`voxelFrom {${posFromVoxel.i}, ${posFromVoxel.j}, ${posFromVoxel.k}} voxelTo {${posToVoxel.i}, ${posToVoxel.j}, ${posToVoxel.k}}`);
+    
+    var segmentSample = this.getSegmentSampleVoxelSpace( posFromVoxel, posToVoxel, time)
+    
+    if(! segmentSample )
+      return null;
+    
+    // re-writing the coord in the given transform space
+    for(var i=0; i<segmentSample.positions.length; i++){
+      var voxelPos = segmentSample.positions[i];
+      var spacePos = this.getPositionFromVoxelSpaceToTransfoSpace( voxelPos, voxel2spaceTransformName );
+      //console.log(`voxel {${voxelPos.i}, ${voxelPos.j}, ${voxelPos.k}} to world {${spacePos.x}, ${spacePos.y}, ${spacePos.z}}`);
+      segmentSample.positions[i] = spacePos;
+      segmentSample.labels[i] = "(" + Math.round(spacePos.x*100)/100 + ", " + Math.round(spacePos.y*100)/100 + ", " + Math.round(spacePos.z*100)/100 + ")";
+    }
+    
+    return segmentSample;
+  }
+  
+  
+  /**
+  * Get the voxel box, min-max for each dimension. The max values are not included.
+  * @return {Object} Box of shape {min: {i:Number, j:Number, k:Number, t:Number}, max: {i:Number, j:Number, k:Number, t:Number} }
+  */ 
+  getVoxelBox(){
+    return {
+      min: {i:0, j:0, k:0, t:0},
+      max: {
+        i: this.getDimensionSize("i"),
+        j: this.getDimensionSize("j"),
+        k: this.getDimensionSize("k"),
+        t: this.getDimensionSize("t")
+      }
+    }
+  }
+  
+  
+  /**
+  * Get the corners of the volume in the given space coordinates
+  * @param {String} transformName - id of a registered transformation that goes from voxel space to arbitrary space (aka. "v2*")
+  * @return {Array} array of 8 elements like {x:Number, y:Number, z:Number}
+  */
+  getTransfoVolumeCorners( transformName ){
+    if( !this.hasTransform(transformName) ){
+      console.warn(`The transform ${transformName} is not available.`);
+      return null;
+    }
+    
+    var corners = [
+      this.getPositionFromVoxelSpaceToTransfoSpace( {i:0, j:0, k:0}, transformName ),
+      this.getPositionFromVoxelSpaceToTransfoSpace( {i:this.getDimensionSize("i")-1, j:0, k:0}, transformName ),
+      this.getPositionFromVoxelSpaceToTransfoSpace( {i:this.getDimensionSize("i")-1, j:this.getDimensionSize("j")-1, k:0}, transformName ),
+      this.getPositionFromVoxelSpaceToTransfoSpace( {i:0, j:this.getDimensionSize("j")-1, k:0}, transformName ),
+      this.getPositionFromVoxelSpaceToTransfoSpace( {i:0, j:0, k:this.getDimensionSize("j")-1}, transformName ),
+      this.getPositionFromVoxelSpaceToTransfoSpace( {i:this.getDimensionSize("i")-1, j:0, k:this.getDimensionSize("k")-1}, transformName ),
+      this.getPositionFromVoxelSpaceToTransfoSpace( {i:this.getDimensionSize("i")-1, j:this.getDimensionSize("j")-1, k:this.getDimensionSize("k")-1}, transformName ),
+      this.getPositionFromVoxelSpaceToTransfoSpace( {i:0, j:this.getDimensionSize("j")-1, k:this.getDimensionSize("k")-1}, transformName ),
+    ]
+    return corners;
+  }
+  
+  
+  /**
+  * Get the space box in a the given transform space coordinates. Due a possible rotation
+  * involved in a affine transformation, the box will possibly have some void space on the sides.
+  * To get the actual volume corners in a transfo space, use the method `getTransfoVolumeCorners()`.
+  * @param {String} transformName - id of a registered transformation that goes from voxel space to arbitrary space (aka. "v2*")
+  * @return {Object} Box of shape {min: {x:Number, y:Number, z:Number, t:Number}, max: {x:Number, y:Number, z:Number, t:Number} }
+  */
+  getTransfoBox( transformName ){
+    if( !this.hasTransform(space2voxelTransformName) ){
+      console.warn(`The transform ${transformName} is not available.`); 
+      return null;
+    }
+    
+    var corners = this.getTransfoVolumeCorners();
+    var min = {
+      x: +Infinity,
+      y: +Infinity,
+      z: +Infinity
+    }
+    var max = {
+      x: -Infinity,
+      y: -Infinity,
+      z: -Infinity
+    }
+    
+    for(var i=0; i<corners.length; i++){
+      min.x = Math.min( min.x, corners[i].x );
+      min.y = Math.min( min.y, corners[i].y );
+      min.z = Math.min( min.z, corners[i].z );
+      max.x = Math.max( max.x, corners[i].x );
+      max.y = Math.max( max.y, corners[i].y );
+      max.z = Math.max( max.z, corners[i].z );
+    }
+    
+    var spaceBox = {
+      min: {
+        x: min.x,
+        y: min.y,
+        z: min.z,
+        t: 0
+      },
+      max: {
+        x: max.x,
+        y: max.y,
+        z: max.z,
+        t: this.getDimensionSize("t")
+      },
+    }
+    
+    return spaceBox;
+  }
 
 
 } /* END of class Image3DAlt */
