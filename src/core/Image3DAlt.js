@@ -11,6 +11,7 @@ import { glMatrix, mat2, mat2d, mat3, mat4, quat, vec2, vec3, vec4 } from 'gl-ma
 import { CoreTypes } from './CoreTypes.js';
 import { PixpipeContainer } from './PixpipeContainer.js';
 import { Image2D } from './Image2D.js';
+import { MatrixTricks } from '../utils/MatrixTricks.js';
 
 /**
 * Image3DAlt class is one of the few base element of Pixpipejs.
@@ -620,6 +621,21 @@ class Image3DAlt extends PixpipeContainer{
     }
   }
 
+  
+  /**
+  * Get the 4x4 matrix that swaps [i, j, k] so that they can be multiplied directly
+  * with the "v2*" 4x4 matrix registred in the metadata
+  * @return {Array} the 4x4 matrix in a 1D Array[16] arranged as column-major
+  */
+  getSwapMatrixFromVoxel(){
+    var mat33 = new Array(9).fill(0);
+    MatrixTricks.setValueMatrix33( mat33, 0, this._worldPositionIndex[0], 1 );
+    MatrixTricks.setValueMatrix33( mat33, 1, this._worldPositionIndex[1], 1 );
+    MatrixTricks.setValueMatrix33( mat33, 2, this._worldPositionIndex[2], 1 );
+    var mat33Flipped = MatrixTricks.getHorizontalFlipMatrix33( mat33 );
+    return mat33Flipped;
+  }
+
 
   /**
   * Convert coordinates from a a given (non-voxel based) position into a voxel based coord
@@ -1099,6 +1115,8 @@ class Image3DAlt extends PixpipeContainer{
     return spaceBox;
   }
 
+
+  
 
 } /* END of class Image3DAlt */
 

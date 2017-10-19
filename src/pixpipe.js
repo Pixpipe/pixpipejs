@@ -70,7 +70,6 @@ export { CropImageFilter } from './filter/CropImageFilter.js';
 export { SimplifyLineStringFilter } from './filter/SimplifyLineStringFilter.js';
 export { PatchImageFilter } from './filter/PatchImageFilter.js'; 
 
-
 // helpers
 export { AngleToHueWheelHelper } from './helper/AngleToHueWheelHelper.js';
 export { LineStringPrinterOnImage2DHelper } from './helper/LineStringPrinterOnImage2DHelper.js';
@@ -80,6 +79,6 @@ export { Colormap } from './helper/Colormap.js';
 export { Image3DToMosaicFilter } from './filter/Image3DToMosaicFilter.js';
 export { Image3DToMosaicFilterAlt } from './filter/Image3DToMosaicFilterAlt.js'; 
 
-
 // utils
 export { Image3DMetadataConverter } from './utils/Image3DMetadataConverter.js';
+export { MatrixTricks } from './utils/MatrixTricks.js';
