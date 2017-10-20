@@ -283,6 +283,11 @@
                   getVoxelBox
                 </a>
                 <a
+                  href='#Image3DAlt.getVoxelCoordinatesSwapMatrix'
+                  class='regular block'>
+                  getVoxelCoordinatesSwapMatrix
+                </a>
+                <a
                   href='#Image3DAlt.getVoxelSafe'
                   class='regular block'>
                   getVoxelSafe
@@ -1592,6 +1597,61 @@
                 class='block bold h3 bg-pink-alpha'>
                 ForEachPixelReadOnlyFilter
               </a>
+              <a
+                href='#MatrixTricks'
+                class='block bold h3 bg-pink-alpha'>
+                MatrixTricks
+              </a>
+                <a
+                  href='#MatrixTricks.getExpandedMatrix3x3To4x4'
+                  class='regular block'>
+                  getExpandedMatrix3x3To4x4
+                </a>
+                <a
+                  href='#MatrixTricks.getHorizontalFlipMatrix33'
+                  class='regular block'>
+                  getHorizontalFlipMatrix33
+                </a>
+                <a
+                  href='#MatrixTricks.getHorizontalFlipMatrix44'
+                  class='regular block'>
+                  getHorizontalFlipMatrix44
+                </a>
+                <a
+                  href='#MatrixTricks.getHorizontalFlipSquareMatrix'
+                  class='regular block'>
+                  getHorizontalFlipSquareMatrix
+                </a>
+                <a
+                  href='#MatrixTricks.getValueMatrix33'
+                  class='regular block'>
+                  getValueMatrix33
+                </a>
+                <a
+                  href='#MatrixTricks.getValueMatrix44'
+                  class='regular block'>
+                  getValueMatrix44
+                </a>
+                <a
+                  href='#MatrixTricks.getValueSquareMatrix'
+                  class='regular block'>
+                  getValueSquareMatrix
+                </a>
+                <a
+                  href='#MatrixTricks.setValueMatrix33'
+                  class='regular block'>
+                  setValueMatrix33
+                </a>
+                <a
+                  href='#MatrixTricks.setValueMatrix44'
+                  class='regular block'>
+                  setValueMatrix44
+                </a>
+                <a
+                  href='#MatrixTricks.setValueSquareMatrix'
+                  class='regular block'>
+                  setValueSquareMatrix
+                </a>
               <a
                 href='#GradientImageFilter'
                 class='block bold h3 bg-pink-alpha'>
@@ -3347,7 +3407,7 @@ return null if posFrom or posTo is outside</p>
         <li><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">Number</a></code> or <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a></code> <strong>dimIndex</strong>
           :
           <div class='force-inline'>
-            <p>can be 0, 1, 2 or &quot;i&quot;, &quot;j&quot;, &quot;k&quot;</p>
+            <p>can be 0, 1, 2 or &quot;i&quot;, &quot;j&quot;, &quot;k&quot; or &quot;x&quot;, &quot;y&quot;, &quot;z&quot;</p>
 
           </div>
         </li>
@@ -3543,6 +3603,61 @@ is ignored.</p>
       :
       <div class='force-inline'>
         <p>Box of shape {min: {i:Number, j:Number, k:Number, t:Number}, max: {i:Number, j:Number, k:Number, t:Number} }</p>
+
+      </div>
+</section>
+          </div>
+        </div>
+        <div class='collapsible' id='Image3DAlt.getVoxelCoordinatesSwapMatrix'>
+          <a href='#Image3DAlt.getVoxelCoordinatesSwapMatrix'>
+            <code>
+              getVoxelCoordinatesSwapMatrix<span class='gray'>(output4x4)</span>
+            </code>
+            <div class='force-inline'>
+              <p>For external use (e.g. in a shader).
+Get the matrix for swapping voxel coordinates before converting to world coord
+or after having converted from world. To serve multiple purposes, this method
+can output a 3x3 matrix (default case) or it can output a 4x4 affine transform matrix
+with a weight of 1 at its bottom-right position.
+This matrix can be used in two cases:</p>
+<ul>
+<li>swap [i, j, k] voxel coordinates <strong>before</strong> multiplying them by a &quot;v2*&quot; matrix</li>
+<li>swap voxel coordinates <strong>after</strong> multiplying [x, y, z] world coorinates by a &quot;*2v&quot; matrix</li>
+</ul>
+
+            </div>
+          </a>
+          <div class='collapser border px2'>
+<section class='py2 clearfix'>
+  <h2 id='Image3DAlt.getVoxelCoordinatesSwapMatrix' class='mt0'>
+    getVoxelCoordinatesSwapMatrix<span class='gray'>(output4x4)</span>
+  </h2>
+  <p>For external use (e.g. in a shader).
+Get the matrix for swapping voxel coordinates before converting to world coord
+or after having converted from world. To serve multiple purposes, this method
+can output a 3x3 matrix (default case) or it can output a 4x4 affine transform matrix
+with a weight of 1 at its bottom-right position.
+This matrix can be used in two cases:</p>
+<ul>
+<li>swap [i, j, k] voxel coordinates <strong>before</strong> multiplying them by a &quot;v2*&quot; matrix</li>
+<li>swap voxel coordinates <strong>after</strong> multiplying [x, y, z] world coorinates by a &quot;*2v&quot; matrix</li>
+</ul>
+
+    <h4>Parameters</h4>
+    <ul class='suppress-p-margin'>
+        <li><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean">Boolean</a></code> <strong>output4x4</strong>
+          :
+          <div class='force-inline'>
+            <p>optional, output a 4x4 if true, or a 3x3 if false (default: false)</p>
+
+          </div>
+        </li>
+    </ul>
+      <h4>Returns</h4>
+      <code><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a></code></code>
+      :
+      <div class='force-inline'>
+        <p>the 3x3 matrix in a 1D Array[9] arranged as column-major</p>
 
       </div>
 </section>
@@ -11921,6 +12036,530 @@ created ( because the filter ForEachPixelImageFilter creates an output with same
 <li><a href="https://github.com/Pixpipe/pixpipejs/blob/master/src/filter/TerrainRgbToElevationImageFilter.js">the filter TerrainRgbToElevationImageFilter</a></li>
 </ul>
 
+</section>
+</div><div class='py1'><section class='py2 clearfix'>
+  <h2 id='MatrixTricks' class='mt0'>
+    MatrixTricks<span class='gray'>(matrix, colIndex, rowIndex, value)</span>
+  </h2>
+  <p>MatrixTricks contains only static functions that add features to glMatrix.
+Like in glMatrix, all the matrices arrays are expected to be column major.</p>
+
+    <h4>Parameters</h4>
+    <ul class='suppress-p-margin'>
+        <li> <strong>matrix</strong>
+          :
+          <div class='force-inline'>
+            
+          </div>
+        </li>
+        <li> <strong>colIndex</strong>
+          :
+          <div class='force-inline'>
+            
+          </div>
+        </li>
+        <li> <strong>rowIndex</strong>
+          :
+          <div class='force-inline'>
+            
+          </div>
+        </li>
+        <li> <strong>value</strong>
+          :
+          <div class='force-inline'>
+            
+          </div>
+        </li>
+    </ul>
+      <h4>Static members</h4>
+        <div class='collapsible' id='MatrixTricks.getExpandedMatrix3x3To4x4'>
+          <a href='#MatrixTricks.getExpandedMatrix3x3To4x4'>
+            <code>
+              getExpandedMatrix3x3To4x4<span class='gray'>(matrix, horizontalStick, verticalStick)</span>
+            </code>
+            <div class='force-inline'>
+              <p>Expand a 3x3 matrix into a 4x4 matrix. Does not alter the input.</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2 m2'>
+<section class='py2 clearfix'>
+  <h2 id='MatrixTricks.getExpandedMatrix3x3To4x4' class='mt0'>
+    getExpandedMatrix3x3To4x4<span class='gray'>(matrix, horizontalStick, verticalStick)</span>
+  </h2>
+  <p>Expand a 3x3 matrix into a 4x4 matrix. Does not alter the input.</p>
+
+    <h4>Parameters</h4>
+    <ul class='suppress-p-margin'>
+        <li><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a></code> <strong>matrix</strong>
+          :
+          <div class='force-inline'>
+            <p>3x3 matrix in a 1D Array[9] arranged as column-major</p>
+
+          </div>
+        </li>
+        <li><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a></code> <strong>horizontalStick</strong>
+          :
+          <div class='force-inline'>
+            <p>&quot;LEFT&quot; to stick the 3x3 matrix at the left of the 4x4, &quot;RIGHT&quot; to stick to the right</p>
+
+          </div>
+        </li>
+        <li><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a></code> <strong>verticalStick</strong>
+          :
+          <div class='force-inline'>
+            <p>&quot;TOP&quot; to stick the 3x3 matrix at the top of the 4x4, &quot;BOTTOM&quot; to stick to the bottom</p>
+
+          </div>
+        </li>
+    </ul>
+      <h4>Returns</h4>
+      <code><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a></code></code>
+      :
+      <div class='force-inline'>
+        <p>the flipped 4x4 matrix in a 1D Array[16] arranged as column-major</p>
+
+      </div>
+</section>
+          </div>
+        </div>
+        <div class='collapsible' id='MatrixTricks.getHorizontalFlipMatrix33'>
+          <a href='#MatrixTricks.getHorizontalFlipMatrix33'>
+            <code>
+              getHorizontalFlipMatrix33<span class='gray'>(matrix)</span>
+            </code>
+            <div class='force-inline'>
+              <p>Create a new 4x4 matrix that is the horizontal flip of the given one</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2 m2'>
+<section class='py2 clearfix'>
+  <h2 id='MatrixTricks.getHorizontalFlipMatrix33' class='mt0'>
+    getHorizontalFlipMatrix33<span class='gray'>(matrix)</span>
+  </h2>
+  <p>Create a new 4x4 matrix that is the horizontal flip of the given one</p>
+
+    <h4>Parameters</h4>
+    <ul class='suppress-p-margin'>
+        <li><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a></code> <strong>matrix</strong>
+          :
+          <div class='force-inline'>
+            <p>4x4 matrix in a 1D Array[16] arranged as column-major</p>
+
+          </div>
+        </li>
+    </ul>
+      <h4>Returns</h4>
+      <code><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a></code></code>
+      :
+      <div class='force-inline'>
+        <p>the flipped 4x4 matrix in a 1D Array[16] arranged as column-major</p>
+
+      </div>
+</section>
+          </div>
+        </div>
+        <div class='collapsible' id='MatrixTricks.getHorizontalFlipMatrix44'>
+          <a href='#MatrixTricks.getHorizontalFlipMatrix44'>
+            <code>
+              getHorizontalFlipMatrix44<span class='gray'>(matrix)</span>
+            </code>
+            <div class='force-inline'>
+              <p>Create a new 4x4 matrix that is the horizontal flip of the given one</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2 m2'>
+<section class='py2 clearfix'>
+  <h2 id='MatrixTricks.getHorizontalFlipMatrix44' class='mt0'>
+    getHorizontalFlipMatrix44<span class='gray'>(matrix)</span>
+  </h2>
+  <p>Create a new 4x4 matrix that is the horizontal flip of the given one</p>
+
+    <h4>Parameters</h4>
+    <ul class='suppress-p-margin'>
+        <li><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a></code> <strong>matrix</strong>
+          :
+          <div class='force-inline'>
+            <p>4x4 matrix in a 1D Array[16] arranged as column-major</p>
+
+          </div>
+        </li>
+    </ul>
+      <h4>Returns</h4>
+      <code><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a></code></code>
+      :
+      <div class='force-inline'>
+        <p>the flipped 4x4 matrix in a 1D Array[16] arranged as column-major</p>
+
+      </div>
+</section>
+          </div>
+        </div>
+        <div class='collapsible' id='MatrixTricks.getHorizontalFlipSquareMatrix'>
+          <a href='#MatrixTricks.getHorizontalFlipSquareMatrix'>
+            <code>
+              getHorizontalFlipSquareMatrix<span class='gray'>(matrix, sideSize)</span>
+            </code>
+            <div class='force-inline'>
+              <p>Create a new 4x4 matrix that is the horizontal flip of the given one</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2 m2'>
+<section class='py2 clearfix'>
+  <h2 id='MatrixTricks.getHorizontalFlipSquareMatrix' class='mt0'>
+    getHorizontalFlipSquareMatrix<span class='gray'>(matrix, sideSize)</span>
+  </h2>
+  <p>Create a new 4x4 matrix that is the horizontal flip of the given one</p>
+
+    <h4>Parameters</h4>
+    <ul class='suppress-p-margin'>
+        <li><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a></code> <strong>matrix</strong>
+          :
+          <div class='force-inline'>
+            <p>nxn matrix in a 1D Array[nxn] arranged as column-major</p>
+
+          </div>
+        </li>
+        <li> <strong>sideSize</strong>
+          :
+          <div class='force-inline'>
+            
+          </div>
+        </li>
+    </ul>
+      <h4>Returns</h4>
+      <code><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a></code></code>
+      :
+      <div class='force-inline'>
+        <p>the flipped nxn matrix in a 1D Array[nxn] arranged as column-major</p>
+
+      </div>
+</section>
+          </div>
+        </div>
+        <div class='collapsible' id='MatrixTricks.getValueMatrix33'>
+          <a href='#MatrixTricks.getValueMatrix33'>
+            <code>
+              getValueMatrix33<span class='gray'>(matrix, colIndex, rowIndex)</span>
+            </code>
+            <div class='force-inline'>
+              <p>Get a value in the matrix, at a given row/col position.</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2 m2'>
+<section class='py2 clearfix'>
+  <h2 id='MatrixTricks.getValueMatrix33' class='mt0'>
+    getValueMatrix33<span class='gray'>(matrix, colIndex, rowIndex)</span>
+  </h2>
+  <p>Get a value in the matrix, at a given row/col position.</p>
+
+    <h4>Parameters</h4>
+    <ul class='suppress-p-margin'>
+        <li><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a></code> <strong>matrix</strong>
+          :
+          <div class='force-inline'>
+            <p>3x3 matrix in a 1D Array[9] arranged as column-major</p>
+
+          </div>
+        </li>
+        <li><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">Number</a></code> <strong>colIndex</strong>
+          :
+          <div class='force-inline'>
+            <p>position in column (x)</p>
+
+          </div>
+        </li>
+        <li><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">Number</a></code> <strong>rowIndex</strong>
+          :
+          <div class='force-inline'>
+            <p>position in row (y)</p>
+
+          </div>
+        </li>
+    </ul>
+      <h4>Returns</h4>
+      <code><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">Number</a></code></code>
+      :
+      <div class='force-inline'>
+        <p>value in the matrix</p>
+
+      </div>
+</section>
+          </div>
+        </div>
+        <div class='collapsible' id='MatrixTricks.getValueMatrix44'>
+          <a href='#MatrixTricks.getValueMatrix44'>
+            <code>
+              getValueMatrix44<span class='gray'>(matrix, colIndex, rowIndex)</span>
+            </code>
+            <div class='force-inline'>
+              <p>Get a value in the matrix, at a given row/col position.</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2 m2'>
+<section class='py2 clearfix'>
+  <h2 id='MatrixTricks.getValueMatrix44' class='mt0'>
+    getValueMatrix44<span class='gray'>(matrix, colIndex, rowIndex)</span>
+  </h2>
+  <p>Get a value in the matrix, at a given row/col position.</p>
+
+    <h4>Parameters</h4>
+    <ul class='suppress-p-margin'>
+        <li><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a></code> <strong>matrix</strong>
+          :
+          <div class='force-inline'>
+            <p>4x4 matrix in a 1D Array[16] arranged as column-major</p>
+
+          </div>
+        </li>
+        <li><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">Number</a></code> <strong>colIndex</strong>
+          :
+          <div class='force-inline'>
+            <p>position in column (x)</p>
+
+          </div>
+        </li>
+        <li><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">Number</a></code> <strong>rowIndex</strong>
+          :
+          <div class='force-inline'>
+            <p>position in row (y)</p>
+
+          </div>
+        </li>
+    </ul>
+      <h4>Returns</h4>
+      <code><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">Number</a></code></code>
+      :
+      <div class='force-inline'>
+        <p>value in the matrix</p>
+
+      </div>
+</section>
+          </div>
+        </div>
+        <div class='collapsible' id='MatrixTricks.getValueSquareMatrix'>
+          <a href='#MatrixTricks.getValueSquareMatrix'>
+            <code>
+              getValueSquareMatrix<span class='gray'>(matrix, sideSize, colIndex, rowIndex)</span>
+            </code>
+            <div class='force-inline'>
+              <p>Get a value in the matrix, at a given row/col position.</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2 m2'>
+<section class='py2 clearfix'>
+  <h2 id='MatrixTricks.getValueSquareMatrix' class='mt0'>
+    getValueSquareMatrix<span class='gray'>(matrix, sideSize, colIndex, rowIndex)</span>
+  </h2>
+  <p>Get a value in the matrix, at a given row/col position.</p>
+
+    <h4>Parameters</h4>
+    <ul class='suppress-p-margin'>
+        <li><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a></code> <strong>matrix</strong>
+          :
+          <div class='force-inline'>
+            <p>nxn matrix in a 1D Array[nxn] arranged as column-major</p>
+
+          </div>
+        </li>
+        <li><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">Number</a></code> <strong>sideSize</strong>
+          :
+          <div class='force-inline'>
+            <p>size of a side, 4 for a 4x4 or 3 for a 3x3 matrix</p>
+
+          </div>
+        </li>
+        <li><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">Number</a></code> <strong>colIndex</strong>
+          :
+          <div class='force-inline'>
+            <p>position in column (x)</p>
+
+          </div>
+        </li>
+        <li><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">Number</a></code> <strong>rowIndex</strong>
+          :
+          <div class='force-inline'>
+            <p>position in row (y)</p>
+
+          </div>
+        </li>
+    </ul>
+      <h4>Returns</h4>
+      <code><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">Number</a></code></code>
+      :
+      <div class='force-inline'>
+        <p>value in the matrix</p>
+
+      </div>
+</section>
+          </div>
+        </div>
+        <div class='collapsible' id='MatrixTricks.setValueMatrix33'>
+          <a href='#MatrixTricks.setValueMatrix33'>
+            <code>
+              setValueMatrix33<span class='gray'>(matrix, colIndex, rowIndex, value)</span>
+            </code>
+            <div class='force-inline'>
+              <p>Set a value in the matrix, at a given row/col position</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2 m2'>
+<section class='py2 clearfix'>
+  <h2 id='MatrixTricks.setValueMatrix33' class='mt0'>
+    setValueMatrix33<span class='gray'>(matrix, colIndex, rowIndex, value)</span>
+  </h2>
+  <p>Set a value in the matrix, at a given row/col position</p>
+
+    <h4>Parameters</h4>
+    <ul class='suppress-p-margin'>
+        <li><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a></code> <strong>matrix</strong>
+          :
+          <div class='force-inline'>
+            <p>3x3 matrix in a 1D Array[9] arranged as column-major</p>
+
+          </div>
+        </li>
+        <li><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">Number</a></code> <strong>colIndex</strong>
+          :
+          <div class='force-inline'>
+            <p>position in column (x)</p>
+
+          </div>
+        </li>
+        <li><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">Number</a></code> <strong>rowIndex</strong>
+          :
+          <div class='force-inline'>
+            <p>position in row (y)</p>
+
+          </div>
+        </li>
+        <li><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">Number</a></code> <strong>value</strong>
+          :
+          <div class='force-inline'>
+            <p>value to be set in the matrix</p>
+
+          </div>
+        </li>
+    </ul>
+</section>
+          </div>
+        </div>
+        <div class='collapsible' id='MatrixTricks.setValueMatrix44'>
+          <a href='#MatrixTricks.setValueMatrix44'>
+            <code>
+              setValueMatrix44<span class='gray'>(matrix, colIndex, rowIndex, value)</span>
+            </code>
+            <div class='force-inline'>
+              <p>Set a value in the matrix, at a given row/col position</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2 m2'>
+<section class='py2 clearfix'>
+  <h2 id='MatrixTricks.setValueMatrix44' class='mt0'>
+    setValueMatrix44<span class='gray'>(matrix, colIndex, rowIndex, value)</span>
+  </h2>
+  <p>Set a value in the matrix, at a given row/col position</p>
+
+    <h4>Parameters</h4>
+    <ul class='suppress-p-margin'>
+        <li><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a></code> <strong>matrix</strong>
+          :
+          <div class='force-inline'>
+            <p>4x4 matrix in a 1D Array[16] arranged as column-major</p>
+
+          </div>
+        </li>
+        <li><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">Number</a></code> <strong>colIndex</strong>
+          :
+          <div class='force-inline'>
+            <p>position in column (x)</p>
+
+          </div>
+        </li>
+        <li><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">Number</a></code> <strong>rowIndex</strong>
+          :
+          <div class='force-inline'>
+            <p>position in row (y)</p>
+
+          </div>
+        </li>
+        <li><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">Number</a></code> <strong>value</strong>
+          :
+          <div class='force-inline'>
+            <p>value to be set in the matrix</p>
+
+          </div>
+        </li>
+    </ul>
+</section>
+          </div>
+        </div>
+        <div class='collapsible' id='MatrixTricks.setValueSquareMatrix'>
+          <a href='#MatrixTricks.setValueSquareMatrix'>
+            <code>
+              setValueSquareMatrix<span class='gray'>(matrix, sideSize, colIndex, rowIndex, value)</span>
+            </code>
+            <div class='force-inline'>
+              <p>Set a value in the square matrix, at a given row/col position</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2 m2'>
+<section class='py2 clearfix'>
+  <h2 id='MatrixTricks.setValueSquareMatrix' class='mt0'>
+    setValueSquareMatrix<span class='gray'>(matrix, sideSize, colIndex, rowIndex, value)</span>
+  </h2>
+  <p>Set a value in the square matrix, at a given row/col position</p>
+
+    <h4>Parameters</h4>
+    <ul class='suppress-p-margin'>
+        <li><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a></code> <strong>matrix</strong>
+          :
+          <div class='force-inline'>
+            <p>nxn matrix in a 1D Array[nxn] arranged as column-major</p>
+
+          </div>
+        </li>
+        <li><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">Number</a></code> <strong>sideSize</strong>
+          :
+          <div class='force-inline'>
+            <p>size of a side, 4 for a 4x4 or 3 for a 3x3 matrix</p>
+
+          </div>
+        </li>
+        <li><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">Number</a></code> <strong>colIndex</strong>
+          :
+          <div class='force-inline'>
+            <p>position in column (x)</p>
+
+          </div>
+        </li>
+        <li><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">Number</a></code> <strong>rowIndex</strong>
+          :
+          <div class='force-inline'>
+            <p>position in row (y)</p>
+
+          </div>
+        </li>
+        <li><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">Number</a></code> <strong>value</strong>
+          :
+          <div class='force-inline'>
+            <p>value to be set in the matrix</p>
+
+          </div>
+        </li>
+    </ul>
+</section>
+          </div>
+        </div>
 </section>
 </div><div class='py1'><section class='py2 clearfix'>
   <h2 id='GradientImageFilter' class='mt0'>
