@@ -621,21 +621,6 @@ class Image3DAlt extends PixpipeContainer{
     }
   }
 
-  
-  /**
-  * Get the 4x4 matrix that swaps [i, j, k] so that they can be multiplied directly
-  * with the "v2*" 4x4 matrix registred in the metadata
-  * @return {Array} the 4x4 matrix in a 1D Array[16] arranged as column-major
-  */
-  getSwapMatrixFromVoxel(){
-    var mat33 = new Array(9).fill(0);
-    MatrixTricks.setValueMatrix33( mat33, 0, this._worldPositionIndex[0], 1 );
-    MatrixTricks.setValueMatrix33( mat33, 1, this._worldPositionIndex[1], 1 );
-    MatrixTricks.setValueMatrix33( mat33, 2, this._worldPositionIndex[2], 1 );
-    var mat33Flipped = MatrixTricks.getHorizontalFlipMatrix33( mat33 );
-    return mat33Flipped;
-  }
-
 
   /**
   * Convert coordinates from a a given (non-voxel based) position into a voxel based coord
@@ -647,23 +632,51 @@ class Image3DAlt extends PixpipeContainer{
   getPositionFromTransfoSpaceToVoxelSpace( spacePosition , transformName, round = true ){
     var inputPosArray = [spacePosition.x, spacePosition.y, spacePosition.z];
     var transPosUnordered = this._getTransformedPosition( inputPosArray, transformName);
-
+    var posOrdered = {
+      i: transPosUnordered[ this._worldPositionOrder[2] ],
+      j: transPosUnordered[ this._worldPositionOrder[1] ],
+      k: transPosUnordered[ this._worldPositionOrder[0] ]
+    };
+    
     if( round ){
-      return {
-        i: Math.round(transPosUnordered[ this._worldPositionOrder[2] ]),
-        j: Math.round(transPosUnordered[ this._worldPositionOrder[1] ]),
-        k: Math.round(transPosUnordered[ this._worldPositionOrder[0] ])
-      }
-    }else{
-      return {
-        i: transPosUnordered[ this._worldPositionOrder[2] ],
-        j: transPosUnordered[ this._worldPositionOrder[1] ],
-        k: transPosUnordered[ this._worldPositionOrder[0] ]
-      }
+        posOrdered.i = Math.round(posOrdered.i);
+        posOrdered.j = Math.round(posOrdered.j);
+        posOrdered.k = Math.round(posOrdered.k);
     }
+    
+    return posOrdered;
   }
 
 
+  /**
+  * For external use (e.g. in a shader).
+  * Get the matrix for swapping voxel coordinates before converting to world coord
+  * or after having converted from world. To serve multiple purposes, this method
+  * can output a 3x3 matrix (default case) or it can output a 4x4 affine transform matrix
+  * with a weight of 1 at its bottom-right position.
+  * This matrix can be used in two cases:
+  * - swap [i, j, k] voxel coordinates **before** multiplying them by a "v2*" matrix
+  * - swap voxel coordinates **after** multiplying [x, y, z] world coorinates by a "*2v" matrix
+  * @param {Boolean} output4x4 - optional, output a 4x4 if true, or a 3x3 if false (default: false)
+  * @return {Array} the 3x3 matrix in a 1D Array[9] arranged as column-major
+  */
+  getVoxelCoordinatesSwapMatrix( output4x4=false ){
+    var mat33 = new Array(9).fill(0);
+    MatrixTricks.setValueMatrix33( mat33, 0, this._worldPositionOrder[0], 1 );
+    MatrixTricks.setValueMatrix33( mat33, 1, this._worldPositionOrder[1], 1 );
+    MatrixTricks.setValueMatrix33( mat33, 2, this._worldPositionOrder[2], 1 );
+    var mat33Flipped = MatrixTricks.getHorizontalFlipMatrix33( mat33 );
+    var outputMat = mat33Flipped;
+    
+    if( output4x4 ){
+      outputMat = MatrixTricks.getExpandedMatrix3x3To4x4( mat33Flipped );
+      MatrixTricks.setValueMatrix33( outputMat, 3, 3, 1 );
+    }
+    
+    return outputMat
+  }
+  
+  
   /**
   * Get a value from the dataset using {x, y, z} coordinates of a transformed space.
   * Keep in mind world (or subject) are floating point but voxel coordinates are integers.

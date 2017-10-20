@@ -18,24 +18,24 @@ class MatrixTricks{
   /**
   * Set a value in the matrix, at a given row/col position
   * @param {Array} matrix - 4x4 matrix in a 1D Array[16] arranged as column-major
-  * @param {Number} rowIndex - position in row
-  * @param {Number} colIndex - position in column
+  * @param {Number} colIndex - position in column (x)
+  * @param {Number} rowIndex - position in row (y)
   * @param {Number} value - value to be set in the matrix
   */
-  static setValueMatrix44( matrix, rowIndex, colIndex, value ){
-    MatrixTricks.setValueSquareMatrix( matrix, 4, rowIndex, colIndex, value );
+  static setValueMatrix44( matrix, colIndex, rowIndex, value ){
+    MatrixTricks.setValueSquareMatrix( matrix, 4, colIndex, rowIndex, value );
   }
   
   
   /**
   * Set a value in the matrix, at a given row/col position
   * @param {Array} matrix - 3x3 matrix in a 1D Array[9] arranged as column-major
-  * @param {Number} rowIndex - position in row
-  * @param {Number} colIndex - position in column
+  * @param {Number} colIndex - position in column (x)
+  * @param {Number} rowIndex - position in row (y)
   * @param {Number} value - value to be set in the matrix
   */
-  static setValueMatrix33( matrix, rowIndex, colIndex, value ){
-    MatrixTricks.setValueSquareMatrix( matrix, 3, rowIndex, colIndex, value );
+  static setValueMatrix33( matrix, colIndex, rowIndex, value ){
+    MatrixTricks.setValueSquareMatrix( matrix, 3, colIndex, rowIndex, value );
   }
   
   
@@ -43,11 +43,11 @@ class MatrixTricks{
   * Set a value in the square matrix, at a given row/col position
   * @param {Array} matrix - nxn matrix in a 1D Array[nxn] arranged as column-major
   * @param {Number} sideSize - size of a side, 4 for a 4x4 or 3 for a 3x3 matrix
-  * @param {Number} rowIndex - position in row
-  * @param {Number} colIndex - position in column
+  * @param {Number} colIndex - position in column (x)
+  * @param {Number} rowIndex - position in row (y)
   * @param {Number} value - value to be set in the matrix
   */
-  static setValueSquareMatrix( matrix, sideSize, rowIndex, colIndex, value ){
+  static setValueSquareMatrix( matrix, sideSize, colIndex, rowIndex, value ){
     // since they are column-major: colIndex * height + rowIndex;
     var arrayIndex = colIndex * sideSize + rowIndex;
     matrix[ arrayIndex ] = value;
@@ -57,24 +57,24 @@ class MatrixTricks{
   /**
   * Get a value in the matrix, at a given row/col position.
   * @param {Array} matrix - 4x4 matrix in a 1D Array[16] arranged as column-major
-  * @param {Number} rowIndex - position in row
-  * @param {Number} colIndex - position in column
+  * @param {Number} colIndex - position in column (x)
+  * @param {Number} rowIndex - position in row (y)
   * @return {Number} value in the matrix
   */
-  static getValueMatrix44( matrix, rowIndex, colIndex){
-    return MatrixTricks.getValueSquareMatrix( matrix, 4, rowIndex, colIndex );
+  static getValueMatrix44( matrix, colIndex, rowIndex){
+    return MatrixTricks.getValueSquareMatrix( matrix, 4, colIndex, rowIndex );
   }
   
   
   /**
   * Get a value in the matrix, at a given row/col position.
   * @param {Array} matrix - 3x3 matrix in a 1D Array[9] arranged as column-major
-  * @param {Number} rowIndex - position in row
-  * @param {Number} colIndex - position in column
+  * @param {Number} colIndex - position in column (x)
+  * @param {Number} rowIndex - position in row (y)
   * @return {Number} value in the matrix
   */
-  static getValueMatrix33( matrix, rowIndex, colIndex){
-    return MatrixTricks.getValueSquareMatrix( matrix, 3, rowIndex, colIndex );
+  static getValueMatrix33( matrix, colIndex, rowIndex){
+    return MatrixTricks.getValueSquareMatrix( matrix, 3, colIndex, rowIndex );
   }
   
   
@@ -82,11 +82,11 @@ class MatrixTricks{
   * Get a value in the matrix, at a given row/col position.
   * @param {Array} matrix - nxn matrix in a 1D Array[nxn] arranged as column-major
   * @param {Number} sideSize - size of a side, 4 for a 4x4 or 3 for a 3x3 matrix
-  * @param {Number} rowIndex - position in row
-  * @param {Number} colIndex - position in column
+  * @param {Number} colIndex - position in column (x)
+  * @param {Number} rowIndex - position in row (y)
   * @return {Number} value in the matrix
   */
-  static getValueSquareMatrix( matrix, sideSize, rowIndex, colIndex){
+  static getValueSquareMatrix( matrix, sideSize, colIndex, rowIndex){
     // since they are column-major: colIndex * height + rowIndex;
     var arrayIndex = colIndex * sideSize + rowIndex;
     return matrix[ arrayIndex ];
@@ -122,8 +122,8 @@ class MatrixTricks{
     var flippedMat = new Array(sideSize*sideSize).fill(0);
     for(var r=0; r<sideSize; r++){
       for(var c=0; c<sideSize; c++){
-        var value = MatrixTricks.getValueSquareMatrix( matrix, sideSize, r, c );
-        MatrixTricks.setValueSquareMatrix( flippedMat, sideSize, r, sideSize-1-c, value );
+        var value = MatrixTricks.getValueSquareMatrix( matrix, sideSize, c, r );
+        MatrixTricks.setValueSquareMatrix( flippedMat, sideSize, sideSize-1-c, r, value );
       }
     }
     return flippedMat;
@@ -144,8 +144,8 @@ class MatrixTricks{
     
     for(var r=0; r<3; r++){
       for(var c=0; c<3; c++){
-        var value = MatrixTricks.getValueMatrix33( matrix, r, c );
-        MatrixTricks.setValueMatrix44( expandedMat, rowOffset + r, colOffset + c, value );
+        var value = MatrixTricks.getValueMatrix33( matrix, c, r );
+        MatrixTricks.setValueMatrix44( expandedMat, colOffset + c, rowOffset + r, value );
       }
     }
     return expandedMat;
