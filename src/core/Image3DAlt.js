@@ -498,10 +498,6 @@ class Image3DAlt extends PixpipeContainer{
     var j = position.j;
     var k = position.k;
 
-    if( i== 10 && j==30 && k==20){
-      console.log("stop");
-    }
-
     if(i<0 || j<0 || k<0 || time<0 ||
        i>=dimensions[0].length  ||
        j>=dimensions[1].length  ||
@@ -563,6 +559,28 @@ class Image3DAlt extends PixpipeContainer{
     return new this._data.constructor( this._data );
   }
 
+
+  /**
+  * Get data scaled as a uint8 taking in consideration the actual min-max range of the data
+  * (and not the possible min-max rage allowed by the data type)
+  * Notice: values are rounded
+  * @return {Uint8Array} the scaled data
+  */
+  getDataUint8(){
+    var t0 = performance.now();
+    var data = this._data;
+    var min = this.getMinValue();
+    var max = this.getMaxValue();
+    var range = max - min;
+    var uint8Buff = new Uint8Array( data.length );
+    for(var i=0; i<uint8Buff.length; i++){
+      uint8Buff[i] = Math.round(((data[i] - min) / range ) * 256);
+    }
+    var t1 = performance.now();
+    console.log( t1 - t0 );
+    return uint8Buff;
+  }
+  
 
   /**
   * Does this volume has the given transform registered?
