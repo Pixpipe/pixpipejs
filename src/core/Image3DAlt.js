@@ -498,10 +498,6 @@ class Image3DAlt extends PixpipeContainer{
     var j = position.j;
     var k = position.k;
 
-    if( i== 10 && j==30 && k==20){
-      console.log("stop");
-    }
-
     if(i<0 || j<0 || k<0 || time<0 ||
        i>=dimensions[0].length  ||
        j>=dimensions[1].length  ||
@@ -563,6 +559,28 @@ class Image3DAlt extends PixpipeContainer{
     return new this._data.constructor( this._data );
   }
 
+
+  /**
+  * Get data scaled as a uint8 taking in consideration the actual min-max range of the data
+  * (and not the possible min-max rage allowed by the data type)
+  * Notice: values are rounded
+  * @return {Uint8Array} the scaled data
+  */
+  getDataUint8(){
+    var t0 = performance.now();
+    var data = this._data;
+    var min = this.getMinValue();
+    var max = this.getMaxValue();
+    var range = max - min;
+    var uint8Buff = new Uint8Array( data.length );
+    for(var i=0; i<uint8Buff.length; i++){
+      uint8Buff[i] = Math.round(((data[i] - min) / range ) * 256);
+    }
+    var t1 = performance.now();
+    console.log( t1 - t0 );
+    return uint8Buff;
+  }
+  
 
   /**
   * Does this volume has the given transform registered?
@@ -657,17 +675,23 @@ class Image3DAlt extends PixpipeContainer{
   * This matrix can be used in two cases:
   * - swap [i, j, k] voxel coordinates **before** multiplying them by a "v2*" matrix
   * - swap voxel coordinates **after** multiplying [x, y, z] world coorinates by a "*2v" matrix
+  * @param {Boolean} hflip - if true, horizontally flip the swap matrix
   * @param {Boolean} output4x4 - optional, output a 4x4 if true, or a 3x3 if false (default: false)
   * @return {Array} the 3x3 matrix in a 1D Array[9] arranged as column-major
   */
-  getVoxelCoordinatesSwapMatrix( output4x4=false ){
+  getVoxelCoordinatesSwapMatrix( hflip=false, output4x4=false ){
     var mat33 = new Array(9).fill(0);
     MatrixTricks.setValueMatrix33( mat33, 0, this._worldPositionOrder[0], 1 );
     MatrixTricks.setValueMatrix33( mat33, 1, this._worldPositionOrder[1], 1 );
     MatrixTricks.setValueMatrix33( mat33, 2, this._worldPositionOrder[2], 1 );
     var mat33Flipped = MatrixTricks.getHorizontalFlipMatrix33( mat33 );
     var outputMat = mat33Flipped;
-
+    
+    if( hflip ){
+      var mat33Flipped = MatrixTricks.getHorizontalFlipMatrix33( mat33 );
+      outputMat = mat33Flipped;
+    }
+    
     if( output4x4 ){
       outputMat = MatrixTricks.getExpandedMatrix3x3To4x4( mat33Flipped );
       MatrixTricks.setValueMatrix33( outputMat, 3, 3, 1 );
