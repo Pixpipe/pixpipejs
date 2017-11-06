@@ -401,7 +401,7 @@
 
       var volBuff = this.getOutput();
 
-      var genericDecoder = new pixpipe.Image3DGenericDecoder();
+      var genericDecoder = new pixpipe.Image3DGenericDecoderAlt();
       //var genericDecoder = new pixpipe.Minc2Decoder();
       genericDecoder.addInput( volBuff );
       genericDecoder.update();
@@ -417,7 +417,7 @@
       if(mniVolume){
         console.log(mniVolume);
 
-        var mosaicFilter = new pixpipe.Image3DToMosaicFilter();
+        var mosaicFilter = new pixpipe.Image3DToMosaicFilterAlt();
         //mosaicFilter.setMetadata("maxWidth", 16000);
         //mosaicFilter.setMetadata("maxHeight", 16000);
 
@@ -426,7 +426,7 @@
         mosaicFilter.addInput( mniVolume );
 
         // which axis do we want the picture of?
-        var space = "zspace";
+        var space = "z";
         mosaicFilter.setMetadata( "axis", space);
 
         // if time series, take it all
@@ -440,18 +440,20 @@
           document.getElementById('fileInfo').innerHTML = "Error.";
           return;
         }else{
-          var spaceInfo = mniVolume.getMetadata(space);
+          // TODO
+          var sliceSize = mniVolume.getSliceSize( space );
+          var nbSlices = mniVolume.getNumberOfSlices( space );
           document.getElementById('fileInfo').textContent = filenames[0] + " is composed of "
-            + spaceInfo.space_length + " slices of size "
-            + spaceInfo.width + "x" + spaceInfo.height + "px";
+            + nbSlices + " slices of size "
+            + sliceSize.w + "x" + sliceSize.h + "px";
         }
 
         // display the output in multiple canvas if needed
         for(var nbOut=0; nbOut<mosaicFilter.getNumberOfOutputs(); nbOut++){
           var outputMosaic = mosaicFilter.getOutput(nbOut);
           console.log( outputMosaic );
-          outputMosaic.setMetadata("min", mniVolume.getMetadata("voxel_min"));
-          outputMosaic.setMetadata("max", mniVolume.getMetadata("voxel_max"));
+          outputMosaic.setMetadata("min", mniVolume.getMinValue());
+          outputMosaic.setMetadata("max", mniVolume.getMaxValue());
 
           var data = outputMosaic.getDataAsUInt8Array();
           //var data = outputMosaic.getData();
@@ -472,9 +474,9 @@
         sliceMatrixSize.x = mosaicFilter.getMetadata("gridWidth");
         sliceMatrixSize.y = mosaicFilter.getMetadata("gridHeight");
 
-        spaceLength.x = mniVolume.getMetadata("xspace").space_length;
-        spaceLength.y = mniVolume.getMetadata("yspace").space_length;
-        spaceLength.z = mniVolume.getMetadata("zspace").space_length;
+        spaceLength.x = mniVolume.getNumberOfSlices("x");
+        spaceLength.y = mniVolume.getNumberOfSlices("y");
+        spaceLength.z = mniVolume.getNumberOfSlices("z");
         spaceLength.t = mniVolume.getTimeLength();
 
         // since the volume is loaded, we can create the 3D env

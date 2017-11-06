@@ -16584,10 +16584,6 @@ var Image3DAlt = function (_PixpipeContainer) {
       var j = position.j;
       var k = position.k;
 
-      if (i == 10 && j == 30 && k == 20) {
-        console.log("stop");
-      }
-
       if (i < 0 || j < 0 || k < 0 || time < 0 || i >= dimensions[0].length || j >= dimensions[1].length || k >= dimensions[2].length || dimensions.length > 3 && time >= dimensions[3].length) {
         console.warn("Voxel query is out of bound.");
         return null;
@@ -16648,6 +16644,30 @@ var Image3DAlt = function (_PixpipeContainer) {
     key: 'getDataCopy',
     value: function getDataCopy() {
       return new this._data.constructor(this._data);
+    }
+
+    /**
+    * Get data scaled as a uint8 taking in consideration the actual min-max range of the data
+    * (and not the possible min-max rage allowed by the data type)
+    * Notice: values are rounded
+    * @return {Uint8Array} the scaled data
+    */
+
+  }, {
+    key: 'getDataUint8',
+    value: function getDataUint8() {
+      var t0 = performance.now();
+      var data = this._data;
+      var min$$1 = this.getMinValue();
+      var max$$1 = this.getMaxValue();
+      var range = max$$1 - min$$1;
+      var uint8Buff = new Uint8Array(data.length);
+      for (var i = 0; i < uint8Buff.length; i++) {
+        uint8Buff[i] = Math.round((data[i] - min$$1) / range * 256);
+      }
+      var t1 = performance.now();
+      console.log(t1 - t0);
+      return uint8Buff;
     }
 
     /**
