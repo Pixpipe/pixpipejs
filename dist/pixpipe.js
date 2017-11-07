@@ -16784,8 +16784,7 @@ var Image3DAlt = function (_PixpipeContainer) {
       MatrixTricks.setValueMatrix33(mat33, 0, this._worldPositionOrder[0], 1);
       MatrixTricks.setValueMatrix33(mat33, 1, this._worldPositionOrder[1], 1);
       MatrixTricks.setValueMatrix33(mat33, 2, this._worldPositionOrder[2], 1);
-      var mat33Flipped = MatrixTricks.getHorizontalFlipMatrix33(mat33);
-      var outputMat = mat33Flipped;
+      var outputMat = mat33;
 
       if (hflip) {
         var mat33Flipped = MatrixTricks.getHorizontalFlipMatrix33(mat33);

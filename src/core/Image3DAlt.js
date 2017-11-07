@@ -580,7 +580,7 @@ class Image3DAlt extends PixpipeContainer{
     console.log( t1 - t0 );
     return uint8Buff;
   }
-  
+
 
   /**
   * Does this volume has the given transform registered?
@@ -679,19 +679,18 @@ class Image3DAlt extends PixpipeContainer{
   * @param {Boolean} output4x4 - optional, output a 4x4 if true, or a 3x3 if false (default: false)
   * @return {Array} the 3x3 matrix in a 1D Array[9] arranged as column-major
   */
-  getVoxelCoordinatesSwapMatrix( hflip=false, output4x4=false ){
+  getVoxelCoordinatesSwapMatrix( hflip=false, output4x4=false ) {
     var mat33 = new Array(9).fill(0);
     MatrixTricks.setValueMatrix33( mat33, 0, this._worldPositionOrder[0], 1 );
     MatrixTricks.setValueMatrix33( mat33, 1, this._worldPositionOrder[1], 1 );
     MatrixTricks.setValueMatrix33( mat33, 2, this._worldPositionOrder[2], 1 );
-    var mat33Flipped = MatrixTricks.getHorizontalFlipMatrix33( mat33 );
-    var outputMat = mat33Flipped;
-    
+    var outputMat = mat33;
+
     if( hflip ){
       var mat33Flipped = MatrixTricks.getHorizontalFlipMatrix33( mat33 );
       outputMat = mat33Flipped;
     }
-    
+
     if( output4x4 ){
       outputMat = MatrixTricks.getExpandedMatrix3x3To4x4( mat33Flipped );
       MatrixTricks.setValueMatrix33( outputMat, 3, 3, 1 );
@@ -699,7 +698,6 @@ class Image3DAlt extends PixpipeContainer{
 
     return outputMat
   }
-
 
   /**
   * Get a value from the dataset using {x, y, z} coordinates of a transformed space.
