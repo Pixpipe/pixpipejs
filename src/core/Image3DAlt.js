@@ -309,14 +309,14 @@ class Image3DAlt extends PixpipeContainer{
           dimensions.push( timeDim );
           this.setMetadata("dimensions", dimensions);
         }
-        
+
         // default transformations
         var transformations = {
           "v2w": this._get4x4IdentityMatrix(),
           "w2v": this._get4x4IdentityMatrix()
         }
         this.setMetadata("transformations", transformations);
-        
+
 
         // if a buffer is provided, we perform a size-check
         if( buffer ){
@@ -580,7 +580,7 @@ class Image3DAlt extends PixpipeContainer{
     console.log( t1 - t0 );
     return uint8Buff;
   }
-  
+
 
   /**
   * Does this volume has the given transform registered?
@@ -590,7 +590,7 @@ class Image3DAlt extends PixpipeContainer{
   hasTransform( transformName ){
     return (transformName in this._metadata.transformations);
   }
-  
+
 
   /**
   * [PRIVATE]
@@ -655,13 +655,13 @@ class Image3DAlt extends PixpipeContainer{
       j: transPosUnordered[ this._worldPositionOrder[1] ],
       k: transPosUnordered[ this._worldPositionOrder[0] ]
     };
-    
+
     if( round ){
         posOrdered.i = Math.round(posOrdered.i);
         posOrdered.j = Math.round(posOrdered.j);
         posOrdered.k = Math.round(posOrdered.k);
     }
-    
+
     return posOrdered;
   }
 
@@ -679,27 +679,26 @@ class Image3DAlt extends PixpipeContainer{
   * @param {Boolean} output4x4 - optional, output a 4x4 if true, or a 3x3 if false (default: false)
   * @return {Array} the 3x3 matrix in a 1D Array[9] arranged as column-major
   */
-  getVoxelCoordinatesSwapMatrix( hflip=false, output4x4=false ){
+  getVoxelCoordinatesSwapMatrix( hflip=false, output4x4=false ) {
     var mat33 = new Array(9).fill(0);
     MatrixTricks.setValueMatrix33( mat33, 0, this._worldPositionOrder[0], 1 );
     MatrixTricks.setValueMatrix33( mat33, 1, this._worldPositionOrder[1], 1 );
     MatrixTricks.setValueMatrix33( mat33, 2, this._worldPositionOrder[2], 1 );
     var outputMat = mat33;
-    
+
     if( hflip ){
       var mat33Flipped = MatrixTricks.getHorizontalFlipMatrix33( mat33 );
       outputMat = mat33Flipped;
     }
-    
+
     if( output4x4 ){
       outputMat = MatrixTricks.getExpandedMatrix3x3To4x4( mat33Flipped );
       MatrixTricks.setValueMatrix33( outputMat, 3, 3, 1 );
     }
-    
+
     return outputMat
   }
-  
-  
+
   /**
   * Get a value from the dataset using {x, y, z} coordinates of a transformed space.
   * Keep in mind world (or subject) are floating point but voxel coordinates are integers.
@@ -901,7 +900,7 @@ class Image3DAlt extends PixpipeContainer{
   isInsideVoxelSpace( pos ){
     var dimensions = this._metadata.dimensions;
     var isInside = false;
-    
+
     try{
     isInside = !(pos.i < 0 || pos.i >= dimensions[2].length ||
                  pos.j < 0 || pos.j >= dimensions[1].length ||
@@ -909,10 +908,10 @@ class Image3DAlt extends PixpipeContainer{
     }catch(e){
       console.warn( e );
     }
-    return isInside;    
+    return isInside;
   }
 
-  
+
   /**
   * Is the given point in a transform coordinates system (world or subject) inside the dataset?
   * This is achieved by converting the transformed coordinates into voxel coordinates.
@@ -947,7 +946,7 @@ class Image3DAlt extends PixpipeContainer{
                                                 }
      return null if posFrom or posTo is outside
   */
-  getSegmentSampleVoxelSpace( posFrom, posTo, time = 0 ){ 
+  getSegmentSampleVoxelSpace( posFrom, posTo, time = 0 ){
     // both position must be inside the image
     //if( !this.isInsideVoxelSpace(posFrom) || !this.isInsideVoxelSpace(posTo) )
     //  return null;
@@ -1002,7 +1001,7 @@ class Image3DAlt extends PixpipeContainer{
 
   /**
   * Sample voxels along a segment in a transform coordinates system (world or subject).
-  * This is achieved by converting the transformed coordinates into voxel coordinates, 
+  * This is achieved by converting the transformed coordinates into voxel coordinates,
   * then samples are taken respecting a voxel unit rather than the transform unit so that
   * it is more fine.
   * @param {String} space2voxelTransformName - id of a registered transformation that goes from arbitrary space to voxel space (aka. "*2v")
@@ -1028,22 +1027,22 @@ class Image3DAlt extends PixpipeContainer{
                                                 }
      return null if posFrom or posTo is outside
   */
-  getSegmentSampleTransfoSpace( space2voxelTransformName, voxel2spaceTransformName, posFrom, posTo, time = 0 ){ 
+  getSegmentSampleTransfoSpace( space2voxelTransformName, voxel2spaceTransformName, posFrom, posTo, time = 0 ){
     if( !this.hasTransform(space2voxelTransformName) ){
       console.warn(`The transform ${space2voxelTransformName} is not available.`);
       return null;
     }
-    
+
     var posFromVoxel = this.getPositionFromTransfoSpaceToVoxelSpace( posFrom, space2voxelTransformName, false );
     var posToVoxel = this.getPositionFromTransfoSpaceToVoxelSpace( posTo, space2voxelTransformName, false );
-    
+
     console.log(`voxelFrom {${posFromVoxel.i}, ${posFromVoxel.j}, ${posFromVoxel.k}} voxelTo {${posToVoxel.i}, ${posToVoxel.j}, ${posToVoxel.k}}`);
-    
+
     var segmentSample = this.getSegmentSampleVoxelSpace( posFromVoxel, posToVoxel, time)
-    
+
     if(! segmentSample )
       return null;
-    
+
     // re-writing the coord in the given transform space
     for(var i=0; i<segmentSample.positions.length; i++){
       var voxelPos = segmentSample.positions[i];
@@ -1052,15 +1051,15 @@ class Image3DAlt extends PixpipeContainer{
       segmentSample.positions[i] = spacePos;
       segmentSample.labels[i] = "(" + Math.round(spacePos.x*100)/100 + ", " + Math.round(spacePos.y*100)/100 + ", " + Math.round(spacePos.z*100)/100 + ")";
     }
-    
+
     return segmentSample;
   }
-  
-  
+
+
   /**
   * Get the voxel box, min-max for each dimension. The max values are not included.
   * @return {Object} Box of shape {min: {i:Number, j:Number, k:Number, t:Number}, max: {i:Number, j:Number, k:Number, t:Number} }
-  */ 
+  */
   getVoxelBox(){
     return {
       min: {i:0, j:0, k:0, t:0},
@@ -1072,8 +1071,8 @@ class Image3DAlt extends PixpipeContainer{
       }
     }
   }
-  
-  
+
+
   /**
   * Get the corners of the volume in the given space coordinates
   * @param {String} transformName - id of a registered transformation that goes from voxel space to arbitrary space (aka. "v2*")
@@ -1084,7 +1083,7 @@ class Image3DAlt extends PixpipeContainer{
       console.warn(`The transform ${transformName} is not available.`);
       return null;
     }
-    
+
     var corners = [
       this.getPositionFromVoxelSpaceToTransfoSpace( {i:0, j:0, k:0}, transformName ),
       this.getPositionFromVoxelSpaceToTransfoSpace( {i:this.getDimensionSize("i")-1, j:0, k:0}, transformName ),
@@ -1097,8 +1096,8 @@ class Image3DAlt extends PixpipeContainer{
     ]
     return corners;
   }
-  
-  
+
+
   /**
   * Get the space box in a the given transform space coordinates. Due a possible rotation
   * involved in a affine transformation, the box will possibly have some void space on the sides.
@@ -1107,12 +1106,12 @@ class Image3DAlt extends PixpipeContainer{
   * @return {Object} Box of shape {min: {x:Number, y:Number, z:Number, t:Number}, max: {x:Number, y:Number, z:Number, t:Number} }
   */
   getTransfoBox( transformName ){
-    if( !this.hasTransform(space2voxelTransformName) ){
-      console.warn(`The transform ${transformName} is not available.`); 
+    if( !this.hasTransform(transformName) ){
+      console.warn(`The transform ${transformName} is not available.`);
       return null;
     }
-    
-    var corners = this.getTransfoVolumeCorners();
+
+    var corners = this.getTransfoVolumeCorners(transformName);
     var min = {
       x: +Infinity,
       y: +Infinity,
@@ -1123,7 +1122,7 @@ class Image3DAlt extends PixpipeContainer{
       y: -Infinity,
       z: -Infinity
     }
-    
+
     for(var i=0; i<corners.length; i++){
       min.x = Math.min( min.x, corners[i].x );
       min.y = Math.min( min.y, corners[i].y );
@@ -1132,7 +1131,7 @@ class Image3DAlt extends PixpipeContainer{
       max.y = Math.max( max.y, corners[i].y );
       max.z = Math.max( max.z, corners[i].z );
     }
-    
+
     var spaceBox = {
       min: {
         x: min.x,
@@ -1147,12 +1146,12 @@ class Image3DAlt extends PixpipeContainer{
         t: this.getDimensionSize("t")
       },
     }
-    
+
     return spaceBox;
   }
 
 
-  
+
 
 } /* END of class Image3DAlt */
 

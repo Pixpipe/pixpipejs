@@ -17126,7 +17126,7 @@ var Image3DAlt = function (_PixpipeContainer) {
 
     /**
     * Sample voxels along a segment in a transform coordinates system (world or subject).
-    * This is achieved by converting the transformed coordinates into voxel coordinates, 
+    * This is achieved by converting the transformed coordinates into voxel coordinates,
     * then samples are taken respecting a voxel unit rather than the transform unit so that
     * it is more fine.
     * @param {String} space2voxelTransformName - id of a registered transformation that goes from arbitrary space to voxel space (aka. "*2v")
@@ -17232,12 +17232,12 @@ var Image3DAlt = function (_PixpipeContainer) {
   }, {
     key: 'getTransfoBox',
     value: function getTransfoBox(transformName) {
-      if (!this.hasTransform(space2voxelTransformName)) {
+      if (!this.hasTransform(transformName)) {
         console.warn('The transform ' + transformName + ' is not available.');
         return null;
       }
 
-      var corners = this.getTransfoVolumeCorners();
+      var corners = this.getTransfoVolumeCorners(transformName);
       var min$$1 = {
         x: +Infinity,
         y: +Infinity,
@@ -19858,7 +19858,7 @@ function isSlowBuffer(obj) {
   return typeof obj.readFloatLE === 'function' && typeof obj.slice === 'function' && isFastBuffer(obj.slice(0, 0));
 }
 
-var index = Object.freeze({
+var bufferEs6 = Object.freeze({
 	INSPECT_MAX_BYTES: INSPECT_MAX_BYTES,
 	kMaxLength: _kMaxLength,
 	Buffer: Buffer,
@@ -19868,7 +19868,7 @@ var index = Object.freeze({
 
 var require$$0 = ( empty$1 && empty ) || empty$1;
 
-var require$$1 = ( index && undefined ) || index;
+var require$$1 = ( bufferEs6 && undefined ) || bufferEs6;
 
 var md5 = createCommonjsModule(function (module) {
   /**
@@ -20466,6 +20466,10 @@ var common = createCommonjsModule(function (module, exports) {
 
   var TYPED_OK = typeof Uint8Array !== 'undefined' && typeof Uint16Array !== 'undefined' && typeof Int32Array !== 'undefined';
 
+  function _has(obj, key) {
+    return Object.prototype.hasOwnProperty.call(obj, key);
+  }
+
   exports.assign = function (obj /*from1, from2, from3, ...*/) {
     var sources = Array.prototype.slice.call(arguments, 1);
     while (sources.length) {
@@ -20479,7 +20483,7 @@ var common = createCommonjsModule(function (module, exports) {
       }
 
       for (var p in source) {
-        if (source.hasOwnProperty(p)) {
+        if (_has(source, p)) {
           obj[p] = source[p];
         }
       }
@@ -20694,7 +20698,7 @@ var bl_order = [16, 17, 18, 0, 8, 7, 9, 6, 10, 5, 11, 4, 12, 3, 13, 2, 14, 1, 15
 
 var DIST_CODE_LEN = 512; /* see definition of array dist_code below */
 
-// !!!! Use flat array insdead of structure, Freq = i*2, Len = i*2+1
+// !!!! Use flat array instead of structure, Freq = i*2, Len = i*2+1
 var static_ltree = new Array((L_CODES$1 + 2) * 2);
 zero$1(static_ltree);
 /* The static literal tree. Since the bit lengths are imposed, there is no
@@ -21725,7 +21729,7 @@ function _tr_tally(s, dist, lc)
     s.dyn_dtree[d_code(dist) * 2] /*.Freq*/++;
   }
 
-  // (!) This block is disabled in zlib defailts,
+  // (!) This block is disabled in zlib defaults,
   // don't enable it for binary compatibility
 
   //#ifdef TRUNCATE_BLOCK
@@ -21772,7 +21776,7 @@ var trees = {
 'use strict';
 
 // Note: adler32 takes 12% for level 0 and 2% for level 6.
-// It doesn't worth to make additional optimizationa as in original.
+// It isn't worth it to make additional optimizations as in original.
 // Small size is preferable.
 
 // (C) 1995-2013 Jean-loup Gailly and Mark Adler
@@ -23751,7 +23755,7 @@ var deflate_1$2 = {
 // Quick check if we can use fast array to bin string conversion
 //
 // - apply(Array) can fail on Android 2.2
-// - apply(Uint8Array) can fail on iOS 5.1 Safary
+// - apply(Uint8Array) can fail on iOS 5.1 Safari
 //
 var STR_APPLY_OK = true;
 var STR_APPLY_UIA_OK = true;
@@ -23935,13 +23939,13 @@ var utf8border = function utf8border(buf, max) {
     pos--;
   }
 
-  // Fuckup - very small and broken sequence,
+  // Very small and broken sequence,
   // return max, because we should return something anyway.
   if (pos < 0) {
     return max;
   }
 
-  // If we came to start of buffer - that means vuffer is too small,
+  // If we came to start of buffer - that means buffer is too small,
   // return max too.
   if (pos === 0) {
     return max;
@@ -24039,7 +24043,7 @@ var Z_DEFLATED = 8;
 /* internal
  * Deflate.chunks -> Array
  *
- * Chunks of output data, if [[Deflate#onData]] not overriden.
+ * Chunks of output data, if [[Deflate#onData]] not overridden.
  **/
 
 /**
@@ -24182,7 +24186,7 @@ function Deflate(options) {
  * - data (Uint8Array|Array|ArrayBuffer|String): input data. Strings will be
  *   converted to utf8 byte sequence.
  * - mode (Number|Boolean): 0..6 for corresponding Z_NO_FLUSH..Z_TREE modes.
- *   See constants. Skipped or `false` means Z_NO_FLUSH, `true` meansh Z_FINISH.
+ *   See constants. Skipped or `false` means Z_NO_FLUSH, `true` means Z_FINISH.
  *
  * Sends input data to deflate pipe, generating [[Deflate#onData]] calls with
  * new compressed chunks. Returns `true` on success. The last data block must have
@@ -24272,7 +24276,7 @@ Deflate.prototype.push = function (data, mode) {
 
 /**
  * Deflate#onData(chunk) -> Void
- * - chunk (Uint8Array|Array|String): ouput data. Type of array depends
+ * - chunk (Uint8Array|Array|String): output data. Type of array depends
  *   on js engine support. When string output requested, each chunk
  *   will be string.
  *
@@ -24598,7 +24602,7 @@ var inffast = function inflate_fast(strm, start) {
                   break top;
                 }
 
-                // (!) This block is disabled in zlib defailts,
+                // (!) This block is disabled in zlib defaults,
                 // don't enable it for binary compatibility
                 //#ifdef INFLATE_ALLOW_INVALID_DISTANCE_TOOFAR_ARRR
                 //                if (len <= op - whave) {
@@ -25712,7 +25716,7 @@ function inflate$1(strm, flush) {
             if (state.head) {
               len = state.head.extra_len - state.length;
               if (!state.head.extra) {
-                // Use untyped array for more conveniend processing later
+                // Use untyped array for more convenient processing later
                 state.head.extra = new Array(state.head.extra_len);
               }
               common.arraySet(state.head.extra, input, next,
@@ -26454,7 +26458,7 @@ function inflate$1(strm, flush) {
               state.mode = BAD;
               break;
             }
-            // (!) This block is disabled in zlib defailts,
+            // (!) This block is disabled in zlib defaults,
             // don't enable it for binary compatibility
             //#ifdef INFLATE_ALLOW_INVALID_DISTANCE_TOOFAR_ARRR
             //          Trace((stderr, "inflate.c too far\n"));
@@ -26514,7 +26518,7 @@ function inflate$1(strm, flush) {
               break inf_leave;
             }
             have--;
-            // Use '|' insdead of '+' to make sure that result is signed
+            // Use '|' instead of '+' to make sure that result is signed
             hold |= input[next++] << bits;
             bits += 8;
           }
@@ -26868,7 +26872,7 @@ var toString$2 = Object.prototype.toString;
 /* internal
  * inflate.chunks -> Array
  *
- * Chunks of output data, if [[Inflate#onData]] not overriden.
+ * Chunks of output data, if [[Inflate#onData]] not overridden.
  **/
 
 /**
@@ -26993,7 +26997,7 @@ function Inflate(options) {
  * Inflate#push(data[, mode]) -> Boolean
  * - data (Uint8Array|Array|ArrayBuffer|String): input data
  * - mode (Number|Boolean): 0..6 for corresponding Z_NO_FLUSH..Z_TREE modes.
- *   See constants. Skipped or `false` means Z_NO_FLUSH, `true` meansh Z_FINISH.
+ *   See constants. Skipped or `false` means Z_NO_FLUSH, `true` means Z_FINISH.
  *
  * Sends input data to inflate pipe, generating [[Inflate#onData]] calls with
  * new output chunks. Returns `true` on success. The last data block must have
@@ -27140,7 +27144,7 @@ Inflate.prototype.push = function (data, mode) {
 
 /**
  * Inflate#onData(chunk) -> Void
- * - chunk (Uint8Array|Array|String): ouput data. Type of array depends
+ * - chunk (Uint8Array|Array|String): output data. Type of array depends
  *   on js engine support. When string output requested, each chunk
  *   will be string.
  *
@@ -27166,7 +27170,7 @@ Inflate.prototype.onEnd = function (status) {
   if (status === constants.Z_OK) {
     if (this.options.to === 'string') {
       // Glue & convert here, until we teach pako to send
-      // utf8 alligned strings to onData
+      // utf8 aligned strings to onData
       this.result = this.chunks.join('');
     } else {
       this.result = common.flattenChunks(this.chunks);
@@ -27273,7 +27277,7 @@ var pako = {};
 
 assign(pako, deflate_1, inflate_1, constants);
 
-var index$1 = pako;
+var pako_1 = pako;
 
 /*
 * Author   Jonathan Lurie - http://me.jonathanlurie.fr
@@ -27358,7 +27362,7 @@ var FileToArrayBufferReader = function (_Filter) {
         if (extension.localeCompare("pixp")) {
           // trying to un-gzip it with Pako
           try {
-            result = index$1.inflate(result).buffer;
+            result = pako_1.inflate(result).buffer;
             console.log("File was un-gziped successfully");
           } catch (err) {
             console.log("Pako: " + err + " (this content is not gziped)");
@@ -27482,7 +27486,7 @@ var UrlToArrayBufferReader = function (_Filter) {
         // trying to un-gzip it with Pako for non pixp files
         if (extension.localeCompare("pixp")) {
           try {
-            arrayBuff = index$1.inflate(arrayBuff).buffer;
+            arrayBuff = pako_1.inflate(arrayBuff).buffer;
             console.log("File was un-gziped successfully");
           } catch (err) {
             console.log("Pako: " + err + " (this content is not gziped)");
@@ -28603,7 +28607,7 @@ var Minc2Decoder = function (_Filter) {
 
             if (link.inflate) {
               sp = new Uint8Array(abuf, offset, length);
-              dp = index$1.inflate(sp);
+              dp = pako_1.inflate(sp);
               switch (link.type) {
                 case this._type_enum.INT8:
                   dp = new Int8Array(dp.buffer);
@@ -29144,7 +29148,7 @@ var Minc2Decoder = function (_Filter) {
           /* deflate */
           throw new Error("Unimplemented HDF5 filter " + fiv);
         } else {
-          if ((typeof index$1 === 'undefined' ? 'undefined' : _typeof(index$1)) !== 'object') {
+          if ((typeof pako_1 === 'undefined' ? 'undefined' : _typeof(pako_1)) !== 'object') {
             throw new Error('Need pako to inflate data.');
           }
           link.inflate = true;
@@ -32290,7 +32294,7 @@ var nifti_1 = createCommonjsModule(function (module) {
     nifti.NIFTI2 = nifti.NIFTI2 || (typeof commonjsRequire !== 'undefined' ? nifti2 : null);
     nifti.Utils = nifti.Utils || (typeof commonjsRequire !== 'undefined' ? utilities : null);
 
-    var pako = pako || (typeof commonjsRequire !== 'undefined' ? index$1 : null);
+    var pako = pako || (typeof commonjsRequire !== 'undefined' ? pako_1 : null);
 
     /*** Static Methods ***/
 
@@ -32998,7 +33002,7 @@ var PixpEncoder = function (_Filter) {
 
       var pixpString = JSON.stringify(arrayAndMeta);
 
-      var deflator = new index$1.Deflate({
+      var deflator = new pako_1.Deflate({
         level: 6,
         //to: 'string',
         gzip: true,
@@ -33077,7 +33081,7 @@ var PixpDecoder = function (_Filter) {
       //var pixpString2 = pako.inflate(input /*, { to: 'string' }*/);
       //var pixpObject = JSON.parse( pixpString2 );
 
-      var inflator = new index$1.Inflate({
+      var inflator = new pako_1.Inflate({
         level: 6,
         to: 'string'
       });
@@ -34657,7 +34661,7 @@ var Minc2DecoderAlt = function (_Filter) {
 
             if (link.inflate) {
               sp = new Uint8Array(abuf, offset, length);
-              dp = index$1.inflate(sp);
+              dp = pako_1.inflate(sp);
               switch (link.type) {
                 case this._type_enum.INT8:
                   dp = new Int8Array(dp.buffer);
@@ -35198,7 +35202,7 @@ var Minc2DecoderAlt = function (_Filter) {
           /* deflate */
           throw new Error("Unimplemented HDF5 filter " + fiv);
         } else {
-          if ((typeof index$1 === 'undefined' ? 'undefined' : _typeof(index$1)) !== 'object') {
+          if ((typeof pako_1 === 'undefined' ? 'undefined' : _typeof(pako_1)) !== 'object') {
             throw new Error('Need pako to inflate data.');
           }
           link.inflate = true;
@@ -42178,7 +42182,7 @@ var EegModDecoder = function (_Filter) {
   return EegModDecoder;
 }(Filter); /* END of class EegModDecoder */
 
-var index$2 = createCommonjsModule(function (module) {
+var traverse_1 = createCommonjsModule(function (module) {
     var traverse = module.exports = function (obj) {
         return new Traverse(obj);
     };
@@ -42922,7 +42926,7 @@ var CodecUtils = function () {
     key: "howManyTypedArrayAttributes",
     value: function howManyTypedArrayAttributes(obj) {
       var typArrCounter = 0;
-      index$2(obj).forEach(function (x) {
+      traverse_1(obj).forEach(function (x) {
         typArrCounter += CodecUtils.isTypedArray(x);
       });
       return typArrCounter;
@@ -42939,7 +42943,7 @@ var CodecUtils = function () {
     key: "hasCircularReference",
     value: function hasCircularReference(obj) {
       var hasCircular = false;
-      index$2(obj).forEach(function (x) {
+      traverse_1(obj).forEach(function (x) {
         if (this.circular) {
           hasCircular = true;
         }
@@ -42958,7 +42962,7 @@ var CodecUtils = function () {
     key: "removeCircularReference",
     value: function removeCircularReference(obj) {
       var hasCircular = false;
-      var noCircRefObj = index$2(obj).map(function (x) {
+      var noCircRefObj = traverse_1(obj).map(function (x) {
         if (this.circular) {
           this.remove();
           hasCircular = true;
@@ -42978,7 +42982,7 @@ var CodecUtils = function () {
     value: function replaceTypedArrayAttributesByArrays(obj) {
       var hasTypedArray = false;
 
-      var noTypedArrClone = index$2(obj).map(function (x) {
+      var noTypedArrClone = traverse_1(obj).map(function (x) {
         if (CodecUtils.isTypedArray(x)) {
           // here, we cannot call .length directly because traverse.map already serialized
           // typed arrays into regular objects
@@ -43116,25 +43120,27 @@ var PixBlockEncoder = function () {
       }
 
       var data = input._data;
+      var encodedData = null;
       var compressedData = null;
 
       var byteStreamInfo = [];
-      var usingDataSubsets = false;
+      var useMultipleDataStreams = false;
 
       switch (this._inputCase) {
 
         // The input is a typed array ********************************
         case dataCases.typedArray:
           {
-            //var byteStreamInfoSubset = CodecUtils.getTypedArrayInfo(data);
+            // no real need to compress the data here
+            encodedData = data;
             var byteStreamInfoSubset = this._getDataSubsetInfo(data);
 
             // additional compression flag
             byteStreamInfoSubset.compressedByteLength = null;
 
             if (this._compress) {
-              compressedData = index$1.deflate(data.buffer);
-              byteStreamInfoSubset.compressedByteLength = compressedData.byteLength;
+              encodedData = pako_1.deflate(encodedData.buffer);
+              byteStreamInfoSubset.compressedByteLength = encodedData.byteLength;
             }
 
             byteStreamInfo.push(byteStreamInfoSubset);
@@ -43144,27 +43150,35 @@ var PixBlockEncoder = function () {
         // The input is an Array of typed arrays *********************
         case dataCases.mixedArrays:
           {
-            usingDataSubsets = true;
+            useMultipleDataStreams = true;
             compressedData = [];
+
+            encodedData = new Array(data.length);
 
             // collect bytestream info for each subset of data
             for (var i = 0; i < data.length; i++) {
-
-              var byteStreamInfoSubset = this._getDataSubsetInfo(data[i]);
+              var currentDataStream = data[i];
+              var byteStreamInfoSubset = this._getDataSubsetInfo(currentDataStream);
 
               // if not a typed array, this subset needs further modifications
               if (!byteStreamInfoSubset.isTypedArray) {
-                data[i] = new Uint8Array(CodecUtils.objectToArrayBuffer(data[i]));
-                byteStreamInfoSubset.byteLength = data[i].byteLength;
+                currentDataStream = new Uint8Array(CodecUtils.objectToArrayBuffer(currentDataStream));
+                byteStreamInfoSubset.byteLength = currentDataStream.byteLength;
               }
 
               if (this._compress) {
-                var compressedDataSubset = index$1.deflate(data[i].buffer);
+                var compressedDataSubset = pako_1.deflate(currentDataStream.buffer);
                 byteStreamInfoSubset.compressedByteLength = compressedDataSubset.byteLength;
                 compressedData.push(compressedDataSubset);
               }
 
               byteStreamInfo.push(byteStreamInfoSubset);
+
+              encodedData[i] = currentDataStream;
+            }
+
+            if (this._compress) {
+              encodedData = compressedData;
             }
           }
           break;
@@ -43176,12 +43190,12 @@ var PixBlockEncoder = function () {
 
             // replace the original data object with this uncompressed serialized version.
             // We wrap it into a Uint8Array so that we can call .buffer on it, just like all the others
-            data = new Uint8Array(CodecUtils.objectToArrayBuffer(data));
-            byteStreamInfoSubset.byteLength = data.byteLength;
+            encodedData = new Uint8Array(CodecUtils.objectToArrayBuffer(data));
+            byteStreamInfoSubset.byteLength = encodedData.byteLength;
 
             if (this._compress) {
-              compressedData = index$1.deflate(data);
-              byteStreamInfoSubset.compressedByteLength = compressedData.byteLength;
+              encodedData = pako_1.deflate(encodedData);
+              byteStreamInfoSubset.compressedByteLength = encodedData.byteLength;
             }
 
             byteStreamInfo.push(byteStreamInfoSubset);
@@ -43193,16 +43207,12 @@ var PixBlockEncoder = function () {
           return;
       }
 
-      // from now, if compression is enabled, what we call data is compressed data
-      if (this._compress) {
-        data = compressedData;
-      }
-
       // the metadata are converted into a buffer
       var metadataBuffer = CodecUtils.objectToArrayBuffer(input._metadata);
 
       var pixBlockHeader = {
         byteStreamInfo: byteStreamInfo,
+        useMultipleDataStreams: useMultipleDataStreams,
         originalBlockType: input.constructor.name,
         metadataByteLength: metadataBuffer.byteLength
 
@@ -43222,13 +43232,13 @@ var PixBlockEncoder = function () {
       // the metadata buffer
       metadataBuffer];
 
-      // adding the actual data buffer to the list
-      if (usingDataSubsets) {
-        for (var i = 0; i < data.length; i++) {
-          allBuffers.push(data[i].buffer);
+      // adding the actual encodedData buffer to the list
+      if (useMultipleDataStreams) {
+        for (var i = 0; i < encodedData.length; i++) {
+          allBuffers.push(encodedData[i].buffer);
         }
       } else {
-        allBuffers.push(data.buffer);
+        allBuffers.push(encodedData.buffer);
       }
 
       this._output = CodecUtils.mergeBuffers(allBuffers);
@@ -43438,7 +43448,7 @@ var PixBlockDecoder = function () {
           var compressedByteStream = new Uint8Array(input, readingByteOffset, compressedByteLength);
 
           // inflate the dataStream
-          var inflatedByteStream = index$1.inflate(compressedByteStream);
+          var inflatedByteStream = pako_1.inflate(compressedByteStream);
 
           var dataStream = null;
           /*
@@ -43475,7 +43485,7 @@ var PixBlockDecoder = function () {
 
       // If data is a single typed array (= not composed of a subset)
       // we get rid of the useless wrapping array
-      if (dataStreams.length == 1) {
+      if (!pixBlockHeader.useMultipleDataStreams) {
         dataStreams = dataStreams[0];
       }
 
@@ -46467,7 +46477,7 @@ function decode(jpegData, useTArray) {
   return image;
 }
 
-var index$3 = {
+var jpegJs = {
   encode: encoder,
   decode: decoder
 };
@@ -46512,7 +46522,7 @@ var JpegDecoder = function (_Filter) {
       }
 
       try {
-        var jpegData = index$3.decode(inputBuffer);
+        var jpegData = jpegJs.decode(inputBuffer);
         var ncpp = jpegData.data.length / (jpegData.width * jpegData.height);
         var outputImage = new Image2D();
         var pixelData = new Uint8Array(jpegData.data.buffer);
@@ -46539,7 +46549,7 @@ var UPNG = createCommonjsModule(function (module) {
 
 		var pako;
 		if (typeof commonjsRequire == "function") {
-			pako = index$1;
+			pako = pako_1;
 		} else {
 			pako = window.pako;
 		}
@@ -47482,7 +47492,7 @@ var iota_1 = iota;
 
 // The _isBuffer check is for Safari 5-7 support, because it's missing
 // Object.prototype.constructor. Remove this eventually
-var index$4 = function index(obj) {
+var isBuffer_1 = function isBuffer_1(obj) {
   return obj != null && (isBuffer$1(obj) || isSlowBuffer$1(obj) || !!obj._isBuffer);
 };
 
@@ -47729,7 +47739,7 @@ b" + i + "*=d\
 }
 
 function arrayDType(data) {
-  if (index$4(data)) {
+  if (isBuffer_1(data)) {
     return "buffer";
   }
   if (hasTypedArrays) {
@@ -50185,26 +50195,6 @@ var bundle = createCommonjsModule(function (module, exports) {
   })(commonjsGlobal, function () {
     'use strict';
 
-    /*!
-     Based on ndef.parser, by Raphael Graf(r@undefined.ch)
-     http://www.undefined.ch/mparser/index.html
-    
-     Ported to JavaScript and modified by Matthew Crumley (email@matthewcrumley.com, http://silentmatt.com/)
-    
-     You are free to use and modify this code in anyway you find useful. Please leave this comment in the code
-     to acknowledge its original source. If you feel like it, I enjoy hearing about projects that use my code,
-     but don't feel like you have to let me know or ask permission.
-    */
-
-    function indexOf(array, obj) {
-      for (var i = 0; i < array.length; i++) {
-        if (array[i] === obj) {
-          return i;
-        }
-      }
-      return -1;
-    }
-
     var INUMBER = 'INUMBER';
     var IOP1 = 'IOP1';
     var IOP2 = 'IOP2';
@@ -50236,20 +50226,16 @@ var bundle = createCommonjsModule(function (module, exports) {
       }
     };
 
-    function Expression(tokens, parser) {
-      this.tokens = tokens;
-      this.parser = parser;
-      this.unaryOps = parser.unaryOps;
-      this.binaryOps = parser.binaryOps;
-      this.ternaryOps = parser.ternaryOps;
-      this.functions = parser.functions;
+    function unaryInstruction(value) {
+      return new Instruction(IOP1, value);
     }
 
-    function escapeValue(v) {
-      if (typeof v === 'string') {
-        return JSON.stringify(v).replace(/\u2028/g, '\\u2028').replace(/\u2029/g, '\\u2029');
-      }
-      return v;
+    function binaryInstruction(value) {
+      return new Instruction(IOP2, value);
+    }
+
+    function ternaryInstruction(value) {
+      return new Instruction(IOP3, value);
     }
 
     function simplify(tokens, unaryOps, binaryOps, ternaryOps, values) {
@@ -50257,7 +50243,7 @@ var bundle = createCommonjsModule(function (module, exports) {
       var newexpression = [];
       var n1, n2, n3;
       var f;
-      for (var i = 0, L = tokens.length; i < L; i++) {
+      for (var i = 0; i < tokens.length; i++) {
         var item = tokens[i];
         var type = item.type;
         if (type === INUMBER) {
@@ -50308,14 +50294,9 @@ var bundle = createCommonjsModule(function (module, exports) {
       return newexpression;
     }
 
-    Expression.prototype.simplify = function (values) {
-      values = values || {};
-      return new Expression(simplify(this.tokens, this.unaryOps, this.binaryOps, this.ternaryOps, values), this.parser);
-    };
-
     function substitute(tokens, variable, expr) {
       var newexpression = [];
-      for (var i = 0, L = tokens.length; i < L; i++) {
+      for (var i = 0; i < tokens.length; i++) {
         var item = tokens[i];
         var type = item.type;
         if (type === IVAR && item.value === variable) {
@@ -50342,19 +50323,11 @@ var bundle = createCommonjsModule(function (module, exports) {
       return newexpression;
     }
 
-    Expression.prototype.substitute = function (variable, expr) {
-      if (!(expr instanceof Expression)) {
-        expr = this.parser.parse(String(expr));
-      }
-
-      return new Expression(substitute(this.tokens, variable, expr), this.parser);
-    };
-
     function evaluate(tokens, expr, values) {
       var nstack = [];
       var n1, n2, n3;
       var f;
-      for (var i = 0, L = tokens.length; i < L; i++) {
+      for (var i = 0; i < tokens.length; i++) {
         var item = tokens[i];
         var type = item.type;
         if (type === INUMBER) {
@@ -50416,16 +50389,11 @@ var bundle = createCommonjsModule(function (module, exports) {
       return nstack[0];
     }
 
-    Expression.prototype.evaluate = function (values) {
-      values = values || {};
-      return evaluate(this.tokens, this, values);
-    };
-
     function expressionToString(tokens, toJS) {
       var nstack = [];
       var n1, n2, n3;
       var f;
-      for (var i = 0, L = tokens.length; i < L; i++) {
+      for (var i = 0; i < tokens.length; i++) {
         var item = tokens[i];
         var type = item.type;
         if (type === INUMBER) {
@@ -50507,33 +50475,102 @@ var bundle = createCommonjsModule(function (module, exports) {
       if (nstack.length > 1) {
         throw new Error('invalid Expression (parity)');
       }
-      return nstack[0];
+      return String(nstack[0]);
     }
+
+    function escapeValue(v) {
+      if (typeof v === 'string') {
+        return JSON.stringify(v).replace(/\u2028/g, '\\u2028').replace(/\u2029/g, '\\u2029');
+      }
+      return v;
+    }
+
+    function contains(array, obj) {
+      for (var i = 0; i < array.length; i++) {
+        if (array[i] === obj) {
+          return true;
+        }
+      }
+      return false;
+    }
+
+    function getSymbols(tokens, symbols, options) {
+      options = options || {};
+      var withMembers = !!options.withMembers;
+      var prevVar = null;
+
+      for (var i = 0; i < tokens.length; i++) {
+        var item = tokens[i];
+        if (item.type === IVAR && !contains(symbols, item.value)) {
+          if (!withMembers) {
+            symbols.push(item.value);
+          } else if (prevVar !== null) {
+            if (!contains(symbols, prevVar)) {
+              symbols.push(prevVar);
+            }
+            prevVar = item.value;
+          } else {
+            prevVar = item.value;
+          }
+        } else if (item.type === IMEMBER && withMembers && prevVar !== null) {
+          prevVar += '.' + item.value;
+        } else if (item.type === IEXPR) {
+          getSymbols(item.value, symbols, options);
+        } else if (prevVar !== null) {
+          if (!contains(symbols, prevVar)) {
+            symbols.push(prevVar);
+          }
+          prevVar = null;
+        }
+      }
+
+      if (prevVar !== null && !contains(symbols, prevVar)) {
+        symbols.push(prevVar);
+      }
+    }
+
+    function Expression(tokens, parser) {
+      this.tokens = tokens;
+      this.parser = parser;
+      this.unaryOps = parser.unaryOps;
+      this.binaryOps = parser.binaryOps;
+      this.ternaryOps = parser.ternaryOps;
+      this.functions = parser.functions;
+    }
+
+    Expression.prototype.simplify = function (values) {
+      values = values || {};
+      return new Expression(simplify(this.tokens, this.unaryOps, this.binaryOps, this.ternaryOps, values), this.parser);
+    };
+
+    Expression.prototype.substitute = function (variable, expr) {
+      if (!(expr instanceof Expression)) {
+        expr = this.parser.parse(String(expr));
+      }
+
+      return new Expression(substitute(this.tokens, variable, expr), this.parser);
+    };
+
+    Expression.prototype.evaluate = function (values) {
+      values = values || {};
+      return evaluate(this.tokens, this, values);
+    };
 
     Expression.prototype.toString = function () {
       return expressionToString(this.tokens, false);
     };
 
-    function getSymbols(tokens, symbols) {
-      for (var i = 0, L = tokens.length; i < L; i++) {
-        var item = tokens[i];
-        if (item.type === IVAR && indexOf(symbols, item.value) === -1) {
-          symbols.push(item.value);
-        } else if (item.type === IEXPR) {
-          getSymbols(item.value, symbols);
-        }
-      }
-    }
-
-    Expression.prototype.symbols = function () {
+    Expression.prototype.symbols = function (options) {
+      options = options || {};
       var vars = [];
-      getSymbols(this.tokens, vars);
+      getSymbols(this.tokens, vars, options);
       return vars;
     };
 
-    Expression.prototype.variables = function () {
+    Expression.prototype.variables = function (options) {
+      options = options || {};
       var vars = [];
-      getSymbols(this.tokens, vars);
+      getSymbols(this.tokens, vars, options);
       var functions = this.functions;
       return vars.filter(function (name) {
         return !(name in functions);
@@ -50548,177 +50585,6 @@ var bundle = createCommonjsModule(function (module, exports) {
       };
     };
 
-    function add(a, b) {
-      return Number(a) + Number(b);
-    }
-    function sub(a, b) {
-      return a - b;
-    }
-    function mul(a, b) {
-      return a * b;
-    }
-    function div(a, b) {
-      return a / b;
-    }
-    function mod(a, b) {
-      return a % b;
-    }
-    function concat(a, b) {
-      return '' + a + b;
-    }
-    function equal(a, b) {
-      return a === b;
-    }
-    function notEqual(a, b) {
-      return a !== b;
-    }
-    function greaterThan(a, b) {
-      return a > b;
-    }
-    function lessThan(a, b) {
-      return a < b;
-    }
-    function greaterThanEqual(a, b) {
-      return a >= b;
-    }
-    function lessThanEqual(a, b) {
-      return a <= b;
-    }
-    function andOperator(a, b) {
-      return Boolean(a && b);
-    }
-    function orOperator(a, b) {
-      return Boolean(a || b);
-    }
-    function sinh(a) {
-      return (Math.exp(a) - Math.exp(-a)) / 2;
-    }
-    function cosh(a) {
-      return (Math.exp(a) + Math.exp(-a)) / 2;
-    }
-    function tanh(a) {
-      if (a === Infinity) return 1;
-      if (a === -Infinity) return -1;
-      return (Math.exp(a) - Math.exp(-a)) / (Math.exp(a) + Math.exp(-a));
-    }
-    function asinh(a) {
-      if (a === -Infinity) return a;
-      return Math.log(a + Math.sqrt(a * a + 1));
-    }
-    function acosh(a) {
-      return Math.log(a + Math.sqrt(a * a - 1));
-    }
-    function atanh(a) {
-      return Math.log((1 + a) / (1 - a)) / 2;
-    }
-    function log10(a) {
-      return Math.log(a) * Math.LOG10E;
-    }
-    function neg(a) {
-      return -a;
-    }
-    function not(a) {
-      return !a;
-    }
-    function trunc(a) {
-      return a < 0 ? Math.ceil(a) : Math.floor(a);
-    }
-    function random(a) {
-      return Math.random() * (a || 1);
-    }
-    function factorial(a) {
-      // a!
-      return gamma(a + 1);
-    }
-    function stringLength(s) {
-      return String(s).length;
-    }
-
-    function hypot() {
-      var sum = 0;
-      var larg = 0;
-      for (var i = 0, L = arguments.length; i < L; i++) {
-        var arg = Math.abs(arguments[i]);
-        var div;
-        if (larg < arg) {
-          div = larg / arg;
-          sum = sum * div * div + 1;
-          larg = arg;
-        } else if (arg > 0) {
-          div = arg / larg;
-          sum += div * div;
-        } else {
-          sum += arg;
-        }
-      }
-      return larg === Infinity ? Infinity : larg * Math.sqrt(sum);
-    }
-
-    function condition(cond, yep, nope) {
-      return cond ? yep : nope;
-    }
-
-    function isInteger(value) {
-      return isFinite(value) && value === Math.round(value);
-    }
-
-    var GAMMA_G = 4.7421875;
-    var GAMMA_P = [0.99999999999999709182, 57.156235665862923517, -59.597960355475491248, 14.136097974741747174, -0.49191381609762019978, 0.33994649984811888699e-4, 0.46523628927048575665e-4, -0.98374475304879564677e-4, 0.15808870322491248884e-3, -0.21026444172410488319e-3, 0.21743961811521264320e-3, -0.16431810653676389022e-3, 0.84418223983852743293e-4, -0.26190838401581408670e-4, 0.36899182659531622704e-5];
-
-    // Gamma function from math.js
-    function gamma(n) {
-      var t, x;
-
-      if (isInteger(n)) {
-        if (n <= 0) {
-          return isFinite(n) ? Infinity : NaN;
-        }
-
-        if (n > 171) {
-          return Infinity; // Will overflow
-        }
-
-        var value = n - 2;
-        var res = n - 1;
-        while (value > 1) {
-          res *= value;
-          value--;
-        }
-
-        if (res === 0) {
-          res = 1; // 0! is per definition 1
-        }
-
-        return res;
-      }
-
-      if (n < 0.5) {
-        return Math.PI / (Math.sin(Math.PI * n) * gamma(1 - n));
-      }
-
-      if (n >= 171.35) {
-        return Infinity; // will overflow
-      }
-
-      if (n > 85.0) {
-        // Extended Stirling Approx
-        var twoN = n * n;
-        var threeN = twoN * n;
-        var fourN = threeN * n;
-        var fiveN = fourN * n;
-        return Math.sqrt(2 * Math.PI / n) * Math.pow(n / Math.E, n) * (1 + 1 / (12 * n) + 1 / (288 * twoN) - 139 / (51840 * threeN) - 571 / (2488320 * fourN) + 163879 / (209018880 * fiveN) + 5246819 / (75246796800 * fiveN * n));
-      }
-
-      --n;
-      x = GAMMA_P[0];
-      for (var i = 1; i < GAMMA_P.length; ++i) {
-        x += GAMMA_P[i] / (n + i);
-      }
-
-      t = n + GAMMA_G + 0.5;
-      return Math.sqrt(2 * Math.PI) * Math.pow(t, n + 0.5) * Math.exp(-t) * x;
-    }
-
     var TEOF = 'TEOF';
     var TOP = 'TOP';
     var TNUMBER = 'TNUMBER';
@@ -50727,49 +50593,41 @@ var bundle = createCommonjsModule(function (module, exports) {
     var TCOMMA = 'TCOMMA';
     var TNAME = 'TNAME';
 
-    function Token(type, value, line, column) {
+    function Token(type, value, index) {
       this.type = type;
       this.value = value;
-      this.line = line;
-      this.column = column;
+      this.index = index;
     }
 
     Token.prototype.toString = function () {
       return this.type + ': ' + this.value;
     };
 
-    function TokenStream(expression, unaryOps, binaryOps, ternaryOps, consts) {
+    function TokenStream(parser, expression) {
       this.pos = 0;
-      this.line = 0;
-      this.column = 0;
       this.current = null;
-      this.unaryOps = unaryOps;
-      this.binaryOps = binaryOps;
-      this.ternaryOps = ternaryOps;
-      this.consts = consts;
+      this.unaryOps = parser.unaryOps;
+      this.binaryOps = parser.binaryOps;
+      this.ternaryOps = parser.ternaryOps;
+      this.consts = parser.consts;
       this.expression = expression;
       this.savedPosition = 0;
       this.savedCurrent = null;
-      this.savedLine = 0;
-      this.savedColumn = 0;
+      this.options = parser.options;
     }
 
-    TokenStream.prototype.newToken = function (type, value, line, column) {
-      return new Token(type, value, line != null ? line : this.line, column != null ? column : this.column);
+    TokenStream.prototype.newToken = function (type, value, pos) {
+      return new Token(type, value, pos != null ? pos : this.pos);
     };
 
     TokenStream.prototype.save = function () {
       this.savedPosition = this.pos;
       this.savedCurrent = this.current;
-      this.savedLine = this.line;
-      this.savedColumn = this.column;
     };
 
     TokenStream.prototype.restore = function () {
       this.pos = this.savedPosition;
       this.current = this.savedCurrent;
-      this.line = this.savedLine;
-      this.column = this.savedColumn;
     };
 
     TokenStream.prototype.next = function () {
@@ -50779,7 +50637,7 @@ var bundle = createCommonjsModule(function (module, exports) {
 
       if (this.isWhitespace() || this.isComment()) {
         return this.next();
-      } else if (this.isNumber() || this.isOperator() || this.isString() || this.isParen() || this.isComma() || this.isNamedOp() || this.isConst() || this.isName()) {
+      } else if (this.isRadixInteger() || this.isNumber() || this.isOperator() || this.isString() || this.isParen() || this.isComma() || this.isNamedOp() || this.isConst() || this.isName()) {
         return this.current;
       } else {
         this.parseError('Unknown character "' + this.expression.charAt(this.pos) + '"');
@@ -50788,29 +50646,16 @@ var bundle = createCommonjsModule(function (module, exports) {
 
     TokenStream.prototype.isString = function () {
       var r = false;
-      var startLine = this.line;
-      var startColumn = this.column;
       var startPos = this.pos;
       var quote = this.expression.charAt(startPos);
 
       if (quote === '\'' || quote === '"') {
-        this.pos++;
-        this.column++;
         var index = this.expression.indexOf(quote, startPos + 1);
         while (index >= 0 && this.pos < this.expression.length) {
           this.pos = index + 1;
           if (this.expression.charAt(index - 1) !== '\\') {
             var rawString = this.expression.substring(startPos + 1, index);
-            this.current = this.newToken(TSTRING, this.unescape(rawString), startLine, startColumn);
-            var newLine = rawString.indexOf('\n');
-            var lastNewline = -1;
-            while (newLine >= 0) {
-              this.line++;
-              this.column = 0;
-              lastNewline = newLine;
-              newLine = rawString.indexOf('\n', newLine + 1);
-            }
-            this.column += rawString.length - lastNewline;
+            this.current = this.newToken(TSTRING, this.unescape(rawString), startPos);
             r = true;
             break;
           }
@@ -50821,22 +50666,20 @@ var bundle = createCommonjsModule(function (module, exports) {
     };
 
     TokenStream.prototype.isParen = function () {
-      var char = this.expression.charAt(this.pos);
-      if (char === '(' || char === ')') {
-        this.current = this.newToken(TPAREN, char);
+      var c = this.expression.charAt(this.pos);
+      if (c === '(' || c === ')') {
+        this.current = this.newToken(TPAREN, c);
         this.pos++;
-        this.column++;
         return true;
       }
       return false;
     };
 
     TokenStream.prototype.isComma = function () {
-      var char = this.expression.charAt(this.pos);
-      if (char === ',') {
+      var c = this.expression.charAt(this.pos);
+      if (c === ',') {
         this.current = this.newToken(TCOMMA, ',');
         this.pos++;
-        this.column++;
         return true;
       }
       return false;
@@ -50858,7 +50701,6 @@ var bundle = createCommonjsModule(function (module, exports) {
         if (str in this.consts) {
           this.current = this.newToken(TNUMBER, this.consts[str]);
           this.pos += str.length;
-          this.column += str.length;
           return true;
         }
       }
@@ -50878,10 +50720,9 @@ var bundle = createCommonjsModule(function (module, exports) {
       }
       if (i > startPos) {
         var str = this.expression.substring(startPos, i);
-        if (str in this.binaryOps || str in this.unaryOps || str in this.ternaryOps) {
+        if (this.isOperatorEnabled(str) && (str in this.binaryOps || str in this.unaryOps || str in this.ternaryOps)) {
           this.current = this.newToken(TOP, str);
           this.pos += str.length;
-          this.column += str.length;
           return true;
         }
       }
@@ -50891,19 +50732,23 @@ var bundle = createCommonjsModule(function (module, exports) {
     TokenStream.prototype.isName = function () {
       var startPos = this.pos;
       var i = startPos;
+      var hasLetter = false;
       for (; i < this.expression.length; i++) {
         var c = this.expression.charAt(i);
         if (c.toUpperCase() === c.toLowerCase()) {
-          if (i === this.pos || c !== '_' && (c < '0' || c > '9')) {
+          if (i === this.pos && c === '$') {
+            continue;
+          } else if (i === this.pos || !hasLetter || c !== '_' && (c < '0' || c > '9')) {
             break;
           }
+        } else {
+          hasLetter = true;
         }
       }
-      if (i > startPos) {
+      if (hasLetter) {
         var str = this.expression.substring(startPos, i);
         this.current = this.newToken(TNAME, str);
         this.pos += str.length;
-        this.column += str.length;
         return true;
       }
       return false;
@@ -50911,19 +50756,14 @@ var bundle = createCommonjsModule(function (module, exports) {
 
     TokenStream.prototype.isWhitespace = function () {
       var r = false;
-      var char = this.expression.charAt(this.pos);
-      while (char === ' ' || char === '\t' || char === '\n' || char === '\r') {
+      var c = this.expression.charAt(this.pos);
+      while (c === ' ' || c === '\t' || c === '\n' || c === '\r') {
         r = true;
         this.pos++;
-        this.column++;
-        if (char === '\n') {
-          this.line++;
-          this.column = 0;
-        }
         if (this.pos >= this.expression.length) {
           break;
         }
-        char = this.expression.charAt(this.pos);
+        c = this.expression.charAt(this.pos);
       }
       return r;
     };
@@ -50989,23 +50829,57 @@ var bundle = createCommonjsModule(function (module, exports) {
     };
 
     TokenStream.prototype.isComment = function () {
-      var char = this.expression.charAt(this.pos);
-      if (char === '/' && this.expression.charAt(this.pos + 1) === '*') {
-        var startPos = this.pos;
+      var c = this.expression.charAt(this.pos);
+      if (c === '/' && this.expression.charAt(this.pos + 1) === '*') {
         this.pos = this.expression.indexOf('*/', this.pos) + 2;
         if (this.pos === 1) {
           this.pos = this.expression.length;
         }
-        var comment = this.expression.substring(startPos, this.pos);
-        var newline = comment.indexOf('\n');
-        while (newline >= 0) {
-          this.line++;
-          this.column = comment.length - newline;
-          newline = comment.indexOf('\n', newline + 1);
-        }
         return true;
       }
       return false;
+    };
+
+    TokenStream.prototype.isRadixInteger = function () {
+      var pos = this.pos;
+
+      if (pos >= this.expression.length - 2 || this.expression.charAt(pos) !== '0') {
+        return false;
+      }
+      ++pos;
+
+      var radix;
+      var validDigit;
+      if (this.expression.charAt(pos) === 'x') {
+        radix = 16;
+        validDigit = /^[0-9a-f]$/i;
+        ++pos;
+      } else if (this.expression.charAt(pos) === 'b') {
+        radix = 2;
+        validDigit = /^[01]$/i;
+        ++pos;
+      } else {
+        return false;
+      }
+
+      var valid = false;
+      var startPos = pos;
+
+      while (pos < this.expression.length) {
+        var c = this.expression.charAt(pos);
+        if (validDigit.test(c)) {
+          pos++;
+          valid = true;
+        } else {
+          break;
+        }
+      }
+
+      if (valid) {
+        this.current = this.newToken(TNUMBER, parseInt(this.expression.substring(startPos, pos), radix));
+        this.pos = pos;
+      }
+      return valid;
     };
 
     TokenStream.prototype.isNumber = function () {
@@ -51013,22 +50887,19 @@ var bundle = createCommonjsModule(function (module, exports) {
       var pos = this.pos;
       var startPos = pos;
       var resetPos = pos;
-      var column = this.column;
-      var resetColumn = column;
       var foundDot = false;
       var foundDigits = false;
-      var char;
+      var c;
 
       while (pos < this.expression.length) {
-        char = this.expression.charAt(pos);
-        if (char >= '0' && char <= '9' || !foundDot && char === '.') {
-          if (char === '.') {
+        c = this.expression.charAt(pos);
+        if (c >= '0' && c <= '9' || !foundDot && c === '.') {
+          if (c === '.') {
             foundDot = true;
           } else {
             foundDigits = true;
           }
           pos++;
-          column++;
           valid = foundDigits;
         } else {
           break;
@@ -51037,117 +50908,155 @@ var bundle = createCommonjsModule(function (module, exports) {
 
       if (valid) {
         resetPos = pos;
-        resetColumn = column;
       }
 
-      if (char === 'e' || char === 'E') {
+      if (c === 'e' || c === 'E') {
         pos++;
-        column++;
         var acceptSign = true;
         var validExponent = false;
         while (pos < this.expression.length) {
-          char = this.expression.charAt(pos);
-          if (acceptSign && (char === '+' || char === '-')) {
+          c = this.expression.charAt(pos);
+          if (acceptSign && (c === '+' || c === '-')) {
             acceptSign = false;
-          } else if (char >= '0' && char <= '9') {
+          } else if (c >= '0' && c <= '9') {
             validExponent = true;
             acceptSign = false;
           } else {
             break;
           }
           pos++;
-          column++;
         }
 
         if (!validExponent) {
           pos = resetPos;
-          column = resetColumn;
         }
       }
 
       if (valid) {
         this.current = this.newToken(TNUMBER, parseFloat(this.expression.substring(startPos, pos)));
         this.pos = pos;
-        this.column = column;
       } else {
         this.pos = resetPos;
-        this.column = resetColumn;
       }
       return valid;
     };
 
     TokenStream.prototype.isOperator = function () {
-      var char = this.expression.charAt(this.pos);
+      var startPos = this.pos;
+      var c = this.expression.charAt(this.pos);
 
-      if (char === '+' || char === '-' || char === '*' || char === '/' || char === '%' || char === '^' || char === '?' || char === ':' || char === '.') {
-        this.current = this.newToken(TOP, char);
-      } else if (char === '∙' || char === '•') {
+      if (c === '+' || c === '-' || c === '*' || c === '/' || c === '%' || c === '^' || c === '?' || c === ':' || c === '.') {
+        this.current = this.newToken(TOP, c);
+      } else if (c === '∙' || c === '•') {
         this.current = this.newToken(TOP, '*');
-      } else if (char === '>') {
+      } else if (c === '>') {
         if (this.expression.charAt(this.pos + 1) === '=') {
           this.current = this.newToken(TOP, '>=');
           this.pos++;
-          this.column++;
         } else {
           this.current = this.newToken(TOP, '>');
         }
-      } else if (char === '<') {
+      } else if (c === '<') {
         if (this.expression.charAt(this.pos + 1) === '=') {
           this.current = this.newToken(TOP, '<=');
           this.pos++;
-          this.column++;
         } else {
           this.current = this.newToken(TOP, '<');
         }
-      } else if (char === '|') {
+      } else if (c === '|') {
         if (this.expression.charAt(this.pos + 1) === '|') {
           this.current = this.newToken(TOP, '||');
           this.pos++;
-          this.column++;
         } else {
           return false;
         }
-      } else if (char === '=') {
+      } else if (c === '=') {
         if (this.expression.charAt(this.pos + 1) === '=') {
           this.current = this.newToken(TOP, '==');
           this.pos++;
-          this.column++;
         } else {
           return false;
         }
-      } else if (char === '!') {
+      } else if (c === '!') {
         if (this.expression.charAt(this.pos + 1) === '=') {
           this.current = this.newToken(TOP, '!=');
           this.pos++;
-          this.column++;
         } else {
-          this.current = this.newToken(TOP, char);
+          this.current = this.newToken(TOP, c);
         }
       } else {
         return false;
       }
       this.pos++;
-      this.column++;
-      return true;
+
+      if (this.isOperatorEnabled(this.current.value)) {
+        return true;
+      } else {
+        this.pos = startPos;
+        return false;
+      }
+    };
+
+    var optionNameMap = {
+      '+': 'add',
+      '-': 'subtract',
+      '*': 'multiply',
+      '/': 'divide',
+      '%': 'remainder',
+      '^': 'power',
+      '!': 'factorial',
+      '<': 'comparison',
+      '>': 'comparison',
+      '<=': 'comparison',
+      '>=': 'comparison',
+      '==': 'comparison',
+      '!=': 'comparison',
+      '||': 'concatenate',
+      'and': 'logical',
+      'or': 'logical',
+      'not': 'logical',
+      '?': 'conditional',
+      ':': 'conditional'
+    };
+
+    function getOptionName(op) {
+      return optionNameMap.hasOwnProperty(op) ? optionNameMap[op] : op;
+    }
+
+    TokenStream.prototype.isOperatorEnabled = function (op) {
+      var optionName = getOptionName(op);
+      var operators = this.options.operators || {};
+
+      // in is a special case for now because it's disabled by default
+      if (optionName === 'in') {
+        return !!operators['in'];
+      }
+
+      return !(optionName in operators) || !!operators[optionName];
+    };
+
+    TokenStream.prototype.getCoordinates = function () {
+      var line = 0;
+      var column;
+      var newline = -1;
+      do {
+        line++;
+        column = this.pos - newline;
+        newline = this.expression.indexOf('\n', newline + 1);
+      } while (newline >= 0 && newline < this.pos);
+
+      return {
+        line: line,
+        column: column
+      };
     };
 
     TokenStream.prototype.parseError = function (msg) {
-      throw new Error('parse error [' + (this.line + 1) + ':' + (this.column + 1) + ']: ' + msg);
+      var coords = this.getCoordinates();
+      throw new Error('parse error [' + coords.line + ':' + coords.column + ']: ' + msg);
     };
 
-    function unaryInstruction(value) {
-      return new Instruction(IOP1, value);
-    }
-
-    function binaryInstruction(value) {
-      return new Instruction(IOP2, value);
-    }
-
-    function ternaryInstruction(value) {
-      return new Instruction(IOP3, value);
-    }
-
-    function ParserState(parser, tokenStream) {
+    function ParserState(parser, tokenStream, options) {
       this.parser = parser;
       this.tokens = tokenStream;
       this.current = null;
@@ -51155,6 +51064,7 @@ var bundle = createCommonjsModule(function (module, exports) {
       this.next();
       this.savedCurrent = null;
       this.savedNextToken = null;
+      this.allowMemberAccess = options.allowMemberAccess !== false;
     }
 
     ParserState.prototype.next = function () {
@@ -51166,7 +51076,7 @@ var bundle = createCommonjsModule(function (module, exports) {
       if (typeof value === 'undefined') {
         return true;
       } else if (Array.isArray(value)) {
-        return indexOf(value, token.value) >= 0;
+        return contains(value, token.value);
       } else if (typeof value === 'function') {
         return value(token);
       } else {
@@ -51196,7 +51106,8 @@ var bundle = createCommonjsModule(function (module, exports) {
 
     ParserState.prototype.expect = function (type, value) {
       if (!this.accept(type, value)) {
-        throw new Error('parse error [' + this.tokens.line + ':' + this.tokens.column + ']: Expected ' + (value || type));
+        var coords = this.tokens.getCoordinates();
+        throw new Error('parse error [' + coords.line + ':' + coords.column + ']: Expected ' + (value || type));
       }
     };
 
@@ -51249,27 +51160,33 @@ var bundle = createCommonjsModule(function (module, exports) {
       }
     };
 
+    var COMPARISON_OPERATORS = ['==', '!=', '<', '<=', '>=', '>', 'in'];
+
     ParserState.prototype.parseComparison = function (instr) {
       this.parseAddSub(instr);
-      while (this.accept(TOP, ['==', '!=', '<', '<=', '>=', '>'])) {
+      while (this.accept(TOP, COMPARISON_OPERATORS)) {
         var op = this.current;
         this.parseAddSub(instr);
         instr.push(binaryInstruction(op.value));
       }
     };
 
+    var ADD_SUB_OPERATORS = ['+', '-', '||'];
+
     ParserState.prototype.parseAddSub = function (instr) {
       this.parseTerm(instr);
-      while (this.accept(TOP, ['+', '-', '||'])) {
+      while (this.accept(TOP, ADD_SUB_OPERATORS)) {
         var op = this.current;
         this.parseTerm(instr);
         instr.push(binaryInstruction(op.value));
       }
     };
 
+    var TERM_OPERATORS = ['*', '/', '%'];
+
     ParserState.prototype.parseTerm = function (instr) {
       this.parseFactor(instr);
-      while (this.accept(TOP, ['*', '/', '%'])) {
+      while (this.accept(TOP, TERM_OPERATORS)) {
         var op = this.current;
         this.parseFactor(instr);
         instr.push(binaryInstruction(op.value));
@@ -51353,12 +51270,245 @@ var bundle = createCommonjsModule(function (module, exports) {
     ParserState.prototype.parseMemberExpression = function (instr) {
       this.parseAtom(instr);
       while (this.accept(TOP, '.')) {
+        if (!this.allowMemberAccess) {
+          throw new Error('unexpected ".", member access is not permitted');
+        }
+
         this.expect(TNAME);
         instr.push(new Instruction(IMEMBER, this.current.value));
       }
     };
 
-    function Parser() {
+    function add(a, b) {
+      return Number(a) + Number(b);
+    }
+
+    function sub(a, b) {
+      return a - b;
+    }
+
+    function mul(a, b) {
+      return a * b;
+    }
+
+    function div(a, b) {
+      return a / b;
+    }
+
+    function mod(a, b) {
+      return a % b;
+    }
+
+    function concat(a, b) {
+      return '' + a + b;
+    }
+
+    function equal(a, b) {
+      return a === b;
+    }
+
+    function notEqual(a, b) {
+      return a !== b;
+    }
+
+    function greaterThan(a, b) {
+      return a > b;
+    }
+
+    function lessThan(a, b) {
+      return a < b;
+    }
+
+    function greaterThanEqual(a, b) {
+      return a >= b;
+    }
+
+    function lessThanEqual(a, b) {
+      return a <= b;
+    }
+
+    function andOperator(a, b) {
+      return Boolean(a && b);
+    }
+
+    function orOperator(a, b) {
+      return Boolean(a || b);
+    }
+
+    function inOperator(a, b) {
+      return contains(b, a);
+    }
+
+    function sinh(a) {
+      return (Math.exp(a) - Math.exp(-a)) / 2;
+    }
+
+    function cosh(a) {
+      return (Math.exp(a) + Math.exp(-a)) / 2;
+    }
+
+    function tanh(a) {
+      if (a === Infinity) return 1;
+      if (a === -Infinity) return -1;
+      return (Math.exp(a) - Math.exp(-a)) / (Math.exp(a) + Math.exp(-a));
+    }
+
+    function asinh(a) {
+      if (a === -Infinity) return a;
+      return Math.log(a + Math.sqrt(a * a + 1));
+    }
+
+    function acosh(a) {
+      return Math.log(a + Math.sqrt(a * a - 1));
+    }
+
+    function atanh(a) {
+      return Math.log((1 + a) / (1 - a)) / 2;
+    }
+
+    function log10(a) {
+      return Math.log(a) * Math.LOG10E;
+    }
+
+    function neg(a) {
+      return -a;
+    }
+
+    function not(a) {
+      return !a;
+    }
+
+    function trunc(a) {
+      return a < 0 ? Math.ceil(a) : Math.floor(a);
+    }
+
+    function random(a) {
+      return Math.random() * (a || 1);
+    }
+
+    function factorial(a) {
+      // a!
+      return gamma(a + 1);
+    }
+
+    function isInteger(value) {
+      return isFinite(value) && value === Math.round(value);
+    }
+
+    var GAMMA_G = 4.7421875;
+    var GAMMA_P = [0.99999999999999709182, 57.156235665862923517, -59.597960355475491248, 14.136097974741747174, -0.49191381609762019978, 0.33994649984811888699e-4, 0.46523628927048575665e-4, -0.98374475304879564677e-4, 0.15808870322491248884e-3, -0.21026444172410488319e-3, 0.21743961811521264320e-3, -0.16431810653676389022e-3, 0.84418223983852743293e-4, -0.26190838401581408670e-4, 0.36899182659531622704e-5];
+
+    // Gamma function from math.js
+    function gamma(n) {
+      var t, x;
+
+      if (isInteger(n)) {
+        if (n <= 0) {
+          return isFinite(n) ? Infinity : NaN;
+        }
+
+        if (n > 171) {
+          return Infinity; // Will overflow
+        }
+
+        var value = n - 2;
+        var res = n - 1;
+        while (value > 1) {
+          res *= value;
+          value--;
+        }
+
+        if (res === 0) {
+          res = 1; // 0! is per definition 1
+        }
+
+        return res;
+      }
+
+      if (n < 0.5) {
+        return Math.PI / (Math.sin(Math.PI * n) * gamma(1 - n));
+      }
+
+      if (n >= 171.35) {
+        return Infinity; // will overflow
+      }
+
+      if (n > 85.0) {
+        // Extended Stirling Approx
+        var twoN = n * n;
+        var threeN = twoN * n;
+        var fourN = threeN * n;
+        var fiveN = fourN * n;
+        return Math.sqrt(2 * Math.PI / n) * Math.pow(n / Math.E, n) * (1 + 1 / (12 * n) + 1 / (288 * twoN) - 139 / (51840 * threeN) - 571 / (2488320 * fourN) + 163879 / (209018880 * fiveN) + 5246819 / (75246796800 * fiveN * n));
+      }
+
+      --n;
+      x = GAMMA_P[0];
+      for (var i = 1; i < GAMMA_P.length; ++i) {
+        x += GAMMA_P[i] / (n + i);
+      }
+
+      t = n + GAMMA_G + 0.5;
+      return Math.sqrt(2 * Math.PI) * Math.pow(t, n + 0.5) * Math.exp(-t) * x;
+    }
+
+    function stringLength(s) {
+      return String(s).length;
+    }
+
+    function hypot() {
+      var sum = 0;
+      var larg = 0;
+      for (var i = 0; i < arguments.length; i++) {
+        var arg = Math.abs(arguments[i]);
+        var div;
+        if (larg < arg) {
+          div = larg / arg;
+          sum = sum * div * div + 1;
+          larg = arg;
+        } else if (arg > 0) {
+          div = arg / larg;
+          sum += div * div;
+        } else {
+          sum += arg;
+        }
+      }
+      return larg === Infinity ? Infinity : larg * Math.sqrt(sum);
+    }
+
+    function condition(cond, yep, nope) {
+      return cond ? yep : nope;
+    }
+
+    /**
+    * Decimal adjustment of a number.
+    * From @escopecz.
+    *
+    * @param {Number} value The number.
+    * @param {Integer} exp  The exponent (the 10 logarithm of the adjustment base).
+    * @return {Number} The adjusted value.
+    */
+    function roundTo(value, exp) {
+      // If the exp is undefined or zero...
+      if (typeof exp === 'undefined' || +exp === 0) {
+        return Math.round(value);
+      }
+      value = +value;
+      exp = -+exp;
+      // If the value is not a number or the exp is not an integer...
+      if (isNaN(value) || !(typeof exp === 'number' && exp % 1 === 0)) {
+        return NaN;
+      }
+      // Shift
+      value = value.toString().split('e');
+      value = Math.round(+(value[0] + 'e' + (value[1] ? +value[1] - exp : -exp)));
+      // Shift back
+      value = value.toString().split('e');
+      return +(value[0] + 'e' + (value[1] ? +value[1] + exp : exp));
+    }
+
+    function Parser(options) {
+      this.options = options || {};
       this.unaryOps = {
         sin: Math.sin,
         cos: Math.cos,
@@ -51405,7 +51555,8 @@ var bundle = createCommonjsModule(function (module, exports) {
         '>=': greaterThanEqual,
         '<=': lessThanEqual,
         and: andOperator,
-        or: orOperator
+        or: orOperator,
+        'in': inOperator
       };
 
       this.ternaryOps = {
@@ -51422,7 +51573,8 @@ var bundle = createCommonjsModule(function (module, exports) {
         pow: Math.pow,
         atan2: Math.atan2,
         'if': condition,
-        gamma: gamma
+        gamma: gamma,
+        roundTo: roundTo
       };
 
       this.consts = {
@@ -51433,35 +51585,47 @@ var bundle = createCommonjsModule(function (module, exports) {
       };
     }
 
+    Parser.prototype.parse = function (expr) {
+      var instr = [];
+      var parserState = new ParserState(this, new TokenStream(this, expr), { allowMemberAccess: this.options.allowMemberAccess });
+
+      parserState.parseExpression(instr);
+      parserState.expect(TEOF, 'EOF');
+
+      return new Expression(instr, this);
+    };
+
+    Parser.prototype.evaluate = function (expr, variables) {
+      return this.parse(expr).evaluate(variables);
+    };
+
+    var sharedParser = new Parser();
+
     Parser.parse = function (expr) {
-      return new Parser().parse(expr);
+      return sharedParser.parse(expr);
     };
 
     Parser.evaluate = function (expr, variables) {
-      return Parser.parse(expr).evaluate(variables);
+      return sharedParser.parse(expr).evaluate(variables);
     };
 
-    Parser.prototype = {
-      parse: function parse(expr) {
-        var instr = [];
-        var parserState = new ParserState(this, new TokenStream(expr, this.unaryOps, this.binaryOps, this.ternaryOps, this.consts));
-        parserState.parseExpression(instr);
-        parserState.expect(TEOF, 'EOF');
+    /*!
+     Based on ndef.parser, by Raphael Graf(r@undefined.ch)
+     http://www.undefined.ch/mparser/index.html
+    
+     Ported to JavaScript and modified by Matthew Crumley (email@matthewcrumley.com, http://silentmatt.com/)
+    
+     You are free to use and modify this code in anyway you find useful. Please leave this comment in the code
+     to acknowledge its original source. If you feel like it, I enjoy hearing about projects that use my code,
+     but don't feel like you have to let me know or ask permission.
+    */
 
-        return new Expression(instr, this);
-      },
-
-      evaluate: function evaluate(expr, variables) {
-        return this.parse(expr).evaluate(variables);
-      }
-    };
-
-    var parser = {
+    var index = {
       Parser: Parser,
       Expression: Expression
     };
 
-    return parser;
+    return index;
   });
 });
 
