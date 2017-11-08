@@ -10,7 +10,7 @@ import { PixpipeObject } from './PixpipeObject.js';
 
 
 /**
-* RasterContainer is a common interface for Image2D and Image3D
+* PixpipeContainer is a common interface for Image2D and Image3D
 * (and possibly some other future formats).
 * Should not be used as-is.
 */
