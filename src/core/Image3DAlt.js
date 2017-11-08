@@ -567,7 +567,6 @@ class Image3DAlt extends PixpipeContainer{
   * @return {Uint8Array} the scaled data
   */
   getDataUint8(){
-    var t0 = performance.now();
     var data = this._data;
     var min = this.getMinValue();
     var max = this.getMaxValue();
@@ -576,8 +575,6 @@ class Image3DAlt extends PixpipeContainer{
     for(var i=0; i<uint8Buff.length; i++){
       uint8Buff[i] = Math.round(((data[i] - min) / range ) * 256);
     }
-    var t1 = performance.now();
-    console.log( t1 - t0 );
     return uint8Buff;
   }
   
@@ -675,11 +672,11 @@ class Image3DAlt extends PixpipeContainer{
   * This matrix can be used in two cases:
   * - swap [i, j, k] voxel coordinates **before** multiplying them by a "v2*" matrix
   * - swap voxel coordinates **after** multiplying [x, y, z] world coorinates by a "*2v" matrix
-  * @param {Boolean} hflip - if true, horizontally flip the swap matrix
+  * @param {Boolean} hflip - if true, horizontally flip the swap matrix. We usualy need to horizontaly flip this matrix because otherwise the voxel coordinates will be given as kji instead of ijk.
   * @param {Boolean} output4x4 - optional, output a 4x4 if true, or a 3x3 if false (default: false)
   * @return {Array} the 3x3 matrix in a 1D Array[9] arranged as column-major
   */
-  getVoxelCoordinatesSwapMatrix( hflip=false, output4x4=false ){
+  getVoxelCoordinatesSwapMatrix( hflip=true, output4x4=false ){
     var mat33 = new Array(9).fill(0);
     MatrixTricks.setValueMatrix33( mat33, 0, this._worldPositionOrder[0], 1 );
     MatrixTricks.setValueMatrix33( mat33, 1, this._worldPositionOrder[1], 1 );
