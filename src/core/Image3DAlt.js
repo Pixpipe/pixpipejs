@@ -677,6 +677,7 @@ class Image3DAlt extends PixpipeContainer{
   * @return {Array} the 3x3 matrix in a 1D Array[9] arranged as column-major
   */
   getVoxelCoordinatesSwapMatrix( hflip=true, output4x4=false ){
+    
     var mat33 = new Array(9).fill(0);
     MatrixTricks.setValueMatrix33( mat33, 0, this._worldPositionOrder[0], 1 );
     MatrixTricks.setValueMatrix33( mat33, 1, this._worldPositionOrder[1], 1 );
