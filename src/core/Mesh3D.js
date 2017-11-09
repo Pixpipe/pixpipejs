@@ -60,8 +60,20 @@ class Mesh3D extends PixpipeContainerMultiData {
   }
   
   
+  /**
+  * Get all the vertex positions (a pointer to)
+  * @return {TypedArray} the vertex positions
+  */
   getVertexPositions(){
-    
+    return this.getData( this._datasetNames.vertexPositions );
+  }
+  
+  /**
+  * Get a copy of the vertex positions
+  * @return {TypedArray} the vertex positions (deep copy)
+  */
+  getVertexPositionCopy(){
+    return this.getDataCopy( this._datasetNames.vertexPositions );
   }
   
   
@@ -79,6 +91,24 @@ class Mesh3D extends PixpipeContainerMultiData {
   
   
   /**
+  * Get all polygon faces
+  * @return {TypedArray} the vertex positions
+  */
+  getPolygonFacesOrder(){
+    return this.getData( this._datasetNames.polygonFaces );
+  }
+  
+  
+  /**
+  * Get a copy of polygon faces
+  * @return {TypedArray} the vertex positions (deep copy)
+  */
+  getPolygonFacesOrderCopy(){
+    return this.getDataCopy( this._datasetNames.polygonFaces );
+  }
+  
+  
+  /**
   * Set the array of polygon faces normal (unit) vectors
   * @param {TypedArray} data - array of index of vertex positions index
   */
@@ -88,6 +118,24 @@ class Mesh3D extends PixpipeContainerMultiData {
       return;
     }
     this.setRawData( d, this._datasetNames.polygonNormals );
+  }
+  
+  
+  /**
+  * Get all polygon faces normal (unit) vectors (a pointer to)
+  * @return {TypedArray} the vertex positions
+  */
+  getPolygonFacesNormals(){
+    return this.getData( this._datasetNames.polygonNormals );
+  }
+  
+  
+  /**
+  * Get a copy of polygon faces normal (unit) vectors
+  * @return {TypedArray} the vertex positions (deep copy)
+  */
+  getPolygonFacesNormalsCopy(){
+    return this.getDataCopy( this._datasetNames.polygonNormals );
   }
   
   
@@ -104,6 +152,95 @@ class Mesh3D extends PixpipeContainerMultiData {
   }
   
   
+  /**
+  * Get all vertex colors (a pointer to)
+  * @return {TypedArray} the vertex positions
+  */
+  getVertexColors(){
+    return this.getData( this._datasetNames.vertexColors );
+  }
+  
+  
+  /**
+  * Get a copy of vertex colors
+  * @return {TypedArray} the vertex positions (deep copy)
+  */
+  getVertexColorsCopy(){
+    return this.getDataCopy( this._datasetNames.vertexColors );
+  }
+  
+  /*
+  // if vertex colors are RGB then it's 3, if RGBA, then it's 4
+  this.setMetadata("componentsPerColor", 4);
+  */
+  
+  
+  /**
+  * Get the number of vertices per shape (3 for triangle, 4 for quads, etc.)
+  * @return {Number} the number of vertex involved in each shape
+  */
+  getNumberOfVerticesPerShapes(){
+    return this.getMetadata("verticesPerShapes");
+  }
+  
+  
+  /**
+  * Set the number of vertices per shape (3 for triangle, 4 for quads, etc.)
+  * @param {Number} num - the number of vertex involved in each shape
+  */
+  setNumberOfVerticesPerShapes( num ){
+    if( num < 0 ){
+      console.warn("The number of vertice per shapes should be positive.");
+    }
+    this.setMetadata("verticesPerShapes", num);
+  }
+  
+  
+  /**
+  * Get the number of components per color: 3 for RGB, 4 for RGBa
+  * @return {Number} number of components per color
+  */
+  getNumberOfComponentsPerColor(){
+    return this.getMetadata("componentsPerColor");
+  }
+  
+  
+  /**
+  * Set the number of components per color: 3 for RGB, 4 for RGBa
+  * @param {Number} num - number of components per color
+  */
+  setNumberOfComponentsPerColor( num ){
+    if( num < 0 ){
+      console.warn("The number of components per pixel should be positive.");
+    }
+    this.setMetadata("componentsPerColor", num);
+  }
+  
+  
+  /**
+  * Get the number of vertices in this mesh3D
+  * @return {Number}
+  */
+  getNumberOfVertices(){
+    var vertexPos = this.getVertexPositions();
+    if( !vertexPos ){
+      return null;
+    }
+    
+    return vertexPos.length / 3;
+  }
+  
+  
+  
+  // TODO
+  generateUniformVertexColor( colorArray ){
+    
+  }
+  
+  // TODO
+  generateFacesNormalsVectors( reverse=false ){
+    
+  }
   
   
 } /* END of class PixpipeContainerMultiData */
