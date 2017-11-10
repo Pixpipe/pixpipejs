@@ -14,8 +14,9 @@ export { Image2D } from './core/Image2D.js';
 export { Image3D } from './core/Image3D.js';
 export { ImageToImageFilter } from './core/ImageToImageFilter.js';
 export { MniVolume } from './core/MniVolume.js';
-export { LineString } from './core/LineString.js';
+export { LineString } from './core/LineString.js'; 
 export { Image3DAlt } from './core/Image3DAlt.js';
+export { Mesh3D } from './core/Mesh3D.js';
 
 // io - Readers and writers
 export { CanvasImageWriter } from './io/CanvasImageWriter.js';
@@ -43,6 +44,7 @@ export { JpegDecoder } from './decoder/JpegDecoder.js';
 export { PngDecoder } from './decoder/PngDecoder.js';
 export { Image2DGenericDecoder } from './decoder/Image2DGenericDecoder.js';
 export { Minc2DecoderAlt } from './decoder/Minc2DecoderAlt.js';
+export { MniObjDecoder } from './decoder/MniObjDecoder.js';
 
 // filters - processing of Images2D and Signal1D
 export { ComponentProjectionImage2DFilter } from './filter/ComponentProjectionImage2DFilter';

@@ -112,7 +112,7 @@ class PixpipeContainerMultiData extends PixpipeContainer {
     var dataIndex = this._metadata.dataIndex;
     
     // if replacing data at a given position
-    if( index !== 0 ){
+    if( index !== -1 ){
       this._data[ index ] = d;
     }else{
       index = this._data.length;
