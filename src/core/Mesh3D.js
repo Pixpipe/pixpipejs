@@ -14,6 +14,9 @@ import { PixpipeContainerMultiData } from './PixpipeContainerMultiData.js';
 * A Mesh3D object contains the necessary informations to create a 3D mesh
 * (for example using ThreeJS) and provide a generic datastructure so that it can accept
 * data from arbitrary mesh file format.
+*
+* **Usage**
+* - [examples/fileToMniObj.html](../examples/fileToMniObj.html)
 */
 class Mesh3D extends PixpipeContainerMultiData {
   

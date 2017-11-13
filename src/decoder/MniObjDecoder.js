@@ -11,13 +11,28 @@ import { Mesh3D } from '../core/Mesh3D.js';
 
 
 /**
+* When most parser need an ArrayBuffer as input, the MNI OBJ mesh file being text
+* files, an instance of MniObjDecoder takes the string content of such files.
+* The string content of a file can be provided by a FileToArrayBufferReader or
+* UrlToArrayBufferReader with the metadata `readAsText` being true.
+* Then use the method `.addInput( myString )` to provide the input and call
+* the method `.update()`. If the input is suscceessfully parsed, the output of
+* a MniObjDecoder is a Mesh3D. If the file is invalid, a message is probably written
+* in the JS console and no output is available.
 *
+* **Usage**
+* - [examples/fileToMniObj.html](../examples/fileToMniObj.html)
 */
 class MniObjDecoder extends Filter {
   
   constructor(){
     super();
     //this.addInputValidator(0, string);
+    // Adding an input validator with the type string is not possible because
+    // a string is not an "instanceof" String unless it is created by the String
+    // constructor, what we generaly dont want to do if they are very long.
+    // When decoding a file, a string is generally as a DOMString, with is
+    // different as String, and we dont want to duplicated that into memory.
   }
   
   
