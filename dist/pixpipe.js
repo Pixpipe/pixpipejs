@@ -16449,11 +16449,6 @@ class PixpipeContainerMultiData extends PixpipeContainer {
 */
 
 
-/**
-* A Mesh3D object contains the necessary informations to create a 3D mesh
-* (for example using ThreeJS) and provide a generic datastructure so that it can accept
-* data from arbitrary mesh file format.
-*/
 class Mesh3D extends PixpipeContainerMultiData {
   
   constructor(){
@@ -27190,6 +27185,10 @@ var CodecUtils = function () {
       while (pos < buffUint8.length) {
         var c1 = buffUint8[pos++];
         if (c1 < 128) {
+          if (c1 < 32 && c1 != 10 && c1 != 13 && c1 != 9 || c1 == 127) {
+            console.warn("Invalid string: non-printable characters");
+            return null;
+          }
           out[c++] = String.fromCharCode(c1);
         } else if (c1 > 191 && c1 < 224) {
           var c2 = buffUint8[pos++];
@@ -27205,7 +27204,12 @@ var CodecUtils = function () {
         } else {
           var c2 = buffUint8[pos++];
           var c3 = buffUint8[pos++];
-          out[c++] = String.fromCharCode((c1 & 15) << 12 | (c2 & 63) << 6 | c3 & 63);
+          var code = (c1 & 15) << 12 | (c2 & 63) << 6 | c3 & 63;
+          if (code === 0xFFFD) {
+            console.warn("Invalid string: a REPLACEMENT CHARACTER was spotted");
+            return null;
+          }
+          out[c++] = String.fromCharCode(code);
         }
       }
       return out.join('');
@@ -27659,6 +27663,32 @@ var CodecUtils = function () {
 
       return newObj;
     }
+
+    /**
+    * Check if a string is valid or not. A string is considered as invalid if it has
+    * unicode "REPLACEMENT CHARACTER" or non-printable ASCII characters.
+    * @param {String} str - string to test
+    * @param {Boolean} forceAll - test the whole string instead of a sample of 1000 charaters
+    * @return {Boolean} true is the string is valid, false if invalid.
+    */
+
+  }, {
+    key: "isValidString",
+    value: function isValidString(str) {
+      var forceAll = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
+
+      var strLen = str.length;
+      var nbSamples = forceAll ? strLen : Math.min(1000, strLen); //  a sample of 1000 should be enough
+      var flagChar = 0xFFFD;
+      var redFlags = 0;
+      for (var i = 0; i < nbSamples; i++) {
+        var code = str.charCodeAt(Math.floor(Math.random() * nbSamples));
+        if (code === flagChar || code < 32 && code != 10 && code != 13 && code != 9 || code == 127) {
+          redFlags++;
+        }
+      }
+      return !(redFlags > 0);
+    }
   }]);
   return CodecUtils;
 }(); /* END of class CodecUtils */
@@ -27683,6 +27713,8 @@ class FileToArrayBufferReader extends Filter {
     // md5 checksum by categories
     this.setMetadata("checksums", {});
     
+    // By defaut, this reader outputs an ArrayBuffer, but it can output a string
+    // if it's reading a text file and this metadata is set to true
     this.setMetadata("readAsText", false);
   }
 
@@ -27708,55 +27740,7 @@ class FileToArrayBufferReader extends Filter {
     var reader = new FileReader();
     var readAsText = this.getMetadata("readAsText");
 
-    /*
-    reader.onloadend = function(event) {
-      that.addTimeRecord("startRead");
-      
-      var result = event.target.result;
-      
-      var filename = that._getInput(category).name;
-      var basename = filename.split(/[\\/]/).pop();
-      var extension = basename.split('.').pop();
-      var checksum = md5( result );
-      
-      // few metadata for recognizing files (potentially)
-      that._metadata.filenames[ category ] = basename;
-      that._metadata.checksums[ category ] = checksum;
-
-      if( extension.localeCompare("pixp") ){
-        // trying to un-gzip it with Pako
-        try {
-          result = pako.inflate(result).buffer;
-          console.log("File was un-gziped successfully");
-        } catch (err) {
-          console.log("Pako: " + err + " (this content is not gziped)");
-        }
-      }
-      
-      // read the content as text (unicode, ASCII compatible)
-      if( readAsText){
-        var strResult = CodecUtils.arrayBufferToUnicode(result);
-        if( isItReallyText(strResult ) ){
-         result = strResult;
-        }
-      }
-      
-      that.addTimeRecord("endRead");
-      var time = that.getTime("startRead", "endRead");
-      console.log("Reading file took " + time + "ms.");
-      
-      that._output[ category ] = result;
-      that._fileLoadCount();
-    }
-
-    reader.onerror = function() {
-      this._output[ category ] = null;
-      that._fileLoadCount();
-      console.warn( "error reading file from category " + category );
-      //throw new Error(error_message);
-    };
-    */
-    
+    // callback for reading the file as a text file
     var onLoadEndTextFile = function( event ){
       that.addTimeRecord("startRead");
       var result = event.target.result;
@@ -27764,7 +27748,7 @@ class FileToArrayBufferReader extends Filter {
       // try to read as text, but it's not text.
       // Maybe it's a gz-compressed text file, so we have to read this file as a
       // binary and see if once compressed it has a valid text content
-      if(!isItReallyText(result)){
+      if(!CodecUtils.isValidString(result)){
         reader.onloadend = onLoadEndBinaryFile;
         reader.readAsArrayBuffer( that._getInput(category) );
         return;
@@ -27774,6 +27758,7 @@ class FileToArrayBufferReader extends Filter {
       var basename = filename.split(/[\\/]/).pop();
       var extension = basename.split('.').pop();
       var checksum = md5( result );
+      console.log( checksum );
       
       // few metadata for recognizing files (potentially)
       that._metadata.filenames[ category ] = basename;
@@ -27787,6 +27772,7 @@ class FileToArrayBufferReader extends Filter {
       that._fileLoadCount();
     };
     
+    // callback for reading the file as a binary file
     var onLoadEndBinaryFile = function( event ){
       that.addTimeRecord("startRead");
       
@@ -27796,6 +27782,7 @@ class FileToArrayBufferReader extends Filter {
       var basename = filename.split(/[\\/]/).pop();
       var extension = basename.split('.').pop();
       var checksum = md5( result );
+      console.log( checksum );
       
       // few metadata for recognizing files (potentially)
       that._metadata.filenames[ category ] = basename;
@@ -27807,18 +27794,18 @@ class FileToArrayBufferReader extends Filter {
           result = index$1.inflate(result).buffer;
           console.log("File was un-gziped successfully");
         } catch (err) {
-          console.log("Pako: " + err + " (this content is not gziped)");
+          console.log("Pako: not a gziped file (" + err + ")");
         }
       }
       
       // read the content as text (unicode, ASCII compatible)
       if( readAsText){
         var strResult = CodecUtils.arrayBufferToUnicode(result);
-        if( isItReallyText(strResult ) ){
-          result = strResult;
-        }else{
+        if( !strResult ){
           console.warn("The content of this file is not a valid text. It could be read as a binary file if the metadata 'readAsText' is set to false.");
           return;
+        }else{
+          result = strResult;
         }
       }
       
@@ -27830,28 +27817,12 @@ class FileToArrayBufferReader extends Filter {
       that._fileLoadCount();
     };
     
-    
-    reader.onerror = function() {
-      console.log("ERRRROR");
+    reader.onerror = function(e) {
+      console.warn("ERROR");
+      console.warn(e);
     };
     
-    // side function to check if it's really text content. It checks a certain number of samples
-    // randomly positioned in the string and counts the unicode char code 65533, which is a
-    // REPLACEMENT CHARACTER.
-    function isItReallyText( str ){
-      var nbSamples = 100;
-      var flagChar = 65533;
-      var redFlags = 0;
-      for(var i=0; i<nbSamples; i++){
-        var code = str.charCodeAt( Math.floor(Math.random() * nbSamples) );
-        if( code === flagChar ){
-          redFlags ++;
-        }
-      }
-      return !(redFlags > 0);
-    }
-    
-    
+
     if(readAsText){
       reader.onloadend = onLoadEndTextFile;
       reader.readAsText( this._getInput(category) );
@@ -27885,6 +27856,23 @@ class FileToArrayBufferReader extends Filter {
 */
 
 
+/**
+* Open a files as ArrayBuffer using their URL. You must specify one or several URL
+* (String) using `addInput("...")` and add function to the event "ready" using
+* `.on( "ready", function(filter){ ... })`.
+* The "ready" event will be called only when all input are loaded.
+* Gzip compressed files will be uncompressed.
+* Once the filter is *updated*, you can query the `filenames` metadata (sorted by categories)
+* and also the `checksums` metadata using `.getMetadata()`. This later metadata 
+* give a unique *md5*, very convenient to compare if two files are actually the same.
+* Note that in case the file is *gziped*, the checksum is computed on the raw file,
+* not on the *un-gziped* buffer.
+*
+* It happens that a file is not binary but text, then, set the metadata "readAsText" to `true`.
+*
+* **Usage**
+* - [examples/urlFileToArrayBuffer.html](../examples/urlFileToArrayBuffer.html)
+*/
 class UrlToArrayBufferReader extends Filter {
 
   constructor(){
@@ -27896,6 +27884,10 @@ class UrlToArrayBufferReader extends Filter {
     
     // md5 checksum by categories
     this.setMetadata("checksums", {});
+    
+    // By defaut, this reader outputs an ArrayBuffer, but it can output a string
+    // if it's reading a text file and this metadata is set to true
+    this.setMetadata("readAsText", false);
   }
 
 
@@ -27921,17 +27913,16 @@ class UrlToArrayBufferReader extends Filter {
   */
   _loadUrl( category, url ){
     var that = this;
+    var readAsText = this.getMetadata("readAsText");
 
     var xhr = new XMLHttpRequest();
     xhr.open("GET", url, true);
-    xhr.responseType = "arraybuffer";
-
-    xhr.onload = function(event) {
-      var arrayBuff = xhr.response;
-      
+    
+    var onLoadEndBinaryFile = function(event) {
+      var result = event.target.response;
       var basename = url.split(/[\\/]/).pop();
       var extension = basename.split('.').pop();
-      var checksum = md5( arrayBuff );
+      var checksum = md5( result );
       
       // few metadata for recognizing files (potentially)
       that._metadata.filenames[ category ] = basename;
@@ -27940,16 +27931,61 @@ class UrlToArrayBufferReader extends Filter {
       // trying to un-gzip it with Pako for non pixp files
       if( extension.localeCompare("pixp") ){
         try {
-          arrayBuff = index$1.inflate(arrayBuff).buffer;
+          result = index$1.inflate(result).buffer;
           console.log("File was un-gziped successfully");
         } catch (err) {
-          console.log("Pako: " + err + " (this content is not gziped)");
+          console.log("Pako: not a gziped file (" + err + ")");
         }
       }
       
-      that._output[ category ] = arrayBuff;
+      // read the content as text (unicode, ASCII compatible)
+      if( readAsText){
+        var strResult = CodecUtils.arrayBufferToUnicode(result);
+        if( strResult && CodecUtils.isValidString(strResult) ){
+          result = strResult;
+        }else{
+          console.warn("The content of this file is not a valid text. It could be read as a binary file if the metadata 'readAsText' is set to false.");
+          return;
+        }
+      }
       
+      that._output[ category ] = result;
+      that._outputCounter ++;
 
+      if( that._outputCounter == that.getNumberOfInputs()){
+        that.triggerEvent("ready");
+      }
+    };
+    
+    
+    var onLoadEndTextFile = function(event) {
+      console.log( "ooooooooo" );
+      var result = event.target.response;
+      
+      var basename = url.split(/[\\/]/).pop();
+      var extension = basename.split('.').pop();
+      var checksum = md5( result );
+      
+      // few metadata for recognizing files (potentially)
+      that._metadata.filenames[ category ] = basename;
+      that._metadata.checksums[ category ] = checksum;
+
+      // try to read as text, but it's not text.
+      // Maybe it's a gz-compressed text file, so we have to read this file as a
+      // binary and see if once compressed it has a valid text content
+      if(!CodecUtils.isValidString(result)){
+        event.target.abort();
+        // xhrBackup is used only when reading as a text is not possible (binary file)
+        // it is then used in case of failure of reading text in the first place
+        var xhrBackup = new XMLHttpRequest();
+        xhrBackup.open("GET", url, true);
+        xhrBackup.responseType = "arraybuffer";
+        xhrBackup.onload = onLoadEndBinaryFile;
+        xhrBackup.send();
+        return;
+      }
+      
+      that._output[ category ] = result;
       that._outputCounter ++;
 
       if( that._outputCounter == that.getNumberOfInputs()){
@@ -27960,6 +27996,15 @@ class UrlToArrayBufferReader extends Filter {
     xhr.error = function(){
       console.log("here go the error");
     };
+
+    if( readAsText ){
+      xhr.responseType = "text";
+      xhr.onload = onLoadEndTextFile;
+      //xhr.onload = blaa;
+    }else{
+      xhr.responseType = "arraybuffer";
+      xhr.onload = onLoadEndBinaryFile;
+    }
 
     xhr.send();
   }

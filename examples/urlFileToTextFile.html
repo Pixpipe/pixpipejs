@@ -1,0 +1,63 @@
+<html>
+<head>
+  <title>Url to text filer</title>
+
+  <script src="../dist/pixpipe.js"></script>
+  <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700,900" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <h1><a href="https://github.com/Pixpipe/pixpipejs"><span style="color: #ff91d7">Pixpipe</span><span style="color: #FFFFFF">js</span></a></h1>
+  <p>
+  This does the following :
+  <ul>
+    <li>opening distant text files, using <code>pixpipe.UrlToArrayBufferReader</code></li>
+    <li>enabling the <code>readAsText</code> metadata</li>
+    <li>display the length of the string</li>
+  </ul>
+
+  </p>
+
+  <div>
+    <span id="fileInfo"></span>
+	</div>
+
+  <script>
+  window.onload = function() {
+
+    var urlArrBuff =  new pixpipe.UrlToArrayBufferReader();
+    urlArrBuff.setMetadata("readAsText", true);
+
+    // add a distant file to read
+    // should work well with this one (compressed text):
+    urlArrBuff.addInput( "images/prefix_001_gray_surface.obj.gz" );
+    // should fail with this one (not text):
+    //urlArrBuff.addInput( "images/ny2.jpg" );
+    
+    // define what to do when all input URL are loaded into ArrayBuffer
+    // here, this = urlArrBuff
+    urlArrBuff.on("ready", function(){
+
+      this.forEachOutput( function(category, output){
+        console.log(this);
+        var info = "";
+        
+        if( output ){
+          info = "<br><b>" + this.getMetadata("filenames")[ category ] + " - </b> " + 
+                    output.length + "characters  - " +
+                    " <b>md5:</b> " + this.getMetadata("checksums")[ category ] + " ";
+        }else{
+          info = "<br><b>" + this.getMetadata("filenames")[ category ] + " - </b> INVALID string file";
+        }
+        document.getElementById('fileInfo').innerHTML += info;
+      });
+
+    })
+
+    urlArrBuff.update();
+
+  } /* END of window.onload */
+  </script>
+
+</body>
+</html>
