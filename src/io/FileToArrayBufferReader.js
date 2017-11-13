@@ -6,9 +6,11 @@
 */
 
 
-import md5 from 'js-md5'
-import pako from 'pako'
+import md5 from 'js-md5';
+import pako from 'pako';
+import { CodecUtils } from 'codecutils';
 import { Filter } from '../core/Filter.js';
+
 
 
 /**
@@ -26,6 +28,8 @@ import { Filter } from '../core/Filter.js';
 * Note that in case the file is *gziped*, the checksum is computed on the raw file,
 * not on the *un-gziped* buffer.
 *
+* It happens that a file is not binary but text, then, set the metadata "readAsText" to `true`.
+*
 * **Usage**
 * - [examples/fileToArrayBuffer.html](../examples/fileToArrayBuffer.html)
 */
@@ -40,6 +44,10 @@ class FileToArrayBufferReader extends Filter {
     
     // md5 checksum by categories
     this.setMetadata("checksums", {});
+    
+    // By defaut, this reader outputs an ArrayBuffer, but it can output a string
+    // if it's reading a text file and this metadata is set to true
+    this.setMetadata("readAsText", false);
   }
 
 
@@ -62,41 +70,98 @@ class FileToArrayBufferReader extends Filter {
   _loadFile( category ){
     var that = this;
     var reader = new FileReader();
+    var readAsText = this.getMetadata("readAsText");
 
-    reader.onloadend = function(event) {
-        var result = event.target.result;
-        
-        var filename = that._getInput(category).name;
-        var basename = filename.split(/[\\/]/).pop();
-        var extension = basename.split('.').pop();
-        var checksum = md5( result );
-        
-        // few metadata for recognizing files (potentially)
-        that._metadata.filenames[ category ] = basename;
-        that._metadata.checksums[ category ] = checksum;
-
-        if( extension.localeCompare("pixp") ){
-          // trying to un-gzip it with Pako
-          try {
-            result = pako.inflate(result).buffer;
-            console.log("File was un-gziped successfully");
-          } catch (err) {
-            console.log("Pako: " + err + " (this content is not gziped)");
-          }
-        }
-        
-        that._output[ category ] = result;
-        that._fileLoadCount();
-    }
-
-    reader.onerror = function() {
-      this._output[ category ] = null;
+    // callback for reading the file as a text file
+    var onLoadEndTextFile = function( event ){
+      that.addTimeRecord("startRead");
+      var result = event.target.result;
+      
+      // try to read as text, but it's not text.
+      // Maybe it's a gz-compressed text file, so we have to read this file as a
+      // binary and see if once compressed it has a valid text content
+      if(!CodecUtils.isValidString(result)){
+        reader.onloadend = onLoadEndBinaryFile;
+        reader.readAsArrayBuffer( that._getInput(category) );
+        return;
+      }
+      
+      var filename = that._getInput(category).name;
+      var basename = filename.split(/[\\/]/).pop();
+      var extension = basename.split('.').pop();
+      var checksum = md5( result );
+      console.log( checksum );
+      
+      // few metadata for recognizing files (potentially)
+      that._metadata.filenames[ category ] = basename;
+      that._metadata.checksums[ category ] = checksum;
+      
+      that.addTimeRecord("endRead");
+      var time = that.getTime("startRead", "endRead");
+      console.log("Reading file took " + time + "ms.");
+      
+      that._output[ category ] = result;
       that._fileLoadCount();
-      console.warn( "error reading file from category " + category );
-      //throw new Error(error_message);
-    };
+    }
+    
+    // callback for reading the file as a binary file
+    var onLoadEndBinaryFile = function( event ){
+      that.addTimeRecord("startRead");
+      
+      var result = event.target.result;
+      
+      var filename = that._getInput(category).name;
+      var basename = filename.split(/[\\/]/).pop();
+      var extension = basename.split('.').pop();
+      var checksum = md5( result );
+      console.log( checksum );
+      
+      // few metadata for recognizing files (potentially)
+      that._metadata.filenames[ category ] = basename;
+      that._metadata.checksums[ category ] = checksum;
 
-    reader.readAsArrayBuffer( this._getInput(category) );
+      if( extension.localeCompare("pixp") ){
+        // trying to un-gzip it with Pako
+        try {
+          result = pako.inflate(result).buffer;
+          console.log("File was un-gziped successfully");
+        } catch (err) {
+          console.log("Pako: not a gziped file (" + err + ")");
+        }
+      }
+      
+      // read the content as text (unicode, ASCII compatible)
+      if( readAsText){
+        var strResult = CodecUtils.arrayBufferToUnicode(result);
+        if( !strResult ){
+          console.warn("The content of this file is not a valid text. It could be read as a binary file if the metadata 'readAsText' is set to false.");
+          return;
+        }else{
+          result = strResult;
+        }
+      }
+      
+      that.addTimeRecord("endRead");
+      var time = that.getTime("startRead", "endRead");
+      console.log("Reading file took " + time + "ms.");
+      
+      that._output[ category ] = result;
+      that._fileLoadCount();
+    }
+    
+    reader.onerror = function(e) {
+      console.warn("ERROR");
+      console.warn(e);
+    }
+    
+
+    if(readAsText){
+      reader.onloadend = onLoadEndTextFile;
+      reader.readAsText( this._getInput(category) );
+    }else{
+      reader.onloadend = onLoadEndBinaryFile;
+      reader.readAsArrayBuffer( this._getInput(category) );
+    }
   }
 
 

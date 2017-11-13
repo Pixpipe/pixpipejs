@@ -46,3 +46,11 @@ textarea {
 canvas {
   cursor: crosshair;
 }
+
+.white-bg {
+  background-color: white;
+}
+
+.padding-10px {
+  padding: 10px;
+}

@@ -203,6 +203,11 @@
                   getDataCopy
                 </a>
                 <a
+                  href='#Image3DAlt.getDataUint8'
+                  class='regular block'>
+                  getDataUint8
+                </a>
+                <a
                   href='#Image3DAlt.getDimensionIndexFromName'
                   class='regular block'>
                   getDimensionIndexFromName
@@ -238,9 +243,14 @@
                   getPositionFromVoxelSpaceToTransfoSpace
                 </a>
                 <a
-                  href='#Image3DAlt.getSegmentSample'
+                  href='#Image3DAlt.getSegmentSampleTransfoSpace'
                   class='regular block'>
-                  getSegmentSample
+                  getSegmentSampleTransfoSpace
+                </a>
+                <a
+                  href='#Image3DAlt.getSegmentSampleVoxelSpace'
+                  class='regular block'>
+                  getSegmentSampleVoxelSpace
                 </a>
                 <a
                   href='#Image3DAlt.getSlice'
@@ -258,9 +268,29 @@
                   getTimeLength
                 </a>
                 <a
+                  href='#Image3DAlt.getTransfoBox'
+                  class='regular block'>
+                  getTransfoBox
+                </a>
+                <a
+                  href='#Image3DAlt.getTransfoVolumeCorners'
+                  class='regular block'>
+                  getTransfoVolumeCorners
+                </a>
+                <a
                   href='#Image3DAlt.getVoxel'
                   class='regular block'>
                   getVoxel
+                </a>
+                <a
+                  href='#Image3DAlt.getVoxelBox'
+                  class='regular block'>
+                  getVoxelBox
+                </a>
+                <a
+                  href='#Image3DAlt.getVoxelCoordinatesSwapMatrix'
+                  class='regular block'>
+                  getVoxelCoordinatesSwapMatrix
                 </a>
                 <a
                   href='#Image3DAlt.getVoxelSafe'
@@ -271,6 +301,11 @@
                   href='#Image3DAlt.getVoxelTransfoSpace'
                   class='regular block'>
                   getVoxelTransfoSpace
+                </a>
+                <a
+                  href='#Image3DAlt.hasTransform'
+                  class='regular block'>
+                  hasTransform
                 </a>
                 <a
                   href='#Image3DAlt.isInsideTransfoSpace'
@@ -623,16 +658,6 @@
                   _loadUrl
                 </a>
               <a
-                href='#SpectralScaleImageFilter'
-                class='block bold h3 bg-pink-alpha'>
-                SpectralScaleImageFilter
-              </a>
-                <a
-                  href='#SpectralScaleImageFilter._run'
-                  class='regular block'>
-                  _run
-                </a>
-              <a
                 href='#FileImageReader'
                 class='block bold h3 bg-pink-alpha'>
                 FileImageReader
@@ -646,6 +671,16 @@
                   href='#FileImageReader.hasValidInput'
                   class='regular block'>
                   hasValidInput
+                </a>
+              <a
+                href='#SpectralScaleImageFilter'
+                class='block bold h3 bg-pink-alpha'>
+                SpectralScaleImageFilter
+              </a>
+                <a
+                  href='#SpectralScaleImageFilter._run'
+                  class='regular block'>
+                  _run
                 </a>
               <a
                 href='#MniVolume'
@@ -1567,6 +1602,61 @@
                 class='block bold h3 bg-pink-alpha'>
                 ForEachPixelReadOnlyFilter
               </a>
+              <a
+                href='#MatrixTricks'
+                class='block bold h3 bg-pink-alpha'>
+                MatrixTricks
+              </a>
+                <a
+                  href='#MatrixTricks.getExpandedMatrix3x3To4x4'
+                  class='regular block'>
+                  getExpandedMatrix3x3To4x4
+                </a>
+                <a
+                  href='#MatrixTricks.getHorizontalFlipMatrix33'
+                  class='regular block'>
+                  getHorizontalFlipMatrix33
+                </a>
+                <a
+                  href='#MatrixTricks.getHorizontalFlipMatrix44'
+                  class='regular block'>
+                  getHorizontalFlipMatrix44
+                </a>
+                <a
+                  href='#MatrixTricks.getHorizontalFlipSquareMatrix'
+                  class='regular block'>
+                  getHorizontalFlipSquareMatrix
+                </a>
+                <a
+                  href='#MatrixTricks.getValueMatrix33'
+                  class='regular block'>
+                  getValueMatrix33
+                </a>
+                <a
+                  href='#MatrixTricks.getValueMatrix44'
+                  class='regular block'>
+                  getValueMatrix44
+                </a>
+                <a
+                  href='#MatrixTricks.getValueSquareMatrix'
+                  class='regular block'>
+                  getValueSquareMatrix
+                </a>
+                <a
+                  href='#MatrixTricks.setValueMatrix33'
+                  class='regular block'>
+                  setValueMatrix33
+                </a>
+                <a
+                  href='#MatrixTricks.setValueMatrix44'
+                  class='regular block'>
+                  setValueMatrix44
+                </a>
+                <a
+                  href='#MatrixTricks.setValueSquareMatrix'
+                  class='regular block'>
+                  setValueSquareMatrix
+                </a>
               <a
                 href='#GradientImageFilter'
                 class='block bold h3 bg-pink-alpha'>
@@ -2810,6 +2900,37 @@ in case of doubt, use  getDataCopy()</p>
 </section>
           </div>
         </div>
+        <div class='collapsible' id='Image3DAlt.getDataUint8'>
+          <a href='#Image3DAlt.getDataUint8'>
+            <code>
+              getDataUint8<span class='gray'></span>
+            </code>
+            <div class='force-inline'>
+              <p>Get data scaled as a uint8 taking in consideration the actual min-max range of the data
+(and not the possible min-max rage allowed by the data type)
+Notice: values are rounded</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2'>
+<section class='py2 clearfix'>
+  <h2 id='Image3DAlt.getDataUint8' class='mt0'>
+    getDataUint8<span class='gray'></span>
+  </h2>
+  <p>Get data scaled as a uint8 taking in consideration the actual min-max range of the data
+(and not the possible min-max rage allowed by the data type)
+Notice: values are rounded</p>
+
+      <h4>Returns</h4>
+      <code><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array">Uint8Array</a></code></code>
+      :
+      <div class='force-inline'>
+        <p>the scaled data</p>
+
+      </div>
+</section>
+          </div>
+        </div>
         <div class='collapsible' id='Image3DAlt.getDimensionIndexFromName'>
           <a href='#Image3DAlt.getDimensionIndexFromName'>
             <code>
@@ -2855,7 +2976,7 @@ Looks up in the world dim and then in the voxel-based coord</p>
               getDimensionSize<span class='gray'>(dimIndex)</span>
             </code>
             <div class='force-inline'>
-              <p>Get the size of a dimension in the voxel-based coord system</p>
+              <p>Get the size of a dimension in number of voxel (or in number of time samples in case of &quot;t&quot; or 3)</p>
 
             </div>
           </a>
@@ -2864,14 +2985,14 @@ Looks up in the world dim and then in the voxel-based coord</p>
   <h2 id='Image3DAlt.getDimensionSize' class='mt0'>
     getDimensionSize<span class='gray'>(dimIndex)</span>
   </h2>
-  <p>Get the size of a dimension in the voxel-based coord system</p>
+  <p>Get the size of a dimension in number of voxel (or in number of time samples in case of &quot;t&quot; or 3)</p>
 
     <h4>Parameters</h4>
     <ul class='suppress-p-margin'>
         <li><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">Number</a></code> or <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a></code> <strong>dimIndex</strong>
           :
           <div class='force-inline'>
-            <p>can be 0, 1, 2, 3 or &quot;i&quot;, &quot;j&quot;, &quot;k&quot;, &quot;t&quot;</p>
+            <p>can be 0, 1, 2, 3 or &quot;i&quot;, &quot;j&quot;, &quot;k&quot;, &quot;t&quot;, or &quot;x&quot;, &quot;y&quot;, &quot;z&quot;, &quot;t&quot;</p>
 
           </div>
         </li>
@@ -2990,7 +3111,7 @@ Hook to metadata.</p>
         <div class='collapsible' id='Image3DAlt.getPositionFromTransfoSpaceToVoxelSpace'>
           <a href='#Image3DAlt.getPositionFromTransfoSpaceToVoxelSpace'>
             <code>
-              getPositionFromTransfoSpaceToVoxelSpace<span class='gray'>(spacePosition, transformName)</span>
+              getPositionFromTransfoSpaceToVoxelSpace<span class='gray'>(spacePosition, transformName, round)</span>
             </code>
             <div class='force-inline'>
               <p>Convert coordinates from a a given (non-voxel based) position into a voxel based coord</p>
@@ -3000,7 +3121,7 @@ Hook to metadata.</p>
           <div class='collapser border px2'>
 <section class='py2 clearfix'>
   <h2 id='Image3DAlt.getPositionFromTransfoSpaceToVoxelSpace' class='mt0'>
-    getPositionFromTransfoSpaceToVoxelSpace<span class='gray'>(spacePosition, transformName)</span>
+    getPositionFromTransfoSpaceToVoxelSpace<span class='gray'>(spacePosition, transformName, round)</span>
   </h2>
   <p>Convert coordinates from a a given (non-voxel based) position into a voxel based coord</p>
 
@@ -3017,6 +3138,13 @@ Hook to metadata.</p>
           :
           <div class='force-inline'>
             <p>name of the transformation to use, &quot;*2v&quot;</p>
+
+          </div>
+        </li>
+        <li><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean">Boolean</a></code> <strong>round</strong>
+          :
+          <div class='force-inline'>
+            <p>round to the closest voxel coord integer (default: true)</p>
 
           </div>
         </li>
@@ -3075,38 +3203,123 @@ Hook to metadata.</p>
 </section>
           </div>
         </div>
-        <div class='collapsible' id='Image3DAlt.getSegmentSample'>
-          <a href='#Image3DAlt.getSegmentSample'>
+        <div class='collapsible' id='Image3DAlt.getSegmentSampleTransfoSpace'>
+          <a href='#Image3DAlt.getSegmentSampleTransfoSpace'>
             <code>
-              getSegmentSample<span class='gray'>(posFrom, posFrom, posTo, time)</span>
+              getSegmentSampleTransfoSpace<span class='gray'>(space2voxelTransformName, voxel2spaceTransformName, posFrom, posTo, time)</span>
             </code>
             <div class='force-inline'>
-              <p>#TODO TO BE REDONE!
-Sample the color along a segment</p>
+              <p>Sample voxels along a segment in a transform coordinates system (world or subject).
+This is achieved by converting the transformed coordinates into voxel coordinates,
+then samples are taken respecting a voxel unit rather than the transform unit so that
+it is more fine.</p>
 
             </div>
           </a>
           <div class='collapser border px2'>
 <section class='py2 clearfix'>
-  <h2 id='Image3DAlt.getSegmentSample' class='mt0'>
-    getSegmentSample<span class='gray'>(posFrom, posFrom, posTo, time)</span>
+  <h2 id='Image3DAlt.getSegmentSampleTransfoSpace' class='mt0'>
+    getSegmentSampleTransfoSpace<span class='gray'>(space2voxelTransformName, voxel2spaceTransformName, posFrom, posTo, time)</span>
   </h2>
-  <p>#TODO TO BE REDONE!
-Sample the color along a segment</p>
+  <p>Sample voxels along a segment in a transform coordinates system (world or subject).
+This is achieved by converting the transformed coordinates into voxel coordinates,
+then samples are taken respecting a voxel unit rather than the transform unit so that
+it is more fine.</p>
 
     <h4>Parameters</h4>
     <ul class='suppress-p-margin'>
-        <li><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a></code> <strong>posFrom</strong>
+        <li><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a></code> <strong>space2voxelTransformName</strong>
           :
           <div class='force-inline'>
-            <p>starting position of type {x: Number, y: Number, z: Number}</p>
+            <p>id of a registered transformation that goes from arbitrary space to voxel space (aka. &quot;*2v&quot;)</p>
+
+          </div>
+        </li>
+        <li><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a></code> <strong>voxel2spaceTransformName</strong>
+          :
+          <div class='force-inline'>
+            <p>id of a registered transformation that goes from voxel space to arbitrary space (aka. &quot;v2*&quot; or the inverse of space2voxelTransformName)</p>
 
           </div>
         </li>
         <li><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a></code> <strong>posFrom</strong>
           :
           <div class='force-inline'>
-            <p>ending position of type {x: Number, y: Number, z: Number}</p>
+            <p>starting sampling point in transformed coordinates (world or subject) as {x: Number, y: Number, z: Number}</p>
+
+          </div>
+        </li>
+        <li><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a></code> <strong>posTo</strong>
+          :
+          <div class='force-inline'>
+            <p>end sampling point in transformed coordinates (world or subject) as {x: Number, y: Number, z: Number}</p>
+
+          </div>
+        </li>
+        <li><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">Number</a></code> <strong>time</strong>
+          :
+          <div class='force-inline'>
+            <p>time sample index to sample (default: 0)</p>
+
+          </div>
+        </li>
+    </ul>
+      <h4>Returns</h4>
+      <code><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a></code></code>
+      :
+      <div class='force-inline'>
+        <p>array of Array like that: {
+positions: [
+{x: x0, y: y0, z: z0},
+{x: x1, y: y1, z: z1},
+{x: x2, y: y2, z: z2},
+...
+],
+labels: [
+&quot;(x0, y0, z0)&quot;, &quot;(x1, y1, z1)&quot;, &quot;(x2, y2, z2)&quot;, ...
+],
+colors: [
+[r0, r1, r2 ...],
+[g0, g1, g2 ...],
+[b0, b1, b2 ...]
+]
+}
+return null if posFrom or posTo is outside</p>
+
+      </div>
+</section>
+          </div>
+        </div>
+        <div class='collapsible' id='Image3DAlt.getSegmentSampleVoxelSpace'>
+          <a href='#Image3DAlt.getSegmentSampleVoxelSpace'>
+            <code>
+              getSegmentSampleVoxelSpace<span class='gray'>(posFrom, posFrom, posTo, time)</span>
+            </code>
+            <div class='force-inline'>
+              <p>Sample the color along a segment</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2'>
+<section class='py2 clearfix'>
+  <h2 id='Image3DAlt.getSegmentSampleVoxelSpace' class='mt0'>
+    getSegmentSampleVoxelSpace<span class='gray'>(posFrom, posFrom, posTo, time)</span>
+  </h2>
+  <p>Sample the color along a segment</p>
+
+    <h4>Parameters</h4>
+    <ul class='suppress-p-margin'>
+        <li><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a></code> <strong>posFrom</strong>
+          :
+          <div class='force-inline'>
+            <p>starting position of type {i: Number, j: Number, k: Number}</p>
+
+          </div>
+        </li>
+        <li><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a></code> <strong>posFrom</strong>
+          :
+          <div class='force-inline'>
+            <p>ending position of type {i: Number, j: Number, k: Number}</p>
 
           </div>
         </li>
@@ -3130,13 +3343,13 @@ Sample the color along a segment</p>
       <div class='force-inline'>
         <p>array of Array like that: {
 positions: [
-{x: x0, y: y0, z: z0},
-{x: x1, y: y1, z: z1},
-{x: x2, y: y2, z: z2},
+{i: i0, j: j0, k: k0},
+{i: i1, j: j1, k: k1},
+{i: i2, j: j2, k: k2},
 ...
 ],
 labels: [
-&quot;(x0, y0, z0)&quot;, &quot;(x1, y1, z1)&quot;, &quot;(x2, y2, z2)&quot;, ...
+&quot;(i0, j0, k0)&quot;, &quot;(i1, j1, k1)&quot;, &quot;(i2, j2, k2)&quot;, ...
 ],
 colors: [
 [r0, r1, r2 ...],
@@ -3230,7 +3443,7 @@ return null if posFrom or posTo is outside</p>
         <li><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">Number</a></code> or <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a></code> <strong>dimIndex</strong>
           :
           <div class='force-inline'>
-            <p>can be 0, 1, 2 or &quot;i&quot;, &quot;j&quot;, &quot;k&quot;</p>
+            <p>can be 0, 1, 2 or &quot;i&quot;, &quot;j&quot;, &quot;k&quot; or &quot;x&quot;, &quot;y&quot;, &quot;z&quot;</p>
 
           </div>
         </li>
@@ -3273,6 +3486,84 @@ return null if posFrom or posTo is outside</p>
       :
       <div class='force-inline'>
         <p>the number of time samples</p>
+
+      </div>
+</section>
+          </div>
+        </div>
+        <div class='collapsible' id='Image3DAlt.getTransfoBox'>
+          <a href='#Image3DAlt.getTransfoBox'>
+            <code>
+              getTransfoBox<span class='gray'>(transformName)</span>
+            </code>
+            <div class='force-inline'>
+              <p>Get the space box in a the given transform space coordinates. Due a possible rotation
+involved in a affine transformation, the box will possibly have some void space on the sides.
+To get the actual volume corners in a transfo space, use the method <code>getTransfoVolumeCorners()</code>.</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2'>
+<section class='py2 clearfix'>
+  <h2 id='Image3DAlt.getTransfoBox' class='mt0'>
+    getTransfoBox<span class='gray'>(transformName)</span>
+  </h2>
+  <p>Get the space box in a the given transform space coordinates. Due a possible rotation
+involved in a affine transformation, the box will possibly have some void space on the sides.
+To get the actual volume corners in a transfo space, use the method <code>getTransfoVolumeCorners()</code>.</p>
+
+    <h4>Parameters</h4>
+    <ul class='suppress-p-margin'>
+        <li><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a></code> <strong>transformName</strong>
+          :
+          <div class='force-inline'>
+            <p>id of a registered transformation that goes from voxel space to arbitrary space (aka. &quot;v2*&quot;)</p>
+
+          </div>
+        </li>
+    </ul>
+      <h4>Returns</h4>
+      <code><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a></code></code>
+      :
+      <div class='force-inline'>
+        <p>Box of shape {min: {x:Number, y:Number, z:Number, t:Number}, max: {x:Number, y:Number, z:Number, t:Number} }</p>
+
+      </div>
+</section>
+          </div>
+        </div>
+        <div class='collapsible' id='Image3DAlt.getTransfoVolumeCorners'>
+          <a href='#Image3DAlt.getTransfoVolumeCorners'>
+            <code>
+              getTransfoVolumeCorners<span class='gray'>(transformName)</span>
+            </code>
+            <div class='force-inline'>
+              <p>Get the corners of the volume in the given space coordinates</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2'>
+<section class='py2 clearfix'>
+  <h2 id='Image3DAlt.getTransfoVolumeCorners' class='mt0'>
+    getTransfoVolumeCorners<span class='gray'>(transformName)</span>
+  </h2>
+  <p>Get the corners of the volume in the given space coordinates</p>
+
+    <h4>Parameters</h4>
+    <ul class='suppress-p-margin'>
+        <li><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a></code> <strong>transformName</strong>
+          :
+          <div class='force-inline'>
+            <p>id of a registered transformation that goes from voxel space to arbitrary space (aka. &quot;v2*&quot;)</p>
+
+          </div>
+        </li>
+    </ul>
+      <h4>Returns</h4>
+      <code><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a></code></code>
+      :
+      <div class='force-inline'>
+        <p>array of 8 elements like {x:Number, y:Number, z:Number}</p>
 
       </div>
 </section>
@@ -3321,6 +3612,95 @@ is ignored.</p>
       :
       <div class='force-inline'>
         <p>the value at a given position.</p>
+
+      </div>
+</section>
+          </div>
+        </div>
+        <div class='collapsible' id='Image3DAlt.getVoxelBox'>
+          <a href='#Image3DAlt.getVoxelBox'>
+            <code>
+              getVoxelBox<span class='gray'></span>
+            </code>
+            <div class='force-inline'>
+              <p>Get the voxel box, min-max for each dimension. The max values are not included.</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2'>
+<section class='py2 clearfix'>
+  <h2 id='Image3DAlt.getVoxelBox' class='mt0'>
+    getVoxelBox<span class='gray'></span>
+  </h2>
+  <p>Get the voxel box, min-max for each dimension. The max values are not included.</p>
+
+      <h4>Returns</h4>
+      <code><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a></code></code>
+      :
+      <div class='force-inline'>
+        <p>Box of shape {min: {i:Number, j:Number, k:Number, t:Number}, max: {i:Number, j:Number, k:Number, t:Number} }</p>
+
+      </div>
+</section>
+          </div>
+        </div>
+        <div class='collapsible' id='Image3DAlt.getVoxelCoordinatesSwapMatrix'>
+          <a href='#Image3DAlt.getVoxelCoordinatesSwapMatrix'>
+            <code>
+              getVoxelCoordinatesSwapMatrix<span class='gray'>(hflip, output4x4)</span>
+            </code>
+            <div class='force-inline'>
+              <p>For external use (e.g. in a shader).
+Get the matrix for swapping voxel coordinates before converting to world coord
+or after having converted from world. To serve multiple purposes, this method
+can output a 3x3 matrix (default case) or it can output a 4x4 affine transform matrix
+with a weight of 1 at its bottom-right position.
+This matrix can be used in two cases:</p>
+<ul>
+<li>swap [i, j, k] voxel coordinates <strong>before</strong> multiplying them by a &quot;v2*&quot; matrix</li>
+<li>swap voxel coordinates <strong>after</strong> multiplying [x, y, z] world coorinates by a &quot;*2v&quot; matrix</li>
+</ul>
+
+            </div>
+          </a>
+          <div class='collapser border px2'>
+<section class='py2 clearfix'>
+  <h2 id='Image3DAlt.getVoxelCoordinatesSwapMatrix' class='mt0'>
+    getVoxelCoordinatesSwapMatrix<span class='gray'>(hflip, output4x4)</span>
+  </h2>
+  <p>For external use (e.g. in a shader).
+Get the matrix for swapping voxel coordinates before converting to world coord
+or after having converted from world. To serve multiple purposes, this method
+can output a 3x3 matrix (default case) or it can output a 4x4 affine transform matrix
+with a weight of 1 at its bottom-right position.
+This matrix can be used in two cases:</p>
+<ul>
+<li>swap [i, j, k] voxel coordinates <strong>before</strong> multiplying them by a &quot;v2*&quot; matrix</li>
+<li>swap voxel coordinates <strong>after</strong> multiplying [x, y, z] world coorinates by a &quot;*2v&quot; matrix</li>
+</ul>
+
+    <h4>Parameters</h4>
+    <ul class='suppress-p-margin'>
+        <li><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean">Boolean</a></code> <strong>hflip</strong>
+          :
+          <div class='force-inline'>
+            <p>if true, horizontally flip the swap matrix</p>
+
+          </div>
+        </li>
+        <li><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean">Boolean</a></code> <strong>output4x4</strong>
+          :
+          <div class='force-inline'>
+            <p>optional, output a 4x4 if true, or a 3x3 if false (default: false)</p>
+
+          </div>
+        </li>
+    </ul>
+      <h4>Returns</h4>
+      <code><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a></code></code>
+      :
+      <div class='force-inline'>
+        <p>the 3x3 matrix in a 1D Array[9] arranged as column-major</p>
 
       </div>
 </section>
@@ -3417,6 +3797,43 @@ This does not perform interpolation.</p>
       :
       <div class='force-inline'>
         <p>value at this position</p>
+
+      </div>
+</section>
+          </div>
+        </div>
+        <div class='collapsible' id='Image3DAlt.hasTransform'>
+          <a href='#Image3DAlt.hasTransform'>
+            <code>
+              hasTransform<span class='gray'>(transformName)</span>
+            </code>
+            <div class='force-inline'>
+              <p>Does this volume has the given transform registered?</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2'>
+<section class='py2 clearfix'>
+  <h2 id='Image3DAlt.hasTransform' class='mt0'>
+    hasTransform<span class='gray'>(transformName)</span>
+  </h2>
+  <p>Does this volume has the given transform registered?</p>
+
+    <h4>Parameters</h4>
+    <ul class='suppress-p-margin'>
+        <li><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a></code> <strong>transformName</strong>
+          :
+          <div class='force-inline'>
+            <p>the name of the transformation matrix to check</p>
+
+          </div>
+        </li>
+    </ul>
+      <h4>Returns</h4>
+      <code><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean">Boolean</a></code></code>
+      :
+      <div class='force-inline'>
+        <p>true if has, false if hasnt</p>
 
       </div>
 </section>
@@ -5764,42 +6181,6 @@ Perform a XMLHttpRequest with the given url and adds it to the output</p>
         </div>
 </section>
 </div><div class='py1'><section class='py2 clearfix'>
-  <h2 id='SpectralScaleImageFilter' class='mt0'>
-    SpectralScaleImageFilter<span class='gray'></span>
-  </h2>
-  <p>Multiply an image by the other, like a scaling function.
-The image requires two inputs named &quot;0&quot; and &quot;1&quot;.
-Simply use <code>addInput( myImg1, &quot;0&quot; )</code>
-and <code>addInput( myImg2, &quot;1&quot; )</code>. The input &quot;0&quot; can have 1 or more bands while
-the input &quot;1&quot; can have only one band since the same scale is apply to each band.</p>
-<p><strong>Usage</strong></p>
-<ul>
-<li><a href="../examples/forEachPixelGadient.html">examples/forEachPixelGadient.html</a></li>
-</ul>
-
-      <h4>Instance members</h4>
-        <div class='collapsible' id='SpectralScaleImageFilter._run'>
-          <a href='#SpectralScaleImageFilter._run'>
-            <code>
-              _run<span class='gray'></span>
-            </code>
-            <div class='force-inline'>
-              <p>Run the filter</p>
-
-            </div>
-          </a>
-          <div class='collapser border px2'>
-<section class='py2 clearfix'>
-  <h2 id='SpectralScaleImageFilter._run' class='mt0'>
-    _run<span class='gray'></span>
-  </h2>
-  <p>Run the filter</p>
-
-</section>
-          </div>
-        </div>
-</section>
-</div><div class='py1'><section class='py2 clearfix'>
   <h2 id='FileImageReader' class='mt0'>
     FileImageReader<span class='gray'></span>
   </h2>
@@ -5856,6 +6237,42 @@ file2ImgFilter.update();</pre>
     hasValidInput<span class='gray'></span>
   </h2>
   <p>Overload the default method because HTML5 File is not a Pixpipe type</p>
+
+</section>
+          </div>
+        </div>
+</section>
+</div><div class='py1'><section class='py2 clearfix'>
+  <h2 id='SpectralScaleImageFilter' class='mt0'>
+    SpectralScaleImageFilter<span class='gray'></span>
+  </h2>
+  <p>Multiply an image by the other, like a scaling function.
+The image requires two inputs named &quot;0&quot; and &quot;1&quot;.
+Simply use <code>addInput( myImg1, &quot;0&quot; )</code>
+and <code>addInput( myImg2, &quot;1&quot; )</code>. The input &quot;0&quot; can have 1 or more bands while
+the input &quot;1&quot; can have only one band since the same scale is apply to each band.</p>
+<p><strong>Usage</strong></p>
+<ul>
+<li><a href="../examples/forEachPixelGadient.html">examples/forEachPixelGadient.html</a></li>
+</ul>
+
+      <h4>Instance members</h4>
+        <div class='collapsible' id='SpectralScaleImageFilter._run'>
+          <a href='#SpectralScaleImageFilter._run'>
+            <code>
+              _run<span class='gray'></span>
+            </code>
+            <div class='force-inline'>
+              <p>Run the filter</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2'>
+<section class='py2 clearfix'>
+  <h2 id='SpectralScaleImageFilter._run' class='mt0'>
+    _run<span class='gray'></span>
+  </h2>
+  <p>Run the filter</p>
 
 </section>
           </div>
@@ -11664,6 +12081,530 @@ created ( because the filter ForEachPixelImageFilter creates an output with same
 
 </section>
 </div><div class='py1'><section class='py2 clearfix'>
+  <h2 id='MatrixTricks' class='mt0'>
+    MatrixTricks<span class='gray'>(matrix, colIndex, rowIndex, value)</span>
+  </h2>
+  <p>MatrixTricks contains only static functions that add features to glMatrix.
+Like in glMatrix, all the matrices arrays are expected to be column major.</p>
+
+    <h4>Parameters</h4>
+    <ul class='suppress-p-margin'>
+        <li> <strong>matrix</strong>
+          :
+          <div class='force-inline'>
+            
+          </div>
+        </li>
+        <li> <strong>colIndex</strong>
+          :
+          <div class='force-inline'>
+            
+          </div>
+        </li>
+        <li> <strong>rowIndex</strong>
+          :
+          <div class='force-inline'>
+            
+          </div>
+        </li>
+        <li> <strong>value</strong>
+          :
+          <div class='force-inline'>
+            
+          </div>
+        </li>
+    </ul>
+      <h4>Static members</h4>
+        <div class='collapsible' id='MatrixTricks.getExpandedMatrix3x3To4x4'>
+          <a href='#MatrixTricks.getExpandedMatrix3x3To4x4'>
+            <code>
+              getExpandedMatrix3x3To4x4<span class='gray'>(matrix, horizontalStick, verticalStick)</span>
+            </code>
+            <div class='force-inline'>
+              <p>Expand a 3x3 matrix into a 4x4 matrix. Does not alter the input.</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2 m2'>
+<section class='py2 clearfix'>
+  <h2 id='MatrixTricks.getExpandedMatrix3x3To4x4' class='mt0'>
+    getExpandedMatrix3x3To4x4<span class='gray'>(matrix, horizontalStick, verticalStick)</span>
+  </h2>
+  <p>Expand a 3x3 matrix into a 4x4 matrix. Does not alter the input.</p>
+
+    <h4>Parameters</h4>
+    <ul class='suppress-p-margin'>
+        <li><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a></code> <strong>matrix</strong>
+          :
+          <div class='force-inline'>
+            <p>3x3 matrix in a 1D Array[9] arranged as column-major</p>
+
+          </div>
+        </li>
+        <li><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a></code> <strong>horizontalStick</strong>
+          :
+          <div class='force-inline'>
+            <p>&quot;LEFT&quot; to stick the 3x3 matrix at the left of the 4x4, &quot;RIGHT&quot; to stick to the right</p>
+
+          </div>
+        </li>
+        <li><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a></code> <strong>verticalStick</strong>
+          :
+          <div class='force-inline'>
+            <p>&quot;TOP&quot; to stick the 3x3 matrix at the top of the 4x4, &quot;BOTTOM&quot; to stick to the bottom</p>
+
+          </div>
+        </li>
+    </ul>
+      <h4>Returns</h4>
+      <code><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a></code></code>
+      :
+      <div class='force-inline'>
+        <p>the flipped 4x4 matrix in a 1D Array[16] arranged as column-major</p>
+
+      </div>
+</section>
+          </div>
+        </div>
+        <div class='collapsible' id='MatrixTricks.getHorizontalFlipMatrix33'>
+          <a href='#MatrixTricks.getHorizontalFlipMatrix33'>
+            <code>
+              getHorizontalFlipMatrix33<span class='gray'>(matrix)</span>
+            </code>
+            <div class='force-inline'>
+              <p>Create a new 4x4 matrix that is the horizontal flip of the given one</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2 m2'>
+<section class='py2 clearfix'>
+  <h2 id='MatrixTricks.getHorizontalFlipMatrix33' class='mt0'>
+    getHorizontalFlipMatrix33<span class='gray'>(matrix)</span>
+  </h2>
+  <p>Create a new 4x4 matrix that is the horizontal flip of the given one</p>
+
+    <h4>Parameters</h4>
+    <ul class='suppress-p-margin'>
+        <li><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a></code> <strong>matrix</strong>
+          :
+          <div class='force-inline'>
+            <p>4x4 matrix in a 1D Array[16] arranged as column-major</p>
+
+          </div>
+        </li>
+    </ul>
+      <h4>Returns</h4>
+      <code><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a></code></code>
+      :
+      <div class='force-inline'>
+        <p>the flipped 4x4 matrix in a 1D Array[16] arranged as column-major</p>
+
+      </div>
+</section>
+          </div>
+        </div>
+        <div class='collapsible' id='MatrixTricks.getHorizontalFlipMatrix44'>
+          <a href='#MatrixTricks.getHorizontalFlipMatrix44'>
+            <code>
+              getHorizontalFlipMatrix44<span class='gray'>(matrix)</span>
+            </code>
+            <div class='force-inline'>
+              <p>Create a new 4x4 matrix that is the horizontal flip of the given one</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2 m2'>
+<section class='py2 clearfix'>
+  <h2 id='MatrixTricks.getHorizontalFlipMatrix44' class='mt0'>
+    getHorizontalFlipMatrix44<span class='gray'>(matrix)</span>
+  </h2>
+  <p>Create a new 4x4 matrix that is the horizontal flip of the given one</p>
+
+    <h4>Parameters</h4>
+    <ul class='suppress-p-margin'>
+        <li><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a></code> <strong>matrix</strong>
+          :
+          <div class='force-inline'>
+            <p>4x4 matrix in a 1D Array[16] arranged as column-major</p>
+
+          </div>
+        </li>
+    </ul>
+      <h4>Returns</h4>
+      <code><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a></code></code>
+      :
+      <div class='force-inline'>
+        <p>the flipped 4x4 matrix in a 1D Array[16] arranged as column-major</p>
+
+      </div>
+</section>
+          </div>
+        </div>
+        <div class='collapsible' id='MatrixTricks.getHorizontalFlipSquareMatrix'>
+          <a href='#MatrixTricks.getHorizontalFlipSquareMatrix'>
+            <code>
+              getHorizontalFlipSquareMatrix<span class='gray'>(matrix, sideSize)</span>
+            </code>
+            <div class='force-inline'>
+              <p>Create a new 4x4 matrix that is the horizontal flip of the given one</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2 m2'>
+<section class='py2 clearfix'>
+  <h2 id='MatrixTricks.getHorizontalFlipSquareMatrix' class='mt0'>
+    getHorizontalFlipSquareMatrix<span class='gray'>(matrix, sideSize)</span>
+  </h2>
+  <p>Create a new 4x4 matrix that is the horizontal flip of the given one</p>
+
+    <h4>Parameters</h4>
+    <ul class='suppress-p-margin'>
+        <li><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a></code> <strong>matrix</strong>
+          :
+          <div class='force-inline'>
+            <p>nxn matrix in a 1D Array[nxn] arranged as column-major</p>
+
+          </div>
+        </li>
+        <li> <strong>sideSize</strong>
+          :
+          <div class='force-inline'>
+            
+          </div>
+        </li>
+    </ul>
+      <h4>Returns</h4>
+      <code><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a></code></code>
+      :
+      <div class='force-inline'>
+        <p>the flipped nxn matrix in a 1D Array[nxn] arranged as column-major</p>
+
+      </div>
+</section>
+          </div>
+        </div>
+        <div class='collapsible' id='MatrixTricks.getValueMatrix33'>
+          <a href='#MatrixTricks.getValueMatrix33'>
+            <code>
+              getValueMatrix33<span class='gray'>(matrix, colIndex, rowIndex)</span>
+            </code>
+            <div class='force-inline'>
+              <p>Get a value in the matrix, at a given row/col position.</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2 m2'>
+<section class='py2 clearfix'>
+  <h2 id='MatrixTricks.getValueMatrix33' class='mt0'>
+    getValueMatrix33<span class='gray'>(matrix, colIndex, rowIndex)</span>
+  </h2>
+  <p>Get a value in the matrix, at a given row/col position.</p>
+
+    <h4>Parameters</h4>
+    <ul class='suppress-p-margin'>
+        <li><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a></code> <strong>matrix</strong>
+          :
+          <div class='force-inline'>
+            <p>3x3 matrix in a 1D Array[9] arranged as column-major</p>
+
+          </div>
+        </li>
+        <li><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">Number</a></code> <strong>colIndex</strong>
+          :
+          <div class='force-inline'>
+            <p>position in column (x)</p>
+
+          </div>
+        </li>
+        <li><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">Number</a></code> <strong>rowIndex</strong>
+          :
+          <div class='force-inline'>
+            <p>position in row (y)</p>
+
+          </div>
+        </li>
+    </ul>
+      <h4>Returns</h4>
+      <code><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">Number</a></code></code>
+      :
+      <div class='force-inline'>
+        <p>value in the matrix</p>
+
+      </div>
+</section>
+          </div>
+        </div>
+        <div class='collapsible' id='MatrixTricks.getValueMatrix44'>
+          <a href='#MatrixTricks.getValueMatrix44'>
+            <code>
+              getValueMatrix44<span class='gray'>(matrix, colIndex, rowIndex)</span>
+            </code>
+            <div class='force-inline'>
+              <p>Get a value in the matrix, at a given row/col position.</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2 m2'>
+<section class='py2 clearfix'>
+  <h2 id='MatrixTricks.getValueMatrix44' class='mt0'>
+    getValueMatrix44<span class='gray'>(matrix, colIndex, rowIndex)</span>
+  </h2>
+  <p>Get a value in the matrix, at a given row/col position.</p>
+
+    <h4>Parameters</h4>
+    <ul class='suppress-p-margin'>
+        <li><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a></code> <strong>matrix</strong>
+          :
+          <div class='force-inline'>
+            <p>4x4 matrix in a 1D Array[16] arranged as column-major</p>
+
+          </div>
+        </li>
+        <li><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">Number</a></code> <strong>colIndex</strong>
+          :
+          <div class='force-inline'>
+            <p>position in column (x)</p>
+
+          </div>
+        </li>
+        <li><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">Number</a></code> <strong>rowIndex</strong>
+          :
+          <div class='force-inline'>
+            <p>position in row (y)</p>
+
+          </div>
+        </li>
+    </ul>
+      <h4>Returns</h4>
+      <code><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">Number</a></code></code>
+      :
+      <div class='force-inline'>
+        <p>value in the matrix</p>
+
+      </div>
+</section>
+          </div>
+        </div>
+        <div class='collapsible' id='MatrixTricks.getValueSquareMatrix'>
+          <a href='#MatrixTricks.getValueSquareMatrix'>
+            <code>
+              getValueSquareMatrix<span class='gray'>(matrix, sideSize, colIndex, rowIndex)</span>
+            </code>
+            <div class='force-inline'>
+              <p>Get a value in the matrix, at a given row/col position.</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2 m2'>
+<section class='py2 clearfix'>
+  <h2 id='MatrixTricks.getValueSquareMatrix' class='mt0'>
+    getValueSquareMatrix<span class='gray'>(matrix, sideSize, colIndex, rowIndex)</span>
+  </h2>
+  <p>Get a value in the matrix, at a given row/col position.</p>
+
+    <h4>Parameters</h4>
+    <ul class='suppress-p-margin'>
+        <li><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a></code> <strong>matrix</strong>
+          :
+          <div class='force-inline'>
+            <p>nxn matrix in a 1D Array[nxn] arranged as column-major</p>
+
+          </div>
+        </li>
+        <li><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">Number</a></code> <strong>sideSize</strong>
+          :
+          <div class='force-inline'>
+            <p>size of a side, 4 for a 4x4 or 3 for a 3x3 matrix</p>
+
+          </div>
+        </li>
+        <li><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">Number</a></code> <strong>colIndex</strong>
+          :
+          <div class='force-inline'>
+            <p>position in column (x)</p>
+
+          </div>
+        </li>
+        <li><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">Number</a></code> <strong>rowIndex</strong>
+          :
+          <div class='force-inline'>
+            <p>position in row (y)</p>
+
+          </div>
+        </li>
+    </ul>
+      <h4>Returns</h4>
+      <code><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">Number</a></code></code>
+      :
+      <div class='force-inline'>
+        <p>value in the matrix</p>
+
+      </div>
+</section>
+          </div>
+        </div>
+        <div class='collapsible' id='MatrixTricks.setValueMatrix33'>
+          <a href='#MatrixTricks.setValueMatrix33'>
+            <code>
+              setValueMatrix33<span class='gray'>(matrix, colIndex, rowIndex, value)</span>
+            </code>
+            <div class='force-inline'>
+              <p>Set a value in the matrix, at a given row/col position</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2 m2'>
+<section class='py2 clearfix'>
+  <h2 id='MatrixTricks.setValueMatrix33' class='mt0'>
+    setValueMatrix33<span class='gray'>(matrix, colIndex, rowIndex, value)</span>
+  </h2>
+  <p>Set a value in the matrix, at a given row/col position</p>
+
+    <h4>Parameters</h4>
+    <ul class='suppress-p-margin'>
+        <li><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a></code> <strong>matrix</strong>
+          :
+          <div class='force-inline'>
+            <p>3x3 matrix in a 1D Array[9] arranged as column-major</p>
+
+          </div>
+        </li>
+        <li><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">Number</a></code> <strong>colIndex</strong>
+          :
+          <div class='force-inline'>
+            <p>position in column (x)</p>
+
+          </div>
+        </li>
+        <li><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">Number</a></code> <strong>rowIndex</strong>
+          :
+          <div class='force-inline'>
+            <p>position in row (y)</p>
+
+          </div>
+        </li>
+        <li><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">Number</a></code> <strong>value</strong>
+          :
+          <div class='force-inline'>
+            <p>value to be set in the matrix</p>
+
+          </div>
+        </li>
+    </ul>
+</section>
+          </div>
+        </div>
+        <div class='collapsible' id='MatrixTricks.setValueMatrix44'>
+          <a href='#MatrixTricks.setValueMatrix44'>
+            <code>
+              setValueMatrix44<span class='gray'>(matrix, colIndex, rowIndex, value)</span>
+            </code>
+            <div class='force-inline'>
+              <p>Set a value in the matrix, at a given row/col position</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2 m2'>
+<section class='py2 clearfix'>
+  <h2 id='MatrixTricks.setValueMatrix44' class='mt0'>
+    setValueMatrix44<span class='gray'>(matrix, colIndex, rowIndex, value)</span>
+  </h2>
+  <p>Set a value in the matrix, at a given row/col position</p>
+
+    <h4>Parameters</h4>
+    <ul class='suppress-p-margin'>
+        <li><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a></code> <strong>matrix</strong>
+          :
+          <div class='force-inline'>
+            <p>4x4 matrix in a 1D Array[16] arranged as column-major</p>
+
+          </div>
+        </li>
+        <li><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">Number</a></code> <strong>colIndex</strong>
+          :
+          <div class='force-inline'>
+            <p>position in column (x)</p>
+
+          </div>
+        </li>
+        <li><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">Number</a></code> <strong>rowIndex</strong>
+          :
+          <div class='force-inline'>
+            <p>position in row (y)</p>
+
+          </div>
+        </li>
+        <li><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">Number</a></code> <strong>value</strong>
+          :
+          <div class='force-inline'>
+            <p>value to be set in the matrix</p>
+
+          </div>
+        </li>
+    </ul>
+</section>
+          </div>
+        </div>
+        <div class='collapsible' id='MatrixTricks.setValueSquareMatrix'>
+          <a href='#MatrixTricks.setValueSquareMatrix'>
+            <code>
+              setValueSquareMatrix<span class='gray'>(matrix, sideSize, colIndex, rowIndex, value)</span>
+            </code>
+            <div class='force-inline'>
+              <p>Set a value in the square matrix, at a given row/col position</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2 m2'>
+<section class='py2 clearfix'>
+  <h2 id='MatrixTricks.setValueSquareMatrix' class='mt0'>
+    setValueSquareMatrix<span class='gray'>(matrix, sideSize, colIndex, rowIndex, value)</span>
+  </h2>
+  <p>Set a value in the square matrix, at a given row/col position</p>
+
+    <h4>Parameters</h4>
+    <ul class='suppress-p-margin'>
+        <li><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a></code> <strong>matrix</strong>
+          :
+          <div class='force-inline'>
+            <p>nxn matrix in a 1D Array[nxn] arranged as column-major</p>
+
+          </div>
+        </li>
+        <li><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">Number</a></code> <strong>sideSize</strong>
+          :
+          <div class='force-inline'>
+            <p>size of a side, 4 for a 4x4 or 3 for a 3x3 matrix</p>
+
+          </div>
+        </li>
+        <li><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">Number</a></code> <strong>colIndex</strong>
+          :
+          <div class='force-inline'>
+            <p>position in column (x)</p>
+
+          </div>
+        </li>
+        <li><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">Number</a></code> <strong>rowIndex</strong>
+          :
+          <div class='force-inline'>
+            <p>position in row (y)</p>
+
+          </div>
+        </li>
+        <li><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">Number</a></code> <strong>value</strong>
+          :
+          <div class='force-inline'>
+            <p>value to be set in the matrix</p>
+
+          </div>
+        </li>
+    </ul>
+</section>
+          </div>
+        </div>
+</section>
+</div><div class='py1'><section class='py2 clearfix'>
   <h2 id='GradientImageFilter' class='mt0'>
     GradientImageFilter<span class='gray'></span>
   </h2>
@@ -11945,17 +12886,7 @@ but this is compatible with Node and not rely on HTML5 Canvas.</p>
   <h2 id='PixBinEncoder' class='mt0'>
     PixBinEncoder<span class='gray'></span>
   </h2>
-  <p>A PixBinEncoder instance takes an Image2D or Image3D as input with <code>addInput(...)</code>
-and encode it so that it can be saved as a *.pixp file.
-An output filename can be specified using <code>.setMetadata(&quot;filename&quot;, &quot;yourName.pixp&quot;);</code>,
-by default, the name is &quot;untitled.pixp&quot;.
-When <code>update()</code> is called, a gzip blog is prepared as output[0] and can then be downloaded
-when calling the method <code>.download()</code>. The gzip blob could also be sent over AJAX
-using a third party library.</p>
-<p><strong>Usage</strong></p>
-<ul>
-<li><a href="../examples/savePixpFile.html">examples/savePixpFile.html</a></li>
-</ul>
+  <p>Download the generated file</p>
 
       <h4>Static members</h4>
         <div class='collapsible' id='PixBinEncoder.MAGIC_NUMBER'>
@@ -11985,7 +12916,17 @@ the first sequence of bytes for a pixbin file is this ASCII string</p>
   <h2 id='PixBinEncoder' class='mt0'>
     PixBinEncoder<span class='gray'></span>
   </h2>
-  <p>Download the generated file</p>
+  <p>A PixBinEncoder instance takes an Image2D or Image3D as input with <code>addInput(...)</code>
+and encode it so that it can be saved as a *.pixp file.
+An output filename can be specified using <code>.setMetadata(&quot;filename&quot;, &quot;yourName.pixp&quot;);</code>,
+by default, the name is &quot;untitled.pixp&quot;.
+When <code>update()</code> is called, a gzip blog is prepared as output[0] and can then be downloaded
+when calling the method <code>.download()</code>. The gzip blob could also be sent over AJAX
+using a third party library.</p>
+<p><strong>Usage</strong></p>
+<ul>
+<li><a href="../examples/savePixpFile.html">examples/savePixpFile.html</a></li>
+</ul>
 
       <h4>Static members</h4>
         <div class='collapsible' id='PixBinEncoder.MAGIC_NUMBER'>

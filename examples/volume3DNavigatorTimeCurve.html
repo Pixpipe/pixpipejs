@@ -21,7 +21,7 @@
     line-height: 18px;
     overflow: hidden;
   }
-  
+
   key {
     color: #333;
     background: #e8e8e8;
@@ -42,7 +42,7 @@
     padding: 10px;
     font-family: inherit;
   }
-  
+
   #footer {
     position: absolute;
     bottom: 0;
@@ -62,7 +62,7 @@
   #fileInput{
     font-family: inherit;
   }
-  
+
   .logoCorner{
     position: absolute;
     bottom: 0;
@@ -73,7 +73,7 @@
   .logoCorner:hover{
     filter: invert(100%);
   }
-  
+
   #curveContainer {
     position: absolute;
     bottom: 0;
@@ -81,7 +81,7 @@
     width: 320px;
     height: 320px;
   }
-  
+
   #curveContainer canvas {
     margin: 10px;
   }
@@ -99,14 +99,14 @@
   	</div>
     <span id="fileInfo"></span>
   </div>
-  
+
   <div id="curveContainer" style="display: none"></div>
-    
-  
+
+
   <a href="https://github.com/Pixpipe/pixpipejs/blob/master/examples/volume3DNavigator.html" target="_blank">
     <img class="logoCorner" src="images/githubLogo.png"/>
   </a>
-  
+
   <div id="footer">
     <p>Press key <key>T</key> while grabbing a plane to translate it along its normal vector</p>
     <p>Press key <key>R</key> while grabbing a plane to spin it around its center</p>
@@ -176,7 +176,7 @@
 
     // the GUI widget on the top right
     function initGui(){
-      
+
       // time series
       if(spaceLength.t > 1){
         guiParam.tPos = 0;
@@ -186,52 +186,25 @@
           shaderMat.uniforms.timeIndex.value = val;
         })
       }
-      
-      guiParam.xPos = Math.floor(spaceLength.x / 2);
 
+      guiParam.xPos = Math.floor(spaceLength.x / 2);
 
       guiParam.yPos = Math.floor(spaceLength.y / 2);
 
-
       guiParam.zPos = Math.floor(spaceLength.z / 2);
-
-
-      guiParam.xRot = 0;
-      gui.add(guiParam, 'xRot', -Math.PI/2, Math.PI/2)
-      .step(Math.PI/2 / 500)
-      .onChange(function(val){
-        screenContainer.rotation.x = val;
-      })
-      .listen();
-
-      guiParam.yRot = 0;
-      gui.add(guiParam, 'yRot', -Math.PI/2, Math.PI/2)
-      .step(Math.PI/2 / 500)
-      .onChange(function(val){
-        screenContainer.rotation.y = val;
-      })
-      .listen();
-
-      guiParam.zRot = 0;
-      gui.add(guiParam, 'zRot', -Math.PI/2, Math.PI/2)
-      .step(Math.PI/2 / 500)
-      .onChange(function(val){
-        screenContainer.rotation.z = val;
-      })
-      .listen();
 
       guiParam.showPlane1 = true;
       gui.add(guiParam, 'showPlane1').name('Show plane A')
       .onChange(function(val){
         screenContainer.children[0].visible = val;
       })
-      
+
       guiParam.showPlane2 = true;
       gui.add(guiParam, 'showPlane2').name('Show plane S')
       .onChange(function(val){
         screenContainer.children[1].visible = val;
       })
-      
+
       guiParam.showPlane3 = true;
       gui.add(guiParam, 'showPlane3').name('Show plane C')
       .onChange(function(val){
@@ -245,9 +218,6 @@
       gui.add(guiParam, 'centerPosition').name('Center position');
 
       guiParam.resetRotation = function(){
-        guiParam.xRot = 0;
-        guiParam.yRot = 0;
-        guiParam.zRot = 0;
         screenContainer.rotation.x = 0;
         screenContainer.rotation.y = 0;
         screenContainer.rotation.z = 0;
@@ -260,14 +230,14 @@
       .onChange(function(val){
         shaderMat.uniforms.forcedAlpha.value = val;
       })
-      
+
 
       guiParam.triliInterpol = true;
       gui.add(guiParam, 'triliInterpol').name('Interpolate')
       .onChange(function(val){
         shaderMat.uniforms.trilinearInterpol.value = val;
       })
-      
+
       guiParam.enableCurve = true;
       gui.add(guiParam, 'enableCurve').name('Curve contrast')
       .onChange(function(val){
@@ -349,7 +319,7 @@
             type: "i",
             value: spaceLength.t
           },
-          timeIndex: { // 
+          timeIndex: { //
             type: "i",
             value: 0
           },
@@ -404,16 +374,16 @@
 
       screenReady = true;
       initCurve();
-      
+
       planeShifter = new PlaneShifter( screenContainer , camera, controls );
-      planeShifter.setBoundingBox( new THREE.Box3( 
+      planeShifter.setBoundingBox( new THREE.Box3(
         new THREE.Vector3(-spaceLength.x/2, -spaceLength.y/2, -spaceLength.z/2),  // min
         new THREE.Vector3(spaceLength.x/2, spaceLength.y/2, spaceLength.z/2)      // max
       ))
-      
+
     }
-    
-    
+
+
 
 
     // to refresh the aspect ratio when the windows is resized
@@ -436,7 +406,7 @@
       genericDecoder.addInput( volBuff );
       genericDecoder.update();
 
-      // if nothing was decoded, we exit 
+      // if nothing was decoded, we exit
       if(!genericDecoder.getNumberOfOutputs()){
         document.getElementById('fileInfo').innerHTML = "Error. This file can not be decoded :(";
         return;
@@ -450,7 +420,7 @@
         var mosaicFilter = new pixpipe.Image3DToMosaicFilter();
         //mosaicFilter.setMetadata("maxWidth", 16000);
         //mosaicFilter.setMetadata("maxHeight", 16000);
-        
+
         // genericDecoder ouputs a pixpipe.MniVolume, which iherit pixpipe.Image3D
         // making it compatible with pixpipe.Image3DToMosaicFilter
         mosaicFilter.addInput( mniVolume );
@@ -458,7 +428,7 @@
         // which axis do we want the picture of?
         var space = "zspace";
         mosaicFilter.setMetadata( "axis", space);
-        
+
         // if time series, take it all
         mosaicFilter.setMetadata("time", -1);
 
@@ -533,15 +503,15 @@
       // Perform the reading + conversion ibto ArrayBuffer
       file2Buff.update();
 		});
-    
-    
+
+
     // update the shader based on the curve
     function updateCurveTexture( curveObj ){
       if(! screenReady )
         return;
-        
+
       var interpolatedY = curve.getYSeriesInterpolated();
-      
+
       var curveTexture = new THREE.DataTexture(
         interpolatedY,
         interpolatedY.length,
@@ -553,29 +523,29 @@
       curveTexture.needsUpdate = true;
       shaderMat.uniforms.curveTexture.value = curveTexture;
     }
-    
-    
+
+
     // init the curve widget
     function initCurve(){
       curve = new pixpipeUI.CanvasSpliner("curveContainer", 300, 300, "monotonic");
       curve.setBackgroundColor("rgba(255, 255, 255, 0.75)");
       curve.setTextColor("rgba(0, 0, 0, 0.5)");
-      
+
       curve.add({x:0, y:0, /*xLocked: true,*/ safe: true});
       curve.add({x:1, y:1, /*xLocked: true,*/ safe: true});
-      
+
       curve.on("movePoint", function(){
         curveMoveCounter ++;
         if(curveMoveCounter % curveMoveCounterFrequency == 0 )
           updateCurveTexture();
       });
-      
+
       curve.on("releasePoint", updateCurveTexture);
       curve.on("pointAdded", updateCurveTexture);
       curve.on("pointRemoved", updateCurveTexture);
-      
+
       updateCurveTexture();
-      
+
       document.getElementById("curveContainer").style.display = "inherit";
     }
 
