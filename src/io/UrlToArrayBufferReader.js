@@ -8,6 +8,7 @@
 
 import pako from 'pako'
 import md5 from 'js-md5'
+import { CodecUtils } from 'codecutils';
 import { Filter } from '../core/Filter.js';
 
 
@@ -23,6 +24,8 @@ import { Filter } from '../core/Filter.js';
 * Note that in case the file is *gziped*, the checksum is computed on the raw file,
 * not on the *un-gziped* buffer.
 *
+* It happens that a file is not binary but text, then, set the metadata "readAsText" to `true`.
+*
 * **Usage**
 * - [examples/urlFileToArrayBuffer.html](../examples/urlFileToArrayBuffer.html)
 */
@@ -37,6 +40,10 @@ class UrlToArrayBufferReader extends Filter {
     
     // md5 checksum by categories
     this.setMetadata("checksums", {});
+    
+    // By defaut, this reader outputs an ArrayBuffer, but it can output a string
+    // if it's reading a text file and this metadata is set to true
+    this.setMetadata("readAsText", false);
   }
 
 
@@ -62,17 +69,16 @@ class UrlToArrayBufferReader extends Filter {
   */
   _loadUrl( category, url ){
     var that = this;
+    var readAsText = this.getMetadata("readAsText");
 
     var xhr = new XMLHttpRequest();
     xhr.open("GET", url, true);
-    xhr.responseType = "arraybuffer";
-
-    xhr.onload = function(event) {
-      var arrayBuff = xhr.response;
-      
+    
+    var onLoadEndBinaryFile = function(event) {
+      var result = event.target.response;
       var basename = url.split(/[\\/]/).pop();
       var extension = basename.split('.').pop();
-      var checksum = md5( arrayBuff );
+      var checksum = md5( result );
       
       // few metadata for recognizing files (potentially)
       that._metadata.filenames[ category ] = basename;
@@ -81,16 +87,61 @@ class UrlToArrayBufferReader extends Filter {
       // trying to un-gzip it with Pako for non pixp files
       if( extension.localeCompare("pixp") ){
         try {
-          arrayBuff = pako.inflate(arrayBuff).buffer;
+          result = pako.inflate(result).buffer;
           console.log("File was un-gziped successfully");
         } catch (err) {
-          console.log("Pako: " + err + " (this content is not gziped)");
+          console.log("Pako: not a gziped file (" + err + ")");
         }
       }
       
-      that._output[ category ] = arrayBuff
+      // read the content as text (unicode, ASCII compatible)
+      if( readAsText){
+        var strResult = CodecUtils.arrayBufferToUnicode(result);
+        if( strResult && CodecUtils.isValidString(strResult) ){
+          result = strResult;
+        }else{
+          console.warn("The content of this file is not a valid text. It could be read as a binary file if the metadata 'readAsText' is set to false.");
+          return;
+        }
+      }
       
+      that._output[ category ] = result
+      that._outputCounter ++;
 
+      if( that._outputCounter == that.getNumberOfInputs()){
+        that.triggerEvent("ready");
+      }
+    };
+    
+    
+    var onLoadEndTextFile = function(event) {
+      console.log( "ooooooooo" );
+      var result = event.target.response;;
+      
+      var basename = url.split(/[\\/]/).pop();
+      var extension = basename.split('.').pop();
+      var checksum = md5( result );
+      
+      // few metadata for recognizing files (potentially)
+      that._metadata.filenames[ category ] = basename;
+      that._metadata.checksums[ category ] = checksum;
+
+      // try to read as text, but it's not text.
+      // Maybe it's a gz-compressed text file, so we have to read this file as a
+      // binary and see if once compressed it has a valid text content
+      if(!CodecUtils.isValidString(result)){
+        event.target.abort();
+        // xhrBackup is used only when reading as a text is not possible (binary file)
+        // it is then used in case of failure of reading text in the first place
+        var xhrBackup = new XMLHttpRequest();
+        xhrBackup.open("GET", url, true);
+        xhrBackup.responseType = "arraybuffer";
+        xhrBackup.onload = onLoadEndBinaryFile;
+        xhrBackup.send();
+        return;
+      }
+      
+      that._output[ category ] = result
       that._outputCounter ++;
 
       if( that._outputCounter == that.getNumberOfInputs()){
@@ -100,6 +151,15 @@ class UrlToArrayBufferReader extends Filter {
 
     xhr.error = function(){
       console.log("here go the error");
+    }
+
+    if( readAsText ){
+      xhr.responseType = "text";
+      xhr.onload = onLoadEndTextFile;
+      //xhr.onload = blaa;
+    }else{
+      xhr.responseType = "arraybuffer";
+      xhr.onload = onLoadEndBinaryFile;
     }
 
     xhr.send();

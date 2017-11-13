@@ -55,7 +55,7 @@
       var buff = this.getOutput();
 
       var pixBinDecoder = new pixpipe.PixBinDecoder();
-      pixBinDecoder.setMetadata("verifyChecksum", document.getElementById("enableCompression").checked);
+      pixBinDecoder.setMetadata("verifyChecksum", document.getElementById("enableChecksumValidation").checked);
       pixBinDecoder.addInput( buff );
       pixBinDecoder.update();
 
