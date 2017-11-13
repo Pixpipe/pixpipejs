@@ -268,6 +268,17 @@ class PixpipeObject {
     }
   }
   
+  
+  /**
+  * Get a clone of the _metadata object. Deep copy, no reference in common.
+  */
+  getMetadataClone(){
+    if( this.metadataIntegrityCheck() ){
+      return JSON.parse( JSON.stringify( this._metadata ) );
+    }
+    return null;
+  }
+  
 }
 
 export { PixpipeObject }

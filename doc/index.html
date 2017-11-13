@@ -378,6 +378,11 @@
                   getMetadata
                 </a>
                 <a
+                  href='#PixpipeObject.getMetadataClone'
+                  class='regular block'>
+                  getMetadataClone
+                </a>
+                <a
                   href='#PixpipeObject.getMetadataCopy'
                   class='regular block'>
                   getMetadataCopy
@@ -1398,6 +1403,46 @@
                   tell
                 </a>
               <a
+                href='#PixpipeContainerMultiData'
+                class='block bold h3 bg-pink-alpha'>
+                PixpipeContainerMultiData
+              </a>
+                <a
+                  href='#PixpipeContainerMultiData.checkIntegrity'
+                  class='regular block'>
+                  checkIntegrity
+                </a>
+                <a
+                  href='#PixpipeContainerMultiData.clone'
+                  class='regular block'>
+                  clone
+                </a>
+                <a
+                  href='#PixpipeContainerMultiData.doesDataExist'
+                  class='regular block'>
+                  doesDataExist
+                </a>
+                <a
+                  href='#PixpipeContainerMultiData.getData'
+                  class='regular block'>
+                  getData
+                </a>
+                <a
+                  href='#PixpipeContainerMultiData.getDataCopy'
+                  class='regular block'>
+                  getDataCopy
+                </a>
+                <a
+                  href='#PixpipeContainerMultiData.getDataIndex'
+                  class='regular block'>
+                  getDataIndex
+                </a>
+                <a
+                  href='#PixpipeContainerMultiData.setRawData'
+                  class='regular block'>
+                  setRawData
+                </a>
+              <a
                 href='#Image2D'
                 class='block bold h3 bg-pink-alpha'>
                 Image2D
@@ -1658,6 +1703,101 @@
                   setValueSquareMatrix
                 </a>
               <a
+                href='#Mesh3D'
+                class='block bold h3 bg-pink-alpha'>
+                Mesh3D
+              </a>
+                <a
+                  href='#Mesh3D.TYPE'
+                  class='regular block'>
+                  TYPE
+                </a>
+                <a
+                  href='#Mesh3D.getNumberOfComponentsPerColor'
+                  class='regular block'>
+                  getNumberOfComponentsPerColor
+                </a>
+                <a
+                  href='#Mesh3D.getNumberOfVertices'
+                  class='regular block'>
+                  getNumberOfVertices
+                </a>
+                <a
+                  href='#Mesh3D.getNumberOfVerticesPerShapes'
+                  class='regular block'>
+                  getNumberOfVerticesPerShapes
+                </a>
+                <a
+                  href='#Mesh3D.getPolygonFacesNormals'
+                  class='regular block'>
+                  getPolygonFacesNormals
+                </a>
+                <a
+                  href='#Mesh3D.getPolygonFacesNormalsCopy'
+                  class='regular block'>
+                  getPolygonFacesNormalsCopy
+                </a>
+                <a
+                  href='#Mesh3D.getPolygonFacesOrder'
+                  class='regular block'>
+                  getPolygonFacesOrder
+                </a>
+                <a
+                  href='#Mesh3D.getPolygonFacesOrderCopy'
+                  class='regular block'>
+                  getPolygonFacesOrderCopy
+                </a>
+                <a
+                  href='#Mesh3D.getVertexColors'
+                  class='regular block'>
+                  getVertexColors
+                </a>
+                <a
+                  href='#Mesh3D.getVertexColorsCopy'
+                  class='regular block'>
+                  getVertexColorsCopy
+                </a>
+                <a
+                  href='#Mesh3D.getVertexPositionCopy'
+                  class='regular block'>
+                  getVertexPositionCopy
+                </a>
+                <a
+                  href='#Mesh3D.getVertexPositions'
+                  class='regular block'>
+                  getVertexPositions
+                </a>
+                <a
+                  href='#Mesh3D.setNumberOfComponentsPerColor'
+                  class='regular block'>
+                  setNumberOfComponentsPerColor
+                </a>
+                <a
+                  href='#Mesh3D.setNumberOfVerticesPerShapes'
+                  class='regular block'>
+                  setNumberOfVerticesPerShapes
+                </a>
+                <a
+                  href='#Mesh3D.setPolygonFacesNormals'
+                  class='regular block'>
+                  setPolygonFacesNormals
+                </a>
+                <a
+                  href='#Mesh3D.setPolygonFacesOrder'
+                  class='regular block'>
+                  setPolygonFacesOrder
+                </a>
+                <a
+                  href='#Mesh3D.setVertexColors'
+                  class='regular block'>
+                  setVertexColors
+                </a>
+                <a
+                  href='#Mesh3D.setVertexPositions'
+                  class='regular block'>
+                  setVertexPositions
+                </a>
+              <a
                 href='#GradientImageFilter'
                 class='block bold h3 bg-pink-alpha'>
                 GradientImageFilter
@@ -1761,6 +1901,11 @@
                 href='#MghDecoderAlt'
                 class='block bold h3 bg-pink-alpha'>
                 MghDecoderAlt
+              </a>
+              <a
+                href='#MniObjDecoder'
+                class='block bold h3 bg-pink-alpha'>
+                MniObjDecoder
               </a>
               <a
                 href='#MultiplyImageFilter'
@@ -3684,7 +3829,7 @@ This matrix can be used in two cases:</p>
         <li><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean">Boolean</a></code> <strong>hflip</strong>
           :
           <div class='force-inline'>
-            <p>if true, horizontally flip the swap matrix</p>
+            <p>if true, horizontally flip the swap matrix. We usualy need to horizontaly flip this matrix because otherwise the voxel coordinates will be given as kji instead of ijk.</p>
 
           </div>
         </li>
@@ -4325,6 +4470,26 @@ The metadata that exist only in <em>this</em> are kept.</p>
 </section>
           </div>
         </div>
+        <div class='collapsible' id='PixpipeObject.getMetadataClone'>
+          <a href='#PixpipeObject.getMetadataClone'>
+            <code>
+              getMetadataClone<span class='gray'></span>
+            </code>
+            <div class='force-inline'>
+              <p>Get a clone of the _metadata object. Deep copy, no reference in common.</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2'>
+<section class='py2 clearfix'>
+  <h2 id='PixpipeObject.getMetadataClone' class='mt0'>
+    getMetadataClone<span class='gray'></span>
+  </h2>
+  <p>Get a clone of the _metadata object. Deep copy, no reference in common.</p>
+
+</section>
+          </div>
+        </div>
         <div class='collapsible' id='PixpipeObject.getMetadataCopy'>
           <a href='#PixpipeObject.getMetadataCopy'>
             <code>
@@ -4854,6 +5019,7 @@ and also the <code>checksums</code> metadata using <code>.getMetadata()</code>. 
 give a unique <em>md5</em>, very convenient to compare if two files are actually the same.
 Note that in case the file is <em>gziped</em>, the checksum is computed on the raw file,
 not on the <em>un-gziped</em> buffer.</p>
+<p>It happens that a file is not binary but text, then, set the metadata &quot;readAsText&quot; to <code>true</code>.</p>
 <p><strong>Usage</strong></p>
 <ul>
 <li><a href="../examples/fileToArrayBuffer.html">examples/fileToArrayBuffer.html</a></li>
@@ -6136,6 +6302,7 @@ and also the <code>checksums</code> metadata using <code>.getMetadata()</code>. 
 give a unique <em>md5</em>, very convenient to compare if two files are actually the same.
 Note that in case the file is <em>gziped</em>, the checksum is computed on the raw file,
 not on the <em>un-gziped</em> buffer.</p>
+<p>It happens that a file is not binary but text, then, set the metadata &quot;readAsText&quot; to <code>true</code>.</p>
 <p><strong>Usage</strong></p>
 <ul>
 <li><a href="../examples/urlFileToArrayBuffer.html">examples/urlFileToArrayBuffer.html</a></li>
@@ -10916,6 +11083,272 @@ alignment in this.checkAlignment().</p>
         </div>
 </section>
 </div><div class='py1'><section class='py2 clearfix'>
+  <h2 id='PixpipeContainerMultiData' class='mt0'>
+    PixpipeContainerMultiData<span class='gray'></span>
+  </h2>
+  <p>PixpipeContainerMultiData is a generic container very close from PixpipeContainer
+(from which it inherits). The main diference is that an instance of PixpipeContainerMultiData
+can contain multiple dataset since the _data property is an Array. This is particularly
+convenient when storing large arrays of numbers that must be split in multiple collections
+such as meshes (a typed array for vertices positions, another typed array for grouping as
+triangle, another one for colors, etc.)
+The class PixpipeContainerMultiData should not be used as-is and should be iherited
+by a more specific datastructure.</p>
+
+      <h4>Instance members</h4>
+        <div class='collapsible' id='PixpipeContainerMultiData.checkIntegrity'>
+          <a href='#PixpipeContainerMultiData.checkIntegrity'>
+            <code>
+              checkIntegrity<span class='gray'></span>
+            </code>
+            <div class='force-inline'>
+              <p>Performs an integrity check of eixisting sub-dataset Vs mandatory sub-dataset</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2'>
+<section class='py2 clearfix'>
+  <h2 id='PixpipeContainerMultiData.checkIntegrity' class='mt0'>
+    checkIntegrity<span class='gray'></span>
+  </h2>
+  <p>Performs an integrity check of eixisting sub-dataset Vs mandatory sub-dataset</p>
+
+      <h4>Returns</h4>
+      <code><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean">Boolean</a></code></code>
+      :
+      <div class='force-inline'>
+        <p>true if integrity is ok, false if not</p>
+
+      </div>
+</section>
+          </div>
+        </div>
+        <div class='collapsible' id='PixpipeContainerMultiData.clone'>
+          <a href='#PixpipeContainerMultiData.clone'>
+            <code>
+              clone<span class='gray'></span>
+            </code>
+            <div class='force-inline'>
+              <p>Get a deep copy clone of this object. Works for classes that ihnerit from PixpipeContainerMultiData.
+Notice: the sub-datasets will possibly be ina different order, but with an index that tracks them properly.
+In other word, not the same order but not an issue.</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2'>
+<section class='py2 clearfix'>
+  <h2 id='PixpipeContainerMultiData.clone' class='mt0'>
+    clone<span class='gray'></span>
+  </h2>
+  <p>Get a deep copy clone of this object. Works for classes that ihnerit from PixpipeContainerMultiData.
+Notice: the sub-datasets will possibly be ina different order, but with an index that tracks them properly.
+In other word, not the same order but not an issue.</p>
+
+      <h4>Returns</h4>
+      <code><code><a href="#PixpipeContainerMultiData">PixpipeContainerMultiData</a></code></code>
+      :
+      <div class='force-inline'>
+        <p>a clone.</p>
+
+      </div>
+</section>
+          </div>
+        </div>
+        <div class='collapsible' id='PixpipeContainerMultiData.doesDataExist'>
+          <a href='#PixpipeContainerMultiData.doesDataExist'>
+            <code>
+              doesDataExist<span class='gray'>(name)</span>
+            </code>
+            <div class='force-inline'>
+              <p>Return wether or not a sub-dataset exists given its name</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2'>
+<section class='py2 clearfix'>
+  <h2 id='PixpipeContainerMultiData.doesDataExist' class='mt0'>
+    doesDataExist<span class='gray'>(name)</span>
+  </h2>
+  <p>Return wether or not a sub-dataset exists given its name</p>
+
+    <h4>Parameters</h4>
+    <ul class='suppress-p-margin'>
+        <li><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a></code> <strong>name</strong>
+          :
+          <div class='force-inline'>
+            <p>name of the sub-dataset</p>
+
+          </div>
+        </li>
+    </ul>
+      <h4>Returns</h4>
+      <code><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean">Boolean</a></code></code>
+      :
+      <div class='force-inline'>
+        <p>true if sub-data exists, false if not</p>
+
+      </div>
+</section>
+          </div>
+        </div>
+        <div class='collapsible' id='PixpipeContainerMultiData.getData'>
+          <a href='#PixpipeContainerMultiData.getData'>
+            <code>
+              getData<span class='gray'>(name)</span>
+            </code>
+            <div class='force-inline'>
+              <p>Get a sub-dataset given its name.<br>
+Notice: This gives a pointer, not a copy. Modifying the returns array will affect this object.</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2'>
+<section class='py2 clearfix'>
+  <h2 id='PixpipeContainerMultiData.getData' class='mt0'>
+    getData<span class='gray'>(name)</span>
+  </h2>
+  <p>Get a sub-dataset given its name.<br>
+Notice: This gives a pointer, not a copy. Modifying the returns array will affect this object.</p>
+
+    <h4>Parameters</h4>
+    <ul class='suppress-p-margin'>
+        <li><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a></code> <strong>name</strong>
+          :
+          <div class='force-inline'>
+            <p>name of the sub-dataset</p>
+
+          </div>
+        </li>
+    </ul>
+      <h4>Returns</h4>
+      <code><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/TypedArray">TypedArray</a></code></code>
+      :
+      <div class='force-inline'>
+        <p>a pointer to the typed array of the sub-dataset</p>
+
+      </div>
+</section>
+          </div>
+        </div>
+        <div class='collapsible' id='PixpipeContainerMultiData.getDataCopy'>
+          <a href='#PixpipeContainerMultiData.getDataCopy'>
+            <code>
+              getDataCopy<span class='gray'>(name)</span>
+            </code>
+            <div class='force-inline'>
+              <p>Get a copy of a sub-dataset given its name.<br>
+Notice: This gives a copy of a typed array. Modifying the returns array will NOT affect this object.</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2'>
+<section class='py2 clearfix'>
+  <h2 id='PixpipeContainerMultiData.getDataCopy' class='mt0'>
+    getDataCopy<span class='gray'>(name)</span>
+  </h2>
+  <p>Get a copy of a sub-dataset given its name.<br>
+Notice: This gives a copy of a typed array. Modifying the returns array will NOT affect this object.</p>
+
+    <h4>Parameters</h4>
+    <ul class='suppress-p-margin'>
+        <li><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a></code> <strong>name</strong>
+          :
+          <div class='force-inline'>
+            <p>name of the sub-dataset</p>
+
+          </div>
+        </li>
+    </ul>
+      <h4>Returns</h4>
+      <code><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/TypedArray">TypedArray</a></code></code>
+      :
+      <div class='force-inline'>
+        <p>a copy of the typed array of the sub-dataset</p>
+
+      </div>
+</section>
+          </div>
+        </div>
+        <div class='collapsible' id='PixpipeContainerMultiData.getDataIndex'>
+          <a href='#PixpipeContainerMultiData.getDataIndex'>
+            <code>
+              getDataIndex<span class='gray'>(name)</span>
+            </code>
+            <div class='force-inline'>
+              <p>Get the index of a sub-dataset within the _data list, giving its name.</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2'>
+<section class='py2 clearfix'>
+  <h2 id='PixpipeContainerMultiData.getDataIndex' class='mt0'>
+    getDataIndex<span class='gray'>(name)</span>
+  </h2>
+  <p>Get the index of a sub-dataset within the _data list, giving its name.</p>
+
+    <h4>Parameters</h4>
+    <ul class='suppress-p-margin'>
+        <li><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a></code> <strong>name</strong>
+          :
+          <div class='force-inline'>
+            <p>name of the sub-dataset</p>
+
+          </div>
+        </li>
+    </ul>
+      <h4>Returns</h4>
+      <code><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">Number</a></code></code>
+      :
+      <div class='force-inline'>
+        <p>Index of -1 if non existant</p>
+
+      </div>
+</section>
+          </div>
+        </div>
+        <div class='collapsible' id='PixpipeContainerMultiData.setRawData'>
+          <a href='#PixpipeContainerMultiData.setRawData'>
+            <code>
+              setRawData<span class='gray'>(d, name)</span>
+            </code>
+            <div class='force-inline'>
+              <p>Associate d with the internal sub-dataset by pointer copy (if Object or Array).
+A name is necessary so that the internal structure can indentify the sub-dataset,
+to process it of to retrieve it.</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2'>
+<section class='py2 clearfix'>
+  <h2 id='PixpipeContainerMultiData.setRawData' class='mt0'>
+    setRawData<span class='gray'>(d, name)</span>
+  </h2>
+  <p>Associate d with the internal sub-dataset by pointer copy (if Object or Array).
+A name is necessary so that the internal structure can indentify the sub-dataset,
+to process it of to retrieve it.</p>
+
+    <h4>Parameters</h4>
+    <ul class='suppress-p-margin'>
+        <li><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/TypedArray">TypedArray</a></code> <strong>d</strong>
+          :
+          <div class='force-inline'>
+            <p>array of data to associate (not a deep copy)</p>
+
+          </div>
+        </li>
+        <li><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a></code> <strong>name</strong>
+          :
+          <div class='force-inline'>
+            <p>name to give to thissub-dataset</p>
+
+          </div>
+        </li>
+    </ul>
+</section>
+          </div>
+        </div>
+</section>
+</div><div class='py1'><section class='py2 clearfix'>
   <h2 id='Image2D' class='mt0'>
     Image2D<span class='gray'>(options)</span>
   </h2>
@@ -12605,6 +13038,517 @@ Like in glMatrix, all the matrices arrays are expected to be column major.</p>
         </div>
 </section>
 </div><div class='py1'><section class='py2 clearfix'>
+  <h2 id='Mesh3D' class='mt0'>
+    Mesh3D<span class='gray'></span>
+  </h2>
+  <p>A Mesh3D object contains the necessary informations to create a 3D mesh
+(for example using ThreeJS) and provide a generic datastructure so that it can accept
+data from arbitrary mesh file format.</p>
+<p><strong>Usage</strong></p>
+<ul>
+<li><a href="../examples/fileToMniObj.html">examples/fileToMniObj.html</a></li>
+</ul>
+
+      <h4>Static members</h4>
+        <div class='collapsible' id='Mesh3D.TYPE'>
+          <a href='#Mesh3D.TYPE'>
+            <code>
+              TYPE<span class='gray'></span>
+            </code>
+            <div class='force-inline'>
+              <p>Hardcode the datatype</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2 m2'>
+<section class='py2 clearfix'>
+  <h2 id='Mesh3D.TYPE' class='mt0'>
+    TYPE<span class='gray'></span>
+  </h2>
+  <p>Hardcode the datatype</p>
+
+</section>
+          </div>
+        </div>
+      <h4>Instance members</h4>
+        <div class='collapsible' id='Mesh3D.getNumberOfComponentsPerColor'>
+          <a href='#Mesh3D.getNumberOfComponentsPerColor'>
+            <code>
+              getNumberOfComponentsPerColor<span class='gray'></span>
+            </code>
+            <div class='force-inline'>
+              <p>Get the number of components per color: 3 for RGB, 4 for RGBa</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2'>
+<section class='py2 clearfix'>
+  <h2 id='Mesh3D.getNumberOfComponentsPerColor' class='mt0'>
+    getNumberOfComponentsPerColor<span class='gray'></span>
+  </h2>
+  <p>Get the number of components per color: 3 for RGB, 4 for RGBa</p>
+
+      <h4>Returns</h4>
+      <code><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">Number</a></code></code>
+      :
+      <div class='force-inline'>
+        <p>number of components per color</p>
+
+      </div>
+</section>
+          </div>
+        </div>
+        <div class='collapsible' id='Mesh3D.getNumberOfVertices'>
+          <a href='#Mesh3D.getNumberOfVertices'>
+            <code>
+              getNumberOfVertices<span class='gray'></span>
+            </code>
+            <div class='force-inline'>
+              <p>Get the number of vertices in this mesh3D</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2'>
+<section class='py2 clearfix'>
+  <h2 id='Mesh3D.getNumberOfVertices' class='mt0'>
+    getNumberOfVertices<span class='gray'></span>
+  </h2>
+  <p>Get the number of vertices in this mesh3D</p>
+
+      <h4>Returns</h4>
+      <code><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">Number</a></code></code>
+      
+      <div class='force-inline'>
+        
+      </div>
+</section>
+          </div>
+        </div>
+        <div class='collapsible' id='Mesh3D.getNumberOfVerticesPerShapes'>
+          <a href='#Mesh3D.getNumberOfVerticesPerShapes'>
+            <code>
+              getNumberOfVerticesPerShapes<span class='gray'></span>
+            </code>
+            <div class='force-inline'>
+              <p>Get the number of vertices per shape (3 for triangle, 4 for quads, etc.)</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2'>
+<section class='py2 clearfix'>
+  <h2 id='Mesh3D.getNumberOfVerticesPerShapes' class='mt0'>
+    getNumberOfVerticesPerShapes<span class='gray'></span>
+  </h2>
+  <p>Get the number of vertices per shape (3 for triangle, 4 for quads, etc.)</p>
+
+      <h4>Returns</h4>
+      <code><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">Number</a></code></code>
+      :
+      <div class='force-inline'>
+        <p>the number of vertex involved in each shape</p>
+
+      </div>
+</section>
+          </div>
+        </div>
+        <div class='collapsible' id='Mesh3D.getPolygonFacesNormals'>
+          <a href='#Mesh3D.getPolygonFacesNormals'>
+            <code>
+              getPolygonFacesNormals<span class='gray'></span>
+            </code>
+            <div class='force-inline'>
+              <p>Get all polygon faces normal (unit) vectors (a pointer to)</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2'>
+<section class='py2 clearfix'>
+  <h2 id='Mesh3D.getPolygonFacesNormals' class='mt0'>
+    getPolygonFacesNormals<span class='gray'></span>
+  </h2>
+  <p>Get all polygon faces normal (unit) vectors (a pointer to)</p>
+
+      <h4>Returns</h4>
+      <code><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/TypedArray">TypedArray</a></code></code>
+      :
+      <div class='force-inline'>
+        <p>the vertex positions</p>
+
+      </div>
+</section>
+          </div>
+        </div>
+        <div class='collapsible' id='Mesh3D.getPolygonFacesNormalsCopy'>
+          <a href='#Mesh3D.getPolygonFacesNormalsCopy'>
+            <code>
+              getPolygonFacesNormalsCopy<span class='gray'></span>
+            </code>
+            <div class='force-inline'>
+              <p>Get a copy of polygon faces normal (unit) vectors</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2'>
+<section class='py2 clearfix'>
+  <h2 id='Mesh3D.getPolygonFacesNormalsCopy' class='mt0'>
+    getPolygonFacesNormalsCopy<span class='gray'></span>
+  </h2>
+  <p>Get a copy of polygon faces normal (unit) vectors</p>
+
+      <h4>Returns</h4>
+      <code><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/TypedArray">TypedArray</a></code></code>
+      :
+      <div class='force-inline'>
+        <p>the vertex positions (deep copy)</p>
+
+      </div>
+</section>
+          </div>
+        </div>
+        <div class='collapsible' id='Mesh3D.getPolygonFacesOrder'>
+          <a href='#Mesh3D.getPolygonFacesOrder'>
+            <code>
+              getPolygonFacesOrder<span class='gray'></span>
+            </code>
+            <div class='force-inline'>
+              <p>Get all polygon faces</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2'>
+<section class='py2 clearfix'>
+  <h2 id='Mesh3D.getPolygonFacesOrder' class='mt0'>
+    getPolygonFacesOrder<span class='gray'></span>
+  </h2>
+  <p>Get all polygon faces</p>
+
+      <h4>Returns</h4>
+      <code><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/TypedArray">TypedArray</a></code></code>
+      :
+      <div class='force-inline'>
+        <p>the vertex positions</p>
+
+      </div>
+</section>
+          </div>
+        </div>
+        <div class='collapsible' id='Mesh3D.getPolygonFacesOrderCopy'>
+          <a href='#Mesh3D.getPolygonFacesOrderCopy'>
+            <code>
+              getPolygonFacesOrderCopy<span class='gray'></span>
+            </code>
+            <div class='force-inline'>
+              <p>Get a copy of polygon faces</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2'>
+<section class='py2 clearfix'>
+  <h2 id='Mesh3D.getPolygonFacesOrderCopy' class='mt0'>
+    getPolygonFacesOrderCopy<span class='gray'></span>
+  </h2>
+  <p>Get a copy of polygon faces</p>
+
+      <h4>Returns</h4>
+      <code><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/TypedArray">TypedArray</a></code></code>
+      :
+      <div class='force-inline'>
+        <p>the vertex positions (deep copy)</p>
+
+      </div>
+</section>
+          </div>
+        </div>
+        <div class='collapsible' id='Mesh3D.getVertexColors'>
+          <a href='#Mesh3D.getVertexColors'>
+            <code>
+              getVertexColors<span class='gray'></span>
+            </code>
+            <div class='force-inline'>
+              <p>Get all vertex colors (a pointer to)</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2'>
+<section class='py2 clearfix'>
+  <h2 id='Mesh3D.getVertexColors' class='mt0'>
+    getVertexColors<span class='gray'></span>
+  </h2>
+  <p>Get all vertex colors (a pointer to)</p>
+
+      <h4>Returns</h4>
+      <code><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/TypedArray">TypedArray</a></code></code>
+      :
+      <div class='force-inline'>
+        <p>the vertex positions</p>
+
+      </div>
+</section>
+          </div>
+        </div>
+        <div class='collapsible' id='Mesh3D.getVertexColorsCopy'>
+          <a href='#Mesh3D.getVertexColorsCopy'>
+            <code>
+              getVertexColorsCopy<span class='gray'></span>
+            </code>
+            <div class='force-inline'>
+              <p>Get a copy of vertex colors</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2'>
+<section class='py2 clearfix'>
+  <h2 id='Mesh3D.getVertexColorsCopy' class='mt0'>
+    getVertexColorsCopy<span class='gray'></span>
+  </h2>
+  <p>Get a copy of vertex colors</p>
+
+      <h4>Returns</h4>
+      <code><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/TypedArray">TypedArray</a></code></code>
+      :
+      <div class='force-inline'>
+        <p>the vertex positions (deep copy)</p>
+
+      </div>
+</section>
+          </div>
+        </div>
+        <div class='collapsible' id='Mesh3D.getVertexPositionCopy'>
+          <a href='#Mesh3D.getVertexPositionCopy'>
+            <code>
+              getVertexPositionCopy<span class='gray'></span>
+            </code>
+            <div class='force-inline'>
+              <p>Get a copy of the vertex positions</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2'>
+<section class='py2 clearfix'>
+  <h2 id='Mesh3D.getVertexPositionCopy' class='mt0'>
+    getVertexPositionCopy<span class='gray'></span>
+  </h2>
+  <p>Get a copy of the vertex positions</p>
+
+      <h4>Returns</h4>
+      <code><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/TypedArray">TypedArray</a></code></code>
+      :
+      <div class='force-inline'>
+        <p>the vertex positions (deep copy)</p>
+
+      </div>
+</section>
+          </div>
+        </div>
+        <div class='collapsible' id='Mesh3D.getVertexPositions'>
+          <a href='#Mesh3D.getVertexPositions'>
+            <code>
+              getVertexPositions<span class='gray'></span>
+            </code>
+            <div class='force-inline'>
+              <p>Get all the vertex positions (a pointer to)</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2'>
+<section class='py2 clearfix'>
+  <h2 id='Mesh3D.getVertexPositions' class='mt0'>
+    getVertexPositions<span class='gray'></span>
+  </h2>
+  <p>Get all the vertex positions (a pointer to)</p>
+
+      <h4>Returns</h4>
+      <code><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/TypedArray">TypedArray</a></code></code>
+      :
+      <div class='force-inline'>
+        <p>the vertex positions</p>
+
+      </div>
+</section>
+          </div>
+        </div>
+        <div class='collapsible' id='Mesh3D.setNumberOfComponentsPerColor'>
+          <a href='#Mesh3D.setNumberOfComponentsPerColor'>
+            <code>
+              setNumberOfComponentsPerColor<span class='gray'>(num)</span>
+            </code>
+            <div class='force-inline'>
+              <p>Set the number of components per color: 3 for RGB, 4 for RGBa</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2'>
+<section class='py2 clearfix'>
+  <h2 id='Mesh3D.setNumberOfComponentsPerColor' class='mt0'>
+    setNumberOfComponentsPerColor<span class='gray'>(num)</span>
+  </h2>
+  <p>Set the number of components per color: 3 for RGB, 4 for RGBa</p>
+
+    <h4>Parameters</h4>
+    <ul class='suppress-p-margin'>
+        <li><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">Number</a></code> <strong>num</strong>
+          :
+          <div class='force-inline'>
+            <p>number of components per color</p>
+
+          </div>
+        </li>
+    </ul>
+</section>
+          </div>
+        </div>
+        <div class='collapsible' id='Mesh3D.setNumberOfVerticesPerShapes'>
+          <a href='#Mesh3D.setNumberOfVerticesPerShapes'>
+            <code>
+              setNumberOfVerticesPerShapes<span class='gray'>(num)</span>
+            </code>
+            <div class='force-inline'>
+              <p>Set the number of vertices per shape (3 for triangle, 4 for quads, etc.)</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2'>
+<section class='py2 clearfix'>
+  <h2 id='Mesh3D.setNumberOfVerticesPerShapes' class='mt0'>
+    setNumberOfVerticesPerShapes<span class='gray'>(num)</span>
+  </h2>
+  <p>Set the number of vertices per shape (3 for triangle, 4 for quads, etc.)</p>
+
+    <h4>Parameters</h4>
+    <ul class='suppress-p-margin'>
+        <li><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">Number</a></code> <strong>num</strong>
+          :
+          <div class='force-inline'>
+            <p>the number of vertex involved in each shape</p>
+
+          </div>
+        </li>
+    </ul>
+</section>
+          </div>
+        </div>
+        <div class='collapsible' id='Mesh3D.setPolygonFacesNormals'>
+          <a href='#Mesh3D.setPolygonFacesNormals'>
+            <code>
+              setPolygonFacesNormals<span class='gray'>(data)</span>
+            </code>
+            <div class='force-inline'>
+              <p>Set the array of polygon faces normal (unit) vectors</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2'>
+<section class='py2 clearfix'>
+  <h2 id='Mesh3D.setPolygonFacesNormals' class='mt0'>
+    setPolygonFacesNormals<span class='gray'>(data)</span>
+  </h2>
+  <p>Set the array of polygon faces normal (unit) vectors</p>
+
+    <h4>Parameters</h4>
+    <ul class='suppress-p-margin'>
+        <li><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/TypedArray">TypedArray</a></code> <strong>data</strong>
+          :
+          <div class='force-inline'>
+            <p>array of index of vertex positions index</p>
+
+          </div>
+        </li>
+    </ul>
+</section>
+          </div>
+        </div>
+        <div class='collapsible' id='Mesh3D.setPolygonFacesOrder'>
+          <a href='#Mesh3D.setPolygonFacesOrder'>
+            <code>
+              setPolygonFacesOrder<span class='gray'>(data)</span>
+            </code>
+            <div class='force-inline'>
+              <p>Set the array of polygon faces</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2'>
+<section class='py2 clearfix'>
+  <h2 id='Mesh3D.setPolygonFacesOrder' class='mt0'>
+    setPolygonFacesOrder<span class='gray'>(data)</span>
+  </h2>
+  <p>Set the array of polygon faces</p>
+
+    <h4>Parameters</h4>
+    <ul class='suppress-p-margin'>
+        <li><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/TypedArray">TypedArray</a></code> <strong>data</strong>
+          :
+          <div class='force-inline'>
+            <p>array of index of vertex positions index</p>
+
+          </div>
+        </li>
+    </ul>
+</section>
+          </div>
+        </div>
+        <div class='collapsible' id='Mesh3D.setVertexColors'>
+          <a href='#Mesh3D.setVertexColors'>
+            <code>
+              setVertexColors<span class='gray'>(data)</span>
+            </code>
+            <div class='force-inline'>
+              <p>Set the array of vertex colors</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2'>
+<section class='py2 clearfix'>
+  <h2 id='Mesh3D.setVertexColors' class='mt0'>
+    setVertexColors<span class='gray'>(data)</span>
+  </h2>
+  <p>Set the array of vertex colors</p>
+
+    <h4>Parameters</h4>
+    <ul class='suppress-p-margin'>
+        <li><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/TypedArray">TypedArray</a></code> <strong>data</strong>
+          :
+          <div class='force-inline'>
+            <p>array of index of vertex color as [r, g, b, r, g, b, etc.] or [r, b, g, a, etc.]</p>
+
+          </div>
+        </li>
+    </ul>
+</section>
+          </div>
+        </div>
+        <div class='collapsible' id='Mesh3D.setVertexPositions'>
+          <a href='#Mesh3D.setVertexPositions'>
+            <code>
+              setVertexPositions<span class='gray'>(data)</span>
+            </code>
+            <div class='force-inline'>
+              <p>Set the array of vertex positions</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2'>
+<section class='py2 clearfix'>
+  <h2 id='Mesh3D.setVertexPositions' class='mt0'>
+    setVertexPositions<span class='gray'>(data)</span>
+  </h2>
+  <p>Set the array of vertex positions</p>
+
+    <h4>Parameters</h4>
+    <ul class='suppress-p-margin'>
+        <li><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/TypedArray">TypedArray</a></code> <strong>data</strong>
+          :
+          <div class='force-inline'>
+            <p>array vertex positions (does not perform a deep copy). The size of this array must be a multiple of 3</p>
+
+          </div>
+        </li>
+    </ul>
+</section>
+          </div>
+        </div>
+</section>
+</div><div class='py1'><section class='py2 clearfix'>
   <h2 id='GradientImageFilter' class='mt0'>
     GradientImageFilter<span class='gray'></span>
   </h2>
@@ -12886,7 +13830,17 @@ but this is compatible with Node and not rely on HTML5 Canvas.</p>
   <h2 id='PixBinEncoder' class='mt0'>
     PixBinEncoder<span class='gray'></span>
   </h2>
-  <p>Download the generated file</p>
+  <p>A PixBinEncoder instance takes an Image2D or Image3D as input with <code>addInput(...)</code>
+and encode it so that it can be saved as a *.pixp file.
+An output filename can be specified using <code>.setMetadata(&quot;filename&quot;, &quot;yourName.pixp&quot;);</code>,
+by default, the name is &quot;untitled.pixp&quot;.
+When <code>update()</code> is called, a gzip blog is prepared as output[0] and can then be downloaded
+when calling the method <code>.download()</code>. The gzip blob could also be sent over AJAX
+using a third party library.</p>
+<p><strong>Usage</strong></p>
+<ul>
+<li><a href="../examples/savePixpFile.html">examples/savePixpFile.html</a></li>
+</ul>
 
       <h4>Static members</h4>
         <div class='collapsible' id='PixBinEncoder.MAGIC_NUMBER'>
@@ -12916,17 +13870,7 @@ the first sequence of bytes for a pixbin file is this ASCII string</p>
   <h2 id='PixBinEncoder' class='mt0'>
     PixBinEncoder<span class='gray'></span>
   </h2>
-  <p>A PixBinEncoder instance takes an Image2D or Image3D as input with <code>addInput(...)</code>
-and encode it so that it can be saved as a *.pixp file.
-An output filename can be specified using <code>.setMetadata(&quot;filename&quot;, &quot;yourName.pixp&quot;);</code>,
-by default, the name is &quot;untitled.pixp&quot;.
-When <code>update()</code> is called, a gzip blog is prepared as output[0] and can then be downloaded
-when calling the method <code>.download()</code>. The gzip blob could also be sent over AJAX
-using a third party library.</p>
-<p><strong>Usage</strong></p>
-<ul>
-<li><a href="../examples/savePixpFile.html">examples/savePixpFile.html</a></li>
-</ul>
+  <p>Download the generated file</p>
 
       <h4>Static members</h4>
         <div class='collapsible' id='PixBinEncoder.MAGIC_NUMBER'>
@@ -12973,6 +13917,24 @@ Takes an ArrayBuffer as input (0) and output a <code>MniVolume</code> (which inh
 <p><strong>Usage</strong></p>
 <ul>
 <li><a href="../examples/fileToMgh.html">examples/fileToMgh.html</a></li>
+</ul>
+
+</section>
+</div><div class='py1'><section class='py2 clearfix'>
+  <h2 id='MniObjDecoder' class='mt0'>
+    MniObjDecoder<span class='gray'></span>
+  </h2>
+  <p>When most parser need an ArrayBuffer as input, the MNI OBJ mesh file being text
+files, an instance of MniObjDecoder takes the string content of such files.
+The string content of a file can be provided by a FileToArrayBufferReader or
+UrlToArrayBufferReader with the metadata <code>readAsText</code> being true.
+Then use the method <code>.addInput( myString )</code> to provide the input and call
+the method <code>.update()</code>. If the input is suscceessfully parsed, the output of
+a MniObjDecoder is a Mesh3D. If the file is invalid, a message is probably written
+in the JS console and no output is available.</p>
+<p><strong>Usage</strong></p>
+<ul>
+<li><a href="../examples/fileToMniObj.html">examples/fileToMniObj.html</a></li>
 </ul>
 
 </section>
@@ -13066,7 +14028,7 @@ The input, specified by <code>.addInput(...)</code> must be an ArrayBuffer
   <h2 id='PixpipeContainer' class='mt0'>
     PixpipeContainer<span class='gray'></span>
   </h2>
-  <p>RasterContainer is a common interface for Image2D and Image3D
+  <p>PixpipeContainer is a common interface for Image2D and Image3D
 (and possibly some other future formats).
 Should not be used as-is.</p>
 
