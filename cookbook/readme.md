@@ -16,8 +16,14 @@ This cookbook will help you to become familiar with the architecture of **Pixpip
   - [Image3D](#image3d)
   - [MniVolume](#mnivolume)
   - [Signal1D](#signal1d)
+  - [LineString](#linestring)
+  - [PixpipeContainerMultiData](#pixpipecontainermultidata)
+  - [Mesh3D](#mesh3d)
   - [Filter](#filter)
   - [ImageToImageFilter](#imagetoimagefilter)
+  - [I/O Filters](#i-ofilters)
+  - [File Codecs](#file-codecs)
+  - [Helpers](#helpers)
 - [Building Pixpipe](#building-pixpipe)
 - [Building the documentation](#building-the-documentation)
 - [Learning with examples](#learning-with-examples)
@@ -200,11 +206,14 @@ $ npm install
 $ npm run build
 ```
 
-This will generate a *bundled* file in the `dist` directory (replacing the default one). This single source file can be imported in a *html* page like any other js file:
+This will generate a ES5-compatible `umd` *bundle* file in the `dist` directory: `pixpipe.js`.  
+This single source file can be imported in a *html* page like any other js file:
 
 ```html
 <script src="a/path/to/pixpipe.js"></script>
 ```
+The `build` command will also make a ES5-compatible *commonJS* source that is easier to import in a bigger project: `pixpipe.cjs.js`.
+
 
 Note that Pixpipejs is developed using ES6 and might not be compatible with older browsers -- Google closure compiler to the rescue! In addition, to provide a nice and easy way to minify the built version, it also transpiles the codebase into ES5. Here is the command:
 
@@ -214,6 +223,18 @@ $ npm run min
 ```
 
 **Note** Pixpipe does not use an npm minifier plugin because it's codebase is too large, thus it uses directly the closure compiler from Google (see `closurecompiler` folder).
+
+# Development mode
+In addition to the regular building mode, you can work in development mode:
+
+```bash
+$ cd pixpipejs
+$ npm install
+$ npm run dev
+```
+This is has two advantages over the regular build mode:
+- It lauches a local webserver
+- It builds only the `umd` package and keeps it as ES6, which is faster since there is no transpiling involved. (but please don't distribute a ES6 bundle).
 
 
 # Building the documentation
@@ -255,6 +276,7 @@ Here, we will learn what is an `Image2D`, how to display it in a canvas using `C
 ## Signal filters for Signal1D
 - [Compute the 1D fourier transform or inverse transform on a signal](https://github.com/Pixpipe/pixpipejs/tree/master/examples/fftSignal1D.html) | [source](https://github.com/Pixpipe/pixpipejs/tree/master/examples/fftSignal1D.html)
 
+
 ## Simple filters for Image2D
 See a `Filter` as a *box* that takes one or more input and produces one or more output. If some parameters are needed to make the filter work properly, this must happen using `setMetadata()`. To ask the filter to do its job, just call `update()`.  
 A `Filter` should **NEVER** modify the input data.
@@ -276,6 +298,7 @@ A `Filter` should **NEVER** modify the input data.
 - [Compute the 2D fourier transform or inverse transform on a single channel image](https://github.com/Pixpipe/pixpipejs/tree/master/examples/fftImage2D.html) | [source](https://github.com/Pixpipe/pixpipejs/tree/master/examples/fftImage2D.html)
 - [Extract single channels of an image or merge the channels of multiple images](https://github.com/Pixpipe/pixpipejs/tree/master/examples/imageProjectMerge.html) | [source](https://github.com/Pixpipe/pixpipejs/tree/master/examples/imageProjectMerge.html)
 
+
 ## Playing with 3D medical dataset
 - [Open a local Minc2 file, extract 3 orthogonal slices and display in canvas](http://pixpipe.github.io/pixpipejs/examples/fileToMinc2.html) | [source](https://github.com/Pixpipe/pixpipejs/tree/master/examples/fileToMinc2.html)
 - [Open a local  NIfTI file, extract 3 orthogonal slices and display in canvas](http://pixpipe.github.io/pixpipejs/examples/fileToNifti.html) | [source](https://github.com/Pixpipe/pixpipejs/tree/master/examples/fileToNifti.html)
@@ -290,6 +313,11 @@ A `Filter` should **NEVER** modify the input data.
 - [Flood fill an Image2D](http://pixpipe.github.io/pixpipejs/examples/floodFillImage2D.html) | [source](https://github.com/Pixpipe/pixpipejs/tree/master/examples/floodFillImage2D.html)
 - [Simplifying a LineString](http://pixpipe.github.io/pixpipejs/examples/contourSimplifiedImage2D.html) | [source](https://github.com/Pixpipe/pixpipejs/tree/master/examples/contourSimplifiedImage2D.html)
 
+
+## Mesh
+- [Load a mesh from a MNI OBJ file, create Mesh3D object and display it with ThreeJS](http://pixpipe.github.io/pixpipejs/examples/fileToMniObj.html)
+
+
 ## Interpolation
 - [2D sparse dataset inverse distance weighting](http://pixpipe.github.io/pixpipejs/examples/IDWSparseInterpolation.html) | [source](https://github.com/Pixpipe/pixpipejs/tree/master/examples/IDWSparseInterpolation.html)
 - [2D sparse dataset triangulation](http://pixpipe.github.io/pixpipejs/examples/TriangleSparseInterpolation.html) | [source](https://github.com/Pixpipe/pixpipejs/tree/master/examples/TriangleSparseInterpolation.html)
@@ -301,6 +329,7 @@ A `Filter` should **NEVER** modify the input data.
 - [Open  a local  NIfTI/MINC/MGH file, build a 3D texture and display volume with obliques, show a slider for time series if any, and adjust contrast with a curve widget](http://pixpipe.github.io/pixpipejs/examples/volume3DNavigatorTimeCurve.html) | [source](https://github.com/Pixpipe/pixpipejs/tree/master/examples/volume3DNavigatorTimeCurve.html)
 - [Encode an Pixpipe object into a PixBin file](http://pixpipe.github.io/pixpipejs/examples/encodePixBin.html) | [source](https://github.com/Pixpipe/pixpipejs/tree/master/examples/encodePixBin.html)
 - [Decode a PixBin file into one or more Pixpipe data structures](http://pixpipe.github.io/pixpipejs/examples/decodePixBin.html) | [source](https://github.com/Pixpipe/pixpipejs/tree/master/examples/decodePixBin.html)
+
 
 # Create your own custom filter
 As mentioned earlier, a filter must take at least one input et retrieve at least one output, in between the method `.update()` must be called. The only exception to that are `io` filters which are opening or writing from/to a file or an HTML5 canvas.  
@@ -687,7 +716,7 @@ Then, don't forget to [register your filter](#register-your-filter) so that you 
 
 
 ### Could we do it another way?
-Sure, in may other other ways. A simple alternative would have been to:
+Sure, in many other ways. A simple alternative would have been to:
 
 Make a clone of the input image:
 
@@ -840,7 +869,7 @@ if( this.hasEvent("dataProcessed") ){
 
 
 # Measuring time
-The class/interface `Filter` has a built-in system to measure time that any custom filter can use. It can be useful to track performance and know where to look for further optimization. Here is how to use it, internally from your custom filter:
+The class/interface `PixpipeObject` has a built-in system to measure time that any other Pixpipe object can use. It can be useful to track performance and know where to look for further optimization. Here is how to use it, internally from your custom filter:
 
 ```javascript
 ...
@@ -881,4 +910,4 @@ which is faster than that:
 this.getMetadata("width")
 ```
 
-Using the getter is nice because it provides a layer of control and return null if the metadata does not exist but it's slower, so as long as you are using a metadata internally (from `this`) and that you know what you are doing (you are **sure** this metadata actually exists), then it's ok to call it like a regular object.
+Using the getter is nice because it provides a layer of control and returns null if the metadata does not exist but it's slower, so as long as you are using a metadata internally (from `this`) and that you know what you are doing (you are **sure** this metadata actually exists), then it's ok to call it like a regular attributes, with the *dot* operator.
