@@ -1,6 +1,5 @@
 # Metadata object
-The metadata format adopted in `Image3DAlt` appears to be generic enough to be used in Image2D. The following description is a minimalist list. To this list should be added any custom metadata relevant to one's application.  
-Here is how it looks like:
+The metadata format adopted in `Image3DAlt` can seem a bit complex, this is why it can be nice to break it down a little. Here is how it looks like:
 
 ```javascript
 var metadata = {
