@@ -21,7 +21,7 @@ This cookbook will help you to become familiar with the architecture of **Pixpip
   - [Mesh3D](#mesh3d)
   - [Filter](#filter)
   - [ImageToImageFilter](#imagetoimagefilter)
-  - [I/O Filters](#i-ofilters)
+  - [I/O Filters](#io-filters)
   - [File Codecs](#file-codecs)
   - [Helpers](#helpers)
 - [Building Pixpipe](#building-pixpipe)
