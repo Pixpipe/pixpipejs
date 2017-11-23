@@ -8,11 +8,25 @@
 import { CoreTypes } from './CoreTypes.js';
 import { PixpipeContainer } from './PixpipeContainer';
 
+
+/**
+* An object of type Signal1D is a single dimensional signal, most likely
+* by a Float32Array and a sampling frequency. To change the sampling frequency
+* use the method `.setMetadata('samplingFrequency', Number);`, defaut value is 100.
+* We tend to considere this frequency to be in **Hz**, but there is no hardcoded
+* unit and it all depends on the application. This is important to specify this
+* metadata because some processing filters may use it.
+*
+* **Usage**
+* - [examples/urlFileToArrayBuffer.html](../examples/fftSignal1D.html)
+*/
 class Signal1D extends PixpipeContainer {
   constructor() {
     super();
     this._type = Signal1D.TYPE();
     this.setMetadata('length', 0);
+    
+    this.setMetadata('samplingFrequency', 100);
   }
 
   static TYPE() {

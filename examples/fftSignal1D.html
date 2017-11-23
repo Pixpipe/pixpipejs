@@ -35,6 +35,7 @@
     <canvas id="container3"></canvas>
   </div>
   <script>
+  
     var signal = generate1DSignal(
       1,  // amplitude
       0.3,  // signal freq
@@ -42,6 +43,7 @@
       10,  // sampling freq
       200  // number of samples (should cover more than 2 periods)
     );
+    
     generate1DSignal(
       0.5,  // amplitude
       12,  // signal freq
@@ -51,6 +53,7 @@
     ).fx.forEach((fx, i) => {
       signal.fx[i] += fx;
     });
+    
     var contexts = ['#container1', '#container2', '#container3'].map(function(s) {
       return document.querySelector(s).getContext('2d');
     });
@@ -85,6 +88,7 @@
       }
       context2d.stroke();
     }
+    
     /**
     * Generate a 1D signal
     * @param {Number} signalAmplitude - amplitude A of the signal
@@ -112,6 +116,7 @@
         fx: fx
       };
     }
+    
   </script>
 
 </body>
