@@ -1,6 +1,6 @@
 import { Filter } from '../core/Filter.js';
 import { Signal1D } from '../core/Signal1D.js';
-import { EdfDecoder } from 'edfdecoder';
+import { EdfDecoder as EdfDecoderDep } from 'edfdecoder';
 
 /**
 * An instance of EdfDecoder takes an ArrayBuffer as input. This ArrayBuffer must
@@ -10,6 +10,9 @@ import { EdfDecoder } from 'edfdecoder';
 * signal is composed of records (e.g. 1sec per record). This decoder concatenates
 * records to output a longer signal. Still, the metadata in each Signal1D tells
 * what the is the length of original record.
+*
+* **Usage**
+* - [examples/urlFileToArrayBuffer.html](../examples/fileToEDF.html)
 *
 */
 class EdfDecoder extends Filter {
@@ -30,12 +33,12 @@ class EdfDecoder extends Filter {
       return;
     }
 
-    var edfDecoder = new EdfDecoder();
+    var edfDecoder = new EdfDecoderDep();
 
     edfDecoder.setInput( inputBuffer );
     edfDecoder.decode();
     // an Edf object
-    var edf = decodedfDecoderer.getOutput();
+    var edf = edfDecoder.getOutput();
 
     if(! edf ){
       console.warn("Invalid EDF file.");
@@ -54,15 +57,17 @@ class EdfDecoder extends Filter {
       sig1D.setMetadata( "recordingID", edf.getRecordingID() );
       sig1D.setMetadata( "recordingStartDate", edf.getRecordingStartDate() );
       sig1D.setMetadata( "reservedField", edf.getReservedField() );
-      sig1D.setMetadata( "signalLabel", edf.getSignalLabel() );
+      sig1D.setMetadata( "signalLabel", edf.getSignalLabel(i) );
       sig1D.setMetadata( "numberOfSamplesPerRecord", edf.getSignalNumberOfSamplesPerRecord(i) );
       sig1D.setMetadata( "signalPhysicalMax", edf.getSignalPhysicalMax(i) );
       sig1D.setMetadata( "signalPhysicalMin", edf.getSignalPhysicalMin(i) );
       sig1D.setMetadata( "signalPhysicalUnit", edf.getSignalPhysicalUnit(i) );
       sig1D.setMetadata( "signalPrefiltering", edf.getSignalPrefiltering(i) );
-      sig1D.setMetadata( "signalSamplingFrequency", edf.getSignalSamplingFrequency(i) );
       sig1D.setMetadata( "signalTransducerType", edf.getSignalTransducerType(i) );
-
+      // the other metadata have the name of the field in the EDF file but this one is
+      // a standard from Signal1D
+      sig1D.setMetadata( "samplingFrequency", edf.getSignalSamplingFrequency(i) );
+      
       this._output[i] = sig1D;
     }
 

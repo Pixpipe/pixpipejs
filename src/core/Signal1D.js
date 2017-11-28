@@ -61,6 +61,34 @@ class Signal1D extends PixpipeContainer {
     copy.setData( new Float32Array(length).fill(0) );
     return copy
   }
+  
+  
+  /**
+  * Get a string reprensenting the data
+  * @return {String} the data to string
+  */
+  dataToString(){
+    var maxAbstractSize = 10;
+    var abstractSize = Math.min(maxAbstractSize, this._data.length);
+    var shortArray = this._data.slice(0, abstractSize);
+    var str = "__data__\n";
+    str += `\t${this._data.constructor.name}[${this._data.length}] `;
+    str += `${shortArray.toString()} ${this._data.length > maxAbstractSize ? ' ...':''}`;
+    return str;
+  }
+  
+  
+  /**
+  * Get a string description of this object
+  * @return {String} the description
+  */
+  toString(){
+    var str = this.constructor.name + "\n";
+    str += this.metadataToString();
+    str += this.dataToString();
+    return str;
+  }
+  
 }
 
 // register this type as a CoreType
