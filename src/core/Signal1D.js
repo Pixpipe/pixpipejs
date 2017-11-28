@@ -49,11 +49,14 @@ class Signal1D extends PixpipeContainer {
 
   clone(){
     const copy = new Signal1D();
+    copy.copyMetadataFrom( this );
+    
     if (this._data) {
       copy.setData(this._data, true);
     }
     return copy;
   }
+  
 
   hollowClone(){
     const copy = new Signal1D();

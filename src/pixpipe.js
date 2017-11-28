@@ -72,6 +72,7 @@ export { TriangulationSparseInterpolationImageFilter } from './filter/Triangulat
 export { CropImageFilter } from './filter/CropImageFilter.js';
 export { SimplifyLineStringFilter } from './filter/SimplifyLineStringFilter.js';
 export { PatchImageFilter } from './filter/PatchImageFilter.js';
+export { DifferenceEquationSignal1D } from './filter/DifferenceEquationSignal1D.js';
 
 // helpers
 export { AngleToHueWheelHelper } from './helper/AngleToHueWheelHelper.js';

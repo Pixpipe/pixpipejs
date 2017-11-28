@@ -1,0 +1,305 @@
+<html>
+<head>
+  <title>Edf Smoother</title>
+
+  <style>
+
+  body {
+    margin: 10px;
+    background-color: #ccecff;
+    font-family: 'Roboto', sans-serif;
+  }
+
+  h1 {
+    margin-top: 10px;
+    width: 100%;
+    text-align: center;
+    font-size: 4em;
+    color: #4981a2;
+    margin-bottom: initial;
+    margin-top: 20px;
+  }
+
+  h2 {
+    margin-top: 10px;
+    width: 100%;
+    text-align: center;
+    font-size: 1em;
+    color: #4981a2;
+  }
+
+  a {
+    text-decoration: none;
+    color: #008fca;
+    transition: all 0.2s;
+  }
+
+  a:hover {
+    color: #00638c;
+  }
+
+  code {
+    font-family: "monospace";
+    background-color: #d49595;
+    padding: 0px 5px 0px 5px;
+    border-radius: 5px;
+    color: white;
+  }
+
+  #container {
+    margin-left: 25vw;
+    margin-right: 25vw;
+  }
+
+  #description {
+    text-align: center;
+    width: 100%;
+  }
+
+  #chartDiv {
+    padding: 20px;
+    background-color: #fafafa;
+    margin-top: 15px;
+    border-radius: 15px;
+  }
+
+  #slider {
+    width: 400px;
+  }
+
+  </style>
+
+  <!-- importing the automatically build module -->
+  <script src="http://me.jonathanlurie.fr/SpectrumPlot2/dist/SpectrumPlot2.js"></script>
+  <script src="../dist/pixpipe.js"></script>
+</head>
+<body>
+
+
+  <div id="container">
+
+    <div id="description">
+      Open EDF file <input type="file" id="fileInput">
+      <br>
+
+      <p>To smooth the EEG signals from the EDF files, a difference equation is applied such as:
+      <img src="https://raw.githubusercontent.com/Pixpipe/differenceequationsignal1d/master/images/definition.png" alt="" /><br />
+      where <em>x</em> is the input signal, <em>y</em> is the output signal, <em>b</em> and <em>a</em> are coefficients.</p>
+      <p>
+        <select id="filterSelectHiPass">
+          <option value="none">No hi-pass</option>
+          <option value="hipass0_5">Hi pass 0.5Hz</option>
+          <option value="hipass1">Hi pass 1Hz</option>
+          <option value="hipass5">Hi pass 5Hz</option>
+          <option value="hipass10">Hi pass 10Hz</option>
+        </select>
+
+        <select id="filterSelectLoPass">
+          <option value="none">No lo-pass</option>
+          <option value="lopass15">Low pass 15Hz</option>
+          <option value="lopass20">Low pass 20Hz</option>
+          <option value="lopass30">Low pass 30Hz</option>
+          <option value="lopass40">Low pass 40Hz</option>
+        </select>
+
+      </p>
+
+      Record Index <input id='slider' type="range" value="0"> <span id="recordIndexPrint">0</span>
+    </div>
+    <div id="chartDiv"></div>
+  </div>
+
+  <script>
+
+  var filterSelectLoPass = document.getElementById('filterSelectLoPass');
+  var filterSelectHiPass = document.getElementById('filterSelectHiPass');
+  var fileInput = document.getElementById('fileInput');
+  var slider = document.getElementById("slider");
+  var recordIndexPrint = document.getElementById("recordIndexPrint");
+  var edf = null;
+
+
+  // coeficients
+  var filters = {
+    lopass15: {
+      b: [0.080716994603448, 0.072647596309189, 0.080716994603448],
+      a: [1.000000000000000, -1.279860238209870, 0.527812029663189]
+    },
+    lopass20: {
+      b: [0.113997925584386, 0.149768961515167, 0.113997925584386],
+      a: [1.000000000000000, -1.036801335341888, 0.436950120418250]
+    },
+    lopass30: {
+      b: [0.192813914343002, 0.325725940431161, 0.192813914343002],
+      a: [1.000000000000000, -0.570379950222695, 0.323884080078956]
+    },
+    lopass40: {
+      b: [0.281307434361307, 0.517866041871659, 0.281307434361307],
+      a: [1.000000000000000, -0.135289362582513, 0.279792792112445]
+    },
+    hipass0_5: {
+      b: [0.937293010134975, -1.874580964130496, 0.937293010134975],
+      a: [1.000000000000000, -1.985579602684723, 0.985739491853153]
+    },
+    hipass1: {
+      b: [0.930549324176904, -1.861078566912498, 0.930549324176904],
+      a: [1.000000000000000, -1.971047525054235, 0.971682555986628]
+    },
+    hipass5: {
+      b: [0.877493430773021, -1.754511635757187, 0.877493430773021],
+      a: [1.000000000000000, -1.851210698908115, 0.866238657864428]
+    },
+    hipass10: {
+      b: [0.813452161011750, -1.625120853023986, 0.813452161011750],
+      a: [1.000000000000000, -1.694160769645868, 0.750559011393507]
+    },
+  }
+
+
+  // event listener of the file dialog, it then triggers the file decoding
+  fileInput.addEventListener('change', function(e) {
+    var files = e.target.files;
+    var reader = new FileReader();
+
+    if( !files.length ){
+      return;
+    }
+
+    reader.onloadend = function(event) {
+      var buffer = event.target.result;
+      readEdfFile(buffer);
+    }
+    reader.readAsArrayBuffer( files[0] );
+  });
+
+
+  filterSelectLoPass.addEventListener('change', function(e) {
+    showPlot( 0 );
+  });
+
+  filterSelectHiPass.addEventListener('change', function(e) {
+    showPlot( 0 );
+  });
+
+
+  slider.addEventListener('input', function(event) {
+    showPlot( 0 );
+    recordIndexPrint.innerHTML = slider.value;
+    event.preventDefault();
+    return false;
+  }, false);
+
+
+  function readEdfFile( buff ){
+    var edfDecoder = new pixpipe.EdfDecoder();
+    edfDecoder.addInput( buff );
+    edfDecoder.update();
+    
+    var output = edfDecoder.getOutput();
+    
+    if( output ){
+      edf = output;
+      
+      slider.value = 0;
+      slider.min = 0;
+      slider.max = edf.getMetadata("numberOfRecords");
+      
+      showPlot( 0 );
+    }
+  }
+
+
+  function showPlot( signalIndex ){
+    if(!edf){
+      alert("Invalid EDF file");
+      return;
+    }
+
+    var sliderValue = parseInt(slider.value);
+
+    var div = document.getElementById( "chartDiv" );
+    div.innerHTML = "";
+
+    var sp = new SpectrumPlot2.SpectrumPlot2( "chartDiv", 400, 300 );
+    
+    var filteredSignal = filterTheSignal();
+
+    var recordBegin = parseInt(slider.value) * edf.getMetadata("numberOfSamplesPerRecord");
+    var recordEnd = recordBegin + edf.getMetadata("numberOfSamplesPerRecord");
+
+    if( filteredSignal ){
+      sp.addSpectrum(
+        "Filtered Signal",
+        filteredSignal.getData().slice(recordBegin, recordEnd),
+        "rgba(80, 80, 250, 1)"
+      )
+    }
+
+    var redIndex = sp.addSpectrum(
+      "Signal " + edf.getMetadata("signalPhysicalUnit"),
+      edf.getData().slice(recordBegin, recordEnd),
+      "rgba(250, 80, 80, 1)"
+    )
+
+    
+
+    sp.setLabels();
+    sp.draw();
+  }
+
+
+  function filterTheSignal(){
+    var t0 = performance.now();
+
+    var loPass = null;
+    var hiPass = null;
+
+    try{
+      loPass = {
+        b: filters[filterSelectLoPass.value].b,
+        a: filters[filterSelectLoPass.value].a
+      }
+    }catch(e){
+      console.log("No lo-pass specified");
+    }
+
+    try{
+      hiPass = {
+        b: filters[filterSelectHiPass.value].b,
+        a: filters[filterSelectHiPass.value].a
+      }
+    }catch(e){
+      console.log("No hi-pass specified");
+    }
+
+    if( !loPass && !hiPass )
+      return null;
+
+    var filter = new pixpipe.DifferenceEquationSignal1D();
+  
+    if( loPass ){
+      filter.addInput( edf );
+      filter.setMetadata( "coefficientsB", loPass.b);
+      filter.setMetadata( "coefficientsA", loPass.a);
+      filter.update();
+    }
+
+    if( hiPass ){
+      filter.addInput( loPass ? filter.getOutput() : edf );
+      filter.setMetadata( "coefficientsB", hiPass.b);
+      filter.setMetadata( "coefficientsA", hiPass.a);
+      filter.update();
+    }
+
+
+    var out = filter.getOutput();
+
+    var t1 = performance.now();
+    console.log(`process time: ${t1-t0}ms.`);
+    return out;
+  }
+
+  </script>
+
+</body>
+</html>

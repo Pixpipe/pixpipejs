@@ -12,7 +12,8 @@ import { EdfDecoder as EdfDecoderDep } from 'edfdecoder';
 * what the is the length of original record.
 *
 * **Usage**
-* - [examples/urlFileToArrayBuffer.html](../examples/fileToEDF.html)
+* - [examples/fileToEDF.html](../examples/fileToEDF.html)
+* - [examples/differenceEqSignal1D.html](../examples/differenceEqSignal1D.html)
 *
 */
 class EdfDecoder extends Filter {

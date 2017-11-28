@@ -49,22 +49,16 @@
     // the image is loaded...
     // here, this = url2ImgFilter
     file2Buff.on("ready", function(){
-
       var filenames = this.getMetadata("filenames");
-
       var mghBuff = this.getOutput();
-
       var edfDecoder = new pixpipe.EdfDecoder();
       edfDecoder.addInput( mghBuff );
       edfDecoder.update();
 
-      
-      
       edfDecoder.forEachOutput(function(index, sig1D){
         log(`-------------- SIGNAL ${index} ----------------------`)
         log( sig1D.toString() );
       })
-
     });
 
 
