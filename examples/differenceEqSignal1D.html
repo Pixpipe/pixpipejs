@@ -194,16 +194,17 @@
     var edfDecoder = new pixpipe.EdfDecoder();
     edfDecoder.addInput( buff );
     edfDecoder.update();
-    
+
     var output = edfDecoder.getOutput();
-    
+
     if( output ){
+      console.log( output );
       edf = output;
-      
+
       slider.value = 0;
       slider.min = 0;
       slider.max = edf.getMetadata("numberOfRecords");
-      
+
       showPlot( 0 );
     }
   }
@@ -221,7 +222,7 @@
     div.innerHTML = "";
 
     var sp = new SpectrumPlot2.SpectrumPlot2( "chartDiv", 400, 300 );
-    
+
     var filteredSignal = filterTheSignal();
 
     var recordBegin = parseInt(slider.value) * edf.getMetadata("numberOfSamplesPerRecord");
@@ -241,7 +242,7 @@
       "rgba(250, 80, 80, 1)"
     )
 
-    
+
 
     sp.setLabels();
     sp.draw();
@@ -276,7 +277,7 @@
       return null;
 
     var filter = new pixpipe.DifferenceEquationSignal1D();
-  
+
     if( loPass ){
       filter.addInput( edf );
       filter.setMetadata( "coefficientsB", loPass.b);

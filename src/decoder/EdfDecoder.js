@@ -1,3 +1,12 @@
+/*
+* Author   Jonathan Lurie - http://me.jonathanlurie.fr
+* License  MIT
+* Link     https://github.com/Pixpipe/pixpipejs
+* Lab      MCIN - Montreal Neurological Institute
+*/
+
+
+
 import { Filter } from '../core/Filter.js';
 import { Signal1D } from '../core/Signal1D.js';
 import { EdfDecoder as EdfDecoderDep } from 'edfdecoder';
@@ -25,6 +34,7 @@ class EdfDecoder extends Filter {
     this.setMetadata("concatenateRecords", true);
 
   }
+
 
   _run(){
     var inputBuffer = this._getInput(0);
@@ -68,7 +78,7 @@ class EdfDecoder extends Filter {
       // the other metadata have the name of the field in the EDF file but this one is
       // a standard from Signal1D
       sig1D.setMetadata( "samplingFrequency", edf.getSignalSamplingFrequency(i) );
-      
+
       this._output[i] = sig1D;
     }
 

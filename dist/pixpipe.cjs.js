@@ -13592,6 +13592,21 @@ var PixpipeObject = function () {
       }
       return null;
     }
+
+    /**
+    * Get a string containing information about metadata
+    * @return {String} meta to string
+    */
+
+  }, {
+    key: 'metadataToString',
+    value: function metadataToString() {
+      var str = "__metadata__\n";
+      for (var meta in this._metadata) {
+        str += '\t[' + meta + ']\n\t' + JSON.stringify(this._metadata[meta]) + '\n\n';
+      }
+      return str;
+    }
   }], [{
     key: 'TYPE',
     value: function TYPE() {
@@ -14095,11 +14110,24 @@ var PixpipeContainer = function (_PixpipeObject) {
 }(PixpipeObject); /* END of class PixpipeContainer */
 
 /*
- * Author   Armin Taheri - https://github.com/ArminTaheri
- * License  MIT
- * Link     https://github.com/Pixpipe/pixpipejs
- * Lab      MCIN - Montreal Neurological Institute
+ * Authors   Armin Taheri - https://github.com/ArminTaheri
+ *           Jonathan Lurie - http://me.jonathanlurie.fr
+ * License   MIT
+ * Link      https://github.com/Pixpipe/pixpipejs
+ * Lab       MCIN - Montreal Neurological Institute
  */
+
+/**
+* An object of type Signal1D is a single dimensional signal, most likely
+* by a Float32Array and a sampling frequency. To change the sampling frequency
+* use the method `.setMetadata('samplingFrequency', Number);`, defaut value is 100.
+* We tend to considere this frequency to be in **Hz**, but there is no hardcoded
+* unit and it all depends on the application. This is important to specify this
+* metadata because some processing filters may use it.
+*
+* **Usage**
+* - [examples/urlFileToArrayBuffer.html](../examples/fftSignal1D.html)
+*/
 
 var Signal1D = function (_PixpipeContainer) {
   inherits(Signal1D, _PixpipeContainer);
@@ -14111,14 +14139,31 @@ var Signal1D = function (_PixpipeContainer) {
 
     _this._type = Signal1D.TYPE();
     _this.setMetadata('length', 0);
+    _this.setMetadata('min', +Infinity);
+    _this.setMetadata('max', -Infinity);
+
+    _this.setMetadata('samplingFrequency', 100);
     return _this;
   }
 
   createClass(Signal1D, [{
     key: 'getData',
+
+
+    /**
+    * Get the raw data as a typed array
+    * @return {Float32Array} the data, NOT A COPY
+    */
     value: function getData() {
       return this._data;
     }
+
+    /**
+    * Set the data.
+    * @param {Float32Array} array - the data
+    * @param {Boolean} deepCopy - true: will perform a deep copy of the data array, false: will just associate the pointer
+    */
+
   }, {
     key: 'setData',
     value: function setData(array) {
@@ -14131,23 +14176,92 @@ var Signal1D = function (_PixpipeContainer) {
       }
 
       this.setMetadata('length', array.length);
+      this._computeStatistics();
     }
+
+    /**
+    * Get a clone of this object (data and metadata)
+    * @return {Signal1D} the clone object
+    */
+
   }, {
     key: 'clone',
     value: function clone() {
       var copy = new Signal1D();
+      copy.copyMetadataFrom(this);
+
       if (this._data) {
         copy.setData(this._data, true);
       }
       return copy;
     }
+
+    /**
+    * Clone this object but not its data
+    * (data array is replaced by same type array filled with zeros).
+    * Metadata are copied.
+    * @return {Signal1D} the hollow clone
+    */
+
   }, {
     key: 'hollowClone',
     value: function hollowClone() {
       var copy = new Signal1D();
+      copy.copyMetadataFrom(this);
       var length = this.getMetadata('length');
-      copy.setData(new Float32Array(length).fill(0));
+      copy.setData(new this._data.constructor(length).fill(0));
       return copy;
+    }
+
+    /**
+    * Get a string reprensenting the data
+    * @return {String} the data to string
+    */
+
+  }, {
+    key: 'dataToString',
+    value: function dataToString() {
+      var maxAbstractSize = 10;
+      var abstractSize = Math.min(maxAbstractSize, this._data.length);
+      var shortArray = this._data.slice(0, abstractSize);
+      var str = "__data__\n";
+      str += '\t' + this._data.constructor.name + '[' + this._data.length + '] ';
+      str += shortArray.toString() + ' ' + (this._data.length > maxAbstractSize ? ' ...' : '');
+      return str;
+    }
+
+    /**
+    * Get a string description of this object
+    * @return {String} the description
+    */
+
+  }, {
+    key: 'toString',
+    value: function toString() {
+      var str = this.constructor.name + "\n";
+      str += this.metadataToString();
+      str += this.dataToString();
+      return str;
+    }
+
+    /**
+    * [PRIVATE]
+    * Conpute min-max
+    */
+
+  }, {
+    key: '_computeStatistics',
+    value: function _computeStatistics() {
+      var min = Infinity;
+      var max = -Infinity;
+
+      for (var i = 0; i < this._data.length; i++) {
+        min = Math.min(min, this._data[i]);
+        max = Math.max(max, this._data[i]);
+      }
+
+      this.setMetadata('min', min);
+      this.setMetadata('max', max);
     }
   }], [{
     key: 'TYPE',
@@ -14280,8 +14394,8 @@ var Image2D = function (_PixpipeContainer) {
       var width = this.getMetadata("width");
       var height = this.getMetadata("height");
 
-      cpImg.setData(new Float32Array(this._data), width, height, ncpp);
       cpImg.copyMetadataFrom(this);
+      cpImg.setData(new Float32Array(this._data), width, height, ncpp);
       return cpImg;
     }
 
@@ -53799,6 +53913,1926 @@ var PixBinDecoder$1 = function (_Filter) {
   return PixBinDecoder$$1;
 }(Filter); /* END of class PixBinDecoder */
 
+var lookup$1 = [];
+var revLookup$1 = [];
+var Arr$1 = typeof Uint8Array !== 'undefined' ? Uint8Array : Array;
+var inited$1 = false;
+function init$1() {
+  inited$1 = true;
+  var code = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
+  for (var i = 0, len = code.length; i < len; ++i) {
+    lookup$1[i] = code[i];
+    revLookup$1[code.charCodeAt(i)] = i;
+  }
+
+  revLookup$1['-'.charCodeAt(0)] = 62;
+  revLookup$1['_'.charCodeAt(0)] = 63;
+}
+
+function toByteArray$1(b64) {
+  if (!inited$1) {
+    init$1();
+  }
+  var i, j, l, tmp, placeHolders, arr;
+  var len = b64.length;
+
+  if (len % 4 > 0) {
+    throw new Error('Invalid string. Length must be a multiple of 4');
+  }
+
+  // the number of equal signs (place holders)
+  // if there are two placeholders, than the two characters before it
+  // represent one byte
+  // if there is only one, then the three characters before it represent 2 bytes
+  // this is just a cheap hack to not do indexOf twice
+  placeHolders = b64[len - 2] === '=' ? 2 : b64[len - 1] === '=' ? 1 : 0;
+
+  // base64 is 4/3 + up to two characters of the original data
+  arr = new Arr$1(len * 3 / 4 - placeHolders);
+
+  // if there are placeholders, only get up to the last complete 4 chars
+  l = placeHolders > 0 ? len - 4 : len;
+
+  var L = 0;
+
+  for (i = 0, j = 0; i < l; i += 4, j += 3) {
+    tmp = revLookup$1[b64.charCodeAt(i)] << 18 | revLookup$1[b64.charCodeAt(i + 1)] << 12 | revLookup$1[b64.charCodeAt(i + 2)] << 6 | revLookup$1[b64.charCodeAt(i + 3)];
+    arr[L++] = tmp >> 16 & 0xFF;
+    arr[L++] = tmp >> 8 & 0xFF;
+    arr[L++] = tmp & 0xFF;
+  }
+
+  if (placeHolders === 2) {
+    tmp = revLookup$1[b64.charCodeAt(i)] << 2 | revLookup$1[b64.charCodeAt(i + 1)] >> 4;
+    arr[L++] = tmp & 0xFF;
+  } else if (placeHolders === 1) {
+    tmp = revLookup$1[b64.charCodeAt(i)] << 10 | revLookup$1[b64.charCodeAt(i + 1)] << 4 | revLookup$1[b64.charCodeAt(i + 2)] >> 2;
+    arr[L++] = tmp >> 8 & 0xFF;
+    arr[L++] = tmp & 0xFF;
+  }
+
+  return arr;
+}
+
+function tripletToBase64$1(num) {
+  return lookup$1[num >> 18 & 0x3F] + lookup$1[num >> 12 & 0x3F] + lookup$1[num >> 6 & 0x3F] + lookup$1[num & 0x3F];
+}
+
+function encodeChunk$1(uint8, start, end) {
+  var tmp;
+  var output = [];
+  for (var i = start; i < end; i += 3) {
+    tmp = (uint8[i] << 16) + (uint8[i + 1] << 8) + uint8[i + 2];
+    output.push(tripletToBase64$1(tmp));
+  }
+  return output.join('');
+}
+
+function fromByteArray$1(uint8) {
+  if (!inited$1) {
+    init$1();
+  }
+  var tmp;
+  var len = uint8.length;
+  var extraBytes = len % 3; // if we have 1 byte left, pad 2 bytes
+  var output = '';
+  var parts = [];
+  var maxChunkLength = 16383; // must be multiple of 3
+
+  // go through the array every three bytes, we'll deal with trailing stuff later
+  for (var i = 0, len2 = len - extraBytes; i < len2; i += maxChunkLength) {
+    parts.push(encodeChunk$1(uint8, i, i + maxChunkLength > len2 ? len2 : i + maxChunkLength));
+  }
+
+  // pad the end with zeros, but make sure to not forget the extra bytes
+  if (extraBytes === 1) {
+    tmp = uint8[len - 1];
+    output += lookup$1[tmp >> 2];
+    output += lookup$1[tmp << 4 & 0x3F];
+    output += '==';
+  } else if (extraBytes === 2) {
+    tmp = (uint8[len - 2] << 8) + uint8[len - 1];
+    output += lookup$1[tmp >> 10];
+    output += lookup$1[tmp >> 4 & 0x3F];
+    output += lookup$1[tmp << 2 & 0x3F];
+    output += '=';
+  }
+
+  parts.push(output);
+
+  return parts.join('');
+}
+
+function read$1(buffer, offset, isLE, mLen, nBytes) {
+  var e, m;
+  var eLen = nBytes * 8 - mLen - 1;
+  var eMax = (1 << eLen) - 1;
+  var eBias = eMax >> 1;
+  var nBits = -7;
+  var i = isLE ? nBytes - 1 : 0;
+  var d = isLE ? -1 : 1;
+  var s = buffer[offset + i];
+
+  i += d;
+
+  e = s & (1 << -nBits) - 1;
+  s >>= -nBits;
+  nBits += eLen;
+  for (; nBits > 0; e = e * 256 + buffer[offset + i], i += d, nBits -= 8) {}
+
+  m = e & (1 << -nBits) - 1;
+  e >>= -nBits;
+  nBits += mLen;
+  for (; nBits > 0; m = m * 256 + buffer[offset + i], i += d, nBits -= 8) {}
+
+  if (e === 0) {
+    e = 1 - eBias;
+  } else if (e === eMax) {
+    return m ? NaN : (s ? -1 : 1) * Infinity;
+  } else {
+    m = m + Math.pow(2, mLen);
+    e = e - eBias;
+  }
+  return (s ? -1 : 1) * m * Math.pow(2, e - mLen);
+}
+
+function write$1(buffer, value, offset, isLE, mLen, nBytes) {
+  var e, m, c;
+  var eLen = nBytes * 8 - mLen - 1;
+  var eMax = (1 << eLen) - 1;
+  var eBias = eMax >> 1;
+  var rt = mLen === 23 ? Math.pow(2, -24) - Math.pow(2, -77) : 0;
+  var i = isLE ? 0 : nBytes - 1;
+  var d = isLE ? 1 : -1;
+  var s = value < 0 || value === 0 && 1 / value < 0 ? 1 : 0;
+
+  value = Math.abs(value);
+
+  if (isNaN(value) || value === Infinity) {
+    m = isNaN(value) ? 1 : 0;
+    e = eMax;
+  } else {
+    e = Math.floor(Math.log(value) / Math.LN2);
+    if (value * (c = Math.pow(2, -e)) < 1) {
+      e--;
+      c *= 2;
+    }
+    if (e + eBias >= 1) {
+      value += rt / c;
+    } else {
+      value += rt * Math.pow(2, 1 - eBias);
+    }
+    if (value * c >= 2) {
+      e++;
+      c /= 2;
+    }
+
+    if (e + eBias >= eMax) {
+      m = 0;
+      e = eMax;
+    } else if (e + eBias >= 1) {
+      m = (value * c - 1) * Math.pow(2, mLen);
+      e = e + eBias;
+    } else {
+      m = value * Math.pow(2, eBias - 1) * Math.pow(2, mLen);
+      e = 0;
+    }
+  }
+
+  for (; mLen >= 8; buffer[offset + i] = m & 0xff, i += d, m /= 256, mLen -= 8) {}
+
+  e = e << mLen | m;
+  eLen += mLen;
+  for (; eLen > 0; buffer[offset + i] = e & 0xff, i += d, e /= 256, eLen -= 8) {}
+
+  buffer[offset + i - d] |= s * 128;
+}
+
+var toString$4 = {}.toString;
+
+var isArray$1 = Array.isArray || function (arr) {
+  return toString$4.call(arr) == '[object Array]';
+};
+
+/*!
+ * The buffer module from node.js, for the browser.
+ *
+ * @author   Feross Aboukhadijeh <feross@feross.org> <http://feross.org>
+ * @license  MIT
+ */
+/* eslint-disable no-proto */
+
+var INSPECT_MAX_BYTES$1 = 50;
+
+/**
+ * If `Buffer.TYPED_ARRAY_SUPPORT`:
+ *   === true    Use Uint8Array implementation (fastest)
+ *   === false   Use Object implementation (most compatible, even IE6)
+ *
+ * Browsers that support typed arrays are IE 10+, Firefox 4+, Chrome 7+, Safari 5.1+,
+ * Opera 11.6+, iOS 4.2+.
+ *
+ * Due to various browser bugs, sometimes the Object implementation will be used even
+ * when the browser supports typed arrays.
+ *
+ * Note:
+ *
+ *   - Firefox 4-29 lacks support for adding new properties to `Uint8Array` instances,
+ *     See: https://bugzilla.mozilla.org/show_bug.cgi?id=695438.
+ *
+ *   - Chrome 9-10 is missing the `TypedArray.prototype.subarray` function.
+ *
+ *   - IE10 has a broken `TypedArray.prototype.subarray` function which returns arrays of
+ *     incorrect length in some situations.
+
+ * We detect these buggy browsers and set `Buffer.TYPED_ARRAY_SUPPORT` to `false` so they
+ * get the Object implementation, which is slower but behaves correctly.
+ */
+Buffer$1.TYPED_ARRAY_SUPPORT = global$1.TYPED_ARRAY_SUPPORT !== undefined ? global$1.TYPED_ARRAY_SUPPORT : true;
+
+/*
+ * Export kMaxLength after typed array support is determined.
+ */
+var _kMaxLength$1 = kMaxLength$1();
+function kMaxLength$1() {
+  return Buffer$1.TYPED_ARRAY_SUPPORT ? 0x7fffffff : 0x3fffffff;
+}
+
+function createBuffer$1(that, length) {
+  if (kMaxLength$1() < length) {
+    throw new RangeError('Invalid typed array length');
+  }
+  if (Buffer$1.TYPED_ARRAY_SUPPORT) {
+    // Return an augmented `Uint8Array` instance, for best performance
+    that = new Uint8Array(length);
+    that.__proto__ = Buffer$1.prototype;
+  } else {
+    // Fallback: Return an object instance of the Buffer class
+    if (that === null) {
+      that = new Buffer$1(length);
+    }
+    that.length = length;
+  }
+
+  return that;
+}
+
+/**
+ * The Buffer constructor returns instances of `Uint8Array` that have their
+ * prototype changed to `Buffer.prototype`. Furthermore, `Buffer` is a subclass of
+ * `Uint8Array`, so the returned instances will have all the node `Buffer` methods
+ * and the `Uint8Array` methods. Square bracket notation works as expected -- it
+ * returns a single octet.
+ *
+ * The `Uint8Array` prototype remains unmodified.
+ */
+
+function Buffer$1(arg, encodingOrOffset, length) {
+  if (!Buffer$1.TYPED_ARRAY_SUPPORT && !(this instanceof Buffer$1)) {
+    return new Buffer$1(arg, encodingOrOffset, length);
+  }
+
+  // Common case.
+  if (typeof arg === 'number') {
+    if (typeof encodingOrOffset === 'string') {
+      throw new Error('If encoding is specified then the first argument must be a string');
+    }
+    return allocUnsafe$1(this, arg);
+  }
+  return from$1(this, arg, encodingOrOffset, length);
+}
+
+Buffer$1.poolSize = 8192; // not used by this implementation
+
+// TODO: Legacy, not needed anymore. Remove in next major version.
+Buffer$1._augment = function (arr) {
+  arr.__proto__ = Buffer$1.prototype;
+  return arr;
+};
+
+function from$1(that, value, encodingOrOffset, length) {
+  if (typeof value === 'number') {
+    throw new TypeError('"value" argument must not be a number');
+  }
+
+  if (typeof ArrayBuffer !== 'undefined' && value instanceof ArrayBuffer) {
+    return fromArrayBuffer$1(that, value, encodingOrOffset, length);
+  }
+
+  if (typeof value === 'string') {
+    return fromString$1(that, value, encodingOrOffset);
+  }
+
+  return fromObject$1(that, value);
+}
+
+/**
+ * Functionally equivalent to Buffer(arg, encoding) but throws a TypeError
+ * if value is a number.
+ * Buffer.from(str[, encoding])
+ * Buffer.from(array)
+ * Buffer.from(buffer)
+ * Buffer.from(arrayBuffer[, byteOffset[, length]])
+ **/
+Buffer$1.from = function (value, encodingOrOffset, length) {
+  return from$1(null, value, encodingOrOffset, length);
+};
+
+if (Buffer$1.TYPED_ARRAY_SUPPORT) {
+  Buffer$1.prototype.__proto__ = Uint8Array.prototype;
+  Buffer$1.__proto__ = Uint8Array;
+  
+}
+
+function assertSize$1(size) {
+  if (typeof size !== 'number') {
+    throw new TypeError('"size" argument must be a number');
+  } else if (size < 0) {
+    throw new RangeError('"size" argument must not be negative');
+  }
+}
+
+function alloc$1(that, size, fill, encoding) {
+  assertSize$1(size);
+  if (size <= 0) {
+    return createBuffer$1(that, size);
+  }
+  if (fill !== undefined) {
+    // Only pay attention to encoding if it's a string. This
+    // prevents accidentally sending in a number that would
+    // be interpretted as a start offset.
+    return typeof encoding === 'string' ? createBuffer$1(that, size).fill(fill, encoding) : createBuffer$1(that, size).fill(fill);
+  }
+  return createBuffer$1(that, size);
+}
+
+/**
+ * Creates a new filled Buffer instance.
+ * alloc(size[, fill[, encoding]])
+ **/
+Buffer$1.alloc = function (size, fill, encoding) {
+  return alloc$1(null, size, fill, encoding);
+};
+
+function allocUnsafe$1(that, size) {
+  assertSize$1(size);
+  that = createBuffer$1(that, size < 0 ? 0 : checked$1(size) | 0);
+  if (!Buffer$1.TYPED_ARRAY_SUPPORT) {
+    for (var i = 0; i < size; ++i) {
+      that[i] = 0;
+    }
+  }
+  return that;
+}
+
+/**
+ * Equivalent to Buffer(num), by default creates a non-zero-filled Buffer instance.
+ * */
+Buffer$1.allocUnsafe = function (size) {
+  return allocUnsafe$1(null, size);
+};
+/**
+ * Equivalent to SlowBuffer(num), by default creates a non-zero-filled Buffer instance.
+ */
+Buffer$1.allocUnsafeSlow = function (size) {
+  return allocUnsafe$1(null, size);
+};
+
+function fromString$1(that, string, encoding) {
+  if (typeof encoding !== 'string' || encoding === '') {
+    encoding = 'utf8';
+  }
+
+  if (!Buffer$1.isEncoding(encoding)) {
+    throw new TypeError('"encoding" must be a valid string encoding');
+  }
+
+  var length = byteLength$1(string, encoding) | 0;
+  that = createBuffer$1(that, length);
+
+  var actual = that.write(string, encoding);
+
+  if (actual !== length) {
+    // Writing a hex string, for example, that contains invalid characters will
+    // cause everything after the first invalid character to be ignored. (e.g.
+    // 'abxxcd' will be treated as 'ab')
+    that = that.slice(0, actual);
+  }
+
+  return that;
+}
+
+function fromArrayLike$1(that, array) {
+  var length = array.length < 0 ? 0 : checked$1(array.length) | 0;
+  that = createBuffer$1(that, length);
+  for (var i = 0; i < length; i += 1) {
+    that[i] = array[i] & 255;
+  }
+  return that;
+}
+
+function fromArrayBuffer$1(that, array, byteOffset, length) {
+  array.byteLength; // this throws if `array` is not a valid ArrayBuffer
+
+  if (byteOffset < 0 || array.byteLength < byteOffset) {
+    throw new RangeError('\'offset\' is out of bounds');
+  }
+
+  if (array.byteLength < byteOffset + (length || 0)) {
+    throw new RangeError('\'length\' is out of bounds');
+  }
+
+  if (byteOffset === undefined && length === undefined) {
+    array = new Uint8Array(array);
+  } else if (length === undefined) {
+    array = new Uint8Array(array, byteOffset);
+  } else {
+    array = new Uint8Array(array, byteOffset, length);
+  }
+
+  if (Buffer$1.TYPED_ARRAY_SUPPORT) {
+    // Return an augmented `Uint8Array` instance, for best performance
+    that = array;
+    that.__proto__ = Buffer$1.prototype;
+  } else {
+    // Fallback: Return an object instance of the Buffer class
+    that = fromArrayLike$1(that, array);
+  }
+  return that;
+}
+
+function fromObject$1(that, obj) {
+  if (internalIsBuffer$1(obj)) {
+    var len = checked$1(obj.length) | 0;
+    that = createBuffer$1(that, len);
+
+    if (that.length === 0) {
+      return that;
+    }
+
+    obj.copy(that, 0, 0, len);
+    return that;
+  }
+
+  if (obj) {
+    if (typeof ArrayBuffer !== 'undefined' && obj.buffer instanceof ArrayBuffer || 'length' in obj) {
+      if (typeof obj.length !== 'number' || isnan$1(obj.length)) {
+        return createBuffer$1(that, 0);
+      }
+      return fromArrayLike$1(that, obj);
+    }
+
+    if (obj.type === 'Buffer' && isArray$1(obj.data)) {
+      return fromArrayLike$1(that, obj.data);
+    }
+  }
+
+  throw new TypeError('First argument must be a string, Buffer, ArrayBuffer, Array, or array-like object.');
+}
+
+function checked$1(length) {
+  // Note: cannot use `length < kMaxLength()` here because that fails when
+  // length is NaN (which is otherwise coerced to zero.)
+  if (length >= kMaxLength$1()) {
+    throw new RangeError('Attempt to allocate Buffer larger than maximum ' + 'size: 0x' + kMaxLength$1().toString(16) + ' bytes');
+  }
+  return length | 0;
+}
+
+
+Buffer$1.isBuffer = isBuffer$1;
+function internalIsBuffer$1(b) {
+  return !!(b != null && b._isBuffer);
+}
+
+Buffer$1.compare = function compare(a, b) {
+  if (!internalIsBuffer$1(a) || !internalIsBuffer$1(b)) {
+    throw new TypeError('Arguments must be Buffers');
+  }
+
+  if (a === b) return 0;
+
+  var x = a.length;
+  var y = b.length;
+
+  for (var i = 0, len = Math.min(x, y); i < len; ++i) {
+    if (a[i] !== b[i]) {
+      x = a[i];
+      y = b[i];
+      break;
+    }
+  }
+
+  if (x < y) return -1;
+  if (y < x) return 1;
+  return 0;
+};
+
+Buffer$1.isEncoding = function isEncoding(encoding) {
+  switch (String(encoding).toLowerCase()) {
+    case 'hex':
+    case 'utf8':
+    case 'utf-8':
+    case 'ascii':
+    case 'latin1':
+    case 'binary':
+    case 'base64':
+    case 'ucs2':
+    case 'ucs-2':
+    case 'utf16le':
+    case 'utf-16le':
+      return true;
+    default:
+      return false;
+  }
+};
+
+Buffer$1.concat = function concat(list, length) {
+  if (!isArray$1(list)) {
+    throw new TypeError('"list" argument must be an Array of Buffers');
+  }
+
+  if (list.length === 0) {
+    return Buffer$1.alloc(0);
+  }
+
+  var i;
+  if (length === undefined) {
+    length = 0;
+    for (i = 0; i < list.length; ++i) {
+      length += list[i].length;
+    }
+  }
+
+  var buffer = Buffer$1.allocUnsafe(length);
+  var pos = 0;
+  for (i = 0; i < list.length; ++i) {
+    var buf = list[i];
+    if (!internalIsBuffer$1(buf)) {
+      throw new TypeError('"list" argument must be an Array of Buffers');
+    }
+    buf.copy(buffer, pos);
+    pos += buf.length;
+  }
+  return buffer;
+};
+
+function byteLength$1(string, encoding) {
+  if (internalIsBuffer$1(string)) {
+    return string.length;
+  }
+  if (typeof ArrayBuffer !== 'undefined' && typeof ArrayBuffer.isView === 'function' && (ArrayBuffer.isView(string) || string instanceof ArrayBuffer)) {
+    return string.byteLength;
+  }
+  if (typeof string !== 'string') {
+    string = '' + string;
+  }
+
+  var len = string.length;
+  if (len === 0) return 0;
+
+  // Use a for loop to avoid recursion
+  var loweredCase = false;
+  for (;;) {
+    switch (encoding) {
+      case 'ascii':
+      case 'latin1':
+      case 'binary':
+        return len;
+      case 'utf8':
+      case 'utf-8':
+      case undefined:
+        return utf8ToBytes$1(string).length;
+      case 'ucs2':
+      case 'ucs-2':
+      case 'utf16le':
+      case 'utf-16le':
+        return len * 2;
+      case 'hex':
+        return len >>> 1;
+      case 'base64':
+        return base64ToBytes$1(string).length;
+      default:
+        if (loweredCase) return utf8ToBytes$1(string).length; // assume utf8
+        encoding = ('' + encoding).toLowerCase();
+        loweredCase = true;
+    }
+  }
+}
+Buffer$1.byteLength = byteLength$1;
+
+function slowToString$1(encoding, start, end) {
+  var loweredCase = false;
+
+  // No need to verify that "this.length <= MAX_UINT32" since it's a read-only
+  // property of a typed array.
+
+  // This behaves neither like String nor Uint8Array in that we set start/end
+  // to their upper/lower bounds if the value passed is out of range.
+  // undefined is handled specially as per ECMA-262 6th Edition,
+  // Section 13.3.3.7 Runtime Semantics: KeyedBindingInitialization.
+  if (start === undefined || start < 0) {
+    start = 0;
+  }
+  // Return early if start > this.length. Done here to prevent potential uint32
+  // coercion fail below.
+  if (start > this.length) {
+    return '';
+  }
+
+  if (end === undefined || end > this.length) {
+    end = this.length;
+  }
+
+  if (end <= 0) {
+    return '';
+  }
+
+  // Force coersion to uint32. This will also coerce falsey/NaN values to 0.
+  end >>>= 0;
+  start >>>= 0;
+
+  if (end <= start) {
+    return '';
+  }
+
+  if (!encoding) encoding = 'utf8';
+
+  while (true) {
+    switch (encoding) {
+      case 'hex':
+        return hexSlice$1(this, start, end);
+
+      case 'utf8':
+      case 'utf-8':
+        return utf8Slice$1(this, start, end);
+
+      case 'ascii':
+        return asciiSlice$1(this, start, end);
+
+      case 'latin1':
+      case 'binary':
+        return latin1Slice$1(this, start, end);
+
+      case 'base64':
+        return base64Slice$1(this, start, end);
+
+      case 'ucs2':
+      case 'ucs-2':
+      case 'utf16le':
+      case 'utf-16le':
+        return utf16leSlice$1(this, start, end);
+
+      default:
+        if (loweredCase) throw new TypeError('Unknown encoding: ' + encoding);
+        encoding = (encoding + '').toLowerCase();
+        loweredCase = true;
+    }
+  }
+}
+
+// The property is used by `Buffer.isBuffer` and `is-buffer` (in Safari 5-7) to detect
+// Buffer instances.
+Buffer$1.prototype._isBuffer = true;
+
+function swap$1(b, n, m) {
+  var i = b[n];
+  b[n] = b[m];
+  b[m] = i;
+}
+
+Buffer$1.prototype.swap16 = function swap16() {
+  var len = this.length;
+  if (len % 2 !== 0) {
+    throw new RangeError('Buffer size must be a multiple of 16-bits');
+  }
+  for (var i = 0; i < len; i += 2) {
+    swap$1(this, i, i + 1);
+  }
+  return this;
+};
+
+Buffer$1.prototype.swap32 = function swap32() {
+  var len = this.length;
+  if (len % 4 !== 0) {
+    throw new RangeError('Buffer size must be a multiple of 32-bits');
+  }
+  for (var i = 0; i < len; i += 4) {
+    swap$1(this, i, i + 3);
+    swap$1(this, i + 1, i + 2);
+  }
+  return this;
+};
+
+Buffer$1.prototype.swap64 = function swap64() {
+  var len = this.length;
+  if (len % 8 !== 0) {
+    throw new RangeError('Buffer size must be a multiple of 64-bits');
+  }
+  for (var i = 0; i < len; i += 8) {
+    swap$1(this, i, i + 7);
+    swap$1(this, i + 1, i + 6);
+    swap$1(this, i + 2, i + 5);
+    swap$1(this, i + 3, i + 4);
+  }
+  return this;
+};
+
+Buffer$1.prototype.toString = function toString() {
+  var length = this.length | 0;
+  if (length === 0) return '';
+  if (arguments.length === 0) return utf8Slice$1(this, 0, length);
+  return slowToString$1.apply(this, arguments);
+};
+
+Buffer$1.prototype.equals = function equals(b) {
+  if (!internalIsBuffer$1(b)) throw new TypeError('Argument must be a Buffer');
+  if (this === b) return true;
+  return Buffer$1.compare(this, b) === 0;
+};
+
+Buffer$1.prototype.inspect = function inspect() {
+  var str = '';
+  var max = INSPECT_MAX_BYTES$1;
+  if (this.length > 0) {
+    str = this.toString('hex', 0, max).match(/.{2}/g).join(' ');
+    if (this.length > max) str += ' ... ';
+  }
+  return '<Buffer ' + str + '>';
+};
+
+Buffer$1.prototype.compare = function compare(target, start, end, thisStart, thisEnd) {
+  if (!internalIsBuffer$1(target)) {
+    throw new TypeError('Argument must be a Buffer');
+  }
+
+  if (start === undefined) {
+    start = 0;
+  }
+  if (end === undefined) {
+    end = target ? target.length : 0;
+  }
+  if (thisStart === undefined) {
+    thisStart = 0;
+  }
+  if (thisEnd === undefined) {
+    thisEnd = this.length;
+  }
+
+  if (start < 0 || end > target.length || thisStart < 0 || thisEnd > this.length) {
+    throw new RangeError('out of range index');
+  }
+
+  if (thisStart >= thisEnd && start >= end) {
+    return 0;
+  }
+  if (thisStart >= thisEnd) {
+    return -1;
+  }
+  if (start >= end) {
+    return 1;
+  }
+
+  start >>>= 0;
+  end >>>= 0;
+  thisStart >>>= 0;
+  thisEnd >>>= 0;
+
+  if (this === target) return 0;
+
+  var x = thisEnd - thisStart;
+  var y = end - start;
+  var len = Math.min(x, y);
+
+  var thisCopy = this.slice(thisStart, thisEnd);
+  var targetCopy = target.slice(start, end);
+
+  for (var i = 0; i < len; ++i) {
+    if (thisCopy[i] !== targetCopy[i]) {
+      x = thisCopy[i];
+      y = targetCopy[i];
+      break;
+    }
+  }
+
+  if (x < y) return -1;
+  if (y < x) return 1;
+  return 0;
+};
+
+// Finds either the first index of `val` in `buffer` at offset >= `byteOffset`,
+// OR the last index of `val` in `buffer` at offset <= `byteOffset`.
+//
+// Arguments:
+// - buffer - a Buffer to search
+// - val - a string, Buffer, or number
+// - byteOffset - an index into `buffer`; will be clamped to an int32
+// - encoding - an optional encoding, relevant is val is a string
+// - dir - true for indexOf, false for lastIndexOf
+function bidirectionalIndexOf$1(buffer, val, byteOffset, encoding, dir) {
+  // Empty buffer means no match
+  if (buffer.length === 0) return -1;
+
+  // Normalize byteOffset
+  if (typeof byteOffset === 'string') {
+    encoding = byteOffset;
+    byteOffset = 0;
+  } else if (byteOffset > 0x7fffffff) {
+    byteOffset = 0x7fffffff;
+  } else if (byteOffset < -0x80000000) {
+    byteOffset = -0x80000000;
+  }
+  byteOffset = +byteOffset; // Coerce to Number.
+  if (isNaN(byteOffset)) {
+    // byteOffset: it it's undefined, null, NaN, "foo", etc, search whole buffer
+    byteOffset = dir ? 0 : buffer.length - 1;
+  }
+
+  // Normalize byteOffset: negative offsets start from the end of the buffer
+  if (byteOffset < 0) byteOffset = buffer.length + byteOffset;
+  if (byteOffset >= buffer.length) {
+    if (dir) return -1;else byteOffset = buffer.length - 1;
+  } else if (byteOffset < 0) {
+    if (dir) byteOffset = 0;else return -1;
+  }
+
+  // Normalize val
+  if (typeof val === 'string') {
+    val = Buffer$1.from(val, encoding);
+  }
+
+  // Finally, search either indexOf (if dir is true) or lastIndexOf
+  if (internalIsBuffer$1(val)) {
+    // Special case: looking for empty string/buffer always fails
+    if (val.length === 0) {
+      return -1;
+    }
+    return arrayIndexOf$1(buffer, val, byteOffset, encoding, dir);
+  } else if (typeof val === 'number') {
+    val = val & 0xFF; // Search for a byte value [0-255]
+    if (Buffer$1.TYPED_ARRAY_SUPPORT && typeof Uint8Array.prototype.indexOf === 'function') {
+      if (dir) {
+        return Uint8Array.prototype.indexOf.call(buffer, val, byteOffset);
+      } else {
+        return Uint8Array.prototype.lastIndexOf.call(buffer, val, byteOffset);
+      }
+    }
+    return arrayIndexOf$1(buffer, [val], byteOffset, encoding, dir);
+  }
+
+  throw new TypeError('val must be string, number or Buffer');
+}
+
+function arrayIndexOf$1(arr, val, byteOffset, encoding, dir) {
+  var indexSize = 1;
+  var arrLength = arr.length;
+  var valLength = val.length;
+
+  if (encoding !== undefined) {
+    encoding = String(encoding).toLowerCase();
+    if (encoding === 'ucs2' || encoding === 'ucs-2' || encoding === 'utf16le' || encoding === 'utf-16le') {
+      if (arr.length < 2 || val.length < 2) {
+        return -1;
+      }
+      indexSize = 2;
+      arrLength /= 2;
+      valLength /= 2;
+      byteOffset /= 2;
+    }
+  }
+
+  function read(buf, i) {
+    if (indexSize === 1) {
+      return buf[i];
+    } else {
+      return buf.readUInt16BE(i * indexSize);
+    }
+  }
+
+  var i;
+  if (dir) {
+    var foundIndex = -1;
+    for (i = byteOffset; i < arrLength; i++) {
+      if (read(arr, i) === read(val, foundIndex === -1 ? 0 : i - foundIndex)) {
+        if (foundIndex === -1) foundIndex = i;
+        if (i - foundIndex + 1 === valLength) return foundIndex * indexSize;
+      } else {
+        if (foundIndex !== -1) i -= i - foundIndex;
+        foundIndex = -1;
+      }
+    }
+  } else {
+    if (byteOffset + valLength > arrLength) byteOffset = arrLength - valLength;
+    for (i = byteOffset; i >= 0; i--) {
+      var found = true;
+      for (var j = 0; j < valLength; j++) {
+        if (read(arr, i + j) !== read(val, j)) {
+          found = false;
+          break;
+        }
+      }
+      if (found) return i;
+    }
+  }
+
+  return -1;
+}
+
+Buffer$1.prototype.includes = function includes(val, byteOffset, encoding) {
+  return this.indexOf(val, byteOffset, encoding) !== -1;
+};
+
+Buffer$1.prototype.indexOf = function indexOf(val, byteOffset, encoding) {
+  return bidirectionalIndexOf$1(this, val, byteOffset, encoding, true);
+};
+
+Buffer$1.prototype.lastIndexOf = function lastIndexOf(val, byteOffset, encoding) {
+  return bidirectionalIndexOf$1(this, val, byteOffset, encoding, false);
+};
+
+function hexWrite$1(buf, string, offset, length) {
+  offset = Number(offset) || 0;
+  var remaining = buf.length - offset;
+  if (!length) {
+    length = remaining;
+  } else {
+    length = Number(length);
+    if (length > remaining) {
+      length = remaining;
+    }
+  }
+
+  // must be an even number of digits
+  var strLen = string.length;
+  if (strLen % 2 !== 0) throw new TypeError('Invalid hex string');
+
+  if (length > strLen / 2) {
+    length = strLen / 2;
+  }
+  for (var i = 0; i < length; ++i) {
+    var parsed = parseInt(string.substr(i * 2, 2), 16);
+    if (isNaN(parsed)) return i;
+    buf[offset + i] = parsed;
+  }
+  return i;
+}
+
+function utf8Write$1(buf, string, offset, length) {
+  return blitBuffer$1(utf8ToBytes$1(string, buf.length - offset), buf, offset, length);
+}
+
+function asciiWrite$1(buf, string, offset, length) {
+  return blitBuffer$1(asciiToBytes$1(string), buf, offset, length);
+}
+
+function latin1Write$1(buf, string, offset, length) {
+  return asciiWrite$1(buf, string, offset, length);
+}
+
+function base64Write$1(buf, string, offset, length) {
+  return blitBuffer$1(base64ToBytes$1(string), buf, offset, length);
+}
+
+function ucs2Write$1(buf, string, offset, length) {
+  return blitBuffer$1(utf16leToBytes$1(string, buf.length - offset), buf, offset, length);
+}
+
+Buffer$1.prototype.write = function write(string, offset, length, encoding) {
+  // Buffer#write(string)
+  if (offset === undefined) {
+    encoding = 'utf8';
+    length = this.length;
+    offset = 0;
+    // Buffer#write(string, encoding)
+  } else if (length === undefined && typeof offset === 'string') {
+    encoding = offset;
+    length = this.length;
+    offset = 0;
+    // Buffer#write(string, offset[, length][, encoding])
+  } else if (isFinite(offset)) {
+    offset = offset | 0;
+    if (isFinite(length)) {
+      length = length | 0;
+      if (encoding === undefined) encoding = 'utf8';
+    } else {
+      encoding = length;
+      length = undefined;
+    }
+    // legacy write(string, encoding, offset, length) - remove in v0.13
+  } else {
+    throw new Error('Buffer.write(string, encoding, offset[, length]) is no longer supported');
+  }
+
+  var remaining = this.length - offset;
+  if (length === undefined || length > remaining) length = remaining;
+
+  if (string.length > 0 && (length < 0 || offset < 0) || offset > this.length) {
+    throw new RangeError('Attempt to write outside buffer bounds');
+  }
+
+  if (!encoding) encoding = 'utf8';
+
+  var loweredCase = false;
+  for (;;) {
+    switch (encoding) {
+      case 'hex':
+        return hexWrite$1(this, string, offset, length);
+
+      case 'utf8':
+      case 'utf-8':
+        return utf8Write$1(this, string, offset, length);
+
+      case 'ascii':
+        return asciiWrite$1(this, string, offset, length);
+
+      case 'latin1':
+      case 'binary':
+        return latin1Write$1(this, string, offset, length);
+
+      case 'base64':
+        // Warning: maxLength not taken into account in base64Write
+        return base64Write$1(this, string, offset, length);
+
+      case 'ucs2':
+      case 'ucs-2':
+      case 'utf16le':
+      case 'utf-16le':
+        return ucs2Write$1(this, string, offset, length);
+
+      default:
+        if (loweredCase) throw new TypeError('Unknown encoding: ' + encoding);
+        encoding = ('' + encoding).toLowerCase();
+        loweredCase = true;
+    }
+  }
+};
+
+Buffer$1.prototype.toJSON = function toJSON() {
+  return {
+    type: 'Buffer',
+    data: Array.prototype.slice.call(this._arr || this, 0)
+  };
+};
+
+function base64Slice$1(buf, start, end) {
+  if (start === 0 && end === buf.length) {
+    return fromByteArray$1(buf);
+  } else {
+    return fromByteArray$1(buf.slice(start, end));
+  }
+}
+
+function utf8Slice$1(buf, start, end) {
+  end = Math.min(buf.length, end);
+  var res = [];
+
+  var i = start;
+  while (i < end) {
+    var firstByte = buf[i];
+    var codePoint = null;
+    var bytesPerSequence = firstByte > 0xEF ? 4 : firstByte > 0xDF ? 3 : firstByte > 0xBF ? 2 : 1;
+
+    if (i + bytesPerSequence <= end) {
+      var secondByte, thirdByte, fourthByte, tempCodePoint;
+
+      switch (bytesPerSequence) {
+        case 1:
+          if (firstByte < 0x80) {
+            codePoint = firstByte;
+          }
+          break;
+        case 2:
+          secondByte = buf[i + 1];
+          if ((secondByte & 0xC0) === 0x80) {
+            tempCodePoint = (firstByte & 0x1F) << 0x6 | secondByte & 0x3F;
+            if (tempCodePoint > 0x7F) {
+              codePoint = tempCodePoint;
+            }
+          }
+          break;
+        case 3:
+          secondByte = buf[i + 1];
+          thirdByte = buf[i + 2];
+          if ((secondByte & 0xC0) === 0x80 && (thirdByte & 0xC0) === 0x80) {
+            tempCodePoint = (firstByte & 0xF) << 0xC | (secondByte & 0x3F) << 0x6 | thirdByte & 0x3F;
+            if (tempCodePoint > 0x7FF && (tempCodePoint < 0xD800 || tempCodePoint > 0xDFFF)) {
+              codePoint = tempCodePoint;
+            }
+          }
+          break;
+        case 4:
+          secondByte = buf[i + 1];
+          thirdByte = buf[i + 2];
+          fourthByte = buf[i + 3];
+          if ((secondByte & 0xC0) === 0x80 && (thirdByte & 0xC0) === 0x80 && (fourthByte & 0xC0) === 0x80) {
+            tempCodePoint = (firstByte & 0xF) << 0x12 | (secondByte & 0x3F) << 0xC | (thirdByte & 0x3F) << 0x6 | fourthByte & 0x3F;
+            if (tempCodePoint > 0xFFFF && tempCodePoint < 0x110000) {
+              codePoint = tempCodePoint;
+            }
+          }
+      }
+    }
+
+    if (codePoint === null) {
+      // we did not generate a valid codePoint so insert a
+      // replacement char (U+FFFD) and advance only 1 byte
+      codePoint = 0xFFFD;
+      bytesPerSequence = 1;
+    } else if (codePoint > 0xFFFF) {
+      // encode to utf16 (surrogate pair dance)
+      codePoint -= 0x10000;
+      res.push(codePoint >>> 10 & 0x3FF | 0xD800);
+      codePoint = 0xDC00 | codePoint & 0x3FF;
+    }
+
+    res.push(codePoint);
+    i += bytesPerSequence;
+  }
+
+  return decodeCodePointsArray$1(res);
+}
+
+// Based on http://stackoverflow.com/a/22747272/680742, the browser with
+// the lowest limit is Chrome, with 0x10000 args.
+// We go 1 magnitude less, for safety
+var MAX_ARGUMENTS_LENGTH$1 = 0x1000;
+
+function decodeCodePointsArray$1(codePoints) {
+  var len = codePoints.length;
+  if (len <= MAX_ARGUMENTS_LENGTH$1) {
+    return String.fromCharCode.apply(String, codePoints); // avoid extra slice()
+  }
+
+  // Decode in chunks to avoid "call stack size exceeded".
+  var res = '';
+  var i = 0;
+  while (i < len) {
+    res += String.fromCharCode.apply(String, codePoints.slice(i, i += MAX_ARGUMENTS_LENGTH$1));
+  }
+  return res;
+}
+
+function asciiSlice$1(buf, start, end) {
+  var ret = '';
+  end = Math.min(buf.length, end);
+
+  for (var i = start; i < end; ++i) {
+    ret += String.fromCharCode(buf[i] & 0x7F);
+  }
+  return ret;
+}
+
+function latin1Slice$1(buf, start, end) {
+  var ret = '';
+  end = Math.min(buf.length, end);
+
+  for (var i = start; i < end; ++i) {
+    ret += String.fromCharCode(buf[i]);
+  }
+  return ret;
+}
+
+function hexSlice$1(buf, start, end) {
+  var len = buf.length;
+
+  if (!start || start < 0) start = 0;
+  if (!end || end < 0 || end > len) end = len;
+
+  var out = '';
+  for (var i = start; i < end; ++i) {
+    out += toHex$1(buf[i]);
+  }
+  return out;
+}
+
+function utf16leSlice$1(buf, start, end) {
+  var bytes = buf.slice(start, end);
+  var res = '';
+  for (var i = 0; i < bytes.length; i += 2) {
+    res += String.fromCharCode(bytes[i] + bytes[i + 1] * 256);
+  }
+  return res;
+}
+
+Buffer$1.prototype.slice = function slice(start, end) {
+  var len = this.length;
+  start = ~~start;
+  end = end === undefined ? len : ~~end;
+
+  if (start < 0) {
+    start += len;
+    if (start < 0) start = 0;
+  } else if (start > len) {
+    start = len;
+  }
+
+  if (end < 0) {
+    end += len;
+    if (end < 0) end = 0;
+  } else if (end > len) {
+    end = len;
+  }
+
+  if (end < start) end = start;
+
+  var newBuf;
+  if (Buffer$1.TYPED_ARRAY_SUPPORT) {
+    newBuf = this.subarray(start, end);
+    newBuf.__proto__ = Buffer$1.prototype;
+  } else {
+    var sliceLen = end - start;
+    newBuf = new Buffer$1(sliceLen, undefined);
+    for (var i = 0; i < sliceLen; ++i) {
+      newBuf[i] = this[i + start];
+    }
+  }
+
+  return newBuf;
+};
+
+/*
+ * Need to make sure that buffer isn't trying to write out of bounds.
+ */
+function checkOffset$1(offset, ext, length) {
+  if (offset % 1 !== 0 || offset < 0) throw new RangeError('offset is not uint');
+  if (offset + ext > length) throw new RangeError('Trying to access beyond buffer length');
+}
+
+Buffer$1.prototype.readUIntLE = function readUIntLE(offset, byteLength, noAssert) {
+  offset = offset | 0;
+  byteLength = byteLength | 0;
+  if (!noAssert) checkOffset$1(offset, byteLength, this.length);
+
+  var val = this[offset];
+  var mul = 1;
+  var i = 0;
+  while (++i < byteLength && (mul *= 0x100)) {
+    val += this[offset + i] * mul;
+  }
+
+  return val;
+};
+
+Buffer$1.prototype.readUIntBE = function readUIntBE(offset, byteLength, noAssert) {
+  offset = offset | 0;
+  byteLength = byteLength | 0;
+  if (!noAssert) {
+    checkOffset$1(offset, byteLength, this.length);
+  }
+
+  var val = this[offset + --byteLength];
+  var mul = 1;
+  while (byteLength > 0 && (mul *= 0x100)) {
+    val += this[offset + --byteLength] * mul;
+  }
+
+  return val;
+};
+
+Buffer$1.prototype.readUInt8 = function readUInt8(offset, noAssert) {
+  if (!noAssert) checkOffset$1(offset, 1, this.length);
+  return this[offset];
+};
+
+Buffer$1.prototype.readUInt16LE = function readUInt16LE(offset, noAssert) {
+  if (!noAssert) checkOffset$1(offset, 2, this.length);
+  return this[offset] | this[offset + 1] << 8;
+};
+
+Buffer$1.prototype.readUInt16BE = function readUInt16BE(offset, noAssert) {
+  if (!noAssert) checkOffset$1(offset, 2, this.length);
+  return this[offset] << 8 | this[offset + 1];
+};
+
+Buffer$1.prototype.readUInt32LE = function readUInt32LE(offset, noAssert) {
+  if (!noAssert) checkOffset$1(offset, 4, this.length);
+
+  return (this[offset] | this[offset + 1] << 8 | this[offset + 2] << 16) + this[offset + 3] * 0x1000000;
+};
+
+Buffer$1.prototype.readUInt32BE = function readUInt32BE(offset, noAssert) {
+  if (!noAssert) checkOffset$1(offset, 4, this.length);
+
+  return this[offset] * 0x1000000 + (this[offset + 1] << 16 | this[offset + 2] << 8 | this[offset + 3]);
+};
+
+Buffer$1.prototype.readIntLE = function readIntLE(offset, byteLength, noAssert) {
+  offset = offset | 0;
+  byteLength = byteLength | 0;
+  if (!noAssert) checkOffset$1(offset, byteLength, this.length);
+
+  var val = this[offset];
+  var mul = 1;
+  var i = 0;
+  while (++i < byteLength && (mul *= 0x100)) {
+    val += this[offset + i] * mul;
+  }
+  mul *= 0x80;
+
+  if (val >= mul) val -= Math.pow(2, 8 * byteLength);
+
+  return val;
+};
+
+Buffer$1.prototype.readIntBE = function readIntBE(offset, byteLength, noAssert) {
+  offset = offset | 0;
+  byteLength = byteLength | 0;
+  if (!noAssert) checkOffset$1(offset, byteLength, this.length);
+
+  var i = byteLength;
+  var mul = 1;
+  var val = this[offset + --i];
+  while (i > 0 && (mul *= 0x100)) {
+    val += this[offset + --i] * mul;
+  }
+  mul *= 0x80;
+
+  if (val >= mul) val -= Math.pow(2, 8 * byteLength);
+
+  return val;
+};
+
+Buffer$1.prototype.readInt8 = function readInt8(offset, noAssert) {
+  if (!noAssert) checkOffset$1(offset, 1, this.length);
+  if (!(this[offset] & 0x80)) return this[offset];
+  return (0xff - this[offset] + 1) * -1;
+};
+
+Buffer$1.prototype.readInt16LE = function readInt16LE(offset, noAssert) {
+  if (!noAssert) checkOffset$1(offset, 2, this.length);
+  var val = this[offset] | this[offset + 1] << 8;
+  return val & 0x8000 ? val | 0xFFFF0000 : val;
+};
+
+Buffer$1.prototype.readInt16BE = function readInt16BE(offset, noAssert) {
+  if (!noAssert) checkOffset$1(offset, 2, this.length);
+  var val = this[offset + 1] | this[offset] << 8;
+  return val & 0x8000 ? val | 0xFFFF0000 : val;
+};
+
+Buffer$1.prototype.readInt32LE = function readInt32LE(offset, noAssert) {
+  if (!noAssert) checkOffset$1(offset, 4, this.length);
+
+  return this[offset] | this[offset + 1] << 8 | this[offset + 2] << 16 | this[offset + 3] << 24;
+};
+
+Buffer$1.prototype.readInt32BE = function readInt32BE(offset, noAssert) {
+  if (!noAssert) checkOffset$1(offset, 4, this.length);
+
+  return this[offset] << 24 | this[offset + 1] << 16 | this[offset + 2] << 8 | this[offset + 3];
+};
+
+Buffer$1.prototype.readFloatLE = function readFloatLE(offset, noAssert) {
+  if (!noAssert) checkOffset$1(offset, 4, this.length);
+  return read$1(this, offset, true, 23, 4);
+};
+
+Buffer$1.prototype.readFloatBE = function readFloatBE(offset, noAssert) {
+  if (!noAssert) checkOffset$1(offset, 4, this.length);
+  return read$1(this, offset, false, 23, 4);
+};
+
+Buffer$1.prototype.readDoubleLE = function readDoubleLE(offset, noAssert) {
+  if (!noAssert) checkOffset$1(offset, 8, this.length);
+  return read$1(this, offset, true, 52, 8);
+};
+
+Buffer$1.prototype.readDoubleBE = function readDoubleBE(offset, noAssert) {
+  if (!noAssert) checkOffset$1(offset, 8, this.length);
+  return read$1(this, offset, false, 52, 8);
+};
+
+function checkInt$1(buf, value, offset, ext, max, min) {
+  if (!internalIsBuffer$1(buf)) throw new TypeError('"buffer" argument must be a Buffer instance');
+  if (value > max || value < min) throw new RangeError('"value" argument is out of bounds');
+  if (offset + ext > buf.length) throw new RangeError('Index out of range');
+}
+
+Buffer$1.prototype.writeUIntLE = function writeUIntLE(value, offset, byteLength, noAssert) {
+  value = +value;
+  offset = offset | 0;
+  byteLength = byteLength | 0;
+  if (!noAssert) {
+    var maxBytes = Math.pow(2, 8 * byteLength) - 1;
+    checkInt$1(this, value, offset, byteLength, maxBytes, 0);
+  }
+
+  var mul = 1;
+  var i = 0;
+  this[offset] = value & 0xFF;
+  while (++i < byteLength && (mul *= 0x100)) {
+    this[offset + i] = value / mul & 0xFF;
+  }
+
+  return offset + byteLength;
+};
+
+Buffer$1.prototype.writeUIntBE = function writeUIntBE(value, offset, byteLength, noAssert) {
+  value = +value;
+  offset = offset | 0;
+  byteLength = byteLength | 0;
+  if (!noAssert) {
+    var maxBytes = Math.pow(2, 8 * byteLength) - 1;
+    checkInt$1(this, value, offset, byteLength, maxBytes, 0);
+  }
+
+  var i = byteLength - 1;
+  var mul = 1;
+  this[offset + i] = value & 0xFF;
+  while (--i >= 0 && (mul *= 0x100)) {
+    this[offset + i] = value / mul & 0xFF;
+  }
+
+  return offset + byteLength;
+};
+
+Buffer$1.prototype.writeUInt8 = function writeUInt8(value, offset, noAssert) {
+  value = +value;
+  offset = offset | 0;
+  if (!noAssert) checkInt$1(this, value, offset, 1, 0xff, 0);
+  if (!Buffer$1.TYPED_ARRAY_SUPPORT) value = Math.floor(value);
+  this[offset] = value & 0xff;
+  return offset + 1;
+};
+
+function objectWriteUInt16$1(buf, value, offset, littleEndian) {
+  if (value < 0) value = 0xffff + value + 1;
+  for (var i = 0, j = Math.min(buf.length - offset, 2); i < j; ++i) {
+    buf[offset + i] = (value & 0xff << 8 * (littleEndian ? i : 1 - i)) >>> (littleEndian ? i : 1 - i) * 8;
+  }
+}
+
+Buffer$1.prototype.writeUInt16LE = function writeUInt16LE(value, offset, noAssert) {
+  value = +value;
+  offset = offset | 0;
+  if (!noAssert) checkInt$1(this, value, offset, 2, 0xffff, 0);
+  if (Buffer$1.TYPED_ARRAY_SUPPORT) {
+    this[offset] = value & 0xff;
+    this[offset + 1] = value >>> 8;
+  } else {
+    objectWriteUInt16$1(this, value, offset, true);
+  }
+  return offset + 2;
+};
+
+Buffer$1.prototype.writeUInt16BE = function writeUInt16BE(value, offset, noAssert) {
+  value = +value;
+  offset = offset | 0;
+  if (!noAssert) checkInt$1(this, value, offset, 2, 0xffff, 0);
+  if (Buffer$1.TYPED_ARRAY_SUPPORT) {
+    this[offset] = value >>> 8;
+    this[offset + 1] = value & 0xff;
+  } else {
+    objectWriteUInt16$1(this, value, offset, false);
+  }
+  return offset + 2;
+};
+
+function objectWriteUInt32$1(buf, value, offset, littleEndian) {
+  if (value < 0) value = 0xffffffff + value + 1;
+  for (var i = 0, j = Math.min(buf.length - offset, 4); i < j; ++i) {
+    buf[offset + i] = value >>> (littleEndian ? i : 3 - i) * 8 & 0xff;
+  }
+}
+
+Buffer$1.prototype.writeUInt32LE = function writeUInt32LE(value, offset, noAssert) {
+  value = +value;
+  offset = offset | 0;
+  if (!noAssert) checkInt$1(this, value, offset, 4, 0xffffffff, 0);
+  if (Buffer$1.TYPED_ARRAY_SUPPORT) {
+    this[offset + 3] = value >>> 24;
+    this[offset + 2] = value >>> 16;
+    this[offset + 1] = value >>> 8;
+    this[offset] = value & 0xff;
+  } else {
+    objectWriteUInt32$1(this, value, offset, true);
+  }
+  return offset + 4;
+};
+
+Buffer$1.prototype.writeUInt32BE = function writeUInt32BE(value, offset, noAssert) {
+  value = +value;
+  offset = offset | 0;
+  if (!noAssert) checkInt$1(this, value, offset, 4, 0xffffffff, 0);
+  if (Buffer$1.TYPED_ARRAY_SUPPORT) {
+    this[offset] = value >>> 24;
+    this[offset + 1] = value >>> 16;
+    this[offset + 2] = value >>> 8;
+    this[offset + 3] = value & 0xff;
+  } else {
+    objectWriteUInt32$1(this, value, offset, false);
+  }
+  return offset + 4;
+};
+
+Buffer$1.prototype.writeIntLE = function writeIntLE(value, offset, byteLength, noAssert) {
+  value = +value;
+  offset = offset | 0;
+  if (!noAssert) {
+    var limit = Math.pow(2, 8 * byteLength - 1);
+
+    checkInt$1(this, value, offset, byteLength, limit - 1, -limit);
+  }
+
+  var i = 0;
+  var mul = 1;
+  var sub = 0;
+  this[offset] = value & 0xFF;
+  while (++i < byteLength && (mul *= 0x100)) {
+    if (value < 0 && sub === 0 && this[offset + i - 1] !== 0) {
+      sub = 1;
+    }
+    this[offset + i] = (value / mul >> 0) - sub & 0xFF;
+  }
+
+  return offset + byteLength;
+};
+
+Buffer$1.prototype.writeIntBE = function writeIntBE(value, offset, byteLength, noAssert) {
+  value = +value;
+  offset = offset | 0;
+  if (!noAssert) {
+    var limit = Math.pow(2, 8 * byteLength - 1);
+
+    checkInt$1(this, value, offset, byteLength, limit - 1, -limit);
+  }
+
+  var i = byteLength - 1;
+  var mul = 1;
+  var sub = 0;
+  this[offset + i] = value & 0xFF;
+  while (--i >= 0 && (mul *= 0x100)) {
+    if (value < 0 && sub === 0 && this[offset + i + 1] !== 0) {
+      sub = 1;
+    }
+    this[offset + i] = (value / mul >> 0) - sub & 0xFF;
+  }
+
+  return offset + byteLength;
+};
+
+Buffer$1.prototype.writeInt8 = function writeInt8(value, offset, noAssert) {
+  value = +value;
+  offset = offset | 0;
+  if (!noAssert) checkInt$1(this, value, offset, 1, 0x7f, -0x80);
+  if (!Buffer$1.TYPED_ARRAY_SUPPORT) value = Math.floor(value);
+  if (value < 0) value = 0xff + value + 1;
+  this[offset] = value & 0xff;
+  return offset + 1;
+};
+
+Buffer$1.prototype.writeInt16LE = function writeInt16LE(value, offset, noAssert) {
+  value = +value;
+  offset = offset | 0;
+  if (!noAssert) checkInt$1(this, value, offset, 2, 0x7fff, -0x8000);
+  if (Buffer$1.TYPED_ARRAY_SUPPORT) {
+    this[offset] = value & 0xff;
+    this[offset + 1] = value >>> 8;
+  } else {
+    objectWriteUInt16$1(this, value, offset, true);
+  }
+  return offset + 2;
+};
+
+Buffer$1.prototype.writeInt16BE = function writeInt16BE(value, offset, noAssert) {
+  value = +value;
+  offset = offset | 0;
+  if (!noAssert) checkInt$1(this, value, offset, 2, 0x7fff, -0x8000);
+  if (Buffer$1.TYPED_ARRAY_SUPPORT) {
+    this[offset] = value >>> 8;
+    this[offset + 1] = value & 0xff;
+  } else {
+    objectWriteUInt16$1(this, value, offset, false);
+  }
+  return offset + 2;
+};
+
+Buffer$1.prototype.writeInt32LE = function writeInt32LE(value, offset, noAssert) {
+  value = +value;
+  offset = offset | 0;
+  if (!noAssert) checkInt$1(this, value, offset, 4, 0x7fffffff, -0x80000000);
+  if (Buffer$1.TYPED_ARRAY_SUPPORT) {
+    this[offset] = value & 0xff;
+    this[offset + 1] = value >>> 8;
+    this[offset + 2] = value >>> 16;
+    this[offset + 3] = value >>> 24;
+  } else {
+    objectWriteUInt32$1(this, value, offset, true);
+  }
+  return offset + 4;
+};
+
+Buffer$1.prototype.writeInt32BE = function writeInt32BE(value, offset, noAssert) {
+  value = +value;
+  offset = offset | 0;
+  if (!noAssert) checkInt$1(this, value, offset, 4, 0x7fffffff, -0x80000000);
+  if (value < 0) value = 0xffffffff + value + 1;
+  if (Buffer$1.TYPED_ARRAY_SUPPORT) {
+    this[offset] = value >>> 24;
+    this[offset + 1] = value >>> 16;
+    this[offset + 2] = value >>> 8;
+    this[offset + 3] = value & 0xff;
+  } else {
+    objectWriteUInt32$1(this, value, offset, false);
+  }
+  return offset + 4;
+};
+
+function checkIEEE754$1(buf, value, offset, ext, max, min) {
+  if (offset + ext > buf.length) throw new RangeError('Index out of range');
+  if (offset < 0) throw new RangeError('Index out of range');
+}
+
+function writeFloat$1(buf, value, offset, littleEndian, noAssert) {
+  if (!noAssert) {
+    checkIEEE754$1(buf, value, offset, 4, 3.4028234663852886e+38, -3.4028234663852886e+38);
+  }
+  write$1(buf, value, offset, littleEndian, 23, 4);
+  return offset + 4;
+}
+
+Buffer$1.prototype.writeFloatLE = function writeFloatLE(value, offset, noAssert) {
+  return writeFloat$1(this, value, offset, true, noAssert);
+};
+
+Buffer$1.prototype.writeFloatBE = function writeFloatBE(value, offset, noAssert) {
+  return writeFloat$1(this, value, offset, false, noAssert);
+};
+
+function writeDouble$1(buf, value, offset, littleEndian, noAssert) {
+  if (!noAssert) {
+    checkIEEE754$1(buf, value, offset, 8, 1.7976931348623157E+308, -1.7976931348623157E+308);
+  }
+  write$1(buf, value, offset, littleEndian, 52, 8);
+  return offset + 8;
+}
+
+Buffer$1.prototype.writeDoubleLE = function writeDoubleLE(value, offset, noAssert) {
+  return writeDouble$1(this, value, offset, true, noAssert);
+};
+
+Buffer$1.prototype.writeDoubleBE = function writeDoubleBE(value, offset, noAssert) {
+  return writeDouble$1(this, value, offset, false, noAssert);
+};
+
+// copy(targetBuffer, targetStart=0, sourceStart=0, sourceEnd=buffer.length)
+Buffer$1.prototype.copy = function copy(target, targetStart, start, end) {
+  if (!start) start = 0;
+  if (!end && end !== 0) end = this.length;
+  if (targetStart >= target.length) targetStart = target.length;
+  if (!targetStart) targetStart = 0;
+  if (end > 0 && end < start) end = start;
+
+  // Copy 0 bytes; we're done
+  if (end === start) return 0;
+  if (target.length === 0 || this.length === 0) return 0;
+
+  // Fatal error conditions
+  if (targetStart < 0) {
+    throw new RangeError('targetStart out of bounds');
+  }
+  if (start < 0 || start >= this.length) throw new RangeError('sourceStart out of bounds');
+  if (end < 0) throw new RangeError('sourceEnd out of bounds');
+
+  // Are we oob?
+  if (end > this.length) end = this.length;
+  if (target.length - targetStart < end - start) {
+    end = target.length - targetStart + start;
+  }
+
+  var len = end - start;
+  var i;
+
+  if (this === target && start < targetStart && targetStart < end) {
+    // descending copy from end
+    for (i = len - 1; i >= 0; --i) {
+      target[i + targetStart] = this[i + start];
+    }
+  } else if (len < 1000 || !Buffer$1.TYPED_ARRAY_SUPPORT) {
+    // ascending copy from start
+    for (i = 0; i < len; ++i) {
+      target[i + targetStart] = this[i + start];
+    }
+  } else {
+    Uint8Array.prototype.set.call(target, this.subarray(start, start + len), targetStart);
+  }
+
+  return len;
+};
+
+// Usage:
+//    buffer.fill(number[, offset[, end]])
+//    buffer.fill(buffer[, offset[, end]])
+//    buffer.fill(string[, offset[, end]][, encoding])
+Buffer$1.prototype.fill = function fill(val, start, end, encoding) {
+  // Handle string cases:
+  if (typeof val === 'string') {
+    if (typeof start === 'string') {
+      encoding = start;
+      start = 0;
+      end = this.length;
+    } else if (typeof end === 'string') {
+      encoding = end;
+      end = this.length;
+    }
+    if (val.length === 1) {
+      var code = val.charCodeAt(0);
+      if (code < 256) {
+        val = code;
+      }
+    }
+    if (encoding !== undefined && typeof encoding !== 'string') {
+      throw new TypeError('encoding must be a string');
+    }
+    if (typeof encoding === 'string' && !Buffer$1.isEncoding(encoding)) {
+      throw new TypeError('Unknown encoding: ' + encoding);
+    }
+  } else if (typeof val === 'number') {
+    val = val & 255;
+  }
+
+  // Invalid ranges are not set to a default, so can range check early.
+  if (start < 0 || this.length < start || this.length < end) {
+    throw new RangeError('Out of range index');
+  }
+
+  if (end <= start) {
+    return this;
+  }
+
+  start = start >>> 0;
+  end = end === undefined ? this.length : end >>> 0;
+
+  if (!val) val = 0;
+
+  var i;
+  if (typeof val === 'number') {
+    for (i = start; i < end; ++i) {
+      this[i] = val;
+    }
+  } else {
+    var bytes = internalIsBuffer$1(val) ? val : utf8ToBytes$1(new Buffer$1(val, encoding).toString());
+    var len = bytes.length;
+    for (i = 0; i < end - start; ++i) {
+      this[i + start] = bytes[i % len];
+    }
+  }
+
+  return this;
+};
+
+// HELPER FUNCTIONS
+// ================
+
+var INVALID_BASE64_RE$1 = /[^+\/0-9A-Za-z-_]/g;
+
+function base64clean$1(str) {
+  // Node strips out invalid characters like \n and \t from the string, base64-js does not
+  str = stringtrim$1(str).replace(INVALID_BASE64_RE$1, '');
+  // Node converts strings with length < 2 to ''
+  if (str.length < 2) return '';
+  // Node allows for non-padded base64 strings (missing trailing ===), base64-js does not
+  while (str.length % 4 !== 0) {
+    str = str + '=';
+  }
+  return str;
+}
+
+function stringtrim$1(str) {
+  if (str.trim) return str.trim();
+  return str.replace(/^\s+|\s+$/g, '');
+}
+
+function toHex$1(n) {
+  if (n < 16) return '0' + n.toString(16);
+  return n.toString(16);
+}
+
+function utf8ToBytes$1(string, units) {
+  units = units || Infinity;
+  var codePoint;
+  var length = string.length;
+  var leadSurrogate = null;
+  var bytes = [];
+
+  for (var i = 0; i < length; ++i) {
+    codePoint = string.charCodeAt(i);
+
+    // is surrogate component
+    if (codePoint > 0xD7FF && codePoint < 0xE000) {
+      // last char was a lead
+      if (!leadSurrogate) {
+        // no lead yet
+        if (codePoint > 0xDBFF) {
+          // unexpected trail
+          if ((units -= 3) > -1) bytes.push(0xEF, 0xBF, 0xBD);
+          continue;
+        } else if (i + 1 === length) {
+          // unpaired lead
+          if ((units -= 3) > -1) bytes.push(0xEF, 0xBF, 0xBD);
+          continue;
+        }
+
+        // valid lead
+        leadSurrogate = codePoint;
+
+        continue;
+      }
+
+      // 2 leads in a row
+      if (codePoint < 0xDC00) {
+        if ((units -= 3) > -1) bytes.push(0xEF, 0xBF, 0xBD);
+        leadSurrogate = codePoint;
+        continue;
+      }
+
+      // valid surrogate pair
+      codePoint = (leadSurrogate - 0xD800 << 10 | codePoint - 0xDC00) + 0x10000;
+    } else if (leadSurrogate) {
+      // valid bmp char, but last char was a lead
+      if ((units -= 3) > -1) bytes.push(0xEF, 0xBF, 0xBD);
+    }
+
+    leadSurrogate = null;
+
+    // encode utf8
+    if (codePoint < 0x80) {
+      if ((units -= 1) < 0) break;
+      bytes.push(codePoint);
+    } else if (codePoint < 0x800) {
+      if ((units -= 2) < 0) break;
+      bytes.push(codePoint >> 0x6 | 0xC0, codePoint & 0x3F | 0x80);
+    } else if (codePoint < 0x10000) {
+      if ((units -= 3) < 0) break;
+      bytes.push(codePoint >> 0xC | 0xE0, codePoint >> 0x6 & 0x3F | 0x80, codePoint & 0x3F | 0x80);
+    } else if (codePoint < 0x110000) {
+      if ((units -= 4) < 0) break;
+      bytes.push(codePoint >> 0x12 | 0xF0, codePoint >> 0xC & 0x3F | 0x80, codePoint >> 0x6 & 0x3F | 0x80, codePoint & 0x3F | 0x80);
+    } else {
+      throw new Error('Invalid code point');
+    }
+  }
+
+  return bytes;
+}
+
+function asciiToBytes$1(str) {
+  var byteArray = [];
+  for (var i = 0; i < str.length; ++i) {
+    // Node's code seems to be doing this and not & 0x7F..
+    byteArray.push(str.charCodeAt(i) & 0xFF);
+  }
+  return byteArray;
+}
+
+function utf16leToBytes$1(str, units) {
+  var c, hi, lo;
+  var byteArray = [];
+  for (var i = 0; i < str.length; ++i) {
+    if ((units -= 2) < 0) break;
+
+    c = str.charCodeAt(i);
+    hi = c >> 8;
+    lo = c % 256;
+    byteArray.push(lo);
+    byteArray.push(hi);
+  }
+
+  return byteArray;
+}
+
+function base64ToBytes$1(str) {
+  return toByteArray$1(base64clean$1(str));
+}
+
+function blitBuffer$1(src, dst, offset, length) {
+  for (var i = 0; i < length; ++i) {
+    if (i + offset >= dst.length || i >= src.length) break;
+    dst[i + offset] = src[i];
+  }
+  return i;
+}
+
+function isnan$1(val) {
+  return val !== val; // eslint-disable-line no-self-compare
+}
+
+// the following is from is-buffer, also by Feross Aboukhadijeh and with same lisence
+// The _isBuffer check is for Safari 5-7 support, because it's missing
+// Object.prototype.constructor. Remove this eventually
+function isBuffer$1(obj) {
+  return obj != null && (!!obj._isBuffer || isFastBuffer$1(obj) || isSlowBuffer$1(obj));
+}
+
+function isFastBuffer$1(obj) {
+  return !!obj.constructor && typeof obj.constructor.isBuffer === 'function' && obj.constructor.isBuffer(obj);
+}
+
+// For Node v0.10 support. Remove this eventually.
+function isSlowBuffer$1(obj) {
+  return typeof obj.readFloatLE === 'function' && typeof obj.slice === 'function' && isFastBuffer$1(obj.slice(0, 0));
+}
+
 /*
   Copyright (c) 2008, Adobe Systems Incorporated
   All rights reserved.
@@ -53837,7 +55871,7 @@ Basic GUI blocking jpeg encoder
 */
 
 var btoa = btoa || function (buf) {
-	return new Buffer(buf).toString('base64');
+	return new Buffer$1(buf).toString('base64');
 };
 
 function JPEGEncoder(quality) {
@@ -54391,7 +56425,7 @@ function JPEGEncoder(quality) {
 		writeWord(0xFFD9); //EOI
 
 		//return new Uint8Array(byteout);
-		return new Buffer(byteout);
+		return new Buffer$1(byteout);
 
 		var jpegDataUri = 'data:image/jpeg;base64,' + btoa(byteout.join(''));
 
@@ -55417,7 +57451,7 @@ function decode(jpegData, useTArray) {
   var image = {
     width: decoder.width,
     height: decoder.height,
-    data: useTArray ? new Uint8Array(decoder.width * decoder.height * 4) : new Buffer(decoder.width * decoder.height * 4)
+    data: useTArray ? new Uint8Array(decoder.width * decoder.height * 4) : new Buffer$1(decoder.width * decoder.height * 4)
   };
 
   decoder.copyToImageData(image);
@@ -57150,6 +59184,1855 @@ var MniObjDecoder = function (_Filter) {
   return MniObjDecoder;
 }(Filter); /* END of class Filter */
 
+function createCommonjsModule$3(fn, module) {
+  return module = { exports: {} }, fn(module, module.exports), module.exports;
+}
+
+var traverse_1$2 = createCommonjsModule$3(function (module) {
+  var traverse = module.exports = function (obj) {
+    return new Traverse(obj);
+  };
+
+  function Traverse(obj) {
+    this.value = obj;
+  }
+
+  Traverse.prototype.get = function (ps) {
+    var node = this.value;
+    for (var i = 0; i < ps.length; i++) {
+      var key = ps[i];
+      if (!node || !hasOwnProperty.call(node, key)) {
+        node = undefined;
+        break;
+      }
+      node = node[key];
+    }
+    return node;
+  };
+
+  Traverse.prototype.has = function (ps) {
+    var node = this.value;
+    for (var i = 0; i < ps.length; i++) {
+      var key = ps[i];
+      if (!node || !hasOwnProperty.call(node, key)) {
+        return false;
+      }
+      node = node[key];
+    }
+    return true;
+  };
+
+  Traverse.prototype.set = function (ps, value) {
+    var node = this.value;
+    for (var i = 0; i < ps.length - 1; i++) {
+      var key = ps[i];
+      if (!hasOwnProperty.call(node, key)) node[key] = {};
+      node = node[key];
+    }
+    node[ps[i]] = value;
+    return value;
+  };
+
+  Traverse.prototype.map = function (cb) {
+    return walk(this.value, cb, true);
+  };
+
+  Traverse.prototype.forEach = function (cb) {
+    this.value = walk(this.value, cb, false);
+    return this.value;
+  };
+
+  Traverse.prototype.reduce = function (cb, init) {
+    var skip = arguments.length === 1;
+    var acc = skip ? this.value : init;
+    this.forEach(function (x) {
+      if (!this.isRoot || !skip) {
+        acc = cb.call(this, acc, x);
+      }
+    });
+    return acc;
+  };
+
+  Traverse.prototype.paths = function () {
+    var acc = [];
+    this.forEach(function (x) {
+      acc.push(this.path);
+    });
+    return acc;
+  };
+
+  Traverse.prototype.nodes = function () {
+    var acc = [];
+    this.forEach(function (x) {
+      acc.push(this.node);
+    });
+    return acc;
+  };
+
+  Traverse.prototype.clone = function () {
+    var parents = [],
+        nodes = [];
+
+    return function clone(src) {
+      for (var i = 0; i < parents.length; i++) {
+        if (parents[i] === src) {
+          return nodes[i];
+        }
+      }
+
+      if ((typeof src === 'undefined' ? 'undefined' : _typeof(src)) === 'object' && src !== null) {
+        var dst = copy(src);
+
+        parents.push(src);
+        nodes.push(dst);
+
+        forEach(objectKeys(src), function (key) {
+          dst[key] = clone(src[key]);
+        });
+
+        parents.pop();
+        nodes.pop();
+        return dst;
+      } else {
+        return src;
+      }
+    }(this.value);
+  };
+
+  function walk(root, cb, immutable) {
+    var path = [];
+    var parents = [];
+    var alive = true;
+
+    return function walker(node_) {
+      var node = immutable ? copy(node_) : node_;
+      var modifiers = {};
+
+      var keepGoing = true;
+
+      var state = {
+        node: node,
+        node_: node_,
+        path: [].concat(path),
+        parent: parents[parents.length - 1],
+        parents: parents,
+        key: path.slice(-1)[0],
+        isRoot: path.length === 0,
+        level: path.length,
+        circular: null,
+        update: function update(x, stopHere) {
+          if (!state.isRoot) {
+            state.parent.node[state.key] = x;
+          }
+          state.node = x;
+          if (stopHere) keepGoing = false;
+        },
+        'delete': function _delete(stopHere) {
+          delete state.parent.node[state.key];
+          if (stopHere) keepGoing = false;
+        },
+        remove: function remove(stopHere) {
+          if (isArray(state.parent.node)) {
+            state.parent.node.splice(state.key, 1);
+          } else {
+            delete state.parent.node[state.key];
+          }
+          if (stopHere) keepGoing = false;
+        },
+        keys: null,
+        before: function before(f) {
+          modifiers.before = f;
+        },
+        after: function after(f) {
+          modifiers.after = f;
+        },
+        pre: function pre(f) {
+          modifiers.pre = f;
+        },
+        post: function post(f) {
+          modifiers.post = f;
+        },
+        stop: function stop() {
+          alive = false;
+        },
+        block: function block() {
+          keepGoing = false;
+        }
+      };
+
+      if (!alive) return state;
+
+      function updateState() {
+        if (_typeof(state.node) === 'object' && state.node !== null) {
+          if (!state.keys || state.node_ !== state.node) {
+            state.keys = objectKeys(state.node);
+          }
+
+          state.isLeaf = state.keys.length == 0;
+
+          for (var i = 0; i < parents.length; i++) {
+            if (parents[i].node_ === node_) {
+              state.circular = parents[i];
+              break;
+            }
+          }
+        } else {
+          state.isLeaf = true;
+          state.keys = null;
+        }
+
+        state.notLeaf = !state.isLeaf;
+        state.notRoot = !state.isRoot;
+      }
+
+      updateState();
+
+      // use return values to update if defined
+      var ret = cb.call(state, state.node);
+      if (ret !== undefined && state.update) state.update(ret);
+
+      if (modifiers.before) modifiers.before.call(state, state.node);
+
+      if (!keepGoing) return state;
+
+      if (_typeof(state.node) == 'object' && state.node !== null && !state.circular) {
+        parents.push(state);
+
+        updateState();
+
+        forEach(state.keys, function (key, i) {
+          path.push(key);
+
+          if (modifiers.pre) modifiers.pre.call(state, state.node[key], key);
+
+          var child = walker(state.node[key]);
+          if (immutable && hasOwnProperty.call(state.node, key)) {
+            state.node[key] = child.node;
+          }
+
+          child.isLast = i == state.keys.length - 1;
+          child.isFirst = i == 0;
+
+          if (modifiers.post) modifiers.post.call(state, child);
+
+          path.pop();
+        });
+        parents.pop();
+      }
+
+      if (modifiers.after) modifiers.after.call(state, state.node);
+
+      return state;
+    }(root).node;
+  }
+
+  function copy(src) {
+    if ((typeof src === 'undefined' ? 'undefined' : _typeof(src)) === 'object' && src !== null) {
+      var dst;
+
+      if (isArray(src)) {
+        dst = [];
+      } else if (isDate(src)) {
+        dst = new Date(src.getTime ? src.getTime() : src);
+      } else if (isRegExp(src)) {
+        dst = new RegExp(src);
+      } else if (isError(src)) {
+        dst = { message: src.message };
+      } else if (isBoolean(src)) {
+        dst = new Boolean(src);
+      } else if (isNumber(src)) {
+        dst = new Number(src);
+      } else if (isString(src)) {
+        dst = new String(src);
+      } else if (Object.create && Object.getPrototypeOf) {
+        dst = Object.create(Object.getPrototypeOf(src));
+      } else if (src.constructor === Object) {
+        dst = {};
+      } else {
+        var proto = src.constructor && src.constructor.prototype || src.__proto__ || {};
+        var T = function T() {};
+        T.prototype = proto;
+        dst = new T();
+      }
+
+      forEach(objectKeys(src), function (key) {
+        dst[key] = src[key];
+      });
+      return dst;
+    } else return src;
+  }
+
+  var objectKeys = Object.keys || function keys(obj) {
+    var res = [];
+    for (var key in obj) {
+      res.push(key);
+    }return res;
+  };
+
+  function toS(obj) {
+    return Object.prototype.toString.call(obj);
+  }
+  function isDate(obj) {
+    return toS(obj) === '[object Date]';
+  }
+  function isRegExp(obj) {
+    return toS(obj) === '[object RegExp]';
+  }
+  function isError(obj) {
+    return toS(obj) === '[object Error]';
+  }
+  function isBoolean(obj) {
+    return toS(obj) === '[object Boolean]';
+  }
+  function isNumber(obj) {
+    return toS(obj) === '[object Number]';
+  }
+  function isString(obj) {
+    return toS(obj) === '[object String]';
+  }
+
+  var isArray = Array.isArray || function isArray(xs) {
+    return Object.prototype.toString.call(xs) === '[object Array]';
+  };
+
+  var forEach = function forEach(xs, fn) {
+    if (xs.forEach) return xs.forEach(fn);else for (var i = 0; i < xs.length; i++) {
+      fn(xs[i], i, xs);
+    }
+  };
+
+  forEach(objectKeys(Traverse.prototype), function (key) {
+    traverse[key] = function (obj) {
+      var args = [].slice.call(arguments, 1);
+      var t = new Traverse(obj);
+      return t[key].apply(t, args);
+    };
+  });
+
+  var hasOwnProperty = Object.hasOwnProperty || function (obj, key) {
+    return key in obj;
+  };
+});
+
+var asyncGenerator$4 = function () {
+  function AwaitValue(value) {
+    this.value = value;
+  }
+
+  function AsyncGenerator(gen) {
+    var front, back;
+
+    function send(key, arg) {
+      return new Promise(function (resolve, reject) {
+        var request = {
+          key: key,
+          arg: arg,
+          resolve: resolve,
+          reject: reject,
+          next: null
+        };
+
+        if (back) {
+          back = back.next = request;
+        } else {
+          front = back = request;
+          resume(key, arg);
+        }
+      });
+    }
+
+    function resume(key, arg) {
+      try {
+        var result = gen[key](arg);
+        var value = result.value;
+
+        if (value instanceof AwaitValue) {
+          Promise.resolve(value.value).then(function (arg) {
+            resume("next", arg);
+          }, function (arg) {
+            resume("throw", arg);
+          });
+        } else {
+          settle(result.done ? "return" : "normal", result.value);
+        }
+      } catch (err) {
+        settle("throw", err);
+      }
+    }
+
+    function settle(type, value) {
+      switch (type) {
+        case "return":
+          front.resolve({
+            value: value,
+            done: true
+          });
+          break;
+
+        case "throw":
+          front.reject(value);
+          break;
+
+        default:
+          front.resolve({
+            value: value,
+            done: false
+          });
+          break;
+      }
+
+      front = front.next;
+
+      if (front) {
+        resume(front.key, front.arg);
+      } else {
+        back = null;
+      }
+    }
+
+    this._invoke = send;
+
+    if (typeof gen.return !== "function") {
+      this.return = undefined;
+    }
+  }
+
+  if (typeof Symbol === "function" && Symbol.asyncIterator) {
+    AsyncGenerator.prototype[Symbol.asyncIterator] = function () {
+      return this;
+    };
+  }
+
+  AsyncGenerator.prototype.next = function (arg) {
+    return this._invoke("next", arg);
+  };
+
+  AsyncGenerator.prototype.throw = function (arg) {
+    return this._invoke("throw", arg);
+  };
+
+  AsyncGenerator.prototype.return = function (arg) {
+    return this._invoke("return", arg);
+  };
+
+  return {
+    wrap: function wrap(fn) {
+      return function () {
+        return new AsyncGenerator(fn.apply(this, arguments));
+      };
+    },
+    await: function _await(value) {
+      return new AwaitValue(value);
+    }
+  };
+}();
+
+var classCallCheck$4 = function classCallCheck$$1(instance, Constructor) {
+  if (!(instance instanceof Constructor)) {
+    throw new TypeError("Cannot call a class as a function");
+  }
+};
+
+var createClass$4 = function () {
+  function defineProperties(target, props) {
+    for (var i = 0; i < props.length; i++) {
+      var descriptor = props[i];
+      descriptor.enumerable = descriptor.enumerable || false;
+      descriptor.configurable = true;
+      if ("value" in descriptor) descriptor.writable = true;
+      Object.defineProperty(target, descriptor.key, descriptor);
+    }
+  }
+
+  return function (Constructor, protoProps, staticProps) {
+    if (protoProps) defineProperties(Constructor.prototype, protoProps);
+    if (staticProps) defineProperties(Constructor, staticProps);
+    return Constructor;
+  };
+}();
+
+/**
+* The CodecUtils class gather some static methods that can be useful while
+* encodeing/decoding data.
+* CodecUtils does not have a constructor, don't try to instanciate it.
+*/
+
+var CodecUtils$2 = function () {
+  function CodecUtils() {
+    classCallCheck$4(this, CodecUtils);
+  }
+
+  createClass$4(CodecUtils, null, [{
+    key: "isPlatformLittleEndian",
+
+    /**
+    * Get whether or not the platform is using little endian.
+    * @return {Boolen } true if the platform is little endian, false if big endian
+    */
+    value: function isPlatformLittleEndian() {
+      var a = new Uint32Array([0x12345678]);
+      var b = new Uint8Array(a.buffer, a.byteOffset, a.byteLength);
+      return b[0] != 0x12;
+    }
+
+    /**
+    * convert an ArrayBuffer into a unicode string (2 bytes for each char)
+    * Note: this method was kindly borrowed from Google Closure Compiler:
+    * https://github.com/google/closure-library/blob/master/closure/goog/crypt/crypt.js
+    * @param {ArrayBuffer} buf - input ArrayBuffer
+    * @return {String} a string compatible with Unicode characters
+    */
+
+  }, {
+    key: "arrayBufferToUnicode",
+    value: function arrayBufferToUnicode(buff) {
+      var buffUint8 = new Uint8Array(buff);
+      var out = [],
+          pos = 0,
+          c = 0;
+
+      while (pos < buffUint8.length) {
+        var c1 = buffUint8[pos++];
+        if (c1 < 128) {
+          out[c++] = String.fromCharCode(c1);
+        } else if (c1 > 191 && c1 < 224) {
+          var c2 = buffUint8[pos++];
+          out[c++] = String.fromCharCode((c1 & 31) << 6 | c2 & 63);
+        } else if (c1 > 239 && c1 < 365) {
+          // Surrogate Pair
+          var c2 = buffUint8[pos++];
+          var c3 = buffUint8[pos++];
+          var c4 = buffUint8[pos++];
+          var u = ((c1 & 7) << 18 | (c2 & 63) << 12 | (c3 & 63) << 6 | c4 & 63) - 0x10000;
+          out[c++] = String.fromCharCode(0xD800 + (u >> 10));
+          out[c++] = String.fromCharCode(0xDC00 + (u & 1023));
+        } else {
+          var c2 = buffUint8[pos++];
+          var c3 = buffUint8[pos++];
+          out[c++] = String.fromCharCode((c1 & 15) << 12 | (c2 & 63) << 6 | c3 & 63);
+        }
+      }
+      return out.join('');
+    }
+  }, {
+    key: "unicodeToArrayBuffer",
+
+    /**
+    * convert a unicode string into an ArrayBuffer
+    * Note that the str is a regular string but it will be encoded with
+    * 2 bytes per char instead of 1 ( ASCII uses 1 byte/char ).
+    * Note: this method was kindly borrowed from Google Closure Compiler:
+    * https://github.com/google/closure-library/blob/master/closure/goog/crypt/crypt.js
+    * @param {String} str - string to encode
+    * @return {ArrayBuffer} the output ArrayBuffer
+    */
+    value: function unicodeToArrayBuffer(str) {
+      var out = [],
+          p = 0;
+      for (var i = 0; i < str.length; i++) {
+        var c = str.charCodeAt(i);
+        if (c < 128) {
+          out[p++] = c;
+        } else if (c < 2048) {
+          out[p++] = c >> 6 | 192;
+          out[p++] = c & 63 | 128;
+        } else if ((c & 0xFC00) == 0xD800 && i + 1 < str.length && (str.charCodeAt(i + 1) & 0xFC00) == 0xDC00) {
+          // Surrogate Pair
+          c = 0x10000 + ((c & 0x03FF) << 10) + (str.charCodeAt(++i) & 0x03FF);
+          out[p++] = c >> 18 | 240;
+          out[p++] = c >> 12 & 63 | 128;
+          out[p++] = c >> 6 & 63 | 128;
+          out[p++] = c & 63 | 128;
+        } else {
+          out[p++] = c >> 12 | 224;
+          out[p++] = c >> 6 & 63 | 128;
+          out[p++] = c & 63 | 128;
+        }
+      }
+
+      // make a buffer out of the array
+      return new Uint8Array(out).buffer;
+    }
+  }, {
+    key: "arrayBufferToString8",
+
+    /**
+    * Convert an ArrayBuffer into a ASCII string (1 byte for each char)
+    * @param {ArrayBuffer} buf - buffer to convert into ASCII string
+    * @return {String} the output string
+    */
+    value: function arrayBufferToString8(buf) {
+      return String.fromCharCode.apply(null, new Uint8Array(buf));
+    }
+
+    /**
+    * Convert a ASCII string into an ArrayBuffer.
+    * Note that the str is a regular string, it will be encoded with 1 byte per char
+    * @param {String} str - string to encode
+    * @return {ArrayBuffer}
+    */
+
+  }, {
+    key: "string8ToArrayBuffer",
+    value: function string8ToArrayBuffer(str) {
+      var buf = new ArrayBuffer(str.length);
+      var bufView = new Uint8Array(buf);
+      for (var i = 0; i < str.length; i++) {
+        bufView[i] = str.charCodeAt(i);
+      }
+      return buf;
+    }
+
+    /**
+    * Write a ASCII string into a buffer
+    * @param {String} str - a string that contains only ASCII characters
+    * @param {ArrayBuffer} buffer - the buffer where to write the string
+    * @param {Number} byteOffset - the offset to apply, in number of bytes
+    */
+
+  }, {
+    key: "setString8InBuffer",
+    value: function setString8InBuffer(str, buffer) {
+      var byteOffset = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 0;
+
+      if (byteOffset < 0) {
+        console.warn("The byte offset cannot be negative.");
+        return;
+      }
+
+      if (!buffer || !(buffer instanceof ArrayBuffer)) {
+        console.warn("The buffer must be a valid ArrayBuffer.");
+        return;
+      }
+
+      if (str.length + byteOffset > buffer.byteLength) {
+        console.warn("The string is too long to be writen in this buffer.");
+        return;
+      }
+
+      var bufView = new Uint8Array(buffer);
+
+      for (var i = 0; i < str.length; i++) {
+        bufView[i + byteOffset] = str.charCodeAt(i);
+      }
+    }
+
+    /**
+    * Extract an ASCII string from an ArrayBuffer
+    * @param {ArrayBuffer} buffer - the buffer
+    * @param {Number} strLength - number of chars in the string we want
+    * @param {Number} byteOffset - the offset in number of bytes
+    * @return {String} the string, or null in case of error
+    */
+
+  }, {
+    key: "getString8FromBuffer",
+    value: function getString8FromBuffer(buffer, strLength) {
+      var byteOffset = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 0;
+
+      if (byteOffset < 0) {
+        console.warn("The byte offset cannot be negative.");
+        return null;
+      }
+
+      if (!buffer || !(buffer instanceof ArrayBuffer)) {
+        console.warn("The buffer must be a valid ArrayBuffer.");
+        return null;
+      }
+
+      if (strLength + byteOffset > buffer.byteLength) {
+        console.warn("The string is too long to be writen in this buffer.");
+        return null;
+      }
+
+      return String.fromCharCode.apply(null, new Uint8Array(buffer, byteOffset, strLength));
+    }
+
+    /**
+    * Serializes a JS object into an ArrayBuffer.
+    * This is using a unicode JSON intermediate step.
+    * @param {Object} obj - an object that does not have cyclic structure
+    * @return {ArrayBuffer} the serialized output
+    */
+
+  }, {
+    key: "objectToArrayBuffer",
+    value: function objectToArrayBuffer(obj) {
+      var buff = null;
+      var objCleanClone = CodecUtils.makeSerializeFriendly(obj);
+
+      try {
+        var strObj = JSON.stringify(objCleanClone);
+        buff = CodecUtils.unicodeToArrayBuffer(strObj);
+      } catch (e) {
+        console.warn(e);
+      }
+
+      return buff;
+    }
+
+    /**
+    * Convert an ArrayBuffer into a JS Object. This uses an intermediate unicode JSON string.
+    * Of course, this buffer has to come from a serialized object.
+    * @param {ArrayBuffer} buff - the ArrayBuffer that hides some object
+    * @return {Object} the deserialized object
+    */
+
+  }, {
+    key: "ArrayBufferToObject",
+    value: function ArrayBufferToObject(buff) {
+      var obj = null;
+
+      try {
+        var strObj = CodecUtils.arrayBufferToUnicode(buff);
+        obj = JSON.parse(strObj);
+      } catch (e) {
+        console.warn(e);
+      }
+
+      return obj;
+    }
+
+    /**
+    * Get if wether of not the arg is a typed array
+    * @param {Object} obj - possibly a typed array, or maybe not
+    * @return {Boolean} true if obj is a typed array
+    */
+
+  }, {
+    key: "isTypedArray",
+    value: function isTypedArray(obj) {
+      return obj instanceof Int8Array || obj instanceof Uint8Array || obj instanceof Uint8ClampedArray || obj instanceof Int16Array || obj instanceof Uint16Array || obj instanceof Int32Array || obj instanceof Uint32Array || obj instanceof Float32Array || obj instanceof Float64Array;
+    }
+
+    /**
+    * Merge some ArrayBuffes in a single one
+    * @param {Array} arrayOfBuffers - some ArrayBuffers
+    * @return {ArrayBuffer} the larger merged buffer
+    */
+
+  }, {
+    key: "mergeBuffers",
+    value: function mergeBuffers(arrayOfBuffers) {
+      var totalByteSize = 0;
+
+      for (var i = 0; i < arrayOfBuffers.length; i++) {
+        totalByteSize += arrayOfBuffers[i].byteLength;
+      }
+
+      var concatArray = new Uint8Array(totalByteSize);
+
+      var offset = 0;
+      for (var i = 0; i < arrayOfBuffers.length; i++) {
+        concatArray.set(new Uint8Array(arrayOfBuffers[i]), offset);
+        offset += arrayOfBuffers[i].byteLength;
+      }
+
+      return concatArray.buffer;
+    }
+
+    /**
+    * In a browser, the global object is `window` while in Node, it's `GLOBAL`.
+    * This method return the one that is relevant to the execution context.
+    * @return {Object} the global object
+    */
+
+  }, {
+    key: "getGlobalObject",
+    value: function getGlobalObject() {
+      var constructorHost = null;
+
+      try {
+        constructorHost = window; // in a web browser
+      } catch (e) {
+        try {
+          constructorHost = GLOBAL; // in node
+        } catch (e) {
+          console.warn("You are not in a Javascript environment?? Weird.");
+          return null;
+        }
+      }
+      return constructorHost;
+    }
+
+    /**
+    * Extract a typed array from an arbitrary buffer, with an arbitrary offset
+    * @param {ArrayBuffer} buffer - the buffer from which we extract data
+    * @param {Number} byteOffset - offset from the begining of buffer
+    * @param {Function} arrayType - function object, actually the constructor of the output array
+    * @param {Number} numberOfElements - nb of elem we want to fetch from the buffer
+    * @return {TypedArray} output of type given by arg arrayType - this is a copy, not a view
+    */
+
+  }, {
+    key: "extractTypedArray",
+    value: function extractTypedArray(buffer, byteOffset, arrayType, numberOfElements) {
+      if (!buffer) {
+        console.warn("Input Buffer is null.");
+        return null;
+      }
+
+      if (!(buffer instanceof ArrayBuffer)) {
+        console.warn("Buffer must be of type ArrayBuffer");
+        return null;
+      }
+
+      if (numberOfElements <= 0) {
+        console.warn("The number of elements to fetch must be greater than 0");
+        return null;
+      }
+
+      if (byteOffset < 0) {
+        console.warn("The byte offset must be possitive or 0");
+        return null;
+      }
+
+      if (byteOffset >= buffer.byteLength) {
+        console.warn("The offset cannot be larger than the size of the buffer.");
+        return null;
+      }
+
+      if (arrayType instanceof Function && !("BYTES_PER_ELEMENT" in arrayType)) {
+        console.warn("ArrayType must be a typed array constructor function.");
+        return null;
+      }
+
+      if (arrayType.BYTES_PER_ELEMENT * numberOfElements + byteOffset > buffer.byteLength) {
+        console.warn("The requested number of elements is too large for this buffer");
+        return;
+      }
+
+      var slicedBuff = buffer.slice(byteOffset, byteOffset + numberOfElements * arrayType.BYTES_PER_ELEMENT);
+      return new arrayType(slicedBuff);
+    }
+
+    /**
+    * Get some info about the given TypedArray
+    * @param {TypedArray} typedArray - one of the typed array
+    * @return {Object} in form of {type: String, signed: Boolean, bytesPerElements: Number, byteLength: Number, length: Number}
+    */
+
+  }, {
+    key: "getTypedArrayInfo",
+    value: function getTypedArrayInfo(typedArray) {
+      var type = null;
+      var signed = false;
+
+      if (typedArray instanceof Int8Array) {
+        type = "int";
+        signed = false;
+      } else if (typedArray instanceof Uint8Array) {
+        type = "int";
+        signed = true;
+      } else if (typedArray instanceof Uint8ClampedArray) {
+        type = "int";
+        signed = true;
+      } else if (typedArray instanceof Int16Array) {
+        type = "int";
+        signed = false;
+      } else if (typedArray instanceof Uint16Array) {
+        type = "int";
+        signed = true;
+      } else if (typedArray instanceof Int32Array) {
+        type = "int";
+        signed = false;
+      } else if (typedArray instanceof Uint32Array) {
+        type = "int";
+        signed = true;
+      } else if (typedArray instanceof Float32Array) {
+        type = "float";
+        signed = false;
+      } else if (typedArray instanceof Float64Array) {
+        type = "float";
+        signed = false;
+      }
+
+      return {
+        type: type,
+        signed: signed,
+        bytesPerElements: typedArray.BYTES_PER_ELEMENT,
+        byteLength: typedArray.byteLength,
+        length: typedArray.length
+      };
+    }
+
+    /**
+    * Counts the number of typed array obj has as attributes
+    * @param {Object} obj - an Object
+    * @return {Number} the number of typed array
+    */
+
+  }, {
+    key: "howManyTypedArrayAttributes",
+    value: function howManyTypedArrayAttributes(obj) {
+      var typArrCounter = 0;
+      traverse_1$2(obj).forEach(function (x) {
+        typArrCounter += CodecUtils.isTypedArray(x);
+      });
+      return typArrCounter;
+    }
+
+    /**
+    * Check if the given object contains any circular reference.
+    * (Circular ref are non serilizable easily, we want to spot them)
+    * @param {Object} obj - An object to check
+    * @return {Boolean} true if obj contains circular refm false if not
+    */
+
+  }, {
+    key: "hasCircularReference",
+    value: function hasCircularReference(obj) {
+      var hasCircular = false;
+      traverse_1$2(obj).forEach(function (x) {
+        if (this.circular) {
+          hasCircular = true;
+        }
+      });
+      return hasCircular;
+    }
+
+    /**
+    * Remove circular dependencies from an object and return a circularRef-free version
+    * of the object (does not change the original obj), of null if no circular ref was found
+    * @param {Object} obj - An object to check
+    * @return {Object} a circular-ref free object copy if any was found, or null if no circ was found
+    */
+
+  }, {
+    key: "removeCircularReference",
+    value: function removeCircularReference(obj) {
+      var hasCircular = false;
+      var noCircRefObj = traverse_1$2(obj).map(function (x) {
+        if (this.circular) {
+          this.remove();
+          hasCircular = true;
+        }
+      });
+      return hasCircular ? noCircRefObj : null;
+    }
+
+    /**
+    * Clone the object and replace the typed array attributes by regular Arrays.
+    * @param {Object} obj - an object to alter
+    * @return {Object} the clone if ant typed array were changed, or null if was obj didnt contain any typed array.
+    */
+
+  }, {
+    key: "replaceTypedArrayAttributesByArrays",
+    value: function replaceTypedArrayAttributesByArrays(obj) {
+      var hasTypedArray = false;
+
+      var noTypedArrClone = traverse_1$2(obj).map(function (x) {
+        if (CodecUtils.isTypedArray(x)) {
+          // here, we cannot call .length directly because traverse.map already serialized
+          // typed arrays into regular objects
+          var origSize = Object.keys(x).length;
+          var untypedArray = new Array(origSize);
+
+          for (var i = 0; i < origSize; i++) {
+            untypedArray[i] = x[i];
+          }
+          this.update(untypedArray);
+          hasTypedArray = true;
+        }
+      });
+      return hasTypedArray ? noTypedArrClone : null;
+    }
+
+    /**
+    * Creates a clone, does not alter the original object.
+    * Remove circular dependencies and replace typed arrays by regular arrays.
+    * Both will make the serialization possible and more reliable.
+    * @param {Object} obj - the object to make serialization friendly
+    * @return {Object} a clean clone, or null if nothing was done
+    */
+
+  }, {
+    key: "makeSerializeFriendly",
+    value: function makeSerializeFriendly(obj) {
+      var newObj = obj;
+      var noCircular = CodecUtils.removeCircularReference(newObj);
+
+      if (noCircular) newObj = noCircular;
+
+      var noTypedArr = CodecUtils.replaceTypedArrayAttributesByArrays(newObj);
+
+      if (noTypedArr) newObj = noTypedArr;
+
+      return newObj;
+    }
+  }]);
+  return CodecUtils;
+}(); /* END of class CodecUtils */
+
+var asyncGenerator$1$2 = function () {
+  function AwaitValue(value) {
+    this.value = value;
+  }
+
+  function AsyncGenerator(gen) {
+    var front, back;
+
+    function send(key, arg) {
+      return new Promise(function (resolve, reject) {
+        var request = {
+          key: key,
+          arg: arg,
+          resolve: resolve,
+          reject: reject,
+          next: null
+        };
+
+        if (back) {
+          back = back.next = request;
+        } else {
+          front = back = request;
+          resume(key, arg);
+        }
+      });
+    }
+
+    function resume(key, arg) {
+      try {
+        var result = gen[key](arg);
+        var value = result.value;
+
+        if (value instanceof AwaitValue) {
+          Promise.resolve(value.value).then(function (arg) {
+            resume("next", arg);
+          }, function (arg) {
+            resume("throw", arg);
+          });
+        } else {
+          settle(result.done ? "return" : "normal", result.value);
+        }
+      } catch (err) {
+        settle("throw", err);
+      }
+    }
+
+    function settle(type, value) {
+      switch (type) {
+        case "return":
+          front.resolve({
+            value: value,
+            done: true
+          });
+          break;
+
+        case "throw":
+          front.reject(value);
+          break;
+
+        default:
+          front.resolve({
+            value: value,
+            done: false
+          });
+          break;
+      }
+
+      front = front.next;
+
+      if (front) {
+        resume(front.key, front.arg);
+      } else {
+        back = null;
+      }
+    }
+
+    this._invoke = send;
+
+    if (typeof gen.return !== "function") {
+      this.return = undefined;
+    }
+  }
+
+  if (typeof Symbol === "function" && Symbol.asyncIterator) {
+    AsyncGenerator.prototype[Symbol.asyncIterator] = function () {
+      return this;
+    };
+  }
+
+  AsyncGenerator.prototype.next = function (arg) {
+    return this._invoke("next", arg);
+  };
+
+  AsyncGenerator.prototype.throw = function (arg) {
+    return this._invoke("throw", arg);
+  };
+
+  AsyncGenerator.prototype.return = function (arg) {
+    return this._invoke("return", arg);
+  };
+
+  return {
+    wrap: function wrap(fn) {
+      return function () {
+        return new AsyncGenerator(fn.apply(this, arguments));
+      };
+    },
+    await: function _await(value) {
+      return new AwaitValue(value);
+    }
+  };
+}();
+
+var classCallCheck$1$2 = function classCallCheck$1(instance, Constructor) {
+  if (!(instance instanceof Constructor)) {
+    throw new TypeError("Cannot call a class as a function");
+  }
+};
+
+var createClass$1$2 = function () {
+  function defineProperties(target, props) {
+    for (var i = 0; i < props.length; i++) {
+      var descriptor = props[i];
+      descriptor.enumerable = descriptor.enumerable || false;
+      descriptor.configurable = true;
+      if ("value" in descriptor) descriptor.writable = true;
+      Object.defineProperty(target, descriptor.key, descriptor);
+    }
+  }
+
+  return function (Constructor, protoProps, staticProps) {
+    if (protoProps) defineProperties(Constructor.prototype, protoProps);
+    if (staticProps) defineProperties(Constructor, staticProps);
+    return Constructor;
+  };
+}();
+
+/*
+* Author    Jonathan Lurie - http://me.jonahanlurie.fr
+* License   MIT
+* Link      https://github.com/jonathanlurie/edfdecoder
+* Lab       MCIN - http://mcin.ca/ - Montreal Neurological Institute
+*/
+
+/**
+* An instance of Edf is usually given as output of an EdfDecoder. It provides an
+* interface with a lot of helper function to query information that were extracted
+* from en *.edf* file, such as header information, getting a signal at a given record
+* or concatenating records of a given signal.
+*
+* Keep in mind that the number of records in an edf file can be decoded by arbitrary
+* measures, or it can be 1 second per records, etc.
+*
+*/
+var Edf = function () {
+  function Edf(header, rawSignals, physicalSignals) {
+    classCallCheck$1$2(this, Edf);
+
+    this._header = header;
+    this._physicalSignals = physicalSignals;
+    this._rawSignals = rawSignals;
+  }
+
+  /**
+  * Get the duration in second of a single record
+  * @return {Number} duration
+  */
+
+  createClass$1$2(Edf, [{
+    key: "getRecordDuration",
+    value: function getRecordDuration() {
+      return this._header.durationDataRecordsSec;
+    }
+
+    /**
+    * Get the ID of the recording
+    * @return {String} the ID
+    */
+
+  }, {
+    key: "getRecordingID",
+    value: function getRecordingID() {
+      return this._header.localRecordingId;
+    }
+
+    /**
+    * get the number of records per signal.
+    * Note: most of the time, records from the same signal are contiguous in time.
+    * @return {Number} the number of records
+    */
+
+  }, {
+    key: "getNumberOfRecords",
+    value: function getNumberOfRecords() {
+      return this._header.nbDataRecords;
+    }
+
+    /**
+    * get the number of signals.
+    * Note: a signal can have more than one record
+    * @return {Number} the number of signals
+    */
+
+  }, {
+    key: "getNumberOfSignals",
+    value: function getNumberOfSignals() {
+      return this._header.nbSignals;
+    }
+
+    /**
+    * Get the patien ID
+    * @return {String} ID
+    */
+
+  }, {
+    key: "getPatientID",
+    value: function getPatientID() {
+      return this._header.patientId;
+    }
+
+    /**
+    * Get the date and the time at which the recording has started
+    * @return {Date} the date
+    */
+
+  }, {
+    key: "getRecordingStartDate",
+    value: function getRecordingStartDate() {
+      return this._header.recordingDate;
+    }
+
+    /**
+    * Get the value of the reserved field, global (from header) or specific to a signal.
+    * Notice: reserved are rarely used.
+    * @param {Number} index - if not specified, get the header's reserved field. If [0, nbSignals[ get the reserved field specific for the given signal
+    * @return {String} the data of the reserved field.
+    */
+
+  }, {
+    key: "getReservedField",
+    value: function getReservedField() {
+      var index = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : -1;
+
+      if (index === -1) {
+        return this._header.reserved;
+      } else {
+        if (index >= 0 && index < this._header.signalInfo.length) {
+          return this._header.signalInfo[index].reserved;
+        }
+      }
+
+      return null;
+    }
+
+    /**
+    * Get the digital maximum for a given signal index
+    * @param {Number} index - index of the signal
+    * @return {Number}
+    */
+
+  }, {
+    key: "getSignalDigitalMax",
+    value: function getSignalDigitalMax(index) {
+      if (index < 0 || index >= this._header.signalInfo.length) {
+        console.warn("Signal index is out of range");
+        return null;
+      }
+
+      return this._header.signalInfo[index].digitalMaximum;
+    }
+
+    /**
+    * Get the digital minimum for a given signal index
+    * @param {Number} index - index of the signal
+    * @return {Number}
+    */
+
+  }, {
+    key: "getSignalDigitalMin",
+    value: function getSignalDigitalMin(index) {
+      if (index < 0 || index >= this._header.signalInfo.length) {
+        console.warn("Signal index is out of range");
+        return null;
+      }
+
+      return this._header.signalInfo[index].digitalMinimum;
+    }
+
+    /**
+    * Get the physical minimum for a given signal index
+    * @param {Number} index - index of the signal
+    * @return {Number}
+    */
+
+  }, {
+    key: "getSignalPhysicalMin",
+    value: function getSignalPhysicalMin(index) {
+      if (index < 0 || index >= this._header.signalInfo.length) {
+        console.warn("Signal index is out of range");
+        return null;
+      }
+
+      return this._header.signalInfo[index].physicalMinimum;
+    }
+
+    /**
+    * Get the physical maximum for a given signal index
+    * @param {Number} index - index of the signal
+    * @return {Number}
+    */
+
+  }, {
+    key: "getSignalPhysicalMax",
+    value: function getSignalPhysicalMax(index) {
+      if (index < 0 || index >= this._header.signalInfo.length) {
+        console.warn("Signal index is out of range");
+        return null;
+      }
+
+      return this._header.signalInfo[index].physicalMaximum;
+    }
+
+    /**
+    * Get the label for a given signal index
+    * @param {Number} index - index of the signal
+    * @return {String}
+    */
+
+  }, {
+    key: "getSignalLabel",
+    value: function getSignalLabel(index) {
+      if (index < 0 || index >= this._header.signalInfo.length) {
+        console.warn("Signal index is out of range");
+        return null;
+      }
+
+      return this._header.signalInfo[index].label;
+    }
+
+    /**
+    * Get the number of samples per record for a given signal index
+    * @param {Number} index - index of the signal
+    * @return {Number}
+    */
+
+  }, {
+    key: "getSignalNumberOfSamplesPerRecord",
+    value: function getSignalNumberOfSamplesPerRecord(index) {
+      if (index < 0 || index >= this._header.signalInfo.length) {
+        console.warn("Signal index is out of range");
+        return null;
+      }
+
+      return this._header.signalInfo[index].nbOfSamples;
+    }
+
+    /**
+    * Get the unit (dimension label) used for a given signal index.
+    * E.g. this can be 'uV' when the signal is an EEG
+    * @param {Number} index - index of the signal
+    * @return {String} the unit name
+    */
+
+  }, {
+    key: "getSignalPhysicalUnit",
+    value: function getSignalPhysicalUnit(index) {
+      if (index < 0 || index >= this._header.signalInfo.length) {
+        console.warn("Signal index is out of range");
+        return null;
+      }
+
+      return this._header.signalInfo[index].physicalDimension;
+    }
+
+    /**
+    * Get the unit prefiltering info for a given signal index.
+    * @param {Number} index - index of the signal
+    * @return {String} the prefiltering info
+    */
+
+  }, {
+    key: "getSignalPrefiltering",
+    value: function getSignalPrefiltering(index) {
+      if (index < 0 || index >= this._header.signalInfo.length) {
+        console.warn("Signal index is out of range");
+        return null;
+      }
+
+      return this._header.signalInfo[index].prefiltering;
+    }
+
+    /**
+    * Get the transducer type info for a given signal index.
+    * @param {Number} index - index of the signal
+    * @return {String} the transducer type info
+    */
+
+  }, {
+    key: "getSignalTransducerType",
+    value: function getSignalTransducerType(index) {
+      if (index < 0 || index >= this._header.signalInfo.length) {
+        console.warn("Signal index is out of range");
+        return null;
+      }
+
+      return this._header.signalInfo[index].transducerType;
+    }
+
+    /**
+    * Get the sampling frequency in Hz of a given signal
+    * @param {Number} index - index of the signal
+    * @return {Number} frequency in Hz
+    */
+
+  }, {
+    key: "getSignalSamplingFrequency",
+    value: function getSignalSamplingFrequency(index) {
+      if (index < 0 || index >= this._header.signalInfo.length) {
+        console.warn("Signal index is out of range");
+        return null;
+      }
+
+      return this._header.signalInfo[index].nbOfSamples / this._header.durationDataRecordsSec;
+    }
+
+    /**
+    * Get the physical (scaled) signal at a given index and record
+    * @param {Number} index - index of the signal
+    * @param {Number} record - index of the record
+    * @return {Float32Array} the physical signal in Float32
+    */
+
+  }, {
+    key: "getPhysicalSignal",
+    value: function getPhysicalSignal(index, record) {
+      if (index < 0 || index >= this._header.signalInfo.length) {
+        console.warn("Signal index is out of range");
+        return null;
+      }
+
+      if (record < 0 && record >= this._physicalSignals[index].length) {
+        console.warn("Record index is out of range");
+        return null;
+      }
+
+      return this._physicalSignals[index][record];
+    }
+
+    /**
+    * Get the raw (digital) signal at a given index and record
+    * @param {Number} index - index of the signal
+    * @param {Number} record - index of the record
+    * @return {Int16Array} the physical signal in Int16
+    */
+
+  }, {
+    key: "getRawSignal",
+    value: function getRawSignal(index, record) {
+      if (index < 0 || index >= this._header.signalInfo.length) {
+        console.warn("Signal index is out of range");
+        return null;
+      }
+
+      if (record < 0 && record >= this._rawSignals[index].length) {
+        console.warn("Record index is out of range");
+        return null;
+      }
+
+      return this._rawSignals[index][record];
+    }
+
+    /**
+    * Get concatenated contiguous records of a given signal, the index of the
+    * first record and the number of records to concat.
+    * Notice: this allocates a new buffer of an extented size.
+    * @param {Number} index - index of the signal
+    * @param {Number} recordStart - index of the record to start with
+    * @param {Number} howMany - Number of records to concatenate
+    * @return {Float32Array} the physical signal in Float32
+    */
+
+  }, {
+    key: "getPhysicalSignalConcatRecords",
+    value: function getPhysicalSignalConcatRecords(index) {
+      var recordStart = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : -1;
+      var howMany = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : -1;
+
+      if (index < 0 || index >= this._header.signalInfo.length) {
+        console.warn("Signal index is out of range");
+        return null;
+      }
+
+      if (recordStart < 0 && recordStart >= this._physicalSignals[index].length) {
+        console.warn("The index recordStart is out of range");
+        return null;
+      }
+
+      if (recordStart === -1) {
+        recordStart = 0;
+      }
+
+      if (howMany === -1) {
+        howMany = this._physicalSignals[index].length - recordStart;
+      } else {
+        // we still want to check if what the user put is not out of bound
+        if (recordStart + howMany > this._physicalSignals[index].length) {
+          console.warn("The number of requested records is too large. Forcing only to available records.");
+          howMany = this._physicalSignals[index].length - recordStart;
+        }
+      }
+
+      // index of the last one to consider
+      var recordEnd = recordStart + howMany - 1;
+
+      if (recordEnd < 0 && recordEnd >= this._physicalSignals[index].length) {
+        console.warn("Too many records to concatenate, this goes out of range.");
+        return null;
+      }
+
+      var totalSize = 0;
+      for (var i = recordStart; i < recordStart + howMany; i++) {
+        totalSize += this._physicalSignals[index][i].length;
+      }
+
+      var concatSignal = new Float32Array(totalSize);
+      var offset = 0;
+
+      for (var i = recordStart; i < recordStart + howMany; i++) {
+        concatSignal.set(this._physicalSignals[index][i], offset);
+        offset += this._physicalSignals[index][i].length;
+      }
+
+      return concatSignal;
+    }
+  }]);
+  return Edf;
+}(); /* END of class Edf */
+
+/*
+* Author    Jonathan Lurie - http://me.jonahanlurie.fr
+* License   MIT
+* Link      https://github.com/jonathanlurie/edfdecoder
+* Lab       MCIN - http://mcin.ca/ - Montreal Neurological Institute
+*/
+
+/**
+* An instance of EdfDecoder is used to decode an EDF file, or rather a buffer extracted from a
+* EDF file. To specify the input, use the method `.setInput(buf)` , then launch the decoding
+* with the method `.decode()` and finally get the content as an object with `.getOutput()`.
+* If the output is `null`, then the parser was not able to decode the file.
+*/
+
+var EdfDecoder$1 = function () {
+
+  /**
+   * Create a EdfDecoder.
+   */
+  function EdfDecoder() {
+    classCallCheck$1$2(this, EdfDecoder);
+
+    this._inputBuffer = null;
+    this._output = null;
+  }
+
+  /**
+  * Set the buffer (most likey from a file) that contains some EDF data
+  * @param {ArrayBuffer} buff - buffer from a file
+  */
+
+  createClass$1$2(EdfDecoder, [{
+    key: 'setInput',
+    value: function setInput(buff) {
+      this._output = null;
+      this._inputBuffer = buff;
+    }
+
+    /**
+    * Decode the EDF file buffer set as input. This is done in two steps, first the header and then the data.
+    */
+
+  }, {
+    key: 'decode',
+    value: function decode() {
+      try {
+        var headerInfo = this._decodeHeader();
+        this._decodeData(headerInfo.offset, headerInfo.header);
+      } catch (e) {
+        console.warn(e);
+      }
+    }
+
+    /**
+    * [PRIVATE]
+    * Decodes the header or the file
+    */
+
+  }, {
+    key: '_decodeHeader',
+    value: function _decodeHeader() {
+      if (!this._inputBuffer) {
+        console.warn("A input buffer must be specified.");
+        return;
+      }
+
+      var header = {};
+      var offset = 0;
+
+      // 8 ascii : version of this data format (0)
+      header.dataFormat = CodecUtils$2.getString8FromBuffer(this._inputBuffer, 8, offset).trim();
+      offset += 8;
+
+      // 80 ascii : local patient identification
+      header.patientId = CodecUtils$2.getString8FromBuffer(this._inputBuffer, 80, offset).trim();
+      offset += 80;
+
+      // 80 ascii : local recording identification
+      header.localRecordingId = CodecUtils$2.getString8FromBuffer(this._inputBuffer, 80, offset).trim();
+      offset += 80;
+
+      // 8 ascii : startdate of recording (dd.mm.yy)
+      var recordingStartDate = CodecUtils$2.getString8FromBuffer(this._inputBuffer, 8, offset).trim();
+      offset += 8;
+
+      // 8 ascii : starttime of recording (hh.mm.ss)
+      var recordingStartTime = CodecUtils$2.getString8FromBuffer(this._inputBuffer, 8, offset).trim();
+      offset += 8;
+
+      var date = recordingStartDate.split(".");
+      var time = recordingStartTime.split(".");
+      header.recordingDate = new Date(date[2], date[1], date[0], time[0], time[1], time[2], 0);
+
+      // 8 ascii : number of bytes in header record
+      header.nbBytesHeaderRecord = parseInt(CodecUtils$2.getString8FromBuffer(this._inputBuffer, 8, offset).trim());
+      offset += 8;
+
+      // 44 ascii : reserved
+      header.reserved = CodecUtils$2.getString8FromBuffer(this._inputBuffer, 44, offset);
+      offset += 44;
+
+      // 8 ascii : number of data records (-1 if unknown)
+      header.nbDataRecords = parseInt(CodecUtils$2.getString8FromBuffer(this._inputBuffer, 8, offset).trim());
+      offset += 8;
+
+      // 8 ascii : duration of a data record, in seconds
+      header.durationDataRecordsSec = parseInt(CodecUtils$2.getString8FromBuffer(this._inputBuffer, 8, offset).trim());
+      offset += 8;
+
+      // 4 ascii : number of signals (ns) in data record
+      header.nbSignals = parseInt(CodecUtils$2.getString8FromBuffer(this._inputBuffer, 4, offset).trim());
+      offset += 4;
+
+      // the following fields occurs ns time in a row each
+      var that = this;
+      function getAllSections(sizeOfEachThing) {
+        var allThings = [];
+        for (var i = 0; i < header.nbSignals; i++) {
+          allThings.push(CodecUtils$2.getString8FromBuffer(that._inputBuffer, sizeOfEachThing, offset).trim());
+          offset += sizeOfEachThing;
+        }
+        return allThings;
+      }
+
+      var signalInfoArrays = {
+        // ns * 16 ascii : ns * label (e.g. EEG Fpz-Cz or Body temp)
+        label: getAllSections(16),
+        // ns * 80 ascii : ns * transducer type (e.g. AgAgCl electrode)
+        transducerType: getAllSections(80),
+        // ns * 8 ascii : ns * physical dimension (e.g. uV or degreeC)
+        physicalDimension: getAllSections(8),
+        // ns * 8 ascii : ns * physical minimum (e.g. -500 or 34)
+        physicalMinimum: getAllSections(8),
+        // ns * 8 ascii : ns * physical maximum (e.g. 500 or 40)
+        physicalMaximum: getAllSections(8),
+        // ns * 8 ascii : ns * digital minimum (e.g. -2048)
+        digitalMinimum: getAllSections(8),
+        // ns * 8 ascii : ns * digital maximum (e.g. 2047)
+        digitalMaximum: getAllSections(8),
+        // ns * 80 ascii : ns * prefiltering (e.g. HP:0.1Hz LP:75Hz)
+        prefiltering: getAllSections(80),
+        // ns * 8 ascii : ns * nr of samples in each data record
+        nbOfSamples: getAllSections(8),
+        // ns * 32 ascii : ns * reserved
+        reserved: getAllSections(32)
+      };
+
+      var signalInfo = [];
+      header.signalInfo = signalInfo;
+      for (var i = 0; i < header.nbSignals; i++) {
+        signalInfo.push({
+          label: signalInfoArrays.label[i],
+          transducerType: signalInfoArrays.transducerType[i],
+          physicalDimension: signalInfoArrays.physicalDimension[i],
+          physicalMinimum: parseFloat(signalInfoArrays.physicalMinimum[i]),
+          physicalMaximum: parseFloat(signalInfoArrays.physicalMaximum[i]),
+          digitalMinimum: parseInt(signalInfoArrays.digitalMinimum[i]),
+          digitalMaximum: parseInt(signalInfoArrays.digitalMaximum[i]),
+          prefiltering: signalInfoArrays.prefiltering[i],
+          nbOfSamples: parseInt(signalInfoArrays.nbOfSamples[i]),
+          reserved: signalInfoArrays.reserved[i]
+        });
+      }
+
+      return {
+        offset: offset,
+        header: header
+      };
+    }
+
+    /**
+    * [PRIVATE]
+    * Decodes the data. Must be called after the header is decoded.
+    * @param {Number} byteOffset - byte size of the header
+    */
+
+  }, {
+    key: '_decodeData',
+    value: function _decodeData(byteOffset, header) {
+      if (!this._inputBuffer) {
+        console.warn("A input buffer must be specified.");
+        return;
+      }
+
+      if (!header) {
+        console.warn("Invalid header");
+        return;
+      }
+
+      var sampleType = Int16Array;
+
+      // the raw signal is the digital signal
+      var rawSignals = new Array(header.nbSignals);
+      var physicalSignals = new Array(header.nbSignals);
+      // allocation some room for all the records
+      for (var ns = 0; ns < header.nbSignals; ns++) {
+        rawSignals[ns] = new Array(header.nbDataRecords);
+        physicalSignals[ns] = new Array(header.nbDataRecords);
+      }
+
+      // the signal are faster varying than the records
+      for (var r = 0; r < header.nbDataRecords; r++) {
+        for (var ns = 0; ns < header.nbSignals; ns++) {
+          var signalNbSamples = header.signalInfo[ns].nbOfSamples;
+          var rawSignal = CodecUtils$2.extractTypedArray(this._inputBuffer, byteOffset, sampleType, signalNbSamples);
+          byteOffset += signalNbSamples * sampleType.BYTES_PER_ELEMENT;
+          rawSignals[ns][r] = rawSignal;
+
+          // compute the scaled signal
+          var physicalSignal = new Float32Array(rawSignal.length).fill(0);
+          var digitalSignalRange = header.signalInfo[ns].digitalMaximum - header.signalInfo[ns].digitalMinimum;
+          var physicalSignalRange = header.signalInfo[ns].physicalMaximum - header.signalInfo[ns].physicalMinimum;
+
+          for (var index = 0; index < signalNbSamples; index++) {
+            physicalSignal[index] = (rawSignal[index] - header.signalInfo[ns].digitalMinimum) / digitalSignalRange * physicalSignalRange + header.signalInfo[ns].physicalMinimum;
+          }
+
+          //physicalSignals.push( physicalSignal );
+          physicalSignals[ns][r] = physicalSignal;
+        }
+      }
+
+      this._output = new Edf(header, rawSignals, physicalSignals);
+    } /* END method */
+
+    /**
+    * Get the output as an object. The output contains the the header (Object),
+    * the raw (digital) signal as a Int16Array and the physical (scaled) signal
+    * as a Float32Array.
+    * @return {Object} the output.
+    */
+
+  }, {
+    key: 'getOutput',
+    value: function getOutput() {
+      return this._output;
+    }
+  }]);
+  return EdfDecoder;
+}();
+
+/*
+* Author   Jonathan Lurie - http://me.jonathanlurie.fr
+* License  MIT
+* Link     https://github.com/Pixpipe/pixpipejs
+* Lab      MCIN - Montreal Neurological Institute
+*/
+
+/**
+* An instance of EdfDecoder takes an ArrayBuffer as input. This ArrayBuffer must
+* come from a edf file (European Data Format). Such file can have multiple signals
+* encoded internally, usually from different sensors, this filter will output as
+* many Signal1D object as there is signal in the input file. In addition, each
+* signal is composed of records (e.g. 1sec per record). This decoder concatenates
+* records to output a longer signal. Still, the metadata in each Signal1D tells
+* what the is the length of original record.
+*
+* **Usage**
+* - [examples/fileToEDF.html](../examples/fileToEDF.html)
+* - [examples/differenceEqSignal1D.html](../examples/differenceEqSignal1D.html)
+*
+*/
+
+var EdfDecoder$$1 = function (_Filter) {
+  inherits(EdfDecoder$$1, _Filter);
+
+  function EdfDecoder$$1() {
+    classCallCheck(this, EdfDecoder$$1);
+
+    var _this = possibleConstructorReturn(this, (EdfDecoder$$1.__proto__ || Object.getPrototypeOf(EdfDecoder$$1)).call(this));
+
+    _this.addInputValidator(0, ArrayBuffer);
+    _this.setMetadata("debug", false);
+    _this.setMetadata("concatenateRecords", true);
+
+    return _this;
+  }
+
+  createClass(EdfDecoder$$1, [{
+    key: '_run',
+    value: function _run() {
+      var inputBuffer = this._getInput(0);
+
+      if (!inputBuffer) {
+        console.warn("EdfDecoder requires an ArrayBuffer as input \"0\". Unable to continue.");
+        return;
+      }
+
+      var edfDecoder = new EdfDecoder$1();
+
+      edfDecoder.setInput(inputBuffer);
+      edfDecoder.decode();
+      // an Edf object
+      var edf = edfDecoder.getOutput();
+
+      if (!edf) {
+        console.warn("Invalid EDF file.");
+        return;
+      }
+
+      var nbSignals = edf.getNumberOfSignals();
+      var nbRecords = edf.getNumberOfRecords();
+
+      for (var i = 0; i < nbSignals; i++) {
+        var sig1D = new Signal1D();
+        sig1D.setData(edf.getPhysicalSignalConcatRecords(i));
+        sig1D.setMetadata("numberOfRecords", nbRecords);
+        sig1D.setMetadata("patientID", edf.getPatientID());
+        sig1D.setMetadata("recordDuration", edf.getRecordDuration());
+        sig1D.setMetadata("recordingID", edf.getRecordingID());
+        sig1D.setMetadata("recordingStartDate", edf.getRecordingStartDate());
+        sig1D.setMetadata("reservedField", edf.getReservedField());
+        sig1D.setMetadata("signalLabel", edf.getSignalLabel(i));
+        sig1D.setMetadata("numberOfSamplesPerRecord", edf.getSignalNumberOfSamplesPerRecord(i));
+        sig1D.setMetadata("signalPhysicalMax", edf.getSignalPhysicalMax(i));
+        sig1D.setMetadata("signalPhysicalMin", edf.getSignalPhysicalMin(i));
+        sig1D.setMetadata("signalPhysicalUnit", edf.getSignalPhysicalUnit(i));
+        sig1D.setMetadata("signalPrefiltering", edf.getSignalPrefiltering(i));
+        sig1D.setMetadata("signalTransducerType", edf.getSignalTransducerType(i));
+        // the other metadata have the name of the field in the EDF file but this one is
+        // a standard from Signal1D
+        sig1D.setMetadata("samplingFrequency", edf.getSignalSamplingFrequency(i));
+
+        this._output[i] = sig1D;
+      }
+    }
+  }]);
+  return EdfDecoder$$1;
+}(Filter); /* END of class EdfDecoder */
+
 "use strict";
 
 function iota(n) {
@@ -57172,16 +61055,16 @@ var iota_1 = iota;
 // The _isBuffer check is for Safari 5-7 support, because it's missing
 // Object.prototype.constructor. Remove this eventually
 var index$3 = function index(obj) {
-  return obj != null && (isBuffer$1(obj) || isSlowBuffer$1(obj) || !!obj._isBuffer);
+  return obj != null && (isBuffer$2(obj) || isSlowBuffer$2(obj) || !!obj._isBuffer);
 };
 
-function isBuffer$1(obj) {
+function isBuffer$2(obj) {
   return !!obj.constructor && typeof obj.constructor.isBuffer === 'function' && obj.constructor.isBuffer(obj);
 }
 
 // For Node v0.10 support. Remove this eventually.
-function isSlowBuffer$1(obj) {
-  return typeof obj.readFloatLE === 'function' && typeof obj.slice === 'function' && isBuffer$1(obj.slice(0, 0));
+function isSlowBuffer$2(obj) {
+  return typeof obj.readFloatLE === 'function' && typeof obj.slice === 'function' && isBuffer$2(obj.slice(0, 0));
 }
 
 var hasTypedArrays = typeof Float64Array !== "undefined";
@@ -59038,7 +62921,7 @@ var pool = createCommonjsModule(function (module, exports) {
       BUFFER = POOL.BUFFER;
 
   exports.free = function free(array) {
-    if (isBuffer(array)) {
+    if (isBuffer$1(array)) {
       BUFFER[twiddle.log2(array.length)].push(array);
     } else {
       if (Object.prototype.toString.call(array) !== '[object ArrayBuffer]') {
@@ -59184,7 +63067,7 @@ var pool = createCommonjsModule(function (module, exports) {
     if (cache.length > 0) {
       return cache.pop();
     }
-    return new Buffer(n);
+    return new Buffer$1(n);
   }
   exports.mallocBuffer = mallocBuffer;
 
@@ -59592,6 +63475,7 @@ var InverseFourierSignalFilter = function (_BaseFourierSignalFil2) {
  * Link     https://github.com/Pixpipe/pixpipejs
  * Lab      MCIN - Montreal Neurological Institute
  */
+
 var DIRECTIONS$1 = {
   'FORWARD': 1,
   'INVERSE': -1
@@ -59650,6 +63534,16 @@ var BaseFourierImageFilter = function (_Filter) {
   return BaseFourierImageFilter;
 }(Filter);
 
+/**
+* An instance of ForwardFourierImageFilter performs a forward Fourier transform
+* on an Image2D or a Signa1D.
+*
+* **Usage**
+* - [examples/fftImage2D.html](../examples/fftImage2D.html)
+* - [examples/fftSignal1D.html](../examples/fftSignal1D.html)
+*/
+
+
 var ForwardFourierImageFilter = function (_BaseFourierImageFilt) {
   inherits(ForwardFourierImageFilter, _BaseFourierImageFilt);
 
@@ -59660,6 +63554,16 @@ var ForwardFourierImageFilter = function (_BaseFourierImageFilt) {
 
   return ForwardFourierImageFilter;
 }(BaseFourierImageFilter);
+
+/**
+* An instance of ForwardFourierImageFilter performs an inverse Fourier transform
+* on an Image2D or a Signa1D.
+*
+* **Usage**
+* - [examples/fftImage2D.html](../examples/fftImage2D.html)
+* - [examples/fftSignal1D.html](../examples/fftSignal1D.html)
+*/
+
 
 var InverseFourierImageFilter = function (_BaseFourierImageFilt2) {
   inherits(InverseFourierImageFilter, _BaseFourierImageFilt2);
@@ -60824,16 +64728,31 @@ var bundle = createCommonjsModule(function (module, exports) {
       throw new Error('parse error [' + (this.line + 1) + ':' + (this.column + 1) + ']: ' + msg);
     };
 
+    var unaryInstructionCache = {};
     function unaryInstruction(value) {
-      return new Instruction(IOP1, value);
+      var inst = unaryInstructionCache[value];
+      if (!inst) {
+        inst = unaryInstructionCache[value] = new Instruction(IOP1, value);
+      }
+      return inst;
     }
 
+    var binaryInstructionCache = {};
     function binaryInstruction(value) {
-      return new Instruction(IOP2, value);
+      var inst = binaryInstructionCache[value];
+      if (!inst) {
+        inst = binaryInstructionCache[value] = new Instruction(IOP2, value);
+      }
+      return inst;
     }
 
+    var ternaryInstructionCache = {};
     function ternaryInstruction(value) {
-      return new Instruction(IOP3, value);
+      var inst = ternaryInstructionCache[value];
+      if (!inst) {
+        inst = ternaryInstructionCache[value] = new Instruction(IOP3, value);
+      }
+      return inst;
     }
 
     function ParserState(parser, tokenStream) {
@@ -63405,6 +67324,372 @@ var PatchImageFilter = function (_ImageToImageFilter) {
   return PatchImageFilter;
 }(ImageToImageFilter); /* END of class PatchImageFilter */
 
+var asyncGenerator$5 = function () {
+  function AwaitValue(value) {
+    this.value = value;
+  }
+
+  function AsyncGenerator(gen) {
+    var front, back;
+
+    function send(key, arg) {
+      return new Promise(function (resolve, reject) {
+        var request = {
+          key: key,
+          arg: arg,
+          resolve: resolve,
+          reject: reject,
+          next: null
+        };
+
+        if (back) {
+          back = back.next = request;
+        } else {
+          front = back = request;
+          resume(key, arg);
+        }
+      });
+    }
+
+    function resume(key, arg) {
+      try {
+        var result = gen[key](arg);
+        var value = result.value;
+
+        if (value instanceof AwaitValue) {
+          Promise.resolve(value.value).then(function (arg) {
+            resume("next", arg);
+          }, function (arg) {
+            resume("throw", arg);
+          });
+        } else {
+          settle(result.done ? "return" : "normal", result.value);
+        }
+      } catch (err) {
+        settle("throw", err);
+      }
+    }
+
+    function settle(type, value) {
+      switch (type) {
+        case "return":
+          front.resolve({
+            value: value,
+            done: true
+          });
+          break;
+
+        case "throw":
+          front.reject(value);
+          break;
+
+        default:
+          front.resolve({
+            value: value,
+            done: false
+          });
+          break;
+      }
+
+      front = front.next;
+
+      if (front) {
+        resume(front.key, front.arg);
+      } else {
+        back = null;
+      }
+    }
+
+    this._invoke = send;
+
+    if (typeof gen.return !== "function") {
+      this.return = undefined;
+    }
+  }
+
+  if (typeof Symbol === "function" && Symbol.asyncIterator) {
+    AsyncGenerator.prototype[Symbol.asyncIterator] = function () {
+      return this;
+    };
+  }
+
+  AsyncGenerator.prototype.next = function (arg) {
+    return this._invoke("next", arg);
+  };
+
+  AsyncGenerator.prototype.throw = function (arg) {
+    return this._invoke("throw", arg);
+  };
+
+  AsyncGenerator.prototype.return = function (arg) {
+    return this._invoke("return", arg);
+  };
+
+  return {
+    wrap: function wrap(fn) {
+      return function () {
+        return new AsyncGenerator(fn.apply(this, arguments));
+      };
+    },
+    await: function _await(value) {
+      return new AwaitValue(value);
+    }
+  };
+}();
+
+var classCallCheck$5 = function classCallCheck(instance, Constructor) {
+  if (!(instance instanceof Constructor)) {
+    throw new TypeError("Cannot call a class as a function");
+  }
+};
+
+var createClass$5 = function () {
+  function defineProperties(target, props) {
+    for (var i = 0; i < props.length; i++) {
+      var descriptor = props[i];
+      descriptor.enumerable = descriptor.enumerable || false;
+      descriptor.configurable = true;
+      if ("value" in descriptor) descriptor.writable = true;
+      Object.defineProperty(target, descriptor.key, descriptor);
+    }
+  }
+
+  return function (Constructor, protoProps, staticProps) {
+    if (protoProps) defineProperties(Constructor.prototype, protoProps);
+    if (staticProps) defineProperties(Constructor, staticProps);
+    return Constructor;
+  };
+}();
+
+/*
+* Author    Jonathan Lurie - http://me.jonathanlurie.fr
+* License   MIT
+* Link      https://github.com/jonathanlurie/differenceequationsignal1d
+* Lab       MCIN - http://mcin.ca/ - Montreal Neurological Institute
+*/
+
+var DifferenceEquationSignal1D$1 = function () {
+  function DifferenceEquationSignal1D() {
+    classCallCheck$5(this, DifferenceEquationSignal1D);
+
+    this._inputSignal = null;
+    this._outputSignal = null;
+    this._aCoefficients = null;
+    this._bCoefficients = null;
+    this._enableBackwardSecondPass = false;
+  }
+
+  /**
+  * Set the input signal. Will also reset the output to null.
+  * @param {Float32Array} signal - the signal
+  */
+
+  createClass$5(DifferenceEquationSignal1D, [{
+    key: "setInput",
+    value: function setInput(signal) {
+      this._outputSignal = null;
+      this._inputSignal = signal;
+    }
+
+    /**
+    * Set the array of 'a' coefficients. Must be padded by an additional "1.0" because
+    * this set of coefficient will be addressed at it index "1" ( and not "0")
+    * @param {Float32Array|Array} a - the 'a' coeficients
+    */
+
+  }, {
+    key: "setACoefficients",
+    value: function setACoefficients(a) {
+      this._aCoefficients = a;
+    }
+
+    /**
+    * Set the array of 'b' coefficients
+    * @param {Float32Array|Array} b - the 'b' coeficients
+    */
+
+  }, {
+    key: "setBCoefficients",
+    value: function setBCoefficients(b) {
+      this._bCoefficients = b;
+    }
+
+    /**
+    * Get the output signal
+    * @return {Float32Array} the filtered signal
+    */
+
+  }, {
+    key: "getOutput",
+    value: function getOutput() {
+      return this._outputSignal;
+    }
+
+    /**
+    * Will process the signal backwards as a second pass, using the same coeficients.
+    * This is to make sure the output remain in phase with the input
+    */
+
+  }, {
+    key: "enableBackwardSecondPass",
+    value: function enableBackwardSecondPass() {
+      this._enableBackwardSecondPass = true;
+    }
+
+    /**
+    * Will not process the signal backwards as a second pass.
+    * Depending on the coefficients, the output may not be in phase with the input.
+    */
+
+  }, {
+    key: "disableBackwardSecondPass",
+    value: function disableBackwardSecondPass() {
+      this._enableBackwardSecondPass = false;
+    }
+
+    /**
+    * Launch the filtering. In the end, get the output using the method `.getOutput()`
+    */
+
+  }, {
+    key: "run",
+    value: function run() {
+      var out = new Float32Array(this._inputSignal.length).fill(0);
+
+      // some shortcuts
+      var x = this._inputSignal;
+      var y = out;
+      var b = this._bCoefficients;
+      var a = this._aCoefficients;
+      var M = b.length - 1;
+      var N = a.length - 1;
+
+      function getOutputAt(n) {
+        var xSum = 0;
+        for (var i = 0; i <= M; i++) {
+          var safeSignaValue = i > n ? 0 : x[n - i];
+          xSum += b[i] * safeSignaValue;
+        }
+
+        // sum of the y 
+        var ySum = 0;
+        for (var j = 1; j <= N; j++) {
+          var safeSignaValue = j > n ? 0 : y[n - j];
+          ySum += a[j] * safeSignaValue;
+        }
+
+        var valueAtN = xSum - ySum;
+        return valueAtN;
+      }
+
+      for (var i = 0; i < out.length; i++) {
+        out[i] = getOutputAt(i);
+      }
+
+      if (this._enableBackwardSecondPass) {
+        out.reverse();
+        x = out;
+        out = new Float32Array(this._inputSignal.length).fill(0);
+        y = out;
+
+        for (var i = 0; i < out.length; i++) {
+          out[i] = getOutputAt(i);
+        }
+        out.reverse();
+      }
+
+      this._outputSignal = out;
+    }
+  }]);
+  return DifferenceEquationSignal1D;
+}(); /* END of class DifferenceEquationSignal1D */
+
+/*
+* Author   Jonathan Lurie - http://me.jonathanlurie.fr
+* License  MIT
+* Link      https://github.com/Pixpipe/pixpipejs
+* Lab       MCIN - Montreal Neurological Institute
+*/
+
+/**
+* Performs a difference equation (= discrete version of a differential equation)
+* on a Signal1D object. This is convenient to perform a lo-pass or hi-pass filter.
+* Coefficients are needed to run this filter, set them using
+* the following methods: `.setMetadata("coefficientsB", [Number, Number, ...])` and
+* `.setMetadata("coefficientsB", [Number, Number, ...])`. This is related to the
+* following:  
+* ![](https://raw.githubusercontent.com/Pixpipe/differenceequationsignal1d/master/images/definition.png)  
+* Where coeefticients A and B are array of the same size, knowing the first number
+* of the array coefficients A will not be used (just set it to `1.0`).  
+* more information on the [module repo](https://github.com/Pixpipe/differenceequationsignal1d) 
+* and even more on the original [description page](https://www.dsprelated.com/freebooks/filters/Difference_Equation_I.html).
+*
+*
+* **Usage**
+* - [examples/differenceEqSignal1D.html](../examples/differenceEqSignal1D.html)
+*
+*/
+
+var DifferenceEquationSignal1D$$1 = function (_Filter) {
+  inherits(DifferenceEquationSignal1D$$1, _Filter);
+
+  function DifferenceEquationSignal1D$$1() {
+    classCallCheck(this, DifferenceEquationSignal1D$$1);
+
+    var _this = possibleConstructorReturn(this, (DifferenceEquationSignal1D$$1.__proto__ || Object.getPrototypeOf(DifferenceEquationSignal1D$$1)).call(this));
+
+    _this.addInputValidator(0, Signal1D);
+    _this.setMetadata("coefficientsB", null);
+    _this.setMetadata("coefficientsA", null);
+    _this.setMetadata("enableBackwardSecondPass", true);
+
+    return _this;
+  }
+
+  createClass(DifferenceEquationSignal1D$$1, [{
+    key: '_run',
+    value: function _run() {
+      if (!this.hasValidInput()) {
+        return;
+      }
+
+      var input = this._getInput(0);
+      var coefficientsB = this.getMetadata("coefficientsB");
+      var coefficientsA = this.getMetadata("coefficientsA");
+      var backwardSecondPass = this.getMetadata("enableBackwardSecondPass");
+
+      if (!coefficientsA || !coefficientsB) {
+        console.warn("Both 'coefficientsB' and 'coefficientsA' metadata must be set to arrays of numbers.");
+        return;
+      }
+
+      if (coefficientsA.length != coefficientsB.length) {
+        console.warn("The 'coefficientsB' and 'coefficientsA' metadata must be arrays of the same size.");
+        return;
+      }
+
+      var filter = new DifferenceEquationSignal1D$1();
+
+      if (backwardSecondPass) filter.enableBackwardSecondPass();
+
+      filter.setInput(input.getData());
+      filter.setACoefficients(coefficientsA);
+      filter.setBCoefficients(coefficientsB);
+      filter.run();
+
+      var outRaw = filter.getOutput();
+
+      if (outRaw) {
+        var out = new Signal1D();
+        out.copyMetadataFrom(input);
+        out.setData(outRaw);
+        this._output[0] = out;
+      }
+    }
+  }]);
+  return DifferenceEquationSignal1D$$1;
+}(Filter); /* END of class DifferenceEquationSignal1D */
+
 /*
 * Author   Jonathan Lurie - http://me.jonathanlurie.fr
 * License  MIT
@@ -64513,6 +68798,7 @@ exports.PngDecoder = PngDecoder;
 exports.Image2DGenericDecoder = Image2DGenericDecoder;
 exports.Minc2DecoderAlt = Minc2DecoderAlt;
 exports.MniObjDecoder = MniObjDecoder;
+exports.EdfDecoder = EdfDecoder$$1;
 exports.ComponentProjectionImage2DFilter = ComponentProjectionImage2DFilter;
 exports.ComponentMergeImage2DFilter = ComponentMergeImage2DFilter;
 exports.ForwardFourierSignalFilter = ForwardFourierSignalFilter;
@@ -64539,6 +68825,7 @@ exports.TriangulationSparseInterpolationImageFilter = TriangulationSparseInterpo
 exports.CropImageFilter = CropImageFilter;
 exports.SimplifyLineStringFilter = SimplifyLineStringFilter;
 exports.PatchImageFilter = PatchImageFilter;
+exports.DifferenceEquationSignal1D = DifferenceEquationSignal1D$$1;
 exports.AngleToHueWheelHelper = AngleToHueWheelHelper;
 exports.LineStringPrinterOnImage2DHelper = LineStringPrinterOnImage2DHelper;
 exports.Colormap = Colormap;
