@@ -35,6 +35,8 @@
   "dependencies": {
     "codecutils": "github:pixpipe/codecutils",
     "delaunay-fast": "github:pixpipe/delaunay",
+    "differenceequationsignal1d": "github:pixpipe/differenceequationsignal1d",
+    "edfdecoder": "github:pixpipe/edfdecoder",
     "expr-eval": "^1.0.0",
     "file-saver": "^1.3.3",
     "geotiff": "^0.4.1",

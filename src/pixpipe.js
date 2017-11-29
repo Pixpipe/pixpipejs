@@ -14,7 +14,7 @@ export { Image2D } from './core/Image2D.js';
 export { Image3D } from './core/Image3D.js';
 export { ImageToImageFilter } from './core/ImageToImageFilter.js';
 export { MniVolume } from './core/MniVolume.js';
-export { LineString } from './core/LineString.js'; 
+export { LineString } from './core/LineString.js';
 export { Image3DAlt } from './core/Image3DAlt.js';
 export { Mesh3D } from './core/Mesh3D.js';
 
@@ -26,7 +26,7 @@ export { FileToArrayBufferReader } from './io/FileToArrayBufferReader.js';
 export { UrlToArrayBufferReader } from './io/UrlToArrayBufferReader.js';
 export { BrowserDownloadBuffer } from './io/BrowserDownloadBuffer.js';
 
-// decoders 
+// decoders
 export { Minc2Decoder } from './decoder/Minc2Decoder.js';
 export { NiftiDecoder } from './decoder/NiftiDecoder.js';
 export { NiftiDecoderAlt } from './decoder/NiftiDecoderAlt.js';
@@ -39,12 +39,13 @@ export { MghDecoder } from './decoder/MghDecoder.js';
 export { MghDecoderAlt } from './decoder/MghDecoderAlt.js';
 export { EegModDecoder } from './decoder/EegModDecoder.js';
 export { PixBinEncoder } from './decoder/PixBinEncoder.js';
-export { PixBinDecoder } from './decoder/PixBinDecoder.js'; 
+export { PixBinDecoder } from './decoder/PixBinDecoder.js';
 export { JpegDecoder } from './decoder/JpegDecoder.js';
 export { PngDecoder } from './decoder/PngDecoder.js';
 export { Image2DGenericDecoder } from './decoder/Image2DGenericDecoder.js';
 export { Minc2DecoderAlt } from './decoder/Minc2DecoderAlt.js';
 export { MniObjDecoder } from './decoder/MniObjDecoder.js';
+export { EdfDecoder } from './decoder/EdfDecoder.js';
 
 // filters - processing of Images2D and Signal1D
 export { ComponentProjectionImage2DFilter } from './filter/ComponentProjectionImage2DFilter';
@@ -70,7 +71,8 @@ export { IDWSparseInterpolationImageFilter } from './filter/IDWSparseInterpolati
 export { TriangulationSparseInterpolationImageFilter } from './filter/TriangulationSparseInterpolationImageFilter.js';
 export { CropImageFilter } from './filter/CropImageFilter.js';
 export { SimplifyLineStringFilter } from './filter/SimplifyLineStringFilter.js';
-export { PatchImageFilter } from './filter/PatchImageFilter.js'; 
+export { PatchImageFilter } from './filter/PatchImageFilter.js';
+export { DifferenceEquationSignal1D } from './filter/DifferenceEquationSignal1D.js';
 
 // helpers
 export { AngleToHueWheelHelper } from './helper/AngleToHueWheelHelper.js';
@@ -79,7 +81,7 @@ export { Colormap } from './helper/Colormap.js';
 
 // filters - processing of Image3D
 export { Image3DToMosaicFilter } from './filter/Image3DToMosaicFilter.js';
-export { Image3DToMosaicFilterAlt } from './filter/Image3DToMosaicFilterAlt.js'; 
+export { Image3DToMosaicFilterAlt } from './filter/Image3DToMosaicFilterAlt.js';
 
 // utils
 export { Image3DMetadataConverter } from './utils/Image3DMetadataConverter.js';

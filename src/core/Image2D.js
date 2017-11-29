@@ -109,8 +109,8 @@ class Image2D extends PixpipeContainer{
     var width = this.getMetadata("width");
     var height = this.getMetadata("height");
 
-    cpImg.setData( new Float32Array(this._data), width, height, ncpp);
     cpImg.copyMetadataFrom( this );
+    cpImg.setData( new Float32Array(this._data), width, height, ncpp);
     return cpImg;
   }
 

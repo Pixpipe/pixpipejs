@@ -428,6 +428,11 @@
                   metadataIntegrityCheck
                 </a>
                 <a
+                  href='#PixpipeObject.metadataToString'
+                  class='regular block'>
+                  metadataToString
+                </a>
+                <a
                   href='#PixpipeObject.setMetadata'
                   class='regular block'>
                   setMetadata
@@ -436,6 +441,46 @@
                   href='#PixpipeObject.setRawMetadata'
                   class='regular block'>
                   setRawMetadata
+                </a>
+              <a
+                href='#Signal1D'
+                class='block bold h3 bg-pink-alpha'>
+                Signal1D
+              </a>
+                <a
+                  href='#Signal1D._computeStatistics'
+                  class='regular block'>
+                  _computeStatistics
+                </a>
+                <a
+                  href='#Signal1D.clone'
+                  class='regular block'>
+                  clone
+                </a>
+                <a
+                  href='#Signal1D.dataToString'
+                  class='regular block'>
+                  dataToString
+                </a>
+                <a
+                  href='#Signal1D.getData'
+                  class='regular block'>
+                  getData
+                </a>
+                <a
+                  href='#Signal1D.hollowClone'
+                  class='regular block'>
+                  hollowClone
+                </a>
+                <a
+                  href='#Signal1D.setData'
+                  class='regular block'>
+                  setData
+                </a>
+                <a
+                  href='#Signal1D.toString'
+                  class='regular block'>
+                  toString
                 </a>
               <a
                 href='#NiftiDecoderAlt'
@@ -1623,6 +1668,11 @@
                 CropImageFilter
               </a>
               <a
+                href='#DifferenceEquationSignal1D'
+                class='block bold h3 bg-pink-alpha'>
+                DifferenceEquationSignal1D
+              </a>
+              <a
                 href='#PixpEncoder'
                 class='block bold h3 bg-pink-alpha'>
                 PixpEncoder
@@ -1638,6 +1688,11 @@
                   hasValidInput
                 </a>
               <a
+                href='#EdfDecoder'
+                class='block bold h3 bg-pink-alpha'>
+                EdfDecoder
+              </a>
+              <a
                 href='#FloodFillImageFilter'
                 class='block bold h3 bg-pink-alpha'>
                 FloodFillImageFilter
@@ -1646,6 +1701,11 @@
                 href='#ForEachPixelReadOnlyFilter'
                 class='block bold h3 bg-pink-alpha'>
                 ForEachPixelReadOnlyFilter
+              </a>
+              <a
+                href='#ForwardFourierImageFilter'
+                class='block bold h3 bg-pink-alpha'>
+                ForwardFourierImageFilter
               </a>
               <a
                 href='#MatrixTricks'
@@ -1866,6 +1926,11 @@
                 href='#ImageDerivativeFilter'
                 class='block bold h3 bg-pink-alpha'>
                 ImageDerivativeFilter
+              </a>
+              <a
+                href='#InverseFourierImageFilter'
+                class='block bold h3 bg-pink-alpha'>
+                InverseFourierImageFilter
               </a>
               <a
                 href='#JpegDecoder'
@@ -4777,6 +4842,33 @@ integrity check is performed on this._metadata.</p>
 </section>
           </div>
         </div>
+        <div class='collapsible' id='PixpipeObject.metadataToString'>
+          <a href='#PixpipeObject.metadataToString'>
+            <code>
+              metadataToString<span class='gray'></span>
+            </code>
+            <div class='force-inline'>
+              <p>Get a string containing information about metadata</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2'>
+<section class='py2 clearfix'>
+  <h2 id='PixpipeObject.metadataToString' class='mt0'>
+    metadataToString<span class='gray'></span>
+  </h2>
+  <p>Get a string containing information about metadata</p>
+
+      <h4>Returns</h4>
+      <code><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a></code></code>
+      :
+      <div class='force-inline'>
+        <p>meta to string</p>
+
+      </div>
+</section>
+          </div>
+        </div>
         <div class='collapsible' id='PixpipeObject.setMetadata'>
           <a href='#PixpipeObject.setMetadata'>
             <code>
@@ -4841,6 +4933,221 @@ integrity check is performed on this._metadata.</p>
           </div>
         </li>
     </ul>
+</section>
+          </div>
+        </div>
+</section>
+</div><div class='py1'><section class='py2 clearfix'>
+  <h2 id='Signal1D' class='mt0'>
+    Signal1D<span class='gray'></span>
+  </h2>
+  <p>An object of type Signal1D is a single dimensional signal, most likely
+by a Float32Array and a sampling frequency. To change the sampling frequency
+use the method <code>.setMetadata(&apos;samplingFrequency&apos;, Number);</code>, defaut value is 100.
+We tend to considere this frequency to be in <strong>Hz</strong>, but there is no hardcoded
+unit and it all depends on the application. This is important to specify this
+metadata because some processing filters may use it.</p>
+<p><strong>Usage</strong></p>
+<ul>
+<li><a href="../examples/fftSignal1D.html">examples/urlFileToArrayBuffer.html</a></li>
+</ul>
+
+      <h4>Instance members</h4>
+        <div class='collapsible' id='Signal1D._computeStatistics'>
+          <a href='#Signal1D._computeStatistics'>
+            <code>
+              _computeStatistics<span class='gray'></span>
+            </code>
+            <div class='force-inline'>
+              <p>[PRIVATE]
+Conpute min-max</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2'>
+<section class='py2 clearfix'>
+  <h2 id='Signal1D._computeStatistics' class='mt0'>
+    _computeStatistics<span class='gray'></span>
+  </h2>
+  <p>[PRIVATE]
+Conpute min-max</p>
+
+</section>
+          </div>
+        </div>
+        <div class='collapsible' id='Signal1D.clone'>
+          <a href='#Signal1D.clone'>
+            <code>
+              clone<span class='gray'></span>
+            </code>
+            <div class='force-inline'>
+              <p>Get a clone of this object (data and metadata)</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2'>
+<section class='py2 clearfix'>
+  <h2 id='Signal1D.clone' class='mt0'>
+    clone<span class='gray'></span>
+  </h2>
+  <p>Get a clone of this object (data and metadata)</p>
+
+      <h4>Returns</h4>
+      <code><code><a href="#Signal1D">Signal1D</a></code></code>
+      :
+      <div class='force-inline'>
+        <p>the clone object</p>
+
+      </div>
+</section>
+          </div>
+        </div>
+        <div class='collapsible' id='Signal1D.dataToString'>
+          <a href='#Signal1D.dataToString'>
+            <code>
+              dataToString<span class='gray'></span>
+            </code>
+            <div class='force-inline'>
+              <p>Get a string reprensenting the data</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2'>
+<section class='py2 clearfix'>
+  <h2 id='Signal1D.dataToString' class='mt0'>
+    dataToString<span class='gray'></span>
+  </h2>
+  <p>Get a string reprensenting the data</p>
+
+      <h4>Returns</h4>
+      <code><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a></code></code>
+      :
+      <div class='force-inline'>
+        <p>the data to string</p>
+
+      </div>
+</section>
+          </div>
+        </div>
+        <div class='collapsible' id='Signal1D.getData'>
+          <a href='#Signal1D.getData'>
+            <code>
+              getData<span class='gray'></span>
+            </code>
+            <div class='force-inline'>
+              <p>Get the raw data as a typed array</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2'>
+<section class='py2 clearfix'>
+  <h2 id='Signal1D.getData' class='mt0'>
+    getData<span class='gray'></span>
+  </h2>
+  <p>Get the raw data as a typed array</p>
+
+      <h4>Returns</h4>
+      <code><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Float32Array">Float32Array</a></code></code>
+      :
+      <div class='force-inline'>
+        <p>the data, NOT A COPY</p>
+
+      </div>
+</section>
+          </div>
+        </div>
+        <div class='collapsible' id='Signal1D.hollowClone'>
+          <a href='#Signal1D.hollowClone'>
+            <code>
+              hollowClone<span class='gray'></span>
+            </code>
+            <div class='force-inline'>
+              <p>Clone this object but not its data
+(data array is replaced by same type array filled with zeros).
+Metadata are copied.</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2'>
+<section class='py2 clearfix'>
+  <h2 id='Signal1D.hollowClone' class='mt0'>
+    hollowClone<span class='gray'></span>
+  </h2>
+  <p>Clone this object but not its data
+(data array is replaced by same type array filled with zeros).
+Metadata are copied.</p>
+
+      <h4>Returns</h4>
+      <code><code><a href="#Signal1D">Signal1D</a></code></code>
+      :
+      <div class='force-inline'>
+        <p>the hollow clone</p>
+
+      </div>
+</section>
+          </div>
+        </div>
+        <div class='collapsible' id='Signal1D.setData'>
+          <a href='#Signal1D.setData'>
+            <code>
+              setData<span class='gray'>(array, deepCopy)</span>
+            </code>
+            <div class='force-inline'>
+              <p>Set the data.</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2'>
+<section class='py2 clearfix'>
+  <h2 id='Signal1D.setData' class='mt0'>
+    setData<span class='gray'>(array, deepCopy)</span>
+  </h2>
+  <p>Set the data.</p>
+
+    <h4>Parameters</h4>
+    <ul class='suppress-p-margin'>
+        <li><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Float32Array">Float32Array</a></code> <strong>array</strong>
+          :
+          <div class='force-inline'>
+            <p>the data</p>
+
+          </div>
+        </li>
+        <li><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean">Boolean</a></code> <strong>deepCopy</strong>
+          :
+          <div class='force-inline'>
+            <p>true: will perform a deep copy of the data array, false: will just associate the pointer</p>
+
+          </div>
+        </li>
+    </ul>
+</section>
+          </div>
+        </div>
+        <div class='collapsible' id='Signal1D.toString'>
+          <a href='#Signal1D.toString'>
+            <code>
+              toString<span class='gray'></span>
+            </code>
+            <div class='force-inline'>
+              <p>Get a string description of this object</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2'>
+<section class='py2 clearfix'>
+  <h2 id='Signal1D.toString' class='mt0'>
+    toString<span class='gray'></span>
+  </h2>
+  <p>Get a string description of this object</p>
+
+      <h4>Returns</h4>
+      <code><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a></code></code>
+      :
+      <div class='force-inline'>
+        <p>the description</p>
+
+      </div>
 </section>
           </div>
         </div>
@@ -12414,6 +12721,27 @@ In addition, you must specify the width and heigth of the output using
 
 </section>
 </div><div class='py1'><section class='py2 clearfix'>
+  <h2 id='DifferenceEquationSignal1D' class='mt0'>
+    DifferenceEquationSignal1D<span class='gray'></span>
+  </h2>
+  <p>Performs a difference equation (= discrete version of a differential equation)
+on a Signal1D object. This is convenient to perform a lo-pass or hi-pass filter.
+Coefficients are needed to run this filter, set them using
+the following methods: <code>.setMetadata(&quot;coefficientsB&quot;, [Number, Number, ...])</code> and
+<code>.setMetadata(&quot;coefficientsB&quot;, [Number, Number, ...])</code>. This is related to the
+following:<br>
+<img src="https://raw.githubusercontent.com/Pixpipe/differenceequationsignal1d/master/images/definition.png" alt=""><br>
+Where coeefticients A and B are array of the same size, knowing the first number
+of the array coefficients A will not be used (just set it to <code>1.0</code>).<br>
+more information on the <a href="https://github.com/Pixpipe/differenceequationsignal1d">module repo</a>
+and even more on the original <a href="https://www.dsprelated.com/freebooks/filters/Difference_Equation_I.html">description page</a>.</p>
+<p><strong>Usage</strong></p>
+<ul>
+<li><a href="../examples/differenceEqSignal1D.html">examples/differenceEqSignal1D.html</a></li>
+</ul>
+
+</section>
+</div><div class='py1'><section class='py2 clearfix'>
   <h2 id='PixpEncoder' class='mt0'>
     PixpEncoder<span class='gray'></span>
   </h2>
@@ -12476,6 +12804,24 @@ Only accept Image2D and Image3D</p>
         </div>
 </section>
 </div><div class='py1'><section class='py2 clearfix'>
+  <h2 id='EdfDecoder' class='mt0'>
+    EdfDecoder<span class='gray'></span>
+  </h2>
+  <p>An instance of EdfDecoder takes an ArrayBuffer as input. This ArrayBuffer must
+come from a edf file (European Data Format). Such file can have multiple signals
+encoded internally, usually from different sensors, this filter will output as
+many Signal1D object as there is signal in the input file. In addition, each
+signal is composed of records (e.g. 1sec per record). This decoder concatenates
+records to output a longer signal. Still, the metadata in each Signal1D tells
+what the is the length of original record.</p>
+<p><strong>Usage</strong></p>
+<ul>
+<li><a href="../examples/fileToEDF.html">examples/fileToEDF.html</a></li>
+<li><a href="../examples/differenceEqSignal1D.html">examples/differenceEqSignal1D.html</a></li>
+</ul>
+
+</section>
+</div><div class='py1'><section class='py2 clearfix'>
   <h2 id='FloodFillImageFilter' class='mt0'>
     FloodFillImageFilter<span class='gray'></span>
   </h2>
@@ -12510,6 +12856,19 @@ created ( because the filter ForEachPixelImageFilter creates an output with same
 <p><strong>Usage</strong></p>
 <ul>
 <li><a href="https://github.com/Pixpipe/pixpipejs/blob/master/src/filter/TerrainRgbToElevationImageFilter.js">the filter TerrainRgbToElevationImageFilter</a></li>
+</ul>
+
+</section>
+</div><div class='py1'><section class='py2 clearfix'>
+  <h2 id='ForwardFourierImageFilter' class='mt0'>
+    ForwardFourierImageFilter<span class='gray'></span>
+  </h2>
+  <p>An instance of ForwardFourierImageFilter performs a forward Fourier transform
+on an Image2D or a Signa1D.</p>
+<p><strong>Usage</strong></p>
+<ul>
+<li><a href="../examples/fftImage2D.html">examples/fftImage2D.html</a></li>
+<li><a href="../examples/fftSignal1D.html">examples/fftSignal1D.html</a></li>
 </ul>
 
 </section>
@@ -13814,6 +14173,19 @@ h = [1, -1]</p>
 
 </section>
 </div><div class='py1'><section class='py2 clearfix'>
+  <h2 id='InverseFourierImageFilter' class='mt0'>
+    InverseFourierImageFilter<span class='gray'></span>
+  </h2>
+  <p>An instance of ForwardFourierImageFilter performs an inverse Fourier transform
+on an Image2D or a Signa1D.</p>
+<p><strong>Usage</strong></p>
+<ul>
+<li><a href="../examples/fftImage2D.html">examples/fftImage2D.html</a></li>
+<li><a href="../examples/fftSignal1D.html">examples/fftSignal1D.html</a></li>
+</ul>
+
+</section>
+</div><div class='py1'><section class='py2 clearfix'>
   <h2 id='JpegDecoder' class='mt0'>
     JpegDecoder<span class='gray'></span>
   </h2>
@@ -13830,17 +14202,7 @@ but this is compatible with Node and not rely on HTML5 Canvas.</p>
   <h2 id='PixBinEncoder' class='mt0'>
     PixBinEncoder<span class='gray'></span>
   </h2>
-  <p>A PixBinEncoder instance takes an Image2D or Image3D as input with <code>addInput(...)</code>
-and encode it so that it can be saved as a *.pixp file.
-An output filename can be specified using <code>.setMetadata(&quot;filename&quot;, &quot;yourName.pixp&quot;);</code>,
-by default, the name is &quot;untitled.pixp&quot;.
-When <code>update()</code> is called, a gzip blog is prepared as output[0] and can then be downloaded
-when calling the method <code>.download()</code>. The gzip blob could also be sent over AJAX
-using a third party library.</p>
-<p><strong>Usage</strong></p>
-<ul>
-<li><a href="../examples/savePixpFile.html">examples/savePixpFile.html</a></li>
-</ul>
+  <p>Download the generated file</p>
 
       <h4>Static members</h4>
         <div class='collapsible' id='PixBinEncoder.MAGIC_NUMBER'>
@@ -13870,7 +14232,17 @@ the first sequence of bytes for a pixbin file is this ASCII string</p>
   <h2 id='PixBinEncoder' class='mt0'>
     PixBinEncoder<span class='gray'></span>
   </h2>
-  <p>Download the generated file</p>
+  <p>A PixBinEncoder instance takes an Image2D or Image3D as input with <code>addInput(...)</code>
+and encode it so that it can be saved as a *.pixp file.
+An output filename can be specified using <code>.setMetadata(&quot;filename&quot;, &quot;yourName.pixp&quot;);</code>,
+by default, the name is &quot;untitled.pixp&quot;.
+When <code>update()</code> is called, a gzip blog is prepared as output[0] and can then be downloaded
+when calling the method <code>.download()</code>. The gzip blob could also be sent over AJAX
+using a third party library.</p>
+<p><strong>Usage</strong></p>
+<ul>
+<li><a href="../examples/savePixpFile.html">examples/savePixpFile.html</a></li>
+</ul>
 
       <h4>Static members</h4>
         <div class='collapsible' id='PixBinEncoder.MAGIC_NUMBER'>

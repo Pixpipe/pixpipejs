@@ -4,6 +4,7 @@
  * Link     https://github.com/Pixpipe/pixpipejs
  * Lab      MCIN - Montreal Neurological Institute
  */
+ 
 import ndarray from 'ndarray';
 import zeros from 'zeros';
 import ft from 'ndarray-fft';
@@ -17,6 +18,7 @@ const DIRECTIONS = {
 };
 
 class BaseFourierImageFilter extends Filter {
+  
   constructor(direction) {
     super();
     this.direction = direction;
@@ -26,6 +28,8 @@ class BaseFourierImageFilter extends Filter {
     this.addInputValidator(0, Image2D);
     this.addInputValidator(1, Image2D);
   }
+  
+  
   _run() {
     if( ! this.hasValidInput()){
       console.warn("A filter of type BaseFourierSignalFilter requires 2 inputs of Signal1D.");
@@ -58,12 +62,30 @@ class BaseFourierImageFilter extends Filter {
   }
 }
 
+
+/**
+* An instance of ForwardFourierImageFilter performs a forward Fourier transform
+* on an Image2D or a Signa1D.
+*
+* **Usage**
+* - [examples/fftImage2D.html](../examples/fftImage2D.html)
+* - [examples/fftSignal1D.html](../examples/fftSignal1D.html)
+*/
 class ForwardFourierImageFilter extends BaseFourierImageFilter {
   constructor() {
     super('FORWARD');
   }
 }
 
+
+/**
+* An instance of ForwardFourierImageFilter performs an inverse Fourier transform
+* on an Image2D or a Signa1D.
+*
+* **Usage**
+* - [examples/fftImage2D.html](../examples/fftImage2D.html)
+* - [examples/fftSignal1D.html](../examples/fftSignal1D.html)
+*/
 class InverseFourierImageFilter extends BaseFourierImageFilter {
   constructor() {
     super('INVERSE');
