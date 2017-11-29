@@ -135,9 +135,11 @@
   
   
   sliderHiPass.addEventListener('input', function(event) {
+    /*
     if( parseInt(sliderHiPass.value) >= parseInt(sliderLoPass.value)){
       sliderHiPass.value = parseInt(sliderLoPass.value) - 1;
     }
+    */
     
     hiCutoff = sliderHiPass.value
     hiPassPrint.innerHTML = hiCutoff;
@@ -146,9 +148,11 @@
   
   
   sliderLoPass.addEventListener('input', function(event) {
+    /*
     if( parseInt(sliderLoPass.value) <= parseInt(sliderHiPass.value)){
       sliderLoPass.value = parseInt(sliderHiPass.value) + 1;
     }
+    */
     
     loCutoff = sliderLoPass.value
     loPassPrint.innerHTML = loCutoff;
