@@ -279,6 +279,19 @@ class PixpipeObject {
     return null;
   }
   
+  
+  /**
+  * Get a string containing information about metadata
+  * @return {String} meta to string
+  */
+  metadataToString(){
+    var str = "__metadata__\n";
+    for( var meta in this._metadata ){
+      str += `\t[${meta}]\n\t${JSON.stringify(this._metadata[meta])}\n\n` 
+    }
+    return str;
+  }
+  
 }
 
 export { PixpipeObject }

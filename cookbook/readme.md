@@ -16,8 +16,14 @@ This cookbook will help you to become familiar with the architecture of **Pixpip
   - [Image3D](#image3d)
   - [MniVolume](#mnivolume)
   - [Signal1D](#signal1d)
+  - [LineString](#linestring)
+  - [PixpipeContainerMultiData](#pixpipecontainermultidata)
+  - [Mesh3D](#mesh3d)
   - [Filter](#filter)
   - [ImageToImageFilter](#imagetoimagefilter)
+  - [I/O Filters](#io-filters)
+  - [File Codecs](#file-codecs)
+  - [Helpers](#helpers)
 - [Building Pixpipe](#building-pixpipe)
 - [Building the documentation](#building-the-documentation)
 - [Learning with examples](#learning-with-examples)
@@ -65,6 +71,17 @@ Sometimes, it's just not worth reinventing the wheel. Here are the libraries Pix
 - [delaunay](https://github.com/ironwallaby/delaunay) Delaunay triangulation
 - [jpeg-js](https://github.com/eugeneware/jpeg-js) a pure JS jpeg decoder
 - [UPNG.js](https://github.com/photopea/UPNG.js) a pure JS png decoder
+- [gl-matrix](http://glmatrix.net/) a great linear algebra lib. Its name comes from that it's compatible with WebGL vector/Matrix format (column major typed arrays)
+- [joi-browser](https://github.com/jeffbski/joi-browser) a Javascript object schema validation lib that is easy to use
+- [ndarray](https://github.com/scijs/ndarray) multidim numerical arrays, used for some computations only (FFT), but not as a native data storage in Pixpipe
+- [nifti-reader-js](https://github.com/rii-mango/NIFTI-Reader-JS) an efficient NIfTI file parser
+
+In order to make Pixpipejs the way it is, we have developped a few modules that are integrated at bundling time but that can also be used as stand-alone, without Pixpipe. They are all hosted on the [Pixpipe Github organization](https://github.com/Pixpipe):
+- [codecutils](https://github.com/Pixpipe/codecutils) provides some static functions to encode or decode data, especially extract numerical array from `ArrayBuffer` without constraint, convert to unicode strings, etc.
+- [pixbincodec](https://github.com/Pixpipe/pixbincodec) to read and write into the native Pixpipe format: PixBin files. Although this lib create or reads from `ArrayBuffer`, the exampled provided show how to read from or write to disk depending if you are using JS in a browser of in Node.
+- [mniobjparser](https://github.com/Pixpipe/mniobjparser) to parse the 3D mesh/surface files output of CIVET, called MNI OBJ
+- [qeegmodfile](https://github.com/Pixpipe/qeegmodfile) a EEG file parser for the MOD format used in the Canada-China-Cuba consortium
+- [edfdecoder](https://github.com/Pixpipe/edfdecoder) a EDF (European Data Format) file parser, especially used in EEG
 
 
 # Sample data
@@ -118,8 +135,30 @@ This object is motivated by the medical dataset used internally in the [Montreal
 
 
 ### Signal1D
-*container*
-Like `Image2D` stores a 2D signal, the `Signal1D` is intended to store single dimensional signals.
+*container*  
+Like `Image2D` stores a 2D signal, the `Signal1D` is intended to store single dimensional signals, for example intensities of an EEG. There are special filters associated with this container, for example to perform Fourier Transform.
+
+
+### LineString
+*container*  
+A `LineString` is a vectorial representation of a polyline in a space of a given number of dimensions. In 2D by default, this can be changed using the method `.setNod(Number)` to 3D or even more, as long as it makes sense for the application. A line string can be closed whn calling the method `.close()` so that it becomes a polygon. Points can be added (to the end) or popped (from the end).  
+The internal data structure of a LineString is a `Float32Array` and If a line string lays in a 2D, the internal data will be represented as `[x1, y1, x2, y2, x3, y3, ...]`. This is very convenient when it comes to encode or compresse the data (e.g. for storing in a file) but the user should not have to deal directly with this structure and should use the dedicated methods to interact with a LineString.
+
+
+### PixpipeContainerMultiData
+*container interface*  
+A `PixpipeContainerMultiData` object does not exist as is, this is an interface to data-structures which need to encode multiple numerical buffers, possibly of different types, each of them having a name (or ID, as you prefer to call it).  
+For example, say you need a datastructure that needs 1D measurement (like a `Signal1D`) but also need to associate an integer for each of these measurement (for example a class, if you want to make clusters), then you will most likely need a `Float32Array` for measurement and a `Uint8Array` for classifing. A type that inherits `PixpipeContainerMultiData` will serve this purpose and all the methods that are already there will help you save time.
+
+### Mesh3D
+*container*  
+The `Mesh3D` class is a good example of usage of `PixpipeContainerMultiData`. An instance of `Mesh3D` represents a mesh, in 3D, aka a surface. To serve this purpose, it stores **four** types of data:
+- the vertex positions, as an array of `[x0, y0, z0, x1, y1, z1, ...]` (`Float32Array`)
+- the list of each each vertex index grouped by 3 (if faces are triangles) such as `[Va0, Va1, Va2, Vb0, Vb1, Vb2, ...]` where `a` is the first triangle, `b` is the second...  (`Uint32Array`)
+- the polygons/triangles' normal vectors `[x0, y0, z0, x1, y1, z1, ...]`. Even though those could be computed with a cross product using a *right hand* rule, it can be convenient the list them in case all the faces don't follow this rule. (`Float32Array`)
+- the vertex colors as a list of RGBa such as `[V0R, V0G, V0G, V0a, V1R, V1G, V1B, V1a, ...]` (`Uint8Array`)
+Each of these structure can be set from dedicated methods and you should not have to deal with low level private arrays.
+
 
 ### Filter
 *processor interface*  
@@ -136,6 +175,26 @@ If you happen to create your own custom filter, **always** add some input verifi
 This extends `Filter` but still does not process anything. This is again an interface for any custom filter that would input one or multiple `Image2D` and output one `Image2D` (actually, this is not strictly required, it could output anything else, like statistics for examples).  
 `ImageToImageFilter` provides a method to check if all the input `Image2D` have the same size: `.hasSameSizeInput()` and if they have the same number of components per pixel: `.hasSameNcppInput()`. These two methods should be called at the beginning of the `._run()` method, but if your custom filter happens *not* to need these verifications, then simply don't call them.  
 
+### I/O Filters
+*file system*  
+An `I/O Filter` is not a class, neither an interface, it is more a way to label some filters that are dedicated to opening files from the file system or from *AJAX* request and output a raw `ArrayBuffer` of the `String` contained by a given file. In addition to outputin some data that can then be parsed, they also perform `md5` checksum computation to give you some material in case you would like to integrate file integrity verification into your app.  
+Some files are compressed using *zlib*, they usually have the extension `.gz` in addition of their original extension: e.g. *myMRI.nii.gz*. IO filters that load files from local filesystem of through an AJAX request will test if a file is compressed and if so, will decompress it in memory so that the data to output is ready to be parsed. This step is performed by [Pako](https://github.com/nodeca/pako), a very fast *inflate/deflate* zli inplementation in pure Javascript.  
+Other filters are in IO, such as a filter to write an `Image2D` into an *HTML5* canvas (with data scaling if your image goes beyond 0-255), a filter to trigger the download of an `ArrayBuffer` in a web browser or a filter to read an image from local filesystem using the *HTML5* API and then benefit from the low level performance from the web browser (rather than relying on pure Javascript parsing of *jpg* or *png*, which is also possible but a bit slower. )  
+Such filters are in the `src/io` folder of Pixpipejs.
+
+
+### File Codecs
+*give some sense to these blobs*  
+Once again a `File Codec` is not a class in Pixpipejs, but rather a label given to some filter that are located in the folder `src/decoder`. Most of those filters are a singles task to decode a specific file format, and a single on will actually encode data to output a file: *PixBinEncoder*, for the native Pixpipejs format.  
+Most of the decoder will take an `ArrayBuffer` as input and few other will take a large `String` (for text based file format). in any case, the input of the decoders is usually the output of a *I/O* filter after having read a file from the filesystem or through an *AJAX* request. Those decoder will digest the data and output an object of a Pixpipe type, for example an `Image2D`, an `Image3D`, a `Mesh3D`, etc. The purpose is that no matter the kind of file as input, files of the same modality will end up in the same kind of container.  
+For example, a *png* image and a *jpg* image are encoded in very different ways, the first uses a *zlib* lossless compression while the other uses a *discret cosine transform* followed by a quntization making it a lossy compression. One is not streamable, the other is, magic numbers are of course not the same, etc. Even with all these diferences, they are still representing the same modality: an two dimensional image. For this reason, both kinds will end up in a `Image2D` Pixpipe container, and thus will have the same query methods and filter compatibility.
+
+
+### Helpers
+*When data still hardly make sense*  
+Helpers is, again, a label to the class from `src/helpers`. They are tools to help visualize the data that do not easy to interpret. For example one of the main helper is `Colormap`, to create colorful gradients that then can be applied to other kinds of data.  
+There are not a lot of them and they are usually created as long as new kinds of data are integrated into Pixpipejs and we realize that they can be interpreted easily with a little helper.
+
 
 # Building Pixpipe
 By default, Pixpipe already comes with a built version in the `dist` directory. Still, if you modify it, you may want to build your own version.  
@@ -147,11 +206,14 @@ $ npm install
 $ npm run build
 ```
 
-This will generate a *bundled* file in the `dist` directory (replacing the default one). This single source file can be imported in a *html* page like any other js file:
+This will generate a ES5-compatible `umd` *bundle* file in the `dist` directory: `pixpipe.js`.  
+This single source file can be imported in a *html* page like any other js file:
 
 ```html
 <script src="a/path/to/pixpipe.js"></script>
 ```
+The `build` command will also make a ES5-compatible *commonJS* source that is easier to import in a bigger project: `pixpipe.cjs.js`.
+
 
 Note that Pixpipejs is developed using ES6 and might not be compatible with older browsers -- Google closure compiler to the rescue! In addition, to provide a nice and easy way to minify the built version, it also transpiles the codebase into ES5. Here is the command:
 
@@ -161,6 +223,18 @@ $ npm run min
 ```
 
 **Note** Pixpipe does not use an npm minifier plugin because it's codebase is too large, thus it uses directly the closure compiler from Google (see `closurecompiler` folder).
+
+# Development mode
+In addition to the regular building mode, you can work in development mode:
+
+```bash
+$ cd pixpipejs
+$ npm install
+$ npm run dev
+```
+This is has two advantages over the regular build mode:
+- It lauches a local webserver
+- It builds only the `umd` package and keeps it as ES6, which is faster since there is no transpiling involved. (but please don't distribute a ES6 bundle).
 
 
 # Building the documentation
@@ -202,6 +276,7 @@ Here, we will learn what is an `Image2D`, how to display it in a canvas using `C
 ## Signal filters for Signal1D
 - [Compute the 1D fourier transform or inverse transform on a signal](https://github.com/Pixpipe/pixpipejs/tree/master/examples/fftSignal1D.html) | [source](https://github.com/Pixpipe/pixpipejs/tree/master/examples/fftSignal1D.html)
 
+
 ## Simple filters for Image2D
 See a `Filter` as a *box* that takes one or more input and produces one or more output. If some parameters are needed to make the filter work properly, this must happen using `setMetadata()`. To ask the filter to do its job, just call `update()`.  
 A `Filter` should **NEVER** modify the input data.
@@ -223,6 +298,7 @@ A `Filter` should **NEVER** modify the input data.
 - [Compute the 2D fourier transform or inverse transform on a single channel image](https://github.com/Pixpipe/pixpipejs/tree/master/examples/fftImage2D.html) | [source](https://github.com/Pixpipe/pixpipejs/tree/master/examples/fftImage2D.html)
 - [Extract single channels of an image or merge the channels of multiple images](https://github.com/Pixpipe/pixpipejs/tree/master/examples/imageProjectMerge.html) | [source](https://github.com/Pixpipe/pixpipejs/tree/master/examples/imageProjectMerge.html)
 
+
 ## Playing with 3D medical dataset
 - [Open a local Minc2 file, extract 3 orthogonal slices and display in canvas](http://pixpipe.github.io/pixpipejs/examples/fileToMinc2.html) | [source](https://github.com/Pixpipe/pixpipejs/tree/master/examples/fileToMinc2.html)
 - [Open a local  NIfTI file, extract 3 orthogonal slices and display in canvas](http://pixpipe.github.io/pixpipejs/examples/fileToNifti.html) | [source](https://github.com/Pixpipe/pixpipejs/tree/master/examples/fileToNifti.html)
@@ -237,6 +313,11 @@ A `Filter` should **NEVER** modify the input data.
 - [Flood fill an Image2D](http://pixpipe.github.io/pixpipejs/examples/floodFillImage2D.html) | [source](https://github.com/Pixpipe/pixpipejs/tree/master/examples/floodFillImage2D.html)
 - [Simplifying a LineString](http://pixpipe.github.io/pixpipejs/examples/contourSimplifiedImage2D.html) | [source](https://github.com/Pixpipe/pixpipejs/tree/master/examples/contourSimplifiedImage2D.html)
 
+
+## Mesh
+- [Load a mesh from a MNI OBJ file, create Mesh3D object and display it with ThreeJS](http://pixpipe.github.io/pixpipejs/examples/fileToMniObj.html)
+
+
 ## Interpolation
 - [2D sparse dataset inverse distance weighting](http://pixpipe.github.io/pixpipejs/examples/IDWSparseInterpolation.html) | [source](https://github.com/Pixpipe/pixpipejs/tree/master/examples/IDWSparseInterpolation.html)
 - [2D sparse dataset triangulation](http://pixpipe.github.io/pixpipejs/examples/TriangleSparseInterpolation.html) | [source](https://github.com/Pixpipe/pixpipejs/tree/master/examples/TriangleSparseInterpolation.html)
@@ -248,6 +329,7 @@ A `Filter` should **NEVER** modify the input data.
 - [Open  a local  NIfTI/MINC/MGH file, build a 3D texture and display volume with obliques, show a slider for time series if any, and adjust contrast with a curve widget](http://pixpipe.github.io/pixpipejs/examples/volume3DNavigatorTimeCurve.html) | [source](https://github.com/Pixpipe/pixpipejs/tree/master/examples/volume3DNavigatorTimeCurve.html)
 - [Encode an Pixpipe object into a PixBin file](http://pixpipe.github.io/pixpipejs/examples/encodePixBin.html) | [source](https://github.com/Pixpipe/pixpipejs/tree/master/examples/encodePixBin.html)
 - [Decode a PixBin file into one or more Pixpipe data structures](http://pixpipe.github.io/pixpipejs/examples/decodePixBin.html) | [source](https://github.com/Pixpipe/pixpipejs/tree/master/examples/decodePixBin.html)
+
 
 # Create your own custom filter
 As mentioned earlier, a filter must take at least one input et retrieve at least one output, in between the method `.update()` must be called. The only exception to that are `io` filters which are opening or writing from/to a file or an HTML5 canvas.  
@@ -634,7 +716,7 @@ Then, don't forget to [register your filter](#register-your-filter) so that you 
 
 
 ### Could we do it another way?
-Sure, in may other other ways. A simple alternative would have been to:
+Sure, in many other ways. A simple alternative would have been to:
 
 Make a clone of the input image:
 
@@ -787,7 +869,7 @@ if( this.hasEvent("dataProcessed") ){
 
 
 # Measuring time
-The class/interface `Filter` has a built-in system to measure time that any custom filter can use. It can be useful to track performance and know where to look for further optimization. Here is how to use it, internally from your custom filter:
+The class/interface `PixpipeObject` has a built-in system to measure time that any other Pixpipe object can use. It can be useful to track performance and know where to look for further optimization. Here is how to use it, internally from your custom filter:
 
 ```javascript
 ...
@@ -828,4 +910,4 @@ which is faster than that:
 this.getMetadata("width")
 ```
 
-Using the getter is nice because it provides a layer of control and return null if the metadata does not exist but it's slower, so as long as you are using a metadata internally (from `this`) and that you know what you are doing (you are **sure** this metadata actually exists), then it's ok to call it like a regular object.
+Using the getter is nice because it provides a layer of control and returns null if the metadata does not exist but it's slower, so as long as you are using a metadata internally (from `this`) and that you know what you are doing (you are **sure** this metadata actually exists), then it's ok to call it like a regular attributes, with the *dot* operator.

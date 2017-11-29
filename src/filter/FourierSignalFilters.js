@@ -16,6 +16,9 @@ const DIRECTIONS = {
   'INVERSE': -1,
 };
 
+
+// more info:
+// http://paulbourke.net/miscellaneous/dft/
 class BaseFourierSignalFilter extends Filter {
   constructor(direction) {
     super();
