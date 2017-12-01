@@ -23,9 +23,8 @@
   <ul>
     <li>open a local EDF file, using <code>pixpipe.FileToArrayBufferReader</code></li>
     <li>redirect the file buffer into a <code>pixpipe.EdfDecoder</code> to extract EDF dataset and metadata</li>
-    <li>get the output as a generique <code>pixpipe.MniVolume</code> object</li>
-    <li><code>slice()</code> the volume 3 times, along 3 given axis to get 3 <code>pixpipe.Image2D</code> objects</li>
-    <li>display the images in separate canvas using a single instance of <code>pixpipe.CanvasImageWriter</code></li>
+    <li>get the output as a string description</li>
+    <li>Note: open the javascript console where the opbject is printed</li>
   </ul>
 
   </p>
@@ -56,6 +55,7 @@
       edfDecoder.update();
 
       edfDecoder.forEachOutput(function(index, sig1D){
+        console.log( sig1D );
         log(`-------------- SIGNAL ${index} ----------------------`)
         log( sig1D.toString() );
       })
@@ -83,7 +83,6 @@
 
     function log( msg ){
       var logArea = document.getElementById("logArea");
-      console.log(msg);
       
       if( msg instanceof Object ){
         msg = "[Object]:\n" + JSON.stringify(msg)

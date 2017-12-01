@@ -64209,13 +64209,79 @@ class Image3DToMosaicFilterAlt extends Filter{
 
 } /* END of class Image3DToMosaicFilterAlt */
 
+/**
+* The FunctionGenerator is a collection of static methods to get samples of
+* function output such as gaussian values.
+*/
+class FunctionGenerator {
+  
+  
+  /**
+  * Get the value of the gaussian values given a interval and a sigma (standard deviation).  
+  * Note that this gaussian is the one use in a frequency response. If you look
+  * for the gaussian as an impulse response, check the method 
+  * `gaussianImpulseResponse`.
+  * @param {Number} sigma - the standard deviation (or cutoff frequency)
+  * @param {Number} begin - the first value on abscisse
+  * @param {Number} end - the last value on abscisse (included)
+  * @param {Number} onlyAbove - threshold, takes only gaussian values above this value
+  * @return {Object} .data: Float32Array - the gaussian data,
+  *                  .actualBegin: like begin, except if the onlyAbove is used and the squence would start later
+  *                  .actualEnd: like end, except if the onlyAbove is used and the squence would stop earlier
+  */
+  static gaussianFrequencyResponse( sigma, begin, end, step=1, onlyAbove=0 ){
+    var g = [];
+    var hasStarted = false;
+    var actualBegin = +Infinity;
+    var actualEnd = -Infinity;
+    
+    for(var x=begin; x<=end; x+=step){
+      var gx = FunctionGenerator.gaussianFrequencyResponseSingle(sigma, x);
+      
+      if(gx > onlyAbove){
+        if(!hasStarted){
+          actualBegin = x;
+          hasStarted = true;
+        }
+        g.push( gx );
+        actualEnd = x;
+      }else{
+        if(hasStarted){
+          break;
+        }
+      }
+    }
+    
+    return {
+      data: new Float32Array( g ),
+      actualBegin: actualBegin,
+      actualEnd: actualEnd
+    }
+  }
+  
+  
+  /**
+  * Get the value of the gaussian given a x and a sigma (standard deviation).  
+  * Note that this gaussian is the one use in a frequency response. If you look
+  * for the gaussian as an impulse response, check the method 
+  * `gaussianImpulseResponseSingle`.
+  * @param {Number} sigma - the standard deviation (or cutoff frequency)
+  * @param {Number} x - the abscisse
+  * @return {Number} the gaussian value at x for the given sigma
+  */
+  static gaussianFrequencyResponseSingle( sigma, x ){
+    return Math.exp( -( (x*x) / (2*sigma*sigma) ) );
+  }
+  
+  
+  
+} /* END of class FunctionGenerator */
+
 'use strict';
 
 // defines the type of array to be used by glMatrix. Default would be Float32Array
 // but typed arrays cause issue when serialized, this is why we'd rather use regular Array.
 setMatrixArrayType( Array );
-
-// core classes
 
 exports.CoreTypes = CoreTypes;
 exports.PixpipeObject = PixpipeObject;
@@ -64287,6 +64353,7 @@ exports.Image3DToMosaicFilter = Image3DToMosaicFilter;
 exports.Image3DToMosaicFilterAlt = Image3DToMosaicFilterAlt;
 exports.Image3DMetadataConverter = Image3DMetadataConverter;
 exports.MatrixTricks = MatrixTricks;
+exports.FunctionGenerator = FunctionGenerator;
 
 Object.defineProperty(exports, '__esModule', { value: true });
 

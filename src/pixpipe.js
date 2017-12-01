@@ -86,3 +86,4 @@ export { Image3DToMosaicFilterAlt } from './filter/Image3DToMosaicFilterAlt.js';
 // utils
 export { Image3DMetadataConverter } from './utils/Image3DMetadataConverter.js';
 export { MatrixTricks } from './utils/MatrixTricks.js';
+export { FunctionGenerator } from './utils/FunctionGenerator.js';

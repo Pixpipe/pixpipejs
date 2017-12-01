@@ -261,7 +261,7 @@
     
     
     var samplingFreq = edf.getMetadata("samplingFrequency");
-    var nyquistFreq = samplingFreq / 2;
+    //var nyquistFreq = samplingFreq / 2;
     
     var cutoffFreqHz = loCutoff; // in Hz
     var indexCutoffSpectrum = Math.round(cutoffFreqHz * signalRealToFilter.length / samplingFreq);
