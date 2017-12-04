@@ -28,7 +28,6 @@ class Signal1D extends PixpipeContainer {
     this.setMetadata('length', 0);
     this.setMetadata('min', +Infinity);
     this.setMetadata('max', -Infinity);
-
     this.setMetadata('samplingFrequency', 100);
   }
 
@@ -136,6 +135,8 @@ class Signal1D extends PixpipeContainer {
     this.setMetadata('min', min);
     this.setMetadata('max', max);
   }
+
+
 
 }
 
