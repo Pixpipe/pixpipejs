@@ -145,8 +145,9 @@
     }
     */
     
-    hiCutoff = sliderHiPass.value
+    hiCutoff = parseFloat( sliderHiPass.value );
     hiPassPrint.innerHTML = hiCutoff;
+    filterTheSignal3();
     showPlot( 0 );
   });
   
@@ -160,11 +161,11 @@
     
     loCutoff = parseFloat(sliderLoPass.value);
     loPassPrint.innerHTML = loCutoff;
-    filterTheSignal2();
+    filterTheSignal3();
     showPlot( 0 );
   });
   
-
+  /*
   sliderLoPass.addEventListener('change', function(event) {
     if( edfFTFiltered ){
       var spFreq = new SpectrumPlot2.SpectrumPlot2( "chartDiv2", 400, 300 );
@@ -178,7 +179,7 @@
       spFreq.draw();
     }
   });
-
+  */
   
 
 
@@ -201,6 +202,7 @@
       sliderHiPass.value = 0;
       sliderHiPass.min = 0;
       sliderHiPass.max = edf.getMetadata("samplingFrequency") / 2;
+      sliderHiPass.step = 0.1;
       
       sliderLoPass.value = 0;
       sliderLoPass.min = 0;
@@ -208,17 +210,6 @@
       sliderLoPass.step = 0.1;
       
       if( edf ){
-        var phaseHollow = edf.hollowClone()
-        var fftfilter = new pixpipe.ForwardFourierSignalFilter();
-        fftfilter.addInput(edf, 0);
-        fftfilter.addInput(phaseHollow, 1);
-        fftfilter.update();
-        
-        edfFT = {
-          real: fftfilter.getOutput(0),
-          imag: fftfilter.getOutput(1)
-        }
-
         showPlot( 0 );
       }
       
@@ -259,6 +250,34 @@
     sp.setLabels();
     sp.draw();
     
+  }
+
+
+  function filterTheSignal3(){
+    
+    var filtered = null;
+    
+    if(loCutoff > 0){
+      var loPassFilter = new pixpipe.LowPassSignal1D();
+      loPassFilter.addInput( edf );
+      loPassFilter.setMetadata("cutoffFrequency", loCutoff);
+      loPassFilter.setMetadata("filterType", "gaussian");
+      //loPassFilter.setMetadata("gaussianTolerance", 0.1);
+      loPassFilter.update();
+      filtered = loPassFilter.getOutput();
+    }
+    
+    if( hiCutoff > 0 ){
+      var hiPassFilter = new pixpipe.HighPassSignal1D();
+      hiPassFilter.addInput( filtered || edf );
+      hiPassFilter.setMetadata("cutoffFrequency", hiCutoff);
+      hiPassFilter.setMetadata("filterType", "gaussian");
+      //hiPassFilter.setMetadata("gaussianTolerance", 0.1);
+      hiPassFilter.update();
+      filtered = hiPassFilter.getOutput();
+    }
+    
+    edfFiltered = filtered;
   }
 
 
