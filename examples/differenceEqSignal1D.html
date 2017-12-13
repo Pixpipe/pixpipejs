@@ -1,6 +1,6 @@
 <html>
 <head>
-  <title>Edf Smoother</title>
+  <title>Diff Equation Filter</title>
 
   <style>
 
@@ -74,14 +74,16 @@
   <script src="../dist/pixpipe.js"></script>
 </head>
 <body>
-
+  <h1 style="margin: 10px;"><a href="https://github.com/Pixpipe/pixpipejs"><span style="color: #ff91d7">Pixpipe</span><span style="color: #FFFFFF">js</span></a></h1>
 
   <div id="container">
 
     <div id="description">
       Open EDF file <input type="file" id="fileInput">
       <br>
-
+      <p>
+      You can download test files <a href="https://github.com/Pixpipe/pixpipeData/tree/master/EEG/OpenIntracranialEEG" target="_blank">here</a>
+      </p>
       <p>To smooth the EEG signals from the EDF files, a difference equation is applied such as:
       <img src="https://raw.githubusercontent.com/Pixpipe/differenceequationsignal1d/master/images/definition.png" alt="" /><br />
       where <em>x</em> is the input signal, <em>y</em> is the output signal, <em>b</em> and <em>a</em> are coefficients.</p>

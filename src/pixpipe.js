@@ -41,11 +41,11 @@ export { EegModDecoder } from './decoder/EegModDecoder.js';
 export { PixBinEncoder } from './decoder/PixBinEncoder.js';
 export { PixBinDecoder } from './decoder/PixBinDecoder.js';
 export { JpegDecoder } from './decoder/JpegDecoder.js';
-export { PngDecoder } from './decoder/PngDecoder.js'; 
+export { PngDecoder } from './decoder/PngDecoder.js';
 export { Image2DGenericDecoder } from './decoder/Image2DGenericDecoder.js';
 export { Minc2DecoderAlt } from './decoder/Minc2DecoderAlt.js';
 export { MniObjDecoder } from './decoder/MniObjDecoder.js';
-export { EdfDecoder } from './decoder/EdfDecoder.js'; 
+export { EdfDecoder } from './decoder/EdfDecoder.js';
 
 // filters - processing of Images2D and Signal1D
 export { ComponentProjectionImage2DFilter } from './filter/ComponentProjectionImage2DFilter';
@@ -76,6 +76,7 @@ export { DifferenceEquationSignal1D } from './filter/DifferenceEquationSignal1D.
 export { LowPassFreqSignal1D } from './filter/LowPassFreqSignal1D.js';
 export { LowPassSignal1D } from './filter/LowPassSignal1D.js';
 export { HighPassSignal1D } from './filter/HighPassSignal1D.js';
+export { BandPassSignal1D } from './filter/BandPassSignal1D.js';
 
 // helpers
 export { AngleToHueWheelHelper } from './helper/AngleToHueWheelHelper.js';
