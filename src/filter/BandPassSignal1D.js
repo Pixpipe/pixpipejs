@@ -9,7 +9,7 @@
 import { Filter } from "../core/Filter.js";
 import { Signal1D } from "../core/Signal1D.js";
 import { LowPassSignal1D } from "./LowPassSignal1D.js";
-import { HiPassSignal1D } from "./HighPassSignal1D.js";
+import { HighPassSignal1D } from "./HighPassSignal1D.js";
 
 
 /**

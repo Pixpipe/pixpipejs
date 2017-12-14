@@ -33,6 +33,7 @@
   },
   "homepage": "https://github.com/Pixpipe/pixpipejs#readme",
   "dependencies": {
+    "bvh-tree": "github:pixpipe/bvh-tree",
     "codecutils": "github:pixpipe/codecutils",
     "delaunay-fast": "github:pixpipe/delaunay",
     "differenceequationsignal1d": "github:pixpipe/differenceequationsignal1d",
