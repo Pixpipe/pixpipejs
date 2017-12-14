@@ -73,6 +73,10 @@ export { CropImageFilter } from './filter/CropImageFilter.js';
 export { SimplifyLineStringFilter } from './filter/SimplifyLineStringFilter.js';
 export { PatchImageFilter } from './filter/PatchImageFilter.js';
 export { DifferenceEquationSignal1D } from './filter/DifferenceEquationSignal1D.js';
+export { LowPassFreqSignal1D } from './filter/LowPassFreqSignal1D.js';
+export { LowPassSignal1D } from './filter/LowPassSignal1D.js';
+export { HighPassSignal1D } from './filter/HighPassSignal1D.js';
+export { BandPassSignal1D } from './filter/BandPassSignal1D.js';
 
 // helpers
 export { AngleToHueWheelHelper } from './helper/AngleToHueWheelHelper.js';
@@ -86,3 +90,4 @@ export { Image3DToMosaicFilterAlt } from './filter/Image3DToMosaicFilterAlt.js';
 // utils
 export { Image3DMetadataConverter } from './utils/Image3DMetadataConverter.js';
 export { MatrixTricks } from './utils/MatrixTricks.js';
+export { FunctionGenerator } from './utils/FunctionGenerator.js';
