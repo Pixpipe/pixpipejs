@@ -1,0 +1,280 @@
+<html>
+<head>
+  <title>FFT Bandpass</title>
+
+  <style>
+
+  body {
+    margin: 10px;
+    background-color: #ccecff;
+    font-family: 'Roboto', sans-serif;
+  }
+
+  h1 {
+    margin-top: 10px;
+    width: 100%;
+    text-align: center;
+    font-size: 4em;
+    color: #4981a2;
+    margin-bottom: initial;
+    margin-top: 20px;
+  }
+
+  h2 {
+    margin-top: 10px;
+    width: 100%;
+    text-align: center;
+    font-size: 1em;
+    color: #4981a2;
+  }
+
+  a {
+    text-decoration: none;
+    color: #008fca;
+    transition: all 0.2s;
+  }
+
+  a:hover {
+    color: #00638c;
+  }
+
+  code {
+    font-family: "monospace";
+    background-color: #d49595;
+    padding: 0px 5px 0px 5px;
+    border-radius: 5px;
+    color: white;
+  }
+
+  #container {
+    margin-left: 25vw;
+    margin-right: 25vw;
+  }
+
+  #description {
+    text-align: center;
+    width: 100%;
+  }
+
+  .chart {
+    padding: 20px;
+    background-color: #fafafa;
+    margin-top: 15px;
+    border-radius: 15px;
+  }
+
+  #sliderRecord,
+  #sliderHiPass,
+  #sliderLoPass {
+    width: 400px;
+  }
+
+  </style>
+
+  <!-- importing the automatically build module -->
+  <script src="http://me.jonathanlurie.fr/SpectrumPlot2/dist/SpectrumPlot2.js"></script>
+  <script src="../dist/pixpipe.js"></script>
+</head>
+<body>
+  <h1 style="margin: 10px;"><a href="https://github.com/Pixpipe/pixpipejs"><span style="color: #ff91d7">Pixpipe</span><span style="color: #FFFFFF">js</span></a></h1>
+
+  <div id="container">
+
+    <div id="description">
+      Open EDF file <input type="file" id="fileInput">
+      <p>
+      You can download test files <a href="https://github.com/Pixpipe/pixpipeData/tree/master/EEG/OpenIntracranialEEG" target="_blank">here</a>
+      </p>
+
+      Record Index <input id='sliderRecord' type="range" value="0"> <span id="recordIndexPrint">0</span><br>
+      hi pass (0 for none) <input id='sliderHiPass' type="range" value="0"> <span id="hiPassPrint">0</span>Hz<br>
+      lo pass (0 for none) <input id='sliderLoPass' type="range" value="0"> <span id="loPassPrint">0</span>Hz<br>
+      Sampling frequency: <span id="samplingFreq">N/A</span> Hz <br>
+    </div>
+    <div id="chartDiv" class="chart"></div>
+  </div>
+
+  <script>
+
+  var fileInput = document.getElementById('fileInput');
+  var sliderRecord = document.getElementById("sliderRecord");
+  var recordIndexPrint = document.getElementById("recordIndexPrint");
+  var sliderHiPass = document.getElementById("sliderHiPass");
+  var hiPassPrint = document.getElementById("hiPassPrint");
+  var sliderLoPass = document.getElementById("sliderLoPass");
+  var loPassPrint = document.getElementById("loPassPrint");
+  var samplingFreqPrint = document.getElementById("samplingFreq");
+
+  var edf = null;
+  var edfFT = null;
+  var edfFTFiltered = null;
+  var edfFiltered = null;
+
+  var hiCutoff = 0;
+  var loCutoff = 0;
+
+  // event listener of the file dialog, it then triggers the file decoding
+  fileInput.addEventListener('change', function(e) {
+    var files = e.target.files;
+    var reader = new FileReader();
+
+    if( !files.length ){
+      return;
+    }
+
+    reader.onloadend = function(event) {
+      var buffer = event.target.result;
+      readEdfFile(buffer);
+    }
+    reader.readAsArrayBuffer( files[0] );
+  });
+
+
+  sliderRecord.addEventListener('input', function(event) {
+    showPlot( 0 );
+    recordIndexPrint.innerHTML = sliderRecord.value;
+  });
+
+
+
+  sliderHiPass.addEventListener('input', function(event) {
+    /*
+    if( parseInt(sliderHiPass.value) >= parseInt(sliderLoPass.value)){
+      sliderHiPass.value = parseInt(sliderLoPass.value) - 1;
+    }
+    */
+
+    hiCutoff = parseFloat( sliderHiPass.value );
+    hiPassPrint.innerHTML = hiCutoff;
+    filterTheSignal();
+    showPlot( 0 );
+  });
+
+
+  sliderLoPass.addEventListener('input', function(event) {
+    loCutoff = parseFloat(sliderLoPass.value);
+    loPassPrint.innerHTML = loCutoff;
+    filterTheSignal();
+    showPlot( 0 );
+  });
+
+
+
+
+  function readEdfFile( buff ){
+    var edfDecoder = new pixpipe.EdfDecoder();
+    edfDecoder.addInput( buff );
+    edfDecoder.update();
+
+    var output = edfDecoder.getOutput();
+
+    if( output ){
+      console.log( output );
+      edf = output;
+      samplingFreqPrint.innerHTML = edf.getMetadata("samplingFrequency");
+      sliderRecord.value = 0;
+      sliderRecord.min = 0;
+      sliderRecord.max = edf.getMetadata("numberOfRecords");
+
+      sliderHiPass.value = 0;
+      sliderHiPass.min = 0;
+      sliderHiPass.max = edf.getMetadata("samplingFrequency") / 2;
+      sliderHiPass.step = 0.1;
+
+      sliderLoPass.value = 0;
+      sliderLoPass.min = 0;
+      sliderLoPass.max = edf.getMetadata("samplingFrequency") / 2;
+      sliderLoPass.step = 0.1;
+
+      if( edf ){
+        showPlot( 0 );
+      }
+
+    }
+  }
+
+
+  function showPlot( signalIndex ){
+    if(!edf){
+      alert("Invalid EDF file");
+      return;
+    }
+
+
+    var chartDiv = document.getElementById( "chartDiv" );
+    chartDiv.innerHTML = "";
+
+    var sp = new SpectrumPlot2.SpectrumPlot2( "chartDiv", 400, 300 );
+    var recordBegin = parseInt(sliderRecord.value) * edf.getMetadata("numberOfSamplesPerRecord");
+    var recordEnd = recordBegin + edf.getMetadata("numberOfSamplesPerRecord");
+
+    if( edfFiltered ){
+      sp.addSpectrum(
+        "Filtered Signal",
+        edfFiltered.getData().slice(recordBegin, recordEnd),
+        "rgba(80, 80, 250, 1)"
+      )
+    }
+
+    sp.addSpectrum(
+      "Signal",
+      edf.getData().slice(recordBegin, recordEnd),
+      "rgba(250, 80, 80, 1)"
+    )
+
+    sp.setLabels();
+    sp.draw();
+
+  }
+
+
+  function filterTheSignal(){
+    var bandPassFilter = new pixpipe.BandPassSignal1D();
+    bandPassFilter.setMetadata("hiCutoffFrequency", hiCutoff);
+    bandPassFilter.setMetadata("loCutoffFrequency", loCutoff);
+    bandPassFilter.setMetadata("filterType", "gaussian");
+    //bandPassFilter.setMetadata("gaussianTolerance", 0.01);
+
+    bandPassFilter.addInput( edf );
+    bandPassFilter.update();
+    edfFiltered = bandPassFilter.getOutput();
+  }
+
+
+
+  function filterTheSignal_ORIG(){
+    var filtered = null;
+
+    if( loCutoff != 0 && hiCutoff != 0 && hiCutoff >= loCutoff ){
+      edfFiltered = null;
+      console.log( "DEBUG01" );
+      return;
+    }
+
+    if(loCutoff > 0){
+      var loPassFilter = new pixpipe.LowPassSignal1D();
+      loPassFilter.addInput( edf );
+      loPassFilter.setMetadata("cutoffFrequency", loCutoff);
+      loPassFilter.setMetadata("filterType", "gaussian");
+      //loPassFilter.setMetadata("gaussianTolerance", 0.1);
+      loPassFilter.update();
+      filtered = loPassFilter.getOutput();
+    }
+
+    if( hiCutoff > 0 ){
+      var hiPassFilter = new pixpipe.HighPassSignal1D();
+      hiPassFilter.addInput( filtered || edf );
+      hiPassFilter.setMetadata("cutoffFrequency", hiCutoff);
+      hiPassFilter.setMetadata("filterType", "gaussian");
+      //hiPassFilter.setMetadata("gaussianTolerance", 0.1);
+      hiPassFilter.update();
+      filtered = hiPassFilter.getOutput();
+    }
+
+    edfFiltered = filtered;
+  }
+
+  </script>
+
+</body>
+</html>

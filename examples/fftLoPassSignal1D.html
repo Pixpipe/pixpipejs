@@ -1,0 +1,352 @@
+<html>
+<head>
+  <title>Edf Smoother</title>
+
+  <style>
+
+  body {
+    margin: 10px;
+    background-color: #ccecff;
+    font-family: 'Roboto', sans-serif;
+  }
+
+  h1 {
+    margin-top: 10px;
+    width: 100%;
+    text-align: center;
+    font-size: 4em;
+    color: #4981a2;
+    margin-bottom: initial;
+    margin-top: 20px;
+  }
+
+  h2 {
+    margin-top: 10px;
+    width: 100%;
+    text-align: center;
+    font-size: 1em;
+    color: #4981a2;
+  }
+
+  a {
+    text-decoration: none;
+    color: #008fca;
+    transition: all 0.2s;
+  }
+
+  a:hover {
+    color: #00638c;
+  }
+
+  code {
+    font-family: "monospace";
+    background-color: #d49595;
+    padding: 0px 5px 0px 5px;
+    border-radius: 5px;
+    color: white;
+  }
+
+  #container {
+    margin-left: 25vw;
+    margin-right: 25vw;
+  }
+
+  #description {
+    text-align: center;
+    width: 100%;
+  }
+
+  .chart {
+    padding: 20px;
+    background-color: #fafafa;
+    margin-top: 15px;
+    border-radius: 15px;
+  }
+
+  #sliderRecord,
+  #sliderHiPass,
+  #sliderLoPass {
+    width: 400px;
+  }
+
+  </style>
+
+  <!-- importing the automatically build module -->
+  <script src="http://me.jonathanlurie.fr/SpectrumPlot2/dist/SpectrumPlot2.js"></script>
+  <script src="../dist/pixpipe.js"></script>
+</head>
+<body>
+
+
+  <div id="container">
+
+    <div id="description">
+      Open EDF file <input type="file" id="fileInput">
+      <br>
+
+      Record Index <input id='sliderRecord' type="range" value="0"> <span id="recordIndexPrint">0</span><br>
+      hi pass (0 for none) <input id='sliderHiPass' type="range" value="0"> <span id="hiPassPrint">0</span>Hz<br>
+      lo pass (0 for none) <input id='sliderLoPass' type="range" value="0"> <span id="loPassPrint">0</span>Hz<br>
+      Sampling frequency: <span id="samplingFreq">N/A</span> Hz <br>
+    </div>
+    <div id="chartDiv" class="chart"></div>
+    <div id="chartDiv2" class="chart"></div>
+  </div>
+
+  <script>
+
+  var fileInput = document.getElementById('fileInput');
+  var sliderRecord = document.getElementById("sliderRecord");
+  var recordIndexPrint = document.getElementById("recordIndexPrint");
+  var sliderHiPass = document.getElementById("sliderHiPass");
+  var hiPassPrint = document.getElementById("hiPassPrint");
+  var sliderLoPass = document.getElementById("sliderLoPass");
+  var loPassPrint = document.getElementById("loPassPrint");
+  var samplingFreqPrint = document.getElementById("samplingFreq");
+  
+  var edf = null;
+  var edfFT = null;
+  var edfFTFiltered = null;
+  var edfFiltered = null;
+  
+  var hiCutoff = 0;
+  var loCutoff = 0;
+
+
+
+  // event listener of the file dialog, it then triggers the file decoding
+  fileInput.addEventListener('change', function(e) {
+    var files = e.target.files;
+    var reader = new FileReader();
+
+    if( !files.length ){
+      return;
+    }
+
+    reader.onloadend = function(event) {
+      var buffer = event.target.result;
+      readEdfFile(buffer);
+    }
+    reader.readAsArrayBuffer( files[0] );
+  });
+
+
+  sliderRecord.addEventListener('input', function(event) {
+    showPlot( 0 );
+    recordIndexPrint.innerHTML = sliderRecord.value;
+  });
+  
+  
+  
+  sliderHiPass.addEventListener('input', function(event) {
+    /*
+    if( parseInt(sliderHiPass.value) >= parseInt(sliderLoPass.value)){
+      sliderHiPass.value = parseInt(sliderLoPass.value) - 1;
+    }
+    */
+    
+    hiCutoff = sliderHiPass.value
+    hiPassPrint.innerHTML = hiCutoff;
+    showPlot( 0 );
+  });
+  
+  
+  sliderLoPass.addEventListener('input', function(event) {
+    /*
+    if( parseInt(sliderLoPass.value) <= parseInt(sliderHiPass.value)){
+      sliderLoPass.value = parseInt(sliderHiPass.value) + 1;
+    }
+    */
+    
+    loCutoff = parseFloat(sliderLoPass.value);
+    loPassPrint.innerHTML = loCutoff;
+    filterTheSignal2();
+    showPlot( 0 );
+  });
+  
+
+  sliderLoPass.addEventListener('change', function(event) {
+    if( edfFTFiltered ){
+      var spFreq = new SpectrumPlot2.SpectrumPlot2( "chartDiv2", 400, 300 );
+      spFreq.addSpectrum(
+        "Freq spectrum",
+        edfFTFiltered.real.getData(),
+        "rgba(80, 80, 250, 1)"
+      )
+      
+      spFreq.setLabels();
+      spFreq.draw();
+    }
+  });
+
+  
+
+
+
+  function readEdfFile( buff ){
+    var edfDecoder = new pixpipe.EdfDecoder();
+    edfDecoder.addInput( buff );
+    edfDecoder.update();
+
+    var output = edfDecoder.getOutput();
+
+    if( output ){
+      console.log( output );
+      edf = output;
+      samplingFreqPrint.innerHTML = edf.getMetadata("samplingFrequency");
+      sliderRecord.value = 0;
+      sliderRecord.min = 0;
+      sliderRecord.max = edf.getMetadata("numberOfRecords");
+
+      sliderHiPass.value = 0;
+      sliderHiPass.min = 0;
+      sliderHiPass.max = edf.getMetadata("samplingFrequency") / 2;
+      
+      sliderLoPass.value = 0;
+      sliderLoPass.min = 0;
+      sliderLoPass.max = edf.getMetadata("samplingFrequency") / 2;
+      sliderLoPass.step = 0.1;
+      
+      if( edf ){
+        var phaseHollow = edf.hollowClone()
+        var fftfilter = new pixpipe.ForwardFourierSignalFilter();
+        fftfilter.addInput(edf, 0);
+        fftfilter.addInput(phaseHollow, 1);
+        fftfilter.update();
+        
+        edfFT = {
+          real: fftfilter.getOutput(0),
+          imag: fftfilter.getOutput(1)
+        }
+
+        showPlot( 0 );
+      }
+      
+    }
+  }
+
+
+  function showPlot( signalIndex ){
+    if(!edf){
+      alert("Invalid EDF file");
+      return;
+    }
+
+
+    var chartDiv = document.getElementById( "chartDiv" );
+    chartDiv.innerHTML = "";
+    var chartDiv2 = document.getElementById( "chartDiv2" );
+    chartDiv2.innerHTML = "";
+
+    var sp = new SpectrumPlot2.SpectrumPlot2( "chartDiv", 400, 300 );
+    var recordBegin = parseInt(sliderRecord.value) * edf.getMetadata("numberOfSamplesPerRecord");
+    var recordEnd = recordBegin + edf.getMetadata("numberOfSamplesPerRecord");
+
+    if( edfFiltered ){
+      sp.addSpectrum(
+        "Filtered Signal",
+        edfFiltered.getData().slice(recordBegin, recordEnd),
+        "rgba(80, 80, 250, 1)"
+      )
+    }
+  
+    sp.addSpectrum(
+      "Signal",
+      edf.getData().slice(recordBegin, recordEnd),
+      "rgba(250, 80, 80, 1)"
+    )
+
+    sp.setLabels();
+    sp.draw();
+    
+  }
+
+
+  function filterTheSignal2(){
+    var freqLoPassFilter = new pixpipe.LowPassFreqSignal1D();
+    freqLoPassFilter.addInput( edfFT.real, "real" );
+    freqLoPassFilter.addInput( edfFT.imag, "imaginary" );
+    freqLoPassFilter.setMetadata("filterType", "gaussian");
+    //freqLoPassFilter.setMetadata("gaussianTolerance", 0.1);
+    //freqLoPassFilter.setMetadata("filterType", "rectangular");
+    freqLoPassFilter.setMetadata("cutoffFrequency", loCutoff);
+    freqLoPassFilter.update();
+    
+    edfFTFiltered = {
+      real: freqLoPassFilter.getOutput("real"),
+      imag: freqLoPassFilter.getOutput("imaginary")
+    }
+    
+    // inverse Fourier transform
+    var ifftfilter = new pixpipe.InverseFourierSignalFilter();
+    ifftfilter.addInput(edfFTFiltered.real, 0);
+    ifftfilter.addInput(edfFTFiltered.imag, 1);
+    ifftfilter.update();
+    
+    edfFiltered = ifftfilter.getOutput();
+  }
+
+
+  function filterTheSignal(){
+    var phaseHollow = edf.hollowClone()
+    var fftfilter = new pixpipe.ForwardFourierSignalFilter();
+    fftfilter.addInput(edf, 0);
+    fftfilter.addInput(phaseHollow, 1);
+    fftfilter.update();
+    var fourierSignalreal = fftfilter.getOutput(0);
+    var fourierSignalimg = fftfilter.getOutput(1);
+    
+    var signalRealToFilter = fourierSignalreal.getData();
+    var signalImgToFilter = fourierSignalimg.getData();
+
+
+    
+    
+    var samplingFreq = edf.getMetadata("samplingFrequency");
+    //var nyquistFreq = samplingFreq / 2;
+    
+    var cutoffFreqHz = loCutoff; // in Hz
+    var indexCutoffSpectrum = Math.round(cutoffFreqHz * signalRealToFilter.length / samplingFreq);
+
+    if( cutoffFreqHz ){
+      // lo-pass
+      for(var i=indexCutoffSpectrum; i<signalRealToFilter.length-indexCutoffSpectrum; i++){
+        signalRealToFilter[i] = 0;
+        signalImgToFilter[i] = 0;
+      }
+    }
+    
+    
+    cutoffFreqHz = hiCutoff; // in Hz
+    indexCutoffSpectrum = Math.round(cutoffFreqHz * signalRealToFilter.length / samplingFreq);
+    
+    if( cutoffFreqHz ){
+      // hi-pass
+      for(var i=0; i<indexCutoffSpectrum; i++){
+        signalRealToFilter[i] = 0;
+        signalImgToFilter[i] = 0;
+      }
+      for(var i=signalRealToFilter.length-indexCutoffSpectrum; i<signalRealToFilter.length; i++){
+        signalRealToFilter[i] = 0;
+        signalImgToFilter[i] = 0;
+      }
+    }
+    
+    
+    var ifftfilter = new pixpipe.InverseFourierSignalFilter();
+    ifftfilter.addInput(fourierSignalreal, 0);
+    ifftfilter.addInput(fourierSignalimg, 1);
+    ifftfilter.update();
+    var inverseSignal = ifftfilter.getOutput(0);
+    
+    return {
+      ftReal: fourierSignalreal,
+      ftImg: fourierSignalimg,
+      filtered: inverseSignal
+    }
+  }
+
+  </script>
+
+</body>
+</html>
