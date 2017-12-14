@@ -17505,19 +17505,19 @@ class Mesh3D extends PixpipeContainerMultiData {
     var vertices = this.getVertexPositions();
     var faces = this.getPolygonFacesOrder();
 
-    var trianglesCoord = new Array( faces.length / 3 );
-    var triCounter = 0;
+    var trianglesCoord = [];//new Array( faces.length / 3 );
+    var triangleCount = vertices.length / 9;
+    trianglesCoord.length = triangleCount;
 
-    for(var i=0; i<faces.length; i+=3){
-      var tgl = [
-        {x: vertices[ faces[i] ], y: vertices[faces[i] +1], z: vertices[faces[i] +2]},
-        {x: vertices[ faces[i+1] ], y: vertices[faces[i+1] +1], z: vertices[faces[i+1] +2]},
-        {x: vertices[ faces[i+2] ], y: vertices[faces[i+2] +1], z: vertices[faces[i+2] +2]},
-      ];
-
-      trianglesCoord[ triCounter ] = tgl;
-      triCounter++;
+    for(var i=0; i<triangleCount; i++){
+      trianglesCoord[i] = [
+            {x: vertices[i*9], y: vertices[i*9+1], z: vertices[i*9+2]},
+            {x: vertices[i*9+3], y: vertices[i*9+4], z: vertices[i*9+5]},
+            {x: vertices[i*9+6], y: vertices[i*9+7], z: vertices[i*9+8]}
+        ];
     }
+
+    console.log( trianglesCoord );
 
     var maxTrianglesPerNode = 7;
     this._bvhTree = new bvhtree_1.BVH(trianglesCoord, maxTrianglesPerNode);
