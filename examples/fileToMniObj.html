@@ -1,17 +1,18 @@
 <html>
 <head>
   <title>File to MNI OBJ</title>
-  
+
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/88/three.min.js"></script>
+  <script src="js/TrackballControls.js"></script>
 
   <script src="../dist/pixpipe.js"></script>
   <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700,900" rel="stylesheet">
   <link rel="stylesheet" href="css/style.css">
-  
+
   <style>
-  
+
   body {
-    
+
     color: #000;
     font-family:Monospace;
     font-size:13px;
@@ -20,7 +21,7 @@
     margin: 0px;
     overflow: hidden;
   }
-  
+
   #info {
     z-index: 10;
     text-align: left;
@@ -29,12 +30,12 @@
     top: 0;
     left: 0;
   }
-  
+
   #info code {
     background-color: #8BB;
     line-height: 1.5;
   }
-  
+
   #container {
     z-index: 1;
     position: fixed;
@@ -45,12 +46,12 @@
     width: 100vw;
     height: 100vh;
   }
-  
+
   </style>
-  
+
 </head>
 <body>
-  
+
   <div id="info">
     <h1><a href="https://github.com/Pixpipe/pixpipejs"><span style="color: #ff91d7">Pixpipe</span><span style="color: #FFFFFF">js</span></a></h1>
     <p>
@@ -71,16 +72,16 @@
     Looking for MNI OBJ sample files? <a href="https://github.com/Pixpipe/mniobjparser/tree/master/examples/data" target="_blank">Look here</a>
     </div>
   </div>
-  
+
   <div id="container"></div>
 
-  
+
 
   <script>
   window.onload = function() {
 
     var fileInput = document.getElementById('fileInput');
-    
+
 
     // The filter to read image from URL
     var file2Buff = new pixpipe.FileToArrayBufferReader();
@@ -92,25 +93,25 @@
 
       var filenames = this.getMetadata("filenames");
       var str = this.getOutput();
-      
+
       var meshParser = new pixpipe.MniObjDecoder();
       meshParser.addInput( str );
       meshParser.update();
-      
+
       var mesh = meshParser.getOutput();
-      
+
       if( mesh ){
         console.log( mesh );
         build3DMeshFromMesh3D( mesh )
       }
-      
+
     });
 
 
     // event listener of the file input
     fileInput.addEventListener('change', function(e) {
       var files = e.target.files;
-      
+
       var filenames = {};
 
       for(var i=0; i<files.length; i++){
@@ -123,23 +124,15 @@
 
       // Perform the reading + conversion ibto ArrayBuffer
       file2Buff.update();
-		});
-
-
-
-
-
+    });
 
 
     //*********************************
-    
-    
-    
-    
-    
+
     var container;
     var camera, scene, renderer;
     var objectContainer = new THREE.Object3D();
+    var controls = null;
 
     init();
     animate();
@@ -149,7 +142,15 @@
       container = document.getElementById( 'container' );
       camera = new THREE.PerspectiveCamera( 27, window.innerWidth / window.innerHeight, 1, 3500 );
       camera.position.z = 500;
-      
+      controls = new THREE.TrackballControls( camera );
+      controls.rotateSpeed = 3.0;
+      controls.zoomSpeed = 1.5;
+      controls.panSpeed = 0.8;
+      controls.noZoom = false;
+      controls.noPan = false;
+      controls.staticMoving = true;
+      controls.dynamicDampingFactor = 0.3;
+
       scene = new THREE.Scene();
       scene.fog = new THREE.Fog( 0x050505, 2000, 3500 );
       scene.add( new THREE.AmbientLight( 0x444444 ) );
@@ -173,25 +174,27 @@
       container.appendChild( renderer.domElement );
       window.addEventListener( 'resize', onWindowResize, false );
     }
-    
-    
+
+
     function onWindowResize() {
       camera.aspect = window.innerWidth / window.innerHeight;
       camera.updateProjectionMatrix();
       renderer.setSize( window.innerWidth, window.innerHeight );
+      controls.handleResize();
     }
 
 
     function animate() {
       requestAnimationFrame( animate );
+      controls.update();
       render();
     }
 
 
     function render() {
-      var time = Date.now() * 0.001;
-      objectContainer.rotation.x = time * 0.25;
-      objectContainer.rotation.y = time * 0.5;
+      //var time = Date.now() * 0.001;
+      //objectContainer.rotation.x = time * 0.25;
+      //objectContainer.rotation.y = time * 0.5;
       renderer.render( scene, camera );
     }
 
