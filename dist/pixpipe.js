@@ -17506,15 +17506,20 @@ class Mesh3D extends PixpipeContainerMultiData {
     var faces = this.getPolygonFacesOrder();
 
     var trianglesCoord = [];//new Array( faces.length / 3 );
-    var triangleCount = vertices.length / 9;
-    trianglesCoord.length = triangleCount;
+    function getPoint(n){
+      var v = faces[ n ] * 3;
+      var p = {x: vertices[ v ], y: vertices[v +1], z: vertices[v +2]};
+      return p;
+    }
 
-    for(var i=0; i<triangleCount; i++){
-      trianglesCoord[i] = [
-            {x: vertices[i*9], y: vertices[i*9+1], z: vertices[i*9+2]},
-            {x: vertices[i*9+3], y: vertices[i*9+4], z: vertices[i*9+5]},
-            {x: vertices[i*9+6], y: vertices[i*9+7], z: vertices[i*9+8]}
-        ];
+    for(var i=0; i<faces.length; i+=3){
+      var tgl = [
+        getPoint(i),
+        getPoint(i+1),
+        getPoint(i+2)
+      ];
+
+      trianglesCoord.push( tgl );
     }
 
     console.log( trianglesCoord );
@@ -17545,14 +17550,14 @@ class Mesh3D extends PixpipeContainerMultiData {
     var rayOrigin = {x: pos[0], y:pos[1], z:pos[2]};
 
     // direction of the ray. should be normalized to unit length
-    var rayDirection = {x: 0, y: 1, z: 0};
+    var rayDirection = {x: 0, y: -1, z: 0};
 
     // if 'true', only intersections with front-faces of the mesh will be performed
     var backfaceCulling = false;
 
     var intersectionResult = this._bvhTree.intersectRay(rayOrigin, rayDirection, backfaceCulling);
-
-    return intersectionResult;
+    console.log( intersectionResult );
+    return (intersectionResult.length % 2 === 1);
   }
 
 } /* END of class PixpipeContainerMultiData */

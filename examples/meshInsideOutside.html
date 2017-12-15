@@ -108,11 +108,13 @@
 
         var boxCenter = mesh.getBoxCenter();
         //console.log( boxCenter );
-        console.time("inside")
-        var intersections = mesh.isInside( boxCenter );
-        console.timeEnd("inside")
-        console.log(intersections);
-        //mesh.isInside( [-2, -57, -24] );
+        console.time("isInside")
+        var inside = mesh.isInside( boxCenter );
+
+        //var inside = mesh.isInside( [0, -37, -24] );
+        //var inside = mesh.isInside( [-200, -507, -204] );
+        console.timeEnd("isInside")
+        console.log( inside ? "INSIDE" : "OUTSIDE" );
 
         build3DMeshFromMesh3D( mesh )
 
