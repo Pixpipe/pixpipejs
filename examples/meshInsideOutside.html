@@ -62,6 +62,8 @@
       <li>redirect the file buffer into a <code>pixpipe.MniObjDecoder</code> to extract mesh data</li>
       <li>get the output as a generique <code>pixpipe.Mesh3D</code> object</li>
       <li>display the mesh using ThreeJS</li>
+      <li>compute a Bounding Volume Hierarchy (BVH) to perform <code>isInside()</code></li>
+      <li><code>red</code> spehres are inside the mesh and <code>yellow</code> spheres are outside</li>
     </ul>
 
     </p>
@@ -98,26 +100,43 @@
       meshParser.addInput( str );
       meshParser.update();
 
-      var mesh = meshParser.getOutput();
+      meshPixp = meshParser.getOutput();
 
-      if( mesh ){
-        console.log( mesh );
+      if( meshPixp ){
+        console.log( meshPixp );
 
-        mesh.buildBox();
-        mesh.buildBvhTree();
+        meshPixp.buildBox();
+        meshPixp.buildBvhTree();
 
-        var boxCenter = mesh.getBoxCenter();
+        /*
+        // here we are testing how long it takes to perform inside test at a larger scale
+        var boxCenter = meshPixp.getBoxCenter();
+
+        var nbTests = 1000*1000;
+        var points = [];
+
+        for(var i=0; i<nbTests; i++){
+          points.push([
+            boxCenter[0] - 1.5 + Math.random()*3,
+            boxCenter[1] - 1.5 + Math.random()*3,
+            boxCenter[2] - 1.5 + Math.random()*3
+          ])
+        }
+
         //console.log( boxCenter );
         console.time("isInside")
-        var inside = mesh.isInside( boxCenter );
-
-        //var inside = mesh.isInside( [0, -37, -24] );
-        //var inside = mesh.isInside( [-200, -507, -204] );
+        for(var i=0; i<nbTests; i++){
+          var inside = meshPixp.isInside( points[i] );
+        }
+        //var inside = meshPixp.isInside( [0, -37, -24] );
+        //var inside = meshPixp.isInside( [-200, -507, -204] );
         console.timeEnd("isInside")
         console.log( inside ? "INSIDE" : "OUTSIDE" );
+        */
 
-        build3DMeshFromMesh3D( mesh )
+        build3DMeshFromMesh3D( meshPixp )
 
+        addSpheres();
 
 
 
@@ -141,7 +160,7 @@
         scene.add( line );
         */
 
-        drawBVHNodeExtents(mesh._bvhTree._rootNode);
+        //drawBVHNodeExtents(mesh._bvhTree._rootNode);
       }
 
     });
@@ -169,9 +188,11 @@
     //*********************************
 
     var container;
+    var sphereContainer = new THREE.Object3D();
     var camera, scene, renderer;
     var objectContainer = new THREE.Object3D();
     var controls = null;
+    var meshPixp = null;
 
     init();
     animate();
@@ -231,11 +252,49 @@
 
 
     function render() {
-      //var time = Date.now() * 0.001;
-      //objectContainer.rotation.x = time * 0.25;
-      //objectContainer.rotation.y = time * 0.5;
+      var time = Date.now() * 0.001;
+      sphereContainer.rotation.x = time * 0.25;
+      sphereContainer.rotation.y = time * 0.25;
+      sphereContainer.rotation.z = time * 0.25;
+      updateSphereColors();
       renderer.render( scene, camera );
     }
+
+
+    function addSpheres(){
+      var meshBox = meshPixp.getBox();
+      var meshBoxCenter = meshPixp.getBoxCenter();
+      var span = Math.max( (meshBox.max[0] - meshBox.min[0]) , (meshBox.max[1] - meshBox.min[1]), (meshBox.max[2] - meshBox.min[2]) );
+      var sphereSize = span * 0.01;
+      var geometry = new THREE.SphereGeometry( sphereSize, 32, 32 );
+
+      for(var i=0; i<200; i++){
+        var material = new THREE.MeshBasicMaterial( {color: 0xffff00} );
+        var sphere = new THREE.Mesh( geometry, material );
+        sphere.position.x = - span/2 + Math.random()*span;
+        sphere.position.y = - span/2 + Math.random()*span;
+        sphere.position.z = - span/2 + Math.random()*span;
+        sphereContainer.add( sphere );
+      }
+
+      sphereContainer.position.x = meshBoxCenter[0];
+      sphereContainer.position.y = meshBoxCenter[1];
+      sphereContainer.position.z = meshBoxCenter[2];
+      scene.add( sphereContainer );
+    }
+
+
+    function updateSphereColors(){
+      if( !meshPixp )
+        return;
+
+      for(var i=0; i<sphereContainer.children.length; i++){
+        var worlPos = sphereContainer.children[i].getWorldPosition();
+        var inside = meshPixp.isInside([worlPos.x, worlPos.y, worlPos.z]);
+        sphereContainer.children[i].material.color.set( inside ? 0xff0000 : 0xffff00 );
+      }
+    }
+
 
 
     // build a Threejs Mesh from a Pixpipe Mesh3D
@@ -271,52 +330,52 @@
     var triCount = 0;
 
     function drawBVHNodeExtents(rootNode) {
-    var bvhNodeMat = new THREE.LineBasicMaterial({ color: 0x0000ff, transparent: true, opacity: 0.3});
-    bvhNodeLines = new THREE.Line(new THREE.Geometry(), bvhNodeMat, THREE.LinePieces);
-    bvhNodeLines.geometry.dynamic = true;
-    bvhNodeLines.frustumCulled = false;
-    var nodesToVisit = [];
-    nodesToVisit.push(rootNode);
-    while (nodesToVisit.length > 0) {
-        var bvhNode = nodesToVisit.pop();
-        var trianglesInNode = bvhNode._endIndex - bvhNode._startIndex;
-        triCount += trianglesInNode;
-        if (trianglesInNode !== 0) {
-            //console.log("triangles in node: ", trianglesInNode);
-            var width = bvhNode._extentsMax.x - bvhNode._extentsMin.x;
-            var height = bvhNode._extentsMax.y - bvhNode._extentsMin.y;
-            var depth = bvhNode._extentsMax.z - bvhNode._extentsMin.z;
-            var v0 = new THREE.Vector3(bvhNode._extentsMin.x, bvhNode._extentsMin.y, bvhNode._extentsMin.z);
-            var v1 = new THREE.Vector3(bvhNode._extentsMin.x + width, bvhNode._extentsMin.y, bvhNode._extentsMin.z);
-            var v2 = new THREE.Vector3(bvhNode._extentsMin.x + width, bvhNode._extentsMin.y + height, bvhNode._extentsMin.z);
-            var v3 = new THREE.Vector3(bvhNode._extentsMin.x, bvhNode._extentsMin.y + height, bvhNode._extentsMin.z);
-            var v4 = new THREE.Vector3(bvhNode._extentsMin.x, bvhNode._extentsMin.y, bvhNode._extentsMax.z);
-            var v5 = new THREE.Vector3(bvhNode._extentsMin.x + width, bvhNode._extentsMin.y, bvhNode._extentsMax.z);
-            var v6 = new THREE.Vector3(bvhNode._extentsMin.x + width, bvhNode._extentsMin.y + height, bvhNode._extentsMax.z);
-            var v7 = new THREE.Vector3(bvhNode._extentsMin.x, bvhNode._extentsMin.y + height, bvhNode._extentsMax.z);
-            bvhNodeLines.geometry.vertices.push(v0, v1);
-            bvhNodeLines.geometry.vertices.push(v1, v2);
-            bvhNodeLines.geometry.vertices.push(v2, v3);
-            bvhNodeLines.geometry.vertices.push(v3, v0);
-            bvhNodeLines.geometry.vertices.push(v4, v5);
-            bvhNodeLines.geometry.vertices.push(v5, v6);
-            bvhNodeLines.geometry.vertices.push(v6, v7);
-            bvhNodeLines.geometry.vertices.push(v7, v4);
-            bvhNodeLines.geometry.vertices.push(v0, v4);
-            bvhNodeLines.geometry.vertices.push(v1, v5);
-            bvhNodeLines.geometry.vertices.push(v2, v6);
-            bvhNodeLines.geometry.vertices.push(v3, v7);
-        }
-        // recursively draw child nodes
-        if (bvhNode._node0 !== null) {
-            nodesToVisit.push(bvhNode._node0);
-        }
-        if (bvhNode._node1 !== null) {
-            nodesToVisit.push(bvhNode._node1);
-        }
+      var bvhNodeMat = new THREE.LineBasicMaterial({ color: 0x0000ff, transparent: true, opacity: 0.3});
+      bvhNodeLines = new THREE.Line(new THREE.Geometry(), bvhNodeMat, THREE.LinePieces);
+      bvhNodeLines.geometry.dynamic = true;
+      bvhNodeLines.frustumCulled = false;
+      var nodesToVisit = [];
+      nodesToVisit.push(rootNode);
+      while (nodesToVisit.length > 0) {
+          var bvhNode = nodesToVisit.pop();
+          var trianglesInNode = bvhNode._endIndex - bvhNode._startIndex;
+          triCount += trianglesInNode;
+          if (trianglesInNode !== 0) {
+              //console.log("triangles in node: ", trianglesInNode);
+              var width = bvhNode._extentsMax.x - bvhNode._extentsMin.x;
+              var height = bvhNode._extentsMax.y - bvhNode._extentsMin.y;
+              var depth = bvhNode._extentsMax.z - bvhNode._extentsMin.z;
+              var v0 = new THREE.Vector3(bvhNode._extentsMin.x, bvhNode._extentsMin.y, bvhNode._extentsMin.z);
+              var v1 = new THREE.Vector3(bvhNode._extentsMin.x + width, bvhNode._extentsMin.y, bvhNode._extentsMin.z);
+              var v2 = new THREE.Vector3(bvhNode._extentsMin.x + width, bvhNode._extentsMin.y + height, bvhNode._extentsMin.z);
+              var v3 = new THREE.Vector3(bvhNode._extentsMin.x, bvhNode._extentsMin.y + height, bvhNode._extentsMin.z);
+              var v4 = new THREE.Vector3(bvhNode._extentsMin.x, bvhNode._extentsMin.y, bvhNode._extentsMax.z);
+              var v5 = new THREE.Vector3(bvhNode._extentsMin.x + width, bvhNode._extentsMin.y, bvhNode._extentsMax.z);
+              var v6 = new THREE.Vector3(bvhNode._extentsMin.x + width, bvhNode._extentsMin.y + height, bvhNode._extentsMax.z);
+              var v7 = new THREE.Vector3(bvhNode._extentsMin.x, bvhNode._extentsMin.y + height, bvhNode._extentsMax.z);
+              bvhNodeLines.geometry.vertices.push(v0, v1);
+              bvhNodeLines.geometry.vertices.push(v1, v2);
+              bvhNodeLines.geometry.vertices.push(v2, v3);
+              bvhNodeLines.geometry.vertices.push(v3, v0);
+              bvhNodeLines.geometry.vertices.push(v4, v5);
+              bvhNodeLines.geometry.vertices.push(v5, v6);
+              bvhNodeLines.geometry.vertices.push(v6, v7);
+              bvhNodeLines.geometry.vertices.push(v7, v4);
+              bvhNodeLines.geometry.vertices.push(v0, v4);
+              bvhNodeLines.geometry.vertices.push(v1, v5);
+              bvhNodeLines.geometry.vertices.push(v2, v6);
+              bvhNodeLines.geometry.vertices.push(v3, v7);
+          }
+          // recursively draw child nodes
+          if (bvhNode._node0 !== null) {
+              nodesToVisit.push(bvhNode._node0);
+          }
+          if (bvhNode._node1 !== null) {
+              nodesToVisit.push(bvhNode._node1);
+          }
+      }
+      scene.add(bvhNodeLines);
     }
-    scene.add(bvhNodeLines);
-}
 
 
 

@@ -52,6 +52,7 @@ class Mesh3D extends PixpipeContainerMultiData {
 
     this._aabb = null;
     this._bvhTree = null;
+    this._triangleList = null;
   }
 
 
@@ -317,42 +318,46 @@ class Mesh3D extends PixpipeContainerMultiData {
 
 
   /**
-  * Builds the Bounding Volume Hierarchy tree. Stores it in this._bvhTree
+  * Build the list of triangles
   */
-  buildBvhTree(){
-    console.time("bvh")
+  buildTriangleList(){
     var vertices = this.getVertexPositions();
     var faces = this.getPolygonFacesOrder();
-
-    var trianglesCoord = [];//new Array( faces.length / 3 );
-    var triCounter = 0;
-
-    // return the nth point as {x, y, z}
-    function getPoint(n){
-      var v = faces[ n ] * 3;
-      var p = {x: vertices[ v ], y: vertices[v +1], z: vertices[v +2]};
-      return p;
-    }
+    this._triangleList = new Array( faces.length / 3 );
+    var counter = 0;
 
     for(var i=0; i<faces.length; i+=3){
       var tgl = [
-        getPoint(i),
-        getPoint(i+1),
-        getPoint(i+2)
+        {x: vertices[ faces[ i ] * 3 ], y: vertices[faces[ i ] * 3 +1], z: vertices[faces[ i ] * 3 +2]},
+        {x: vertices[ faces[ i+1 ] * 3 ], y: vertices[faces[ i+1 ] * 3 +1], z: vertices[faces[ i+1 ] * 3 +2]},
+        {x: vertices[ faces[ i+2 ] * 3 ], y: vertices[faces[ i+2 ] * 3 +1], z: vertices[faces[ i+2 ] * 3 +2]}
       ]
 
-      trianglesCoord.push( tgl );
+      this._triangleList[ counter ] = tgl;
+      counter++;
     }
-
-    console.log( trianglesCoord );
-
-    var maxTrianglesPerNode = 7;
-    this._bvhTree = new BVH.BVH(trianglesCoord, maxTrianglesPerNode);
-    console.timeEnd("bvh")
-    console.log( this._bvhTree );
   }
 
 
+  /**
+  * Builds the Bounding Volume Hierarchy tree. Stores it in this._bvhTree
+  */
+  buildBvhTree(){
+    if( ! this._triangleList )
+      this.buildTriangleList();
+
+    var maxTrianglesPerNode = 4;
+    this._bvhTree = new BVH.BVH(this._triangleList, maxTrianglesPerNode);
+  }
+
+
+  /**
+  * Test if the given point is inside the mesh.
+  * Note: this is perform by throwing a ray from the given point and testing intersections
+  * with triangles using a BVH.
+  * @param {Array} pos - position such as [x, y, z]
+  * @return {Boolean} true if inside, false if outside.
+  */
   isInside( pos ){
     if(! this._aabb)
       this.buildBox();
@@ -364,23 +369,33 @@ class Mesh3D extends PixpipeContainerMultiData {
     if( !isInBox )
       return false;
 
-    // if it's in the box, we have to perform a more complex thing
+    var intersection = this.intersectRay( pos, [1, 0, 0], false );
 
+    if( !intersection )
+      return false;
+
+    return (intersection.length % 2 === 1);
+  }
+
+
+  /**
+  * Perform an intersection between a given ray and the mesh
+  * @param {Array} origin - starting point of the ray as [x, y, z]
+  * @param {Array} direction - normal vector of the ray direction as [x, y, z]
+  * @param {Boolean} backfaceCulling - true: ignore triangles with a normal going the same dir as the ray, false: considere all triangles
+  * @return {Array} all the intersections or null if none
+  */
+  intersectRay( origin, direction, backfaceCulling=false ){
+    // if it's in the box, we have to perform a more complex thing
     if(! this._bvhTree )
       this.buildBvhTree();
 
-    var rayOrigin = {x: pos[0], y:pos[1], z:pos[2]};
-
-    // direction of the ray. should be normalized to unit length
-    var rayDirection = {x: 0, y: -1, z: 0};
-
-    // if 'true', only intersections with front-faces of the mesh will be performed
-    var backfaceCulling = false;
-
+    var rayOrigin = {x: origin[0], y: origin[1], z: origin[2]};
+    var rayDirection = {x: direction[0], y: direction[1], z: direction[2]};
     var intersectionResult = this._bvhTree.intersectRay(rayOrigin, rayDirection, backfaceCulling);
-    console.log( intersectionResult );
-    return (intersectionResult.length % 2 === 1);
+    return intersectionResult;
   }
+
 
 } /* END of class PixpipeContainerMultiData */
 

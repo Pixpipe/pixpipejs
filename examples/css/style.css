@@ -35,6 +35,10 @@ textarea {
   width: 100%;
 }
 
+h1 {
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+
 .canvasDiv{
   margin-bottom: 10px;
 }
