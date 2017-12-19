@@ -1,0 +1,392 @@
+<html>
+<head>
+  <title>File to MNI OBJ</title>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/88/three.min.js"></script>
+  <script src="js/TrackballControls.js"></script>
+
+  <script src="../dist/pixpipe.js"></script>
+  <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700,900" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+
+  <style>
+
+  body {
+
+    color: #000;
+    font-family:Monospace;
+    font-size:13px;
+    text-align:center;
+    background-color: #ADD;
+    margin: 0px;
+    overflow: hidden;
+  }
+
+  #info {
+    z-index: 10;
+    text-align: left;
+    margin: 10px;
+    position: fixed;
+    top: 0;
+    left: 0;
+  }
+
+  #info code {
+    background-color: #8BB;
+    line-height: 1.5;
+  }
+
+  #container {
+    z-index: 1;
+    position: fixed;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    width: 100vw;
+    height: 100vh;
+  }
+
+  </style>
+
+</head>
+<body>
+
+  <div id="info">
+    <h1><a href="https://github.com/Pixpipe/pixpipejs"><span style="color: #ff91d7">Pixpipe</span><span style="color: #FFFFFF">js</span></a></h1>
+    <p>
+    This does the following :
+    <ul>
+      <li>open a local MNI OBJ file, using <code>pixpipe.FileToArrayBufferReader</code></li>
+      <li>Set the metadata <code>readAsText</code> of the <code>pixpipe.FileToArrayBufferReader</code> to <code>true</code></li>
+      <li>redirect the file buffer into a <code>pixpipe.MniObjDecoder</code> to extract mesh data</li>
+      <li>get the output as a generique <code>pixpipe.Mesh3D</code> object</li>
+      <li>display the mesh using ThreeJS</li>
+      <li>compute a Bounding Volume Hierarchy (BVH) to perform <code>isInside()</code></li>
+      <li><code>red</code> spehres are inside the mesh and <code>yellow</code> spheres are outside</li>
+    </ul>
+
+    </p>
+
+
+    Open MniOBJ file
+    <input type="file" id="fileInput">
+    Looking for MNI OBJ sample files? <a href="https://github.com/Pixpipe/mniobjparser/tree/master/examples/data" target="_blank">Look here</a>
+    </div>
+  </div>
+
+  <div id="container"></div>
+
+
+
+  <script>
+  window.onload = function() {
+
+    var fileInput = document.getElementById('fileInput');
+
+
+    // The filter to read image from URL
+    var file2Buff = new pixpipe.FileToArrayBufferReader();
+    file2Buff.setMetadata("readAsText", true);
+
+    // the image is loaded...
+    // here, this = url2ImgFilter
+    file2Buff.on("ready", function(){
+
+      var filenames = this.getMetadata("filenames");
+      var str = this.getOutput();
+
+      var meshParser = new pixpipe.MniObjDecoder();
+      meshParser.addInput( str );
+      meshParser.update();
+
+      meshPixp = meshParser.getOutput();
+
+      if( meshPixp ){
+        console.log( meshPixp );
+
+        meshPixp.buildBox();
+        meshPixp.buildBvhTree();
+
+        /*
+        // here we are testing how long it takes to perform inside test at a larger scale
+        var boxCenter = meshPixp.getBoxCenter();
+
+        var nbTests = 1000*1000;
+        var points = [];
+
+        for(var i=0; i<nbTests; i++){
+          points.push([
+            boxCenter[0] - 1.5 + Math.random()*3,
+            boxCenter[1] - 1.5 + Math.random()*3,
+            boxCenter[2] - 1.5 + Math.random()*3
+          ])
+        }
+
+        //console.log( boxCenter );
+        console.time("isInside")
+        for(var i=0; i<nbTests; i++){
+          var inside = meshPixp.isInside( points[i] );
+        }
+        //var inside = meshPixp.isInside( [0, -37, -24] );
+        //var inside = meshPixp.isInside( [-200, -507, -204] );
+        console.timeEnd("isInside")
+        console.log( inside ? "INSIDE" : "OUTSIDE" );
+        */
+
+        build3DMeshFromMesh3D( meshPixp )
+
+        addIntersectionBox();
+
+
+
+        /*
+        var material = new THREE.LineBasicMaterial({
+          color: 0x0000ff
+        });
+
+        var geometry = new THREE.Geometry();
+
+        for(var i=0; i<intersections.length; i++){
+          geometry.vertices.push(
+            new THREE.Vector3(
+              intersections[i].intersectionPoint.x,
+              intersections[i].intersectionPoint.y,
+              intersections[i].intersectionPoint.xz )
+          )
+        }
+
+        var line = new THREE.Line( geometry, material );
+        scene.add( line );
+        */
+
+        //drawBVHNodeExtents(mesh._bvhTree._rootNode);
+      }
+
+    });
+
+
+    // event listener of the file input
+    fileInput.addEventListener('change', function(e) {
+      var files = e.target.files;
+
+      var filenames = {};
+
+      for(var i=0; i<files.length; i++){
+        // set the input, an HTML5 File object and a category (ID)
+        file2Buff.addInput(files[i], i);
+        filenames[i] = files[i].name ;
+      }
+
+      file2Buff.setMetadata("filenames", filenames);
+
+      // Perform the reading + conversion ibto ArrayBuffer
+      file2Buff.update();
+    });
+
+
+    //*********************************
+
+    var container;
+    var boxContainer = new THREE.Object3D();
+    var camera, scene, renderer;
+    var objectContainer = new THREE.Object3D();
+    var controls = null;
+    var meshPixp = null;
+    var colors = null;
+    var boxScale = 2;
+    var geometry = null; // brain geometry
+
+    init();
+    animate();
+
+
+    function init() {
+      container = document.getElementById( 'container' );
+      camera = new THREE.PerspectiveCamera( 27, window.innerWidth / window.innerHeight, 1, 3500 );
+      camera.position.z = 500;
+      controls = new THREE.TrackballControls( camera );
+      controls.rotateSpeed = 3.0;
+      controls.zoomSpeed = 1.5;
+      controls.panSpeed = 0.8;
+      controls.noZoom = false;
+      controls.noPan = false;
+      controls.staticMoving = true;
+      controls.dynamicDampingFactor = 0.3;
+
+      scene = new THREE.Scene();
+      scene.fog = new THREE.Fog( 0x050505, 2000, 3500 );
+      scene.add( new THREE.AmbientLight( 0x444444 ) );
+
+      var light1 = new THREE.DirectionalLight( 0xffffff, 0.5 );
+      light1.position.set( 1, 1, 1 );
+      scene.add( light1 );
+
+      var light2 = new THREE.DirectionalLight( 0xffffff, 1.5 );
+      light2.position.set( 0, -1, 0 );
+      scene.add( light2 );
+      scene.add( objectContainer );
+
+      renderer = new THREE.WebGLRenderer( { antialias: true, alpha: true } );
+      renderer.setClearColor( 0xffffff, 0 );
+      renderer.setPixelRatio( window.devicePixelRatio );
+      renderer.setSize( window.innerWidth, window.innerHeight );
+      renderer.gammaInput = true;
+      renderer.gammaOutput = true;
+
+      container.appendChild( renderer.domElement );
+      window.addEventListener( 'resize', onWindowResize, false );
+    }
+
+
+    function onWindowResize() {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize( window.innerWidth, window.innerHeight );
+      controls.handleResize();
+    }
+
+
+    function animate() {
+      requestAnimationFrame( animate );
+      controls.update();
+      render();
+    }
+
+
+    function render() {
+      var time = Date.now() * 0.001;
+      boxContainer.position.z = Math.cos( time ) * 20;
+      boxContainer.position.y = Math.sin( time ) * 20;
+
+      updateTriangleColors();
+      renderer.render( scene, camera );
+    }
+
+
+    function addIntersectionBox(){
+
+      var sphere = new THREE.SphereGeometry();
+      var object = new THREE.Mesh( sphere, new THREE.MeshBasicMaterial( 0xff0000 ) );
+      object.scale.x = boxScale;
+      object.scale.y = boxScale;
+      object.scale.z = boxScale;
+      var box = new THREE.BoxHelper( object, 0xff0000 );
+      console.log( box );
+      boxContainer.add( box );
+      scene.add( boxContainer );
+
+    }
+
+
+    function updateTriangleColors(){
+      if( !meshPixp )
+        return;
+
+      // box boundaries in world coords
+      var box = {
+        min: [boxContainer.position.x - boxScale, boxContainer.position.y - boxScale, boxContainer.position.z - boxScale],
+        max: [boxContainer.position.x + boxScale, boxContainer.position.y + boxScale, boxContainer.position.z + boxScale]
+      }
+
+      var intersection = meshPixp.intersectBox( box );
+      console.log( box );
+      console.log( intersection );
+
+      for(var i=0; i<intersection.length; i++){
+        meshPixp.updateColorTriangle( intersection[i].triangleIndex, [255, 0, 0, 255]);
+      }
+
+      geometry.attributes.color.needsUpdate = true;
+      console.log( geometry.attributes.color );
+    }
+
+
+    // build a Threejs Mesh from a Pixpipe Mesh3D
+    function build3DMeshFromMesh3D( mesh ){
+      geometry = new THREE.BufferGeometry();
+
+      var positions = mesh.getVertexPositions();
+      var indices = mesh.getPolygonFacesOrder();
+      var normals = mesh.getPolygonFacesNormals();
+      colors = mesh.getVertexColors();
+
+      geometry.setIndex( new THREE.BufferAttribute( indices, 1 ) );
+      geometry.addAttribute( 'position', new THREE.BufferAttribute( positions, 3 ) );
+      geometry.addAttribute( 'normal', new THREE.BufferAttribute( normals, 3, true ) );
+      geometry.addAttribute( 'color', new THREE.BufferAttribute( colors, 4, true ) );
+      geometry.computeBoundingSphere();
+
+      var material = new THREE.MeshPhongMaterial( {
+        specular: 0xffffff,
+        shininess: 250,
+        side: THREE.DoubleSide,
+        vertexColors: THREE.VertexColors,
+        transparent: true,
+        opacity: 0.5,
+      } );
+
+      var mesh = new THREE.Mesh( geometry, material );
+      objectContainer.add( mesh );
+
+    }
+
+
+    var triCount = 0;
+
+    function drawBVHNodeExtents(rootNode) {
+      var bvhNodeMat = new THREE.LineBasicMaterial({ color: 0x0000ff, transparent: true, opacity: 0.3});
+      bvhNodeLines = new THREE.Line(new THREE.Geometry(), bvhNodeMat, THREE.LinePieces);
+      bvhNodeLines.geometry.dynamic = true;
+      bvhNodeLines.frustumCulled = false;
+      var nodesToVisit = [];
+      nodesToVisit.push(rootNode);
+      while (nodesToVisit.length > 0) {
+          var bvhNode = nodesToVisit.pop();
+          var trianglesInNode = bvhNode._endIndex - bvhNode._startIndex;
+          triCount += trianglesInNode;
+          if (trianglesInNode !== 0) {
+              //console.log("triangles in node: ", trianglesInNode);
+              var width = bvhNode._extentsMax.x - bvhNode._extentsMin.x;
+              var height = bvhNode._extentsMax.y - bvhNode._extentsMin.y;
+              var depth = bvhNode._extentsMax.z - bvhNode._extentsMin.z;
+              var v0 = new THREE.Vector3(bvhNode._extentsMin.x, bvhNode._extentsMin.y, bvhNode._extentsMin.z);
+              var v1 = new THREE.Vector3(bvhNode._extentsMin.x + width, bvhNode._extentsMin.y, bvhNode._extentsMin.z);
+              var v2 = new THREE.Vector3(bvhNode._extentsMin.x + width, bvhNode._extentsMin.y + height, bvhNode._extentsMin.z);
+              var v3 = new THREE.Vector3(bvhNode._extentsMin.x, bvhNode._extentsMin.y + height, bvhNode._extentsMin.z);
+              var v4 = new THREE.Vector3(bvhNode._extentsMin.x, bvhNode._extentsMin.y, bvhNode._extentsMax.z);
+              var v5 = new THREE.Vector3(bvhNode._extentsMin.x + width, bvhNode._extentsMin.y, bvhNode._extentsMax.z);
+              var v6 = new THREE.Vector3(bvhNode._extentsMin.x + width, bvhNode._extentsMin.y + height, bvhNode._extentsMax.z);
+              var v7 = new THREE.Vector3(bvhNode._extentsMin.x, bvhNode._extentsMin.y + height, bvhNode._extentsMax.z);
+              bvhNodeLines.geometry.vertices.push(v0, v1);
+              bvhNodeLines.geometry.vertices.push(v1, v2);
+              bvhNodeLines.geometry.vertices.push(v2, v3);
+              bvhNodeLines.geometry.vertices.push(v3, v0);
+              bvhNodeLines.geometry.vertices.push(v4, v5);
+              bvhNodeLines.geometry.vertices.push(v5, v6);
+              bvhNodeLines.geometry.vertices.push(v6, v7);
+              bvhNodeLines.geometry.vertices.push(v7, v4);
+              bvhNodeLines.geometry.vertices.push(v0, v4);
+              bvhNodeLines.geometry.vertices.push(v1, v5);
+              bvhNodeLines.geometry.vertices.push(v2, v6);
+              bvhNodeLines.geometry.vertices.push(v3, v7);
+          }
+          // recursively draw child nodes
+          if (bvhNode._node0 !== null) {
+              nodesToVisit.push(bvhNode._node0);
+          }
+          if (bvhNode._node1 !== null) {
+              nodesToVisit.push(bvhNode._node1);
+          }
+      }
+      scene.add(bvhNodeLines);
+    }
+
+
+
+
+  }
+  </script>
+
+</body>
+</html>

@@ -320,7 +320,8 @@ class Mesh3D extends PixpipeContainerMultiData {
   /**
   * Build the list of triangles
   */
-  buildTriangleList(){
+  buildTriangleList_ORIG(){
+    console.time("buildTriangleList");
     var vertices = this.getVertexPositions();
     var faces = this.getPolygonFacesOrder();
     this._triangleList = new Array( faces.length / 3 );
@@ -336,8 +337,58 @@ class Mesh3D extends PixpipeContainerMultiData {
       this._triangleList[ counter ] = tgl;
       counter++;
     }
+    console.timeEnd("buildTriangleList");
   }
 
+
+  /**
+  * Build the list of triangles
+  */
+  buildTriangleList(){
+    console.time("buildTriangleList");
+    var vertices = this.getVertexPositions();
+    var faces = this.getPolygonFacesOrder();
+    this._triangleList = new Float32Array( faces.length * 3 );
+    var counter = 0;
+
+    for(var i=0; i<faces.length; i+=3){
+
+      this._triangleList[ i*3    ] = vertices[ faces[ i ] * 3 ];      // V0x
+      this._triangleList[ i*3 +1 ] = vertices[faces[ i ] * 3 +1];     // V0y
+      this._triangleList[ i*3 +2 ] = vertices[faces[ i ] * 3 +2];     // V0z
+      this._triangleList[ i*3 +3 ] = vertices[ faces[ i+1 ] * 3 ];    // V1x
+      this._triangleList[ i*3 +4 ] = vertices[faces[ i+1 ] * 3 +1];   // V1y
+      this._triangleList[ i*3 +5 ] = vertices[faces[ i+1 ] * 3 +2];   // V1z
+      this._triangleList[ i*3 +6 ] = vertices[ faces[ i+2 ] * 3 ];    // V2x
+      this._triangleList[ i*3 +7 ] = vertices[faces[ i+2 ] * 3 +1];   // V2y
+      this._triangleList[ i*3 +8 ] = vertices[faces[ i+2 ] * 3 +2];   // V2z
+    }
+    console.timeEnd("buildTriangleList");
+  }
+
+
+  /**
+  * Update the color of the 3 vertices of a triangle, given its index
+  * @param {Number} index - index of the triangle
+  * @param {Array} color - as [R, G, B] or [R, G, B, A]
+  */
+  updateColorTriangle( index, color ){
+    var componentsPerColor = this._metadata.componentsPerColor;
+
+    if(componentsPerColor != color.length)
+      return
+
+    var colors = this.getVertexColors();
+    var faces = this.getPolygonFacesOrder();
+
+    // for each color component
+    for(var i=0; i<componentsPerColor; i++){
+      colors[ faces[ i ] * 3 + i] = color[i];
+      colors[ faces[ i +1 ] * 3 + i] = color[i];
+      colors[ faces[ i +2 ] * 3 + i] = color[i];
+    }
+
+  }
 
   /**
   * Builds the Bounding Volume Hierarchy tree. Stores it in this._bvhTree
@@ -346,8 +397,10 @@ class Mesh3D extends PixpipeContainerMultiData {
     if( ! this._triangleList )
       this.buildTriangleList();
 
+    console.time("buildBvhTree");
     var maxTrianglesPerNode = 4;
     this._bvhTree = new BVH.BVH(this._triangleList, maxTrianglesPerNode);
+    console.timeEnd("buildBvhTree");
   }
 
 
@@ -393,6 +446,22 @@ class Mesh3D extends PixpipeContainerMultiData {
     var rayOrigin = {x: origin[0], y: origin[1], z: origin[2]};
     var rayDirection = {x: direction[0], y: direction[1], z: direction[2]};
     var intersectionResult = this._bvhTree.intersectRay(rayOrigin, rayDirection, backfaceCulling);
+    return intersectionResult;
+  }
+
+  /**
+  * performs the intersection between a the mesh and a box to retrieve the list of triangles
+  * that are in the box. A triangle is considered as "in the box" when all its vertices
+  * are in the box.
+  * @param {Object} box the box to test the intersection on as {min:[x, y, z], max:[x, y, z]}
+  * @return {Array} all the intersections or null if none
+  */
+  intersectBox( box ){
+    // if it's in the box, we have to perform a more complex thing
+    if(! this._bvhTree )
+      this.buildBvhTree();
+
+    var intersectionResult = this._bvhTree.intersectBox(box);
     return intersectionResult;
   }
 
