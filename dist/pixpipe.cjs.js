@@ -17539,9 +17539,12 @@ var bvhtree_1 = createCommonjsModule(function (module) {
      * @param {Triangle[]} triangles an array of triangles to index. Each triangle is represented as an array of 3 xyz coordinates: [{x: X0, y: Y0, z: Z0}, {x: X1, y: Y1, z: Z1}, {x: X2, y: Y2, z: Z2}]
      * @param {number} [maxTrianglesPerNode=10] the maximum number of triangles in each node of the BVH tree. Once this value is reached, that node is split into two child nodes.
      */
-    bvhtree.BVH = function (triangles, maxTrianglesPerNode) {
-        var trianglesArray = [];
-        trianglesArray.length = triangles.length * 9;
+    bvhtree.BVH_ORIG = function (triangles, maxTrianglesPerNode) {
+        console.log("EDIT01");
+
+        //var trianglesArray = [];
+        //trianglesArray.length = triangles.length * 9;
+        var trianglesArray = new Float32Array(triangles.length * 9);
 
         for (var i = 0; i < triangles.length; i++) {
             var p0 = triangles[i][0];
@@ -17580,6 +17583,127 @@ var bvhtree_1 = createCommonjsModule(function (module) {
             var node = this._nodesToSplit.pop();
             this.splitNode(node);
         }
+    };
+
+    bvhtree.BVH = function (triangles, maxTrianglesPerNode) {
+
+        this._trianglesArray = triangles;
+        this._maxTrianglesPerNode = maxTrianglesPerNode || 10;
+        this._bboxArray = this.calcBoundingBoxes(triangles);
+
+        // clone a helper array
+        this._bboxHelper = new Float32Array(this._bboxArray);
+
+        // create the root node, add all the triangles to it
+        var triangleCount = triangles.length / 9;
+
+        // compute the box root node box (includes all the triangles)
+        var extents = this.calcExtents(0, triangleCount, bvhtree.EPSILON);
+        this._rootNode = new bvhtree.BVHNode(extents[0], extents[1], 0, triangleCount, 0);
+
+        this._nodesToSplit = [this._rootNode];
+
+        while (this._nodesToSplit.length > 0) {
+            var node = this._nodesToSplit.pop();
+            this.splitNode(node);
+        }
+    };
+
+    /**
+    * @param {Object} box the box to test the intersection on as {min:[x, y, z], max:[x, y, z]}
+    */
+    bvhtree.BVH.prototype.intersectBox = function (box) {
+
+        var nodesToIntersect = [this._rootNode];
+
+        // triangles that are in intersected nodes - they are not necessary in the box
+        var trianglesCandidates = [];
+        // short list of triangles that are actually fully into the box
+        var trianglesShortlist = [];
+
+        while (nodesToIntersect.length > 0) {
+            var node = nodesToIntersect.pop();
+
+            if (bvhtree.BVH.nodeIntersectBox(node, box)) {
+                if (node._node0) nodesToIntersect.push(node._node0);
+
+                if (node._node1) nodesToIntersect.push(node._node1);
+
+                for (i = node._startIndex; i < node._endIndex; i++) {
+                    trianglesCandidates.push(this._bboxArray[i * 7]);
+                }
+            }
+        }
+
+        var a = new bvhtree.BVHVector3();
+        var b = new bvhtree.BVHVector3();
+        var c = new bvhtree.BVHVector3();
+
+        // running through all the triangle candidates
+        for (var i = 0; i < trianglesCandidates.length; i++) {
+            var triIndex = trianglesCandidates[i];
+
+            var triangle = this._trianglesArray.subarray(triIndex * 9, triIndex * 9 + 9);
+
+            if (bvhtree.BVH.isTriangleInsideBox(triangle, box)) {
+                a.setFromArray(this._trianglesArray, triIndex * 9);
+                b.setFromArray(this._trianglesArray, triIndex * 9 + 3);
+                c.setFromArray(this._trianglesArray, triIndex * 9 + 6);
+
+                trianglesShortlist.push({
+                    triangle: [a.clone(), b.clone(), c.clone()],
+                    triangleIndex: triIndex
+                });
+            }
+        }
+        return trianglesShortlist;
+    };
+
+    /**
+    *  Check if there is an intersection between a node (using its box) and an arbitrary box. Both kind of boxes are axis aligned.
+    * @param {BVHNode} node the node to test the intersection on
+    * @param {Object} box the box to test the intersection on as {min:[x, y, z], max:[x, y, z]}
+    * @return {Boolean} true if there is an intersection
+    */
+    bvhtree.BVH.nodeIntersectBox = function (node, box) {
+        var nodeMin = [node._extentsMin.x, node._extentsMin.y, node._extentsMin.z];
+        var nodeMax = [node._extentsMax.x, node._extentsMax.y, node._extentsMax.z];
+        var boxMin = box.min;
+        var boxMax = box.max;
+
+        var intersection = [false, false, false];
+
+        // for each dimension
+        for (var i = 0; i < 3; i++) {
+            var overlap = boxMin[i] < nodeMax[i] && boxMax[i] > nodeMin[i];
+            var inclusion = boxMin[i] < nodeMin[i] && boxMax[i] > nodeMax[i] || nodeMin[i] < boxMin[i] && nodeMax[i] > boxMax[i];
+            intersection[i] = overlap || inclusion;
+        }
+
+        return intersection[0] && intersection[1] && intersection[2];
+    };
+
+    /**
+    * Check if every vertices of a triangle is inside
+    * @param {Float32Array} triangle array as [v0x, v0y, v0z, v1x, v1y, v1z, v2x, v2y, v2z]
+    * @param {Object} box the box to test the intersection on as {min:[x, y, z], max:[x, y, z]}
+    */
+    bvhtree.BVH.isTriangleInsideBox = function (triangle, box) {
+        var boxMin = box.min;
+        var boxMax = box.max;
+
+        var dimensionInside = [false, false, false];
+
+        // for each dimension
+        for (var i = 0; i < 3; i++) {
+            var v0 = triangle[0 + i];
+            var v1 = triangle[3 + i];
+            var v2 = triangle[6 + i];
+
+            dimensionInside[i] = v0 > boxMin[i] && v0 < boxMax[i] && v1 > boxMin[i] && v1 < boxMax[i] && v2 > boxMin[i] && v2 < boxMax[i];
+        }
+
+        return dimensionInside[0] && dimensionInside[1] && dimensionInside[2];
     };
 
     /**
@@ -17656,7 +17780,7 @@ var bvhtree_1 = createCommonjsModule(function (module) {
      * Gets an array of triangle, and calculates the bounding box for each of them, and adds an index to the triangle's position in the array
      * Each bbox is saved as 7 values in a Float32Array: (position, minX, minY, minZ, maxX, maxY, maxZ)
      */
-    bvhtree.BVH.prototype.calcBoundingBoxes = function (trianglesArray) {
+    bvhtree.BVH.prototype.calcBoundingBoxes_ORIG = function (trianglesArray) {
         var p0x, p0y, p0z;
         var p1x, p1y, p1z;
         var p2x, p2y, p2z;
@@ -17664,6 +17788,9 @@ var bvhtree_1 = createCommonjsModule(function (module) {
         var maxX, maxY, maxZ;
 
         var triangleCount = trianglesArray.length / 9;
+
+        // the 7 is because we have to store 7 numbers per box: min and max in the 3d
+        // + one field for triangle ID (which is its index in the list)
         var bboxArray = new Float32Array(triangleCount * 7);
 
         for (var i = 0; i < triangleCount; i++) {
@@ -17691,6 +17818,34 @@ var bvhtree_1 = createCommonjsModule(function (module) {
     };
 
     /**
+     * Gets an array of triangle, and calculates the bounding box for each of them, and adds an index to the triangle's position in the array
+     * Each bbox is saved as 7 values in a Float32Array: (position, minX, minY, minZ, maxX, maxY, maxZ)
+     */
+    bvhtree.BVH.prototype.calcBoundingBoxes = function (trianglesArray) {
+        var minX, minY, minZ;
+        var maxX, maxY, maxZ;
+
+        var triangleCount = trianglesArray.length / 9;
+
+        // the 7 is because we have to store 7 numbers per box: min and max in the 3d
+        // + one field for triangle ID (which is its index in the list)
+        var bboxArray = new Float32Array(triangleCount * 7);
+
+        for (var i = 0; i < triangleCount; i++) {
+            minX = Math.min(trianglesArray[i * 9], trianglesArray[i * 9 + 3], trianglesArray[i * 9 + 6]);
+            minY = Math.min(trianglesArray[i * 9 + 1], trianglesArray[i * 9 + 4], trianglesArray[i * 9 + 7]);
+            minZ = Math.min(trianglesArray[i * 9 + 2], trianglesArray[i * 9 + 5], trianglesArray[i * 9 + 8]);
+            maxX = Math.max(trianglesArray[i * 9], trianglesArray[i * 9 + 3], trianglesArray[i * 9 + 6]);
+            maxY = Math.max(trianglesArray[i * 9 + 1], trianglesArray[i * 9 + 4], trianglesArray[i * 9 + 7]);
+            maxZ = Math.max(trianglesArray[i * 9 + 2], trianglesArray[i * 9 + 5], trianglesArray[i * 9 + 8]);
+
+            bvhtree.BVH.setBox(bboxArray, i, i, minX, minY, minZ, maxX, maxY, maxZ);
+        }
+
+        return bboxArray;
+    };
+
+    /**
      * Calculates the extents (i.e the min and max coordinates) of a list of bounding boxes in the bboxArray
      * @param startIndex the index of the first triangle that we want to calc extents for
      * @param endIndex the index of the last triangle that we want to calc extents for
@@ -17703,12 +17858,12 @@ var bvhtree_1 = createCommonjsModule(function (module) {
             return [{ 'x': 0, 'y': 0, 'z': 0 }, { 'x': 0, 'y': 0, 'z': 0 }];
         }
 
-        var minX = Number.MAX_VALUE;
-        var minY = Number.MAX_VALUE;
-        var minZ = Number.MAX_VALUE;
-        var maxX = -Number.MAX_VALUE;
-        var maxY = -Number.MAX_VALUE;
-        var maxZ = -Number.MAX_VALUE;
+        var minX = Infinity;
+        var minY = Infinity;
+        var minZ = Infinity;
+        var maxX = -Infinity;
+        var maxY = -Infinity;
+        var maxZ = -Infinity;
 
         for (var i = startIndex; i < endIndex; i++) {
             minX = Math.min(this._bboxArray[i * 7 + 1], minX);
@@ -17722,11 +17877,31 @@ var bvhtree_1 = createCommonjsModule(function (module) {
         return [{ 'x': minX - expandBy, 'y': minY - expandBy, 'z': minZ - expandBy }, { 'x': maxX + expandBy, 'y': maxY + expandBy, 'z': maxZ + expandBy }];
     };
 
+    /**
+    * Split the given node in 2 distinc nodes.
+    * Severals steps are involved:
+    * 1. compute the size of the given node
+    * 2. sort the bbox(es) of the node. For each bbox,
+    *     - to a LEFT container if its (center) position is lower than the center of the node
+    *     - to a RIGHT container if its (center) position is higher than the center of the node
+    *     - both LEFT and RIGHT have 3 components, one for each dimension
+    * 3. make sure the node is splitable in any of the 3 axis (=there is at least 1 bbox in each octant)
+    * 4. choose the longest axis of the node to split along
+    * 5. reorganize the bbox index (from start to end of the current node) to put first
+    *    all the ones that go LEFT and second, all the ones that go RIGHT
+    * 6. compute the extent (size + EPSILON) of the future node 0 and 1
+    * 7. create the actual sub node 0 and 1 (of 1 level higher than the parent)
+    *    with their reletive sub list of bboxes.
+    * 8. associate the sub node 0 and 1 to the parent and remove the bboxes of the parent
+    *    (since they now belong to the child nodes)
+    * 9. add the 2 child node to the list of node to split, just to prepare the next iterration
+    */
     bvhtree.BVH.prototype.splitNode = function (node) {
         if (node.elementCount() <= this._maxTrianglesPerNode || node.elementCount() === 0) {
             return;
         }
 
+        // [step 1]
         var startIndex = node._startIndex;
         var endIndex = node._endIndex;
 
@@ -17739,11 +17914,17 @@ var bvhtree_1 = createCommonjsModule(function (module) {
         var objectCenter = [];
         objectCenter.length = 3;
 
+        // [step 2]
+        // for each bbox of this node...
         for (var i = startIndex; i < endIndex; i++) {
+            // computing the center of each bbox of this node...
             objectCenter[0] = (this._bboxArray[i * 7 + 1] + this._bboxArray[i * 7 + 4]) * 0.5; // center = (min + max) / 2
             objectCenter[1] = (this._bboxArray[i * 7 + 2] + this._bboxArray[i * 7 + 5]) * 0.5; // center = (min + max) / 2
             objectCenter[2] = (this._bboxArray[i * 7 + 3] + this._bboxArray[i * 7 + 6]) * 0.5; // center = (min + max) / 2
 
+            // for each dim, if the center of the current (for) box is lower than the
+            // the center of the node (function), we put it in the leftNode
+            // (referenced by the index of the coordinate on which it's lower)
             for (var j = 0; j < 3; j++) {
                 if (objectCenter[j] < extentCenters[j]) {
                     leftNode[j].push(i);
@@ -17753,6 +17934,7 @@ var bvhtree_1 = createCommonjsModule(function (module) {
             }
         }
 
+        // [step 3]
         // check if we couldn't split the node by any of the axes (x, y or z). halt here, dont try to split any more (cause it will always fail, and we'll enter an infinite loop
         var splitFailed = [];
         splitFailed.length = 3;
@@ -17765,6 +17947,7 @@ var bvhtree_1 = createCommonjsModule(function (module) {
             return;
         }
 
+        // [step 4]
         // choose the longest split axis. if we can't split by it, choose next best one.
         var splitOrder = [0, 1, 2];
 
@@ -17786,6 +17969,7 @@ var bvhtree_1 = createCommonjsModule(function (module) {
             }
         }
 
+        // [step 5]
         // sort the elements in range (startIndex, endIndex) according to which node they should be at
         var node0Start = startIndex;
         var node0End = node0Start + leftElements.length;
@@ -17806,17 +17990,21 @@ var bvhtree_1 = createCommonjsModule(function (module) {
         var subArr = this._bboxHelper.subarray(node._startIndex * 7, node._endIndex * 7);
         this._bboxArray.set(subArr, node._startIndex * 7);
 
+        // [step 6]
         // create 2 new nodes for the node we just split, and add links to them from the parent node
         var node0Extents = this.calcExtents(node0Start, node0End, bvhtree.EPSILON);
         var node1Extents = this.calcExtents(node1Start, node1End, bvhtree.EPSILON);
 
+        // [step 7]
         var node0 = new bvhtree.BVHNode(node0Extents[0], node0Extents[1], node0Start, node0End, node._level + 1);
         var node1 = new bvhtree.BVHNode(node1Extents[0], node1Extents[1], node1Start, node1End, node._level + 1);
 
+        // [step 8]
         node._node0 = node0;
         node._node1 = node1;
         node.clearShapes();
 
+        // [step 9]
         // add new nodes to the split queue
         this._nodesToSplit.push(node0);
         this._nodesToSplit.push(node1);
@@ -18589,8 +18777,9 @@ var Mesh3D = function (_PixpipeContainerMult) {
     */
 
   }, {
-    key: 'buildTriangleList',
-    value: function buildTriangleList() {
+    key: 'buildTriangleList_ORIG',
+    value: function buildTriangleList_ORIG() {
+      console.time("buildTriangleList");
       var vertices = this.getVertexPositions();
       var faces = this.getPolygonFacesOrder();
       this._triangleList = new Array(faces.length / 3);
@@ -18602,6 +18791,92 @@ var Mesh3D = function (_PixpipeContainerMult) {
         this._triangleList[counter] = tgl;
         counter++;
       }
+      console.timeEnd("buildTriangleList");
+    }
+
+    /**
+    * Build the list of triangles
+    */
+
+  }, {
+    key: 'buildTriangleList',
+    value: function buildTriangleList() {
+      console.time("buildTriangleList");
+      var vertices = this.getVertexPositions();
+      var faces = this.getPolygonFacesOrder();
+      this._triangleList = new Float32Array(faces.length * 3);
+      for (var i = 0; i < faces.length; i += 3) {
+
+        this._triangleList[i * 3] = vertices[faces[i] * 3]; // V0x
+        this._triangleList[i * 3 + 1] = vertices[faces[i] * 3 + 1]; // V0y
+        this._triangleList[i * 3 + 2] = vertices[faces[i] * 3 + 2]; // V0z
+        this._triangleList[i * 3 + 3] = vertices[faces[i + 1] * 3]; // V1x
+        this._triangleList[i * 3 + 4] = vertices[faces[i + 1] * 3 + 1]; // V1y
+        this._triangleList[i * 3 + 5] = vertices[faces[i + 1] * 3 + 2]; // V1z
+        this._triangleList[i * 3 + 6] = vertices[faces[i + 2] * 3]; // V2x
+        this._triangleList[i * 3 + 7] = vertices[faces[i + 2] * 3 + 1]; // V2y
+        this._triangleList[i * 3 + 8] = vertices[faces[i + 2] * 3 + 2]; // V2z
+
+        /*
+        Explanations:
+        the elements from the "faces" array should be group by 3.
+        faces[ i ] gives the index of the 1st vertex
+        faces[ i+1 ] gives the index of the 2nd vertex
+        faces[ i+2 ] gives the index of the 3rd vertex
+         In order to lookup the vertex positions, we have to multiply by 3 so that
+        faces[ i ] becomes faces[ i ] * 3 when used as an index of the vertices array.
+        This is because each vertex is composed of 3 values (x, y, z).
+         This gives the x positions, then to get the y and z we have to add 1 and 2.
+        This is why faces[ i ] * 3 becomes faces[ i ] * 3 +1 to get the y position.
+         */
+      }
+      console.timeEnd("buildTriangleList");
+    }
+
+    /**
+    * Update the color of the 3 vertices of a triangle, given its index
+    * @param {Number} index - index of the triangle
+    * @param {Array} color - as [R, G, B] or [R, G, B, A]
+    */
+
+  }, {
+    key: 'updateColorTriangle',
+    value: function updateColorTriangle(index, color) {
+      var componentsPerColor = this._metadata.componentsPerColor;
+
+      if (componentsPerColor != color.length) return;
+
+      index *= 3;
+      var colors = this.getVertexColors();
+      var faces = this.getPolygonFacesOrder();
+
+      var vertices = this.getVertexPositions();
+      /*
+      // for each color component
+      for(var i=0; i<componentsPerColor; i++){
+        colors[ faces[ i ] * 3 + i] = color[i];
+        colors[ faces[ i +1 ] * 3 + i] = color[i];
+        colors[ faces[ i +2 ] * 3 + i] = color[i];
+      }
+      */
+
+      // v0
+      colors[faces[index] * componentsPerColor + 0] = color[0];
+      colors[faces[index] * componentsPerColor + 1] = color[1];
+      colors[faces[index] * componentsPerColor + 2] = color[2];
+      colors[faces[index] * componentsPerColor + 3] = color[3];
+
+      // v1
+      colors[faces[index + 1] * componentsPerColor + 0] = color[0];
+      colors[faces[index + 1] * componentsPerColor + 1] = color[1];
+      colors[faces[index + 1] * componentsPerColor + 2] = color[2];
+      colors[faces[index + 1] * componentsPerColor + 3] = color[3];
+
+      // v2
+      colors[faces[index + 2] * componentsPerColor + 0] = color[0];
+      colors[faces[index + 2] * componentsPerColor + 1] = color[1];
+      colors[faces[index + 2] * componentsPerColor + 2] = color[2];
+      colors[faces[index + 2] * componentsPerColor + 3] = color[3];
     }
 
     /**
@@ -18613,8 +18888,10 @@ var Mesh3D = function (_PixpipeContainerMult) {
     value: function buildBvhTree() {
       if (!this._triangleList) this.buildTriangleList();
 
+      console.time("buildBvhTree");
       var maxTrianglesPerNode = 4;
       this._bvhTree = new bvhtree_1.BVH(this._triangleList, maxTrianglesPerNode);
+      console.timeEnd("buildBvhTree");
     }
 
     /**
@@ -18660,6 +18937,24 @@ var Mesh3D = function (_PixpipeContainerMult) {
       var rayOrigin = { x: origin[0], y: origin[1], z: origin[2] };
       var rayDirection = { x: direction[0], y: direction[1], z: direction[2] };
       var intersectionResult = this._bvhTree.intersectRay(rayOrigin, rayDirection, backfaceCulling);
+      return intersectionResult;
+    }
+
+    /**
+    * performs the intersection between a the mesh and a box to retrieve the list of triangles
+    * that are in the box. A triangle is considered as "in the box" when all its vertices
+    * are in the box.
+    * @param {Object} box the box to test the intersection on as {min:[x, y, z], max:[x, y, z]}
+    * @return {Array} all the intersections or null if none
+    */
+
+  }, {
+    key: 'intersectBox',
+    value: function intersectBox(box) {
+      // if it's in the box, we have to perform a more complex thing
+      if (!this._bvhTree) this.buildBvhTree();
+
+      var intersectionResult = this._bvhTree.intersectBox(box);
       return intersectionResult;
     }
   }], [{

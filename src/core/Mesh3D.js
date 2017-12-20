@@ -362,6 +362,23 @@ class Mesh3D extends PixpipeContainerMultiData {
       this._triangleList[ i*3 +6 ] = vertices[ faces[ i+2 ] * 3 ];    // V2x
       this._triangleList[ i*3 +7 ] = vertices[faces[ i+2 ] * 3 +1];   // V2y
       this._triangleList[ i*3 +8 ] = vertices[faces[ i+2 ] * 3 +2];   // V2z
+
+      /*
+      Explanations:
+      the elements from the "faces" array should be group by 3.
+      faces[ i ] gives the index of the 1st vertex
+      faces[ i+1 ] gives the index of the 2nd vertex
+      faces[ i+2 ] gives the index of the 3rd vertex
+
+      In order to lookup the vertex positions, we have to multiply by 3 so that
+      faces[ i ] becomes faces[ i ] * 3 when used as an index of the vertices array.
+      This is because each vertex is composed of 3 values (x, y, z).
+
+      This gives the x positions, then to get the y and z we have to add 1 and 2.
+      This is why faces[ i ] * 3 becomes faces[ i ] * 3 +1 to get the y position.
+
+      */
+
     }
     console.timeEnd("buildTriangleList");
   }
@@ -378,15 +395,37 @@ class Mesh3D extends PixpipeContainerMultiData {
     if(componentsPerColor != color.length)
       return
 
+    index *= 3;
     var colors = this.getVertexColors();
     var faces = this.getPolygonFacesOrder();
 
+    var vertices = this.getVertexPositions();
+    /*
     // for each color component
     for(var i=0; i<componentsPerColor; i++){
       colors[ faces[ i ] * 3 + i] = color[i];
       colors[ faces[ i +1 ] * 3 + i] = color[i];
       colors[ faces[ i +2 ] * 3 + i] = color[i];
     }
+    */
+
+    // v0
+    colors[ faces[ index ] * componentsPerColor + 0] = color[0];
+    colors[ faces[ index ] * componentsPerColor + 1] = color[1];
+    colors[ faces[ index ] * componentsPerColor + 2] = color[2];
+    colors[ faces[ index ] * componentsPerColor + 3] = color[3];
+
+    // v1
+    colors[ faces[ index +1 ] * componentsPerColor + 0] = color[0];
+    colors[ faces[ index +1 ] * componentsPerColor + 1] = color[1];
+    colors[ faces[ index +1 ] * componentsPerColor + 2] = color[2];
+    colors[ faces[ index +1 ] * componentsPerColor + 3] = color[3];
+
+    // v2
+    colors[ faces[ index +2 ] * componentsPerColor + 0] = color[0];
+    colors[ faces[ index +2 ] * componentsPerColor + 1] = color[1];
+    colors[ faces[ index +2 ] * componentsPerColor + 2] = color[2];
+    colors[ faces[ index +2 ] * componentsPerColor + 3] = color[3];
 
   }
 

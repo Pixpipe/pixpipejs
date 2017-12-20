@@ -63,7 +63,7 @@
       <li>get the output as a generique <code>pixpipe.Mesh3D</code> object</li>
       <li>display the mesh using ThreeJS</li>
       <li>compute a Bounding Volume Hierarchy (BVH) to perform <code>isInside()</code></li>
-      <li><code>red</code> spehres are inside the mesh and <code>yellow</code> spheres are outside</li>
+      <li>triangles of the mesh that are intersected by the moving box are red</li>
     </ul>
 
     </p>
@@ -138,7 +138,39 @@
 
         addIntersectionBox();
 
+        /*
+        var triangles = [
+          212035,
+          212040,
+          212042,
+          212119,
+          212122,
+          212123,
+          212120,
+          212044,
+          212125
+        ];
 
+        for(var i=0; i<triangles.length; i++){
+          meshPixp.updateColorTriangle( triangles[i], [254, 11, 12, 253]);
+        }
+
+        geometry.attributes.color.needsUpdate = true;
+        */
+
+        /*
+        var colors = meshPixp.getVertexColors();
+        var nbComponents = 4;
+        for(var i=0; i<colors.length; i+=nbComponents){
+          colors[i] = 255;
+          colors[i+1] = 0;
+          colors[i+2] = 0;
+          colors[i+3] = 255;
+        }
+
+        geometry.attributes.color.needsUpdate = true;
+        console.log(geometry.attributes.color);
+        */
 
         /*
         var material = new THREE.LineBasicMaterial({
@@ -165,6 +197,8 @@
 
     });
 
+
+    var triIndex = 0;
 
     // event listener of the file input
     fileInput.addEventListener('change', function(e) {
@@ -194,7 +228,7 @@
     var controls = null;
     var meshPixp = null;
     var colors = null;
-    var boxScale = 2;
+    var boxScale = 4;
     var geometry = null; // brain geometry
 
     init();
@@ -260,6 +294,15 @@
       boxContainer.position.y = Math.sin( time ) * 20;
 
       updateTriangleColors();
+
+      /*
+      if(meshPixp){
+        meshPixp.updateColorTriangle( triIndex, [254, 11, 12, 253]);
+        triIndex ++;
+        geometry.attributes.color.needsUpdate = true;
+      }
+      */
+
       renderer.render( scene, camera );
     }
 
@@ -274,8 +317,20 @@
       var box = new THREE.BoxHelper( object, 0xff0000 );
       console.log( box );
       boxContainer.add( box );
+      boxContainer.position.x = 60;
       scene.add( boxContainer );
+      console.log( boxContainer );
+    }
 
+
+
+
+    var intersection = [];
+
+    function paintIntersectedTriangles( color ){
+      for(var i=0; i<intersection.length; i++){
+        meshPixp.updateColorTriangle( intersection[i].triangleIndex, color );
+      }
     }
 
 
@@ -283,22 +338,17 @@
       if( !meshPixp )
         return;
 
+      paintIntersectedTriangles( [255, 255, 255, 255])
+
       // box boundaries in world coords
       var box = {
         min: [boxContainer.position.x - boxScale, boxContainer.position.y - boxScale, boxContainer.position.z - boxScale],
         max: [boxContainer.position.x + boxScale, boxContainer.position.y + boxScale, boxContainer.position.z + boxScale]
       }
 
-      var intersection = meshPixp.intersectBox( box );
-      console.log( box );
-      console.log( intersection );
-
-      for(var i=0; i<intersection.length; i++){
-        meshPixp.updateColorTriangle( intersection[i].triangleIndex, [255, 0, 0, 255]);
-      }
-
+      intersection = meshPixp.intersectBox( box );
+      paintIntersectedTriangles( [255, 0, 0, 255])
       geometry.attributes.color.needsUpdate = true;
-      console.log( geometry.attributes.color );
     }
 
 
