@@ -385,49 +385,36 @@ class Mesh3D extends PixpipeContainerMultiData {
 
 
   /**
-  * Update the color of the 3 vertices of a triangle, given its index
+  * Update the color of the 3 vertices of a triangle, given the index of a triangle
   * @param {Number} index - index of the triangle
   * @param {Array} color - as [R, G, B] or [R, G, B, A]
   */
   updateColorTriangle( index, color ){
     var componentsPerColor = this._metadata.componentsPerColor;
 
-    if(componentsPerColor != color.length)
-      return
+    if(componentsPerColor != color.length){
+      console.warn("The given color array must have the same number of component than the mesh (=" +componentsPerColor+ ")");
+      return;
+    }
 
-    index *= 3;
     var colors = this.getVertexColors();
     var faces = this.getPolygonFacesOrder();
 
-    var vertices = this.getVertexPositions();
-    /*
+    if(index < 0 || index >= faces.length/3){
+      console.warn("The triangle index is out of bounds.");
+      return;
+    }
+
+    index *= 3;
+
     // for each color component
     for(var i=0; i<componentsPerColor; i++){
-      colors[ faces[ i ] * 3 + i] = color[i];
-      colors[ faces[ i +1 ] * 3 + i] = color[i];
-      colors[ faces[ i +2 ] * 3 + i] = color[i];
+      colors[ faces[ index ] * componentsPerColor + i] = color[i];
+      colors[ faces[ index +1 ] * componentsPerColor + i] = color[i];
+      colors[ faces[ index +2 ] * componentsPerColor + i] = color[i];
     }
-    */
-
-    // v0
-    colors[ faces[ index ] * componentsPerColor + 0] = color[0];
-    colors[ faces[ index ] * componentsPerColor + 1] = color[1];
-    colors[ faces[ index ] * componentsPerColor + 2] = color[2];
-    colors[ faces[ index ] * componentsPerColor + 3] = color[3];
-
-    // v1
-    colors[ faces[ index +1 ] * componentsPerColor + 0] = color[0];
-    colors[ faces[ index +1 ] * componentsPerColor + 1] = color[1];
-    colors[ faces[ index +1 ] * componentsPerColor + 2] = color[2];
-    colors[ faces[ index +1 ] * componentsPerColor + 3] = color[3];
-
-    // v2
-    colors[ faces[ index +2 ] * componentsPerColor + 0] = color[0];
-    colors[ faces[ index +2 ] * componentsPerColor + 1] = color[1];
-    colors[ faces[ index +2 ] * componentsPerColor + 2] = color[2];
-    colors[ faces[ index +2 ] * componentsPerColor + 3] = color[3];
-
   }
+
 
   /**
   * Builds the Bounding Volume Hierarchy tree. Stores it in this._bvhTree
@@ -492,7 +479,7 @@ class Mesh3D extends PixpipeContainerMultiData {
   * performs the intersection between a the mesh and a box to retrieve the list of triangles
   * that are in the box. A triangle is considered as "in the box" when all its vertices
   * are in the box.
-  * @param {Object} box the box to test the intersection on as {min:[x, y, z], max:[x, y, z]}
+  * @param {Object} box - the box to test the intersection on as {min:[x, y, z], max:[x, y, z]}
   * @return {Array} all the intersections or null if none
   */
   intersectBox( box ){
@@ -503,6 +490,25 @@ class Mesh3D extends PixpipeContainerMultiData {
     var intersectionResult = this._bvhTree.intersectBox(box);
     return intersectionResult;
   }
+
+
+  /**
+  * performs the intersection between a the mesh and a sphere to retrieve the list of triangles
+  * that are in the sphere. A triangle is considered as "in the sphere" when all its vertices
+  * are in the sphere.
+  * @param {Object} sphere - the sphere to test the intersection with as {center:[x, y, z], radius:Number}
+  * @return {Array} all the intersections or null if none
+  */
+  intersectSphere( sphere ){
+    // if it's in the box, we have to perform a more complex thing
+    if(! this._bvhTree )
+      this.buildBvhTree();
+
+    var intersectionResult = this._bvhTree.intersectSphere(sphere);
+    return intersectionResult;
+  }
+
+
 
 
 } /* END of class PixpipeContainerMultiData */
