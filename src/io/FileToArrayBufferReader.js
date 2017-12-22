@@ -23,7 +23,7 @@ import { Filter } from '../core/Filter.js';
 * Gzip compressed files will be uncompressed.
 *
 * Once the filter is *updated*, you can query the `filenames` metadata (sorted by categories)
-* and also the `checksums` metadata using `.getMetadata()`. This later metadata 
+* and also the `checksums` metadata using `.getMetadata()`. This later metadata
 * give a unique *md5*, very convenient to compare if two files are actually the same.
 * Note that in case the file is *gziped*, the checksum is computed on the raw file,
 * not on the *un-gziped* buffer.
@@ -38,13 +38,13 @@ class FileToArrayBufferReader extends Filter {
   constructor(){
     super();
     this._outputCounter = 0;
-    
+
     // filenames by categories
     this.setMetadata("filenames", {});
-    
+
     // md5 checksum by categories
     this.setMetadata("checksums", {});
-    
+
     // By defaut, this reader outputs an ArrayBuffer, but it can output a string
     // if it's reading a text file and this metadata is set to true
     this.setMetadata("readAsText", false);
@@ -76,7 +76,7 @@ class FileToArrayBufferReader extends Filter {
     var onLoadEndTextFile = function( event ){
       that.addTimeRecord("startRead");
       var result = event.target.result;
-      
+
       // try to read as text, but it's not text.
       // Maybe it's a gz-compressed text file, so we have to read this file as a
       // binary and see if once compressed it has a valid text content
@@ -85,37 +85,35 @@ class FileToArrayBufferReader extends Filter {
         reader.readAsArrayBuffer( that._getInput(category) );
         return;
       }
-      
+
       var filename = that._getInput(category).name;
       var basename = filename.split(/[\\/]/).pop();
       var extension = basename.split('.').pop();
       var checksum = md5( result );
-      console.log( checksum );
-      
+
       // few metadata for recognizing files (potentially)
       that._metadata.filenames[ category ] = basename;
       that._metadata.checksums[ category ] = checksum;
-      
+
       that.addTimeRecord("endRead");
       var time = that.getTime("startRead", "endRead");
       console.log("Reading file took " + time + "ms.");
-      
+
       that._output[ category ] = result;
       that._fileLoadCount();
     }
-    
+
     // callback for reading the file as a binary file
     var onLoadEndBinaryFile = function( event ){
       that.addTimeRecord("startRead");
-      
+
       var result = event.target.result;
-      
+
       var filename = that._getInput(category).name;
       var basename = filename.split(/[\\/]/).pop();
       var extension = basename.split('.').pop();
       var checksum = md5( result );
-      console.log( checksum );
-      
+
       // few metadata for recognizing files (potentially)
       that._metadata.filenames[ category ] = basename;
       that._metadata.checksums[ category ] = checksum;
@@ -129,7 +127,7 @@ class FileToArrayBufferReader extends Filter {
           console.log("Pako: not a gziped file (" + err + ")");
         }
       }
-      
+
       // read the content as text (unicode, ASCII compatible)
       if( readAsText){
         var strResult = CodecUtils.arrayBufferToUnicode(result);
@@ -140,20 +138,20 @@ class FileToArrayBufferReader extends Filter {
           result = strResult;
         }
       }
-      
+
       that.addTimeRecord("endRead");
       var time = that.getTime("startRead", "endRead");
       console.log("Reading file took " + time + "ms.");
-      
+
       that._output[ category ] = result;
       that._fileLoadCount();
     }
-    
+
     reader.onerror = function(e) {
       console.warn("ERROR");
       console.warn(e);
     }
-    
+
 
     if(readAsText){
       reader.onloadend = onLoadEndTextFile;

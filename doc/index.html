@@ -728,6 +728,16 @@
                   _loadUrl
                 </a>
               <a
+                href='#SpectralScaleImageFilter'
+                class='block bold h3 bg-pink-alpha'>
+                SpectralScaleImageFilter
+              </a>
+                <a
+                  href='#SpectralScaleImageFilter._run'
+                  class='regular block'>
+                  _run
+                </a>
+              <a
                 href='#FileImageReader'
                 class='block bold h3 bg-pink-alpha'>
                 FileImageReader
@@ -741,16 +751,6 @@
                   href='#FileImageReader.hasValidInput'
                   class='regular block'>
                   hasValidInput
-                </a>
-              <a
-                href='#SpectralScaleImageFilter'
-                class='block bold h3 bg-pink-alpha'>
-                SpectralScaleImageFilter
-              </a>
-                <a
-                  href='#SpectralScaleImageFilter._run'
-                  class='regular block'>
-                  _run
                 </a>
               <a
                 href='#MniVolume'
@@ -998,6 +998,11 @@
                   buildTriangleList
                 </a>
                 <a
+                  href='#Mesh3D.buildTriangleList_ORIG'
+                  class='regular block'>
+                  buildTriangleList_ORIG
+                </a>
+                <a
                   href='#Mesh3D.getBox'
                   class='regular block'>
                   getBox
@@ -1063,9 +1068,19 @@
                   getVertexPositions
                 </a>
                 <a
+                  href='#Mesh3D.intersectBox'
+                  class='regular block'>
+                  intersectBox
+                </a>
+                <a
                   href='#Mesh3D.intersectRay'
                   class='regular block'>
                   intersectRay
+                </a>
+                <a
+                  href='#Mesh3D.intersectSphere'
+                  class='regular block'>
+                  intersectSphere
                 </a>
                 <a
                   href='#Mesh3D.isInside'
@@ -1101,6 +1116,11 @@
                   href='#Mesh3D.setVertexPositions'
                   class='regular block'>
                   setVertexPositions
+                </a>
+                <a
+                  href='#Mesh3D.updateColorTriangle'
+                  class='regular block'>
+                  updateColorTriangle
                 </a>
               <a
                 href='#Minc2DecoderAlt'
@@ -6928,6 +6948,42 @@ Perform a XMLHttpRequest with the given url and adds it to the output</p>
         </div>
 </section>
 </div><div class='py1'><section class='py2 clearfix'>
+  <h2 id='SpectralScaleImageFilter' class='mt0'>
+    SpectralScaleImageFilter<span class='gray'></span>
+  </h2>
+  <p>Multiply an image by the other, like a scaling function.
+The image requires two inputs named &quot;0&quot; and &quot;1&quot;.
+Simply use <code>addInput( myImg1, &quot;0&quot; )</code>
+and <code>addInput( myImg2, &quot;1&quot; )</code>. The input &quot;0&quot; can have 1 or more bands while
+the input &quot;1&quot; can have only one band since the same scale is apply to each band.</p>
+<p><strong>Usage</strong></p>
+<ul>
+<li><a href="../examples/forEachPixelGadient.html">examples/forEachPixelGadient.html</a></li>
+</ul>
+
+      <h4>Instance members</h4>
+        <div class='collapsible' id='SpectralScaleImageFilter._run'>
+          <a href='#SpectralScaleImageFilter._run'>
+            <code>
+              _run<span class='gray'></span>
+            </code>
+            <div class='force-inline'>
+              <p>Run the filter</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2'>
+<section class='py2 clearfix'>
+  <h2 id='SpectralScaleImageFilter._run' class='mt0'>
+    _run<span class='gray'></span>
+  </h2>
+  <p>Run the filter</p>
+
+</section>
+          </div>
+        </div>
+</section>
+</div><div class='py1'><section class='py2 clearfix'>
   <h2 id='FileImageReader' class='mt0'>
     FileImageReader<span class='gray'></span>
   </h2>
@@ -6984,42 +7040,6 @@ file2ImgFilter.update();</pre>
     hasValidInput<span class='gray'></span>
   </h2>
   <p>Overload the default method because HTML5 File is not a Pixpipe type</p>
-
-</section>
-          </div>
-        </div>
-</section>
-</div><div class='py1'><section class='py2 clearfix'>
-  <h2 id='SpectralScaleImageFilter' class='mt0'>
-    SpectralScaleImageFilter<span class='gray'></span>
-  </h2>
-  <p>Multiply an image by the other, like a scaling function.
-The image requires two inputs named &quot;0&quot; and &quot;1&quot;.
-Simply use <code>addInput( myImg1, &quot;0&quot; )</code>
-and <code>addInput( myImg2, &quot;1&quot; )</code>. The input &quot;0&quot; can have 1 or more bands while
-the input &quot;1&quot; can have only one band since the same scale is apply to each band.</p>
-<p><strong>Usage</strong></p>
-<ul>
-<li><a href="../examples/forEachPixelGadient.html">examples/forEachPixelGadient.html</a></li>
-</ul>
-
-      <h4>Instance members</h4>
-        <div class='collapsible' id='SpectralScaleImageFilter._run'>
-          <a href='#SpectralScaleImageFilter._run'>
-            <code>
-              _run<span class='gray'></span>
-            </code>
-            <div class='force-inline'>
-              <p>Run the filter</p>
-
-            </div>
-          </a>
-          <div class='collapser border px2'>
-<section class='py2 clearfix'>
-  <h2 id='SpectralScaleImageFilter._run' class='mt0'>
-    _run<span class='gray'></span>
-  </h2>
-  <p>Run the filter</p>
 
 </section>
           </div>
@@ -8316,6 +8336,9 @@ data from arbitrary mesh file format.</p>
 <p><strong>Usage</strong></p>
 <ul>
 <li><a href="../examples/fileToMniObj.html">examples/fileToMniObj.html</a></li>
+<li><a href="../examples/meshInsideOutside.html">examples/meshInsideOutside.html</a></li>
+<li><a href="../examples/meshInsideOutsideCube.html">examples/meshInsideOutsideCube.html</a></li>
+<li><a href="../examples/meshInsideOutsideSphere.html">examples/meshInsideOutsideSphere.html</a></li>
 </ul>
 
       <h4>Static members</h4>
@@ -8396,6 +8419,26 @@ Stores it in this._aabb</p>
 <section class='py2 clearfix'>
   <h2 id='Mesh3D.buildTriangleList' class='mt0'>
     buildTriangleList<span class='gray'></span>
+  </h2>
+  <p>Build the list of triangles</p>
+
+</section>
+          </div>
+        </div>
+        <div class='collapsible' id='Mesh3D.buildTriangleList_ORIG'>
+          <a href='#Mesh3D.buildTriangleList_ORIG'>
+            <code>
+              buildTriangleList_ORIG<span class='gray'></span>
+            </code>
+            <div class='force-inline'>
+              <p>Build the list of triangles</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2'>
+<section class='py2 clearfix'>
+  <h2 id='Mesh3D.buildTriangleList_ORIG' class='mt0'>
+    buildTriangleList_ORIG<span class='gray'></span>
   </h2>
   <p>Build the list of triangles</p>
 
@@ -8752,6 +8795,47 @@ Stores it in this._aabb</p>
 </section>
           </div>
         </div>
+        <div class='collapsible' id='Mesh3D.intersectBox'>
+          <a href='#Mesh3D.intersectBox'>
+            <code>
+              intersectBox<span class='gray'>(box)</span>
+            </code>
+            <div class='force-inline'>
+              <p>performs the intersection between a the mesh and a box to retrieve the list of triangles
+that are in the box. A triangle is considered as &quot;in the box&quot; when all its vertices
+are in the box.</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2'>
+<section class='py2 clearfix'>
+  <h2 id='Mesh3D.intersectBox' class='mt0'>
+    intersectBox<span class='gray'>(box)</span>
+  </h2>
+  <p>performs the intersection between a the mesh and a box to retrieve the list of triangles
+that are in the box. A triangle is considered as &quot;in the box&quot; when all its vertices
+are in the box.</p>
+
+    <h4>Parameters</h4>
+    <ul class='suppress-p-margin'>
+        <li><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a></code> <strong>box</strong>
+          :
+          <div class='force-inline'>
+            <p>the box to test the intersection on as {min:[x, y, z], max:[x, y, z]}</p>
+
+          </div>
+        </li>
+    </ul>
+      <h4>Returns</h4>
+      <code><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a></code></code>
+      :
+      <div class='force-inline'>
+        <p>all the intersections or null if none</p>
+
+      </div>
+</section>
+          </div>
+        </div>
         <div class='collapsible' id='Mesh3D.intersectRay'>
           <a href='#Mesh3D.intersectRay'>
             <code>
@@ -8789,6 +8873,47 @@ Stores it in this._aabb</p>
           :
           <div class='force-inline'>
             <p>true: ignore triangles with a normal going the same dir as the ray, false: considere all triangles</p>
+
+          </div>
+        </li>
+    </ul>
+      <h4>Returns</h4>
+      <code><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a></code></code>
+      :
+      <div class='force-inline'>
+        <p>all the intersections or null if none</p>
+
+      </div>
+</section>
+          </div>
+        </div>
+        <div class='collapsible' id='Mesh3D.intersectSphere'>
+          <a href='#Mesh3D.intersectSphere'>
+            <code>
+              intersectSphere<span class='gray'>(sphere)</span>
+            </code>
+            <div class='force-inline'>
+              <p>performs the intersection between a the mesh and a sphere to retrieve the list of triangles
+that are in the sphere. A triangle is considered as &quot;in the sphere&quot; when all its vertices
+are in the sphere.</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2'>
+<section class='py2 clearfix'>
+  <h2 id='Mesh3D.intersectSphere' class='mt0'>
+    intersectSphere<span class='gray'>(sphere)</span>
+  </h2>
+  <p>performs the intersection between a the mesh and a sphere to retrieve the list of triangles
+that are in the sphere. A triangle is considered as &quot;in the sphere&quot; when all its vertices
+are in the sphere.</p>
+
+    <h4>Parameters</h4>
+    <ul class='suppress-p-margin'>
+        <li><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a></code> <strong>sphere</strong>
+          :
+          <div class='force-inline'>
+            <p>the sphere to test the intersection with as {center:[x, y, z], radius:Number}</p>
 
           </div>
         </li>
@@ -9017,6 +9142,43 @@ with triangles using a BVH.</p>
           :
           <div class='force-inline'>
             <p>array vertex positions (does not perform a deep copy). The size of this array must be a multiple of 3</p>
+
+          </div>
+        </li>
+    </ul>
+</section>
+          </div>
+        </div>
+        <div class='collapsible' id='Mesh3D.updateColorTriangle'>
+          <a href='#Mesh3D.updateColorTriangle'>
+            <code>
+              updateColorTriangle<span class='gray'>(index, color)</span>
+            </code>
+            <div class='force-inline'>
+              <p>Update the color of the 3 vertices of a triangle, given the index of a triangle</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2'>
+<section class='py2 clearfix'>
+  <h2 id='Mesh3D.updateColorTriangle' class='mt0'>
+    updateColorTriangle<span class='gray'>(index, color)</span>
+  </h2>
+  <p>Update the color of the 3 vertices of a triangle, given the index of a triangle</p>
+
+    <h4>Parameters</h4>
+    <ul class='suppress-p-margin'>
+        <li><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">Number</a></code> <strong>index</strong>
+          :
+          <div class='force-inline'>
+            <p>index of the triangle</p>
+
+          </div>
+        </li>
+        <li><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a></code> <strong>color</strong>
+          :
+          <div class='force-inline'>
+            <p>as [R, G, B] or [R, G, B, A]</p>
 
           </div>
         </li>
@@ -14868,17 +15030,7 @@ but this is compatible with Node and not rely on HTML5 Canvas.</p>
   <h2 id='PixBinEncoder' class='mt0'>
     PixBinEncoder<span class='gray'></span>
   </h2>
-  <p>A PixBinEncoder instance takes an Image2D or Image3D as input with <code>addInput(...)</code>
-and encode it so that it can be saved as a *.pixp file.
-An output filename can be specified using <code>.setMetadata(&quot;filename&quot;, &quot;yourName.pixp&quot;);</code>,
-by default, the name is &quot;untitled.pixp&quot;.
-When <code>update()</code> is called, a gzip blog is prepared as output[0] and can then be downloaded
-when calling the method <code>.download()</code>. The gzip blob could also be sent over AJAX
-using a third party library.</p>
-<p><strong>Usage</strong></p>
-<ul>
-<li><a href="../examples/savePixpFile.html">examples/savePixpFile.html</a></li>
-</ul>
+  <p>Download the generated file</p>
 
       <h4>Static members</h4>
         <div class='collapsible' id='PixBinEncoder.MAGIC_NUMBER'>
@@ -14908,7 +15060,17 @@ the first sequence of bytes for a pixbin file is this ASCII string</p>
   <h2 id='PixBinEncoder' class='mt0'>
     PixBinEncoder<span class='gray'></span>
   </h2>
-  <p>Download the generated file</p>
+  <p>A PixBinEncoder instance takes an Image2D or Image3D as input with <code>addInput(...)</code>
+and encode it so that it can be saved as a *.pixp file.
+An output filename can be specified using <code>.setMetadata(&quot;filename&quot;, &quot;yourName.pixp&quot;);</code>,
+by default, the name is &quot;untitled.pixp&quot;.
+When <code>update()</code> is called, a gzip blog is prepared as output[0] and can then be downloaded
+when calling the method <code>.download()</code>. The gzip blob could also be sent over AJAX
+using a third party library.</p>
+<p><strong>Usage</strong></p>
+<ul>
+<li><a href="../examples/savePixpFile.html">examples/savePixpFile.html</a></li>
+</ul>
 
       <h4>Static members</h4>
         <div class='collapsible' id='PixBinEncoder.MAGIC_NUMBER'>
