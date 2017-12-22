@@ -17,6 +17,9 @@ import { PixpipeContainerMultiData } from './PixpipeContainerMultiData.js';
 *
 * **Usage**
 * - [examples/fileToMniObj.html](../examples/fileToMniObj.html)
+* - [examples/meshInsideOutside.html](../examples/meshInsideOutside.html)
+* - [examples/meshInsideOutsideCube.html](../examples/meshInsideOutsideCube.html)
+* - [examples/meshInsideOutsideSphere.html](../examples/meshInsideOutsideSphere.html)
 */
 class Mesh3D extends PixpipeContainerMultiData {
 
@@ -321,7 +324,6 @@ class Mesh3D extends PixpipeContainerMultiData {
   * Build the list of triangles
   */
   buildTriangleList_ORIG(){
-    console.time("buildTriangleList");
     var vertices = this.getVertexPositions();
     var faces = this.getPolygonFacesOrder();
     this._triangleList = new Array( faces.length / 3 );
@@ -337,7 +339,6 @@ class Mesh3D extends PixpipeContainerMultiData {
       this._triangleList[ counter ] = tgl;
       counter++;
     }
-    console.timeEnd("buildTriangleList");
   }
 
 
@@ -345,7 +346,6 @@ class Mesh3D extends PixpipeContainerMultiData {
   * Build the list of triangles
   */
   buildTriangleList(){
-    console.time("buildTriangleList");
     var vertices = this.getVertexPositions();
     var faces = this.getPolygonFacesOrder();
     this._triangleList = new Float32Array( faces.length * 3 );
@@ -380,7 +380,6 @@ class Mesh3D extends PixpipeContainerMultiData {
       */
 
     }
-    console.timeEnd("buildTriangleList");
   }
 
 
@@ -423,10 +422,8 @@ class Mesh3D extends PixpipeContainerMultiData {
     if( ! this._triangleList )
       this.buildTriangleList();
 
-    console.time("buildBvhTree");
     var maxTrianglesPerNode = 4;
     this._bvhTree = new BVH.BVH(this._triangleList, maxTrianglesPerNode);
-    console.timeEnd("buildBvhTree");
   }
 
 
@@ -448,12 +445,7 @@ class Mesh3D extends PixpipeContainerMultiData {
     if( !isInBox )
       return false;
 
-    var intersection = this.intersectRay( pos, [1, 0, 0], false );
-
-    if( !intersection )
-      return false;
-
-    return (intersection.length % 2 === 1);
+    return this._bvhTree.isInside( pos );
   }
 
 

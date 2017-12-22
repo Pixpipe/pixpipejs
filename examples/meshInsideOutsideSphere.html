@@ -63,7 +63,7 @@
       <li>get the output as a generique <code>pixpipe.Mesh3D</code> object</li>
       <li>display the mesh using ThreeJS</li>
       <li>compute a Bounding Volume Hierarchy (BVH) to perform <code>isInside()</code></li>
-      <li>triangles of the mesh that are intersected by the moving box are red</li>
+      <li>triangles of the mesh that are intersected by the moving sphere are red</li>
     </ul>
 
     </p>
@@ -71,8 +71,7 @@
 
     Open MniOBJ file
     <input type="file" id="fileInput">
-    Looking for MNI OBJ sample files? <a href="https://github.com/Pixpipe/mniobjparser/tree/master/examples/data" target="_blank">Look here</a>
-    </div>
+    ooking for MNI OBJ sample files? <a href="https://github.com/Pixpipe/mniobjparser/raw/master/examples/data/gray_right_327680.obj.gz" target="_blank">Download this one</a>
   </div>
 
   <div id="container"></div>
@@ -228,7 +227,7 @@
     var controls = null;
     var meshPixp = null;
     var colors = null;
-    var boxScale = 4;
+    var boxScale = 10;
     var geometry = null; // brain geometry
 
     init();
@@ -308,7 +307,7 @@
 
 
     function addIntersectionBox(){
-      var geometry = new THREE.SphereGeometry( boxScale, 32, 32 );
+      var geometry = new THREE.SphereGeometry( boxScale, 8, 8 );
       var material = new THREE.MeshBasicMaterial( {color: 0x0000ff, wireframe: true, transparent: true, opacity: 0.3} );
 
       var sphere2 = new THREE.Mesh( geometry, material );
@@ -320,7 +319,7 @@
       object.scale.z = boxScale;
       var box = new THREE.BoxHelper( object, 0xff0000 );
       console.log( box );
-      boxContainer.add( box );
+      //boxContainer.add( box );
       boxContainer.add( sphere2 );
       boxContainer.position.x = 60;
       scene.add( boxContainer );
