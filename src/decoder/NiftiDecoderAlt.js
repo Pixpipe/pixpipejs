@@ -8,7 +8,7 @@
 
 import nifti from 'nifti-reader-js';
 import { glMatrix, mat2, mat2d, mat3, mat4, quat, vec2, vec3, vec4 } from 'gl-matrix';
-import { Filter } from '../core/Filter.js';
+import { Decoder } from '../core/Decoder.js';
 import { Image3DAlt } from '../core/Image3DAlt.js';
 
 
@@ -45,7 +45,7 @@ import { Image3DAlt } from '../core/Image3DAlt.js';
 * The official NIfTI header description ( https://nifti.nimh.nih.gov/pub/dist/src/niftilib/nifti1.h )
 * was used to interpret the data.
 */
-class NiftiDecoderAlt extends Filter {
+class NiftiDecoderAlt extends Decoder {
   constructor(){
     super();
     this.addInputValidator(0, ArrayBuffer);
@@ -90,15 +90,15 @@ class NiftiDecoderAlt extends Filter {
     metadata.format = "nifti";
     metadata.spatialUnit = header.getUnitsCodeString(nifti.NIFTI1.SPATIAL_UNITS_MASK & header.xyzt_units);
     metadata.temporalUnit = header.getUnitsCodeString(nifti.NIFTI1.TEMPORAL_UNITS_MASK & header.xyzt_units);
-    
+
     // the transformation
     var niftiTransfoMatrix = header.getQformMat(); // the default case (METHOD2)
     if( header.qform_code == 0){  // though sometimes qform_code is 0, then we have to use affine (METHOD3)
       niftiTransfoMatrix = header.affine;
     }
-    
+
     console.log( header );
-    
+
     // dimensions info ordered from the fastest varying to the slowest varying
     var voxelSpaceNames = ['k', 'j', 'i', 't'];
     var worldSpaceNames = ['x', 'y', 'z', 't'];
@@ -138,11 +138,11 @@ class NiftiDecoderAlt extends Filter {
       dimensions[2].widthDimension = 0;
       dimensions[2].heightDimension = 1;
     }
-    
+
     /*
     swaping dimensions:
     In some cases, a NIfTI does not respect the orientation from the specfication.
-    In order to get the proper orientation, we have to swap some dimensions as 
+    In order to get the proper orientation, we have to swap some dimensions as
     well as the corresponding rows in the v2w matrix.
     The criterion to find what dim is suposed to come first, what is supposed to
     be last is direction cosine fron the matrix:
@@ -150,13 +150,13 @@ class NiftiDecoderAlt extends Filter {
     - the 2nd row should be the one with the highest absolute value from all 2nd columns
     - the 3rd row should be the one with the highest absolute value from all 3rd columns
     */
-    
+
     // give the index of the row that has the highest value among a given col
     function whichRowHasHighestValueFromGivenCol( arrOfArr, col){
       var cx = Math.abs(arrOfArr[0][col]);
       var cy = Math.abs(arrOfArr[1][col]);
       var cz = Math.abs(arrOfArr[2][col]);
-      
+
       if( cx > cy && cx > cz){
         return 0;
       }else if(cy > cx && cy > cz){
@@ -165,29 +165,29 @@ class NiftiDecoderAlt extends Filter {
         return 2
       }
     }
-    
+
     function getMagnitude( arr ){
       return Math.sqrt( arr[0]*arr[0] + arr[1]*arr[1] + arr[2]*arr[2] );
     }
-    
+
     var shouldBeCol0 = whichRowHasHighestValueFromGivenCol(niftiTransfoMatrix, 0);
     var shouldBeCol1 = whichRowHasHighestValueFromGivenCol(niftiTransfoMatrix, 1);
     var shouldBeCol2 = whichRowHasHighestValueFromGivenCol(niftiTransfoMatrix, 2);
-    
-    // when we have shouldBeCol[ n ] = m it means that the current original row m 
+
+    // when we have shouldBeCol[ n ] = m it means that the current original row m
     // of transfo-matrix should move to the position n
     var shouldBeCol = [ shouldBeCol0, shouldBeCol1, shouldBeCol2 ];
     // this is the inverse lookup of shouldBeCol
     var wasCol = [ shouldBeCol.indexOf(0), shouldBeCol.indexOf(1), shouldBeCol.indexOf(2) ];
-    
+
     var transfoMatrixToUse = JSON.parse(JSON.stringify(niftiTransfoMatrix));
     var dimensionsToUse = dimensions;
-    
+
     // ******************* BEGIN TO SWAP ***************************************
-    
+
     // if so, the dimension list and the matrix need swapping
     if( shouldBeCol[0] != 0 || shouldBeCol[1] != 1 || shouldBeCol[2] != 2){
-      
+
       // swap the matrix cols
       for (var i = 0; i < 3; i++) {
         for (var j = 0; j < 4; j++) {
@@ -198,7 +198,7 @@ class NiftiDecoderAlt extends Filter {
           transfoMatrixToUse[i][volumeAxis] = niftiTransfoMatrix[i][j];
         }
       }
-      
+
       // just making a safe copy
       var dimensionsCp = JSON.parse(JSON.stringify(dimensions))
 
@@ -206,7 +206,7 @@ class NiftiDecoderAlt extends Filter {
       dimensionsCp[0].nameVoxelSpace = "k";
       dimensionsCp[1].nameVoxelSpace = "j";
       dimensionsCp[2].nameVoxelSpace = "i";
-      
+
       dimensionsCp[wasCol[0]].nameWorldSpace = "x";
       dimensionsCp[wasCol[1]].nameWorldSpace = "y";
       dimensionsCp[wasCol[2]].nameWorldSpace = "z";
@@ -218,11 +218,11 @@ class NiftiDecoderAlt extends Filter {
       dimensionsCp[wasCol[1]].heightDimension = wasCol[2];
       dimensionsCp[wasCol[2]].widthDimension = wasCol[0];
       dimensionsCp[wasCol[2]].heightDimension = wasCol[1];
-      
+
       dimensionsToUse = dimensionsCp;
     }
     // ******************* END OF SWAPING **************************************
-    
+
     // return the dimsniosn object given its world name ('x', 'y' or 'z')
     function getDimensionByWorldName( name ){
       for(var i=0; i<dimensionsToUse.length; i++){
@@ -231,22 +231,22 @@ class NiftiDecoderAlt extends Filter {
       }
       return null;
     }
-    
+
     // set the directions
     for(var i=0; i<3; i++){
       var stepSize = getMagnitude( transfoMatrixToUse[i] )
       var directionSign = Math.sign( transfoMatrixToUse[i][i]);
       //dimensionsToUse[i].step = stepSize * directionSign;
-      
+
       // so that when i==0, dimension is x, etc.
       var dimension = getDimensionByWorldName(worldSpaceNames[i])
       dimension.step = stepSize * directionSign;
     }
-    
-    
-    
+
+
+
     metadata.dimensions = dimensionsToUse;
-    
+
     var v2wMat = mat4.fromValues(transfoMatrixToUse[0][0], transfoMatrixToUse[1][0], transfoMatrixToUse[2][0], transfoMatrixToUse[3][0],
                                  transfoMatrixToUse[0][1], transfoMatrixToUse[1][1], transfoMatrixToUse[2][1], transfoMatrixToUse[3][1],
                                  transfoMatrixToUse[0][2], transfoMatrixToUse[1][2], transfoMatrixToUse[2][2], transfoMatrixToUse[3][2],
@@ -260,7 +260,7 @@ class NiftiDecoderAlt extends Filter {
       v2w: v2wMat,
       w2v: w2vMat
     }
-    
+
     metadata.statistics = {
       upToDate: false,
       min: 0,
@@ -270,9 +270,9 @@ class NiftiDecoderAlt extends Filter {
     var output = new Image3DAlt();
     output.setRawData( data );
     output.setRawMetadata( metadata );
-    
+
     console.log( metadata );
-    
+
     if(output.metadataIntegrityCheck()){
       output.scanDataRange();
       this._output[0] = output;

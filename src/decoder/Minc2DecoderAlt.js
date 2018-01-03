@@ -8,7 +8,7 @@
 */
 
 import pako from 'pako'
-import { Filter } from '../core/Filter.js';
+import { Decoder } from '../core/Decoder.js';
 import { Image3DAlt } from '../core/Image3DAlt.js';
 import { Image3DMetadataConverter } from '../utils/Image3DMetadataConverter.js';
 
@@ -23,7 +23,7 @@ import { Image3DMetadataConverter } from '../utils/Image3DMetadataConverter.js';
 * **Usage**
 * - [examples/fileToMinc2.html](../examples/fileToMinc2.html)
 */
-class Minc2DecoderAlt extends Filter{
+class Minc2DecoderAlt extends Decoder{
 
   constructor(){
     super();
@@ -2834,7 +2834,7 @@ class Minc2DecoderAlt extends Filter{
       new_abuf = this.scaleVoxels(image, image_min, image_max, valid_range, this.getMetadata("debug"));
     }
 
-    
+
 
     var minc_header = this.parseHeader( JSON.stringify(header) );
     minc_header.format = "minc2";
@@ -2847,13 +2847,13 @@ class Minc2DecoderAlt extends Filter{
     mniVol.setData(dataArray, minc_header);
     mniVol.setMetadata("format", "minc2");
     */
-    
+
     var metadata = Image3DMetadataConverter.convertImage3DMetadata( minc_header );
-    
+
     var output = new Image3DAlt();
     output.setRawData( dataArray );
     output.setRawMetadata( metadata );
-    
+
     if(output.metadataIntegrityCheck()){
       output.scanDataRange();
       this._output[0] = output;

@@ -8,7 +8,7 @@
 */
 
 import pako from 'pako'
-import { Filter } from '../core/Filter.js';
+import { Decoder } from '../core/Decoder.js';
 import { MniVolume } from '../core/MniVolume.js';
 
 
@@ -22,7 +22,7 @@ import { MniVolume } from '../core/MniVolume.js';
 * **Usage**
 * - [examples/fileToMinc2.html](../examples/fileToMinc2.html)
 */
-class Minc2Decoder extends Filter{
+class Minc2Decoder extends Decoder{
 
   constructor(){
     super();
@@ -1856,7 +1856,7 @@ class Minc2Decoder extends Filter{
     if (!this.checkSignature("OHDR")) {
       throw new Error('Bad or missing OHDR signature');
     }
-    
+
     var that = this;
     var ver = this.getU8();
     var flags = this.getU8();

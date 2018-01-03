@@ -8,7 +8,7 @@
 */
 
 import pako from 'pako';
-import { Filter } from '../core/Filter.js';
+import { Decoder } from '../core/Decoder.js';
 import { Image3DAlt } from '../core/Image3DAlt.js';
 import { Image3DMetadataConverter } from '../utils/Image3DMetadataConverter.js';
 
@@ -19,15 +19,15 @@ import { Image3DMetadataConverter } from '../utils/Image3DMetadataConverter.js';
 * **Usage**
 * - [examples/fileToMgh.html](../examples/fileToMgh.html)
 */
-class MghDecoderAlt extends Filter {
-  
+class MghDecoderAlt extends Decoder {
+
   constructor() {
     super();
     this.addInputValidator(0, ArrayBuffer);
     this.setMetadata("debug", false);
   }
-  
-  
+
+
   /* Function to parse the basic MGH header. This is a 284-byte binary
    * object that begins at offset zero in the file.
    * The resulting header object will contain the following fields:
@@ -237,10 +237,10 @@ class MghDecoderAlt extends Filter {
 
     return header;
   }
-  
-  
+
+
   _createMGHData(header, raw_data) {
-    
+
     var native_data = null;
     var bytes_per_voxel = 1;
 
@@ -295,7 +295,7 @@ class MghDecoderAlt extends Filter {
 
   }
 
-  
+
   _run(){
     var inputBuffer = this._getInput(0);
 
@@ -305,28 +305,28 @@ class MghDecoderAlt extends Filter {
     }
 
     var header = null;
-    
+
     try{
       header = this._parseMGHHeader( inputBuffer );
     }catch(e){
       //console.warn( e );
     }
-    
+
 
     // abort if header not valid
     if(!header){
       console.log("The input file is not a MGH file.");
       return;
     }
-      
+
 
 
     var dataArray = this._createMGHData(header, inputBuffer)
-    
+
     if(!dataArray)
       return null;
 
-    
+
     /*
     // add the output to this filter
     this._addOutput(MniVolume);
@@ -334,17 +334,17 @@ class MghDecoderAlt extends Filter {
     mniVol.setData(dataArray, header);
     mniVol.setMetadata("format", "mgh");
     */
-    
-    
+
+
     var metadata = Image3DMetadataConverter.convertImage3DMetadata( header );
-    
+
     // ********** SWAPPING DIM *************
-    
+
     var dims = metadata.dimensions;
     dims.sort( function(a, b){
       return a.stride < b.stride;
     })
-    
+
     // return the dimsniosn object given its world name ('x', 'y' or 'z')
     function getDimensionByWorldName( name ){
       for(var i=0; i<dimensionsToUse.length; i++){
@@ -353,15 +353,15 @@ class MghDecoderAlt extends Filter {
       }
       return null;
     }
-    
+
     function getWidthDimension( directionDim ){
       return directionDim === "x" ? "y" : directionDim === "y" ? "x" : directionDim === "z" ? "x" : null;
     }
-    
+
     function getHeightDimension( directionDim ){
       return directionDim === "x" ? "z" : directionDim === "y" ? "z" : directionDim === "z" ? "y" : null;
     }
-    
+
     function getDimIndexByDimName( dimName ){
       for(var i=0; i<dims.length; i++){
         if( dims[i].nameWorldSpace === dimName )
@@ -369,29 +369,29 @@ class MghDecoderAlt extends Filter {
       }
       return -1;
     }
-    
+
     for(var i=0; i<dims.length; i++){
       var dimName = dims[i].nameWorldSpace;
       dims[i].heightDimension = getDimIndexByDimName( getHeightDimension( dimName ) );
       dims[i].widthDimension = getDimIndexByDimName( getWidthDimension( dimName ) );
     }
-    
-    
+
+
     // ********** END OF SWAPPING **********
-    
-    
-    
+
+
+
     var output = new Image3DAlt();
     output.setRawData( dataArray );
     output.setRawMetadata( metadata );
-    
+
     if(output.metadataIntegrityCheck()){
       output.scanDataRange();
       this._output[0] = output;
     }
-    
+
   }
-  
+
 } /* END of class MghDecoderAlt */
 
 export { MghDecoderAlt };

@@ -7,7 +7,7 @@
 
 
 
-import { Filter } from '../core/Filter.js';
+import { Decoder } from '../core/Decoder.js';
 import { Signal1D } from '../core/Signal1D.js';
 import { EdfDecoder as EdfDecoderDep } from 'edfdecoder';
 
@@ -25,7 +25,7 @@ import { EdfDecoder as EdfDecoderDep } from 'edfdecoder';
 * - [examples/differenceEqSignal1D.html](../examples/differenceEqSignal1D.html)
 *
 */
-class EdfDecoder extends Filter {
+class EdfDecoder extends Decoder {
 
   constructor() {
     super();

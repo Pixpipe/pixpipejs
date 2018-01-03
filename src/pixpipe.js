@@ -17,6 +17,7 @@ export { MniVolume } from './core/MniVolume.js';
 export { LineString } from './core/LineString.js';
 export { Image3DAlt } from './core/Image3DAlt.js';
 export { Mesh3D } from './core/Mesh3D.js';
+export { Decoder } from './core/Decoder.js';
 
 // io - Readers and writers
 export { CanvasImageWriter } from './io/CanvasImageWriter.js';
@@ -27,6 +28,7 @@ export { UrlToArrayBufferReader } from './io/UrlToArrayBufferReader.js';
 export { BrowserDownloadBuffer } from './io/BrowserDownloadBuffer.js';
 
 // decoders
+export { GenericDecoderInterface } from './decoder/GenericDecoderInterface.js'
 export { Minc2Decoder } from './decoder/Minc2Decoder.js';
 export { NiftiDecoder } from './decoder/NiftiDecoder.js';
 export { NiftiDecoderAlt } from './decoder/NiftiDecoderAlt.js';

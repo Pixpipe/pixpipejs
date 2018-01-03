@@ -5,7 +5,7 @@
 * Lab       MCIN - Montreal Neurological Institute
 */
 
-import { Filter } from "../core/Filter.js";
+import { Decoder } from "../core/Decoder.js";
 import { MniObjParser } from 'mniobjparser';
 import { Mesh3D } from '../core/Mesh3D.js';
 
@@ -23,8 +23,18 @@ import { Mesh3D } from '../core/Mesh3D.js';
 * **Usage**
 * - [examples/fileToMniObj.html](../examples/fileToMniObj.html)
 */
-class MniObjDecoder extends Filter {
-  
+class MniObjDecoder extends Decoder {
+
+  /**
+  * [STATIC]
+  * Overload of the `Decoder` function to precise `MniObjDecoder` works with text based files.
+  * @return {Boolean} true is the file typed decoded by this class is binary, false if it's text based.
+  */
+  static isBinary(){
+    return false;
+  }
+
+
   constructor(){
     super();
     //this.addInputValidator(0, string);
@@ -34,17 +44,17 @@ class MniObjDecoder extends Filter {
     // When decoding a file, a string is generally as a DOMString, with is
     // different as String, and we dont want to duplicated that into memory.
   }
-  
-  
+
+
   _run(){
     var input = this._getInput();
-    
-    //if( !(input instanceof String) ){
-    if( typeof input !== "string" ){
-      console.warn("The input data for MniObjDecoder ust be a String.");
+    var validInput = null;
+
+    if( !input ){
+      console.warn("Invalid input for MniObjDecoder");
       return;
     }
-    
+
     var parser = new MniObjParser();
     parser.parse( input )
 
@@ -53,7 +63,7 @@ class MniObjDecoder extends Filter {
       console.warn("Invalid MNI OBJ file.\n" + "ERROR: " + parser.getErrorMessage());
       return;
     }
-    
+
     if( !parser.isPolygon() ){
       console.warn("The MNI OBJ file is valid but does not describe a 3D mesh.");
       return;
@@ -74,8 +84,8 @@ class MniObjDecoder extends Filter {
 
     // get some material information, not mandatory to reconstruct the mesh
     var surfaceProperties = parser.getSurfaceProperties(); // object
-    
-    
+
+
     var mesh = new Mesh3D();
     mesh.setVertexPositions( positions );
     mesh.setPolygonFacesOrder( indices );
@@ -83,11 +93,11 @@ class MniObjDecoder extends Filter {
     mesh.setVertexColors( colors );
     mesh.setNumberOfVerticesPerShapes( 3 ); // here
     mesh.setNumberOfComponentsPerColor( 4 );
-    
+
     this._output[0] = mesh;
   }
-  
-  
+
+
 } /* END of class Filter */
 
 export { MniObjDecoder };

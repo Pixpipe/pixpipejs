@@ -7,8 +7,8 @@
 */
 
 import { CodecUtils } from 'codecutils';
-import {PixBinDecoder as Decoder} from 'pixbincodec'
-import { Filter } from '../core/Filter.js';
+import {PixBinDecoder as PBDecoder} from 'pixbincodec'
+import { Decoder } from '../core/Decoder.js';
 import { CoreTypes } from '../core/CoreTypes.js';
 
 
@@ -20,7 +20,7 @@ import { CoreTypes } from '../core/CoreTypes.js';
 * **Usage**
 * - [examples/pixpFileToImage2D.html](../examples/pixpFileToImage2D.html)
 */
-class PixBinDecoder extends Filter {
+class PixBinDecoder extends Decoder {
   constructor(){
     super();
     this.addInputValidator(0, ArrayBuffer);
@@ -33,34 +33,34 @@ class PixBinDecoder extends Filter {
       console.warn("PixBinDecoder can only decode ArrayBuffer.");
       return;
     }
-  
+
     var input = this._getInput();
-    var decoder = new Decoder();
-    decoder.enableBlockVerification( this.getMetadata("blockVerification") );
-    decoder.setInput( input );
-    
+    var pbDecoder = new PBDecoder();
+    pbDecoder.enableBlockVerification( this.getMetadata("blockVerification") );
+    pbDecoder.setInput( input );
+
     // dont go further is buffer is not valid
-    if( !decoder.isValid() ){
+    if( !pbDecoder.isValid() ){
       console.warn("The input buffer is invalid.");
       return;
     }
-    
+
     var pixBinMetaObj = {
-      creationDate: decoder.getBinCreationDate(),
-      description: decoder.getBinDescription(),
-      userObject: decoder.getBinUserObject(),
-      numberOfBlocks: decoder.getNumberOfBlocks()
+      creationDate: pbDecoder.getBinCreationDate(),
+      description: pbDecoder.getBinDescription(),
+      userObject: pbDecoder.getBinUserObject(),
+      numberOfBlocks: pbDecoder.getNumberOfBlocks()
     }
-    
+
     // perform the decoding
-    var numberOfBlocks = decoder.getNumberOfBlocks();
-    
+    var numberOfBlocks = pbDecoder.getNumberOfBlocks();
+
     for(var i=0; i<numberOfBlocks; i++){
-      var blockType = decoder.getBlockType( i );
-      var block = decoder.fetchBlock( i )
+      var blockType = pbDecoder.getBlockType( i );
+      var block = pbDecoder.fetchBlock( i )
       var output = null;
       var objectConstructor = CoreTypes.getCoreType( blockType );
-      
+
       // the encoded object matches to a pixpipe type
       if( objectConstructor ){
         output = new objectConstructor();
@@ -75,12 +75,12 @@ class PixBinDecoder extends Filter {
           output._metadata = block._metadata;
           output._data = block._data;
         }
-        
+
       }
-      
+
       this._output[ i ] = output;
     }
-    
+
     // adding the metadata only if there are blocks
     if( numberOfBlocks ){
       this._output[ "PixBinMeta" ] = pixBinMetaObj;

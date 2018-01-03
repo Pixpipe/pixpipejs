@@ -7,8 +7,7 @@
 */
 
 
-import { Filter } from '../core/Filter.js';
-import { Image3D } from '../core/Image3D.js';
+import { GenericDecoderInterface } from './GenericDecoderInterface.js';
 
 // decoders
 import { TiffDecoder } from './TiffDecoder.js';
@@ -19,7 +18,11 @@ import { PixpDecoder } from './PixpDecoder.js';
 
 
 /**
-* An instance of Image2DGenericDecoder takes a ArrayBuffer 
+* This class implements `GenericDecoderInterface` that already contains the
+* successive decoding logic. For this reason this filter does not need to have the
+* `_run` method to be reimplemented.
+*
+* An instance of Image2DGenericDecoder takes a ArrayBuffer
 * as input 0 (`.addInput(myArrayBuffer)`) and output an Image2D.
 * The `update` method will perform several decoding attempts, using the readers
 * specified in the constructor.
@@ -33,11 +36,11 @@ import { PixpDecoder } from './PixpDecoder.js';
 * **Usage**
 * - [examples/fileToGenericImage2D.html](../examples/fileToGenericImage2D.html)
 */
-class Image2DGenericDecoder extends Filter {
-  
+class Image2DGenericDecoder extends GenericDecoderInterface {
+
   constructor(){
     super();
-    
+
     this._decoders = [
       TiffDecoder,
       JpegDecoder,
@@ -46,32 +49,7 @@ class Image2DGenericDecoder extends Filter {
       //PixBinDecoder
     ];
   }
-  
-  
-  _run(){
-    var inputBuffer = this._getInput(0);
-    
-    if(!inputBuffer){
-      console.warn("The input buffer must not be null.");
-      return;
-    }
-    
-    // try with each decoder
-    for(var d=0; d<this._decoders.length; d++){
-      var decoder = new this._decoders[d]();
-      decoder.addInput( inputBuffer );
-      decoder.update();
-      
-      if(decoder.getNumberOfOutputs()){
-        this._output[0] = decoder.getOutput();
-        this.setMetadata("decoderConstructor", this._decoders[d]);
-        this.setMetadata("decoderName", this._decoders[d].name);
-        break;
-      }
-    }
-  }
-  
-  
+
 } /* END of class Image2DGenericDecoder */
 
 export { Image2DGenericDecoder }

@@ -1,8 +1,8 @@
-import { Filter } from '../core/Filter.js';
+import { Decoder } from '../core/Decoder.js';
 import { QeegModFileParser } from 'qeegmodfile';
 
 
-class EegModDecoder extends Filter {
+class EegModDecoder extends Decoder {
 
   constructor() {
     super();

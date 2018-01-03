@@ -10,11 +10,7 @@
 import { GenericDecoderInterface } from './GenericDecoderInterface.js';
 
 // decoders
-import { Minc2DecoderAlt } from './Minc2DecoderAlt.js';
-import { NiftiDecoderAlt } from './NiftiDecoderAlt.js';
-import { MghDecoderAlt } from './MghDecoderAlt.js';
-//import { PixpDecoder } from './PixpDecoder.js';
-//import { PixBinDecoder } from './PixBinDecoder.js';
+import { Minc2DecoderAlt } from './MniObjDecoder.js';
 
 
 /**
@@ -22,8 +18,8 @@ import { MghDecoderAlt } from './MghDecoderAlt.js';
 * successive decoding logic. For this reason this filter does not need to have the
 * `_run` method to be reimplemented.
 *
-* An instance of Image3DGenericDecoderAlt takes a ArrayBuffer
-* as input 0 (`.addInput(myArrayBuffer)`) and output an Image3D.
+* An instance of Mesh3DGenericDecoder takes a ArrayBuffer
+* as input 0 (`.addInput(myArrayBuffer)`) and output a Mesh3D object.
 * The `update` method will perform several decoding attempts, using the readers
 * specified in the constructor.
 * In case of success (one of the registered decoder was compatible to the data)
@@ -31,25 +27,21 @@ import { MghDecoderAlt } from './MghDecoderAlt.js';
 * information about the file format. If no decoder managed to decode the input buffer,
 * this filter will not have any output.
 *
-* Developers: if a new 3D dataset decoder is added, reference it here.
+* Developers: if a new format decoder is added, reference it here.
 *
 * **Usage**
-* - [examples/fileToGenericImage3DAlt.html](../examples/fileToGenericImage3DAlt.html)
+* - [examples/fileToGenericMesh3D.html](../examples/fileToGenericMesh3D.html)
 */
-class Image3DGenericDecoderAlt extends GenericDecoderInterface {
+class Mesh3DGenericDecoder extends import { GenericDecoderInterface } from './GenericDecoderInterface.js'; {
 
   constructor(){
     super();
 
     this._decoders = [
-      Minc2DecoderAlt,
-      NiftiDecoderAlt,
-      MghDecoderAlt,
-      //PixpDecoder,
-      //PixBinDecoder
+      MniObjDecoder,
     ];
   }
 
-} /* END of class Image3DGenericDecoderAlt */
+} /* END of lcass Mesh3DGenericDecoder */
 
-export { Image3DGenericDecoderAlt }
+export { Mesh3DGenericDecoder };

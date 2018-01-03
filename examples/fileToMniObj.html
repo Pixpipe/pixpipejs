@@ -84,6 +84,7 @@
 
     // The filter to read image from URL
     var file2Buff = new pixpipe.FileToArrayBufferReader();
+    // this is not mandatory but will enable the faster text-file-reading capabilities of browsers:
     file2Buff.setMetadata("readAsText", true);
 
     // the image is loaded...
