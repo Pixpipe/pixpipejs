@@ -648,6 +648,26 @@
                   _rectangular
                 </a>
               <a
+                href='#Decoder'
+                class='block bold h3 bg-pink-alpha'>
+                Decoder
+              </a>
+                <a
+                  href='#Decoder.isBinary'
+                  class='regular block'>
+                  isBinary
+                </a>
+                <a
+                  href='#Decoder._getInput'
+                  class='regular block'>
+                  _getInput
+                </a>
+                <a
+                  href='#Decoder._isBinary'
+                  class='regular block'>
+                  _isBinary
+                </a>
+              <a
                 href='#AngleToHueWheelHelper'
                 class='block bold h3 bg-pink-alpha'>
                 AngleToHueWheelHelper
@@ -728,16 +748,6 @@
                   _loadUrl
                 </a>
               <a
-                href='#SpectralScaleImageFilter'
-                class='block bold h3 bg-pink-alpha'>
-                SpectralScaleImageFilter
-              </a>
-                <a
-                  href='#SpectralScaleImageFilter._run'
-                  class='regular block'>
-                  _run
-                </a>
-              <a
                 href='#FileImageReader'
                 class='block bold h3 bg-pink-alpha'>
                 FileImageReader
@@ -751,6 +761,16 @@
                   href='#FileImageReader.hasValidInput'
                   class='regular block'>
                   hasValidInput
+                </a>
+              <a
+                href='#SpectralScaleImageFilter'
+                class='block bold h3 bg-pink-alpha'>
+                SpectralScaleImageFilter
+              </a>
+                <a
+                  href='#SpectralScaleImageFilter._run'
+                  class='regular block'>
+                  _run
                 </a>
               <a
                 href='#MniVolume'
@@ -863,6 +883,16 @@
                   setNod
                 </a>
               <a
+                href='#PixBinDecoder'
+                class='block bold h3 bg-pink-alpha'>
+                PixBinDecoder
+              </a>
+                <a
+                  href='#PixBinDecoder._shouldDecodeType'
+                  class='regular block'>
+                  _shouldDecodeType
+                </a>
+              <a
                 href='#Colormap'
                 class='block bold h3 bg-pink-alpha'>
                 Colormap
@@ -962,6 +992,11 @@
                   class='regular block'>
                   addLineString
                 </a>
+              <a
+                href='#AllFormatsGenericDecoder'
+                class='block bold h3 bg-pink-alpha'>
+                AllFormatsGenericDecoder
+              </a>
               <a
                 href='#BandPassSignal1D'
                 class='block bold h3 bg-pink-alpha'>
@@ -1658,9 +1693,9 @@
                   getDataIndex
                 </a>
                 <a
-                  href='#PixpipeContainerMultiData.setRawData'
+                  href='#PixpipeContainerMultiData.setData'
                   class='regular block'>
-                  setRawData
+                  setData
                 </a>
               <a
                 href='#Image2D'
@@ -1898,6 +1933,11 @@
                   gaussianFrequencyResponseSingle
                 </a>
               <a
+                href='#GenericDecoderInterface'
+                class='block bold h3 bg-pink-alpha'>
+                GenericDecoderInterface
+              </a>
+              <a
                 href='#MatrixTricks'
                 class='block bold h3 bg-pink-alpha'>
                 MatrixTricks
@@ -2033,6 +2073,16 @@
                 InverseFourierImageFilter
               </a>
               <a
+                href='#MniObjDecoder'
+                class='block bold h3 bg-pink-alpha'>
+                MniObjDecoder
+              </a>
+                <a
+                  href='#MniObjDecoder.isBinary'
+                  class='regular block'>
+                  isBinary
+                </a>
+              <a
                 href='#JpegDecoder'
                 class='block bold h3 bg-pink-alpha'>
                 JpegDecoder
@@ -2063,6 +2113,11 @@
                   MAGIC_NUMBER
                 </a>
               <a
+                href='#Mesh3DGenericDecoder'
+                class='block bold h3 bg-pink-alpha'>
+                Mesh3DGenericDecoder
+              </a>
+              <a
                 href='#MghDecoder'
                 class='block bold h3 bg-pink-alpha'>
                 MghDecoder
@@ -2071,11 +2126,6 @@
                 href='#MghDecoderAlt'
                 class='block bold h3 bg-pink-alpha'>
                 MghDecoderAlt
-              </a>
-              <a
-                href='#MniObjDecoder'
-                class='block bold h3 bg-pink-alpha'>
-                MniObjDecoder
               </a>
               <a
                 href='#MultiplyImageFilter'
@@ -2098,11 +2148,6 @@
                 PatchImageFilter
               </a>
               <a
-                href='#PixBinDecoder'
-                class='block bold h3 bg-pink-alpha'>
-                PixBinDecoder
-              </a>
-              <a
                 href='#PixpDecoder'
                 class='block bold h3 bg-pink-alpha'>
                 PixpDecoder
@@ -2117,6 +2162,11 @@
                   class='regular block'>
                   setRawData
                 </a>
+              <a
+                href='#Signal1DGenericDecoder'
+                class='block bold h3 bg-pink-alpha'>
+                Signal1DGenericDecoder
+              </a>
               <a
                 href='#SimpleThresholdFilter'
                 class='block bold h3 bg-pink-alpha'>
@@ -6494,6 +6544,122 @@ filter, it sould be used only for testing (c.f. Gibbs phenomenon)</p>
         </div>
 </section>
 </div><div class='py1'><section class='py2 clearfix'>
+  <h2 id='Decoder' class='mt0'>
+    Decoder<span class='gray'></span>
+  </h2>
+  <p>The class Decoder is an interface and is not supposed to be used as-is.
+The file decoderd (in the <code>decoder</code> folder) must inherit from this class because
+it implements some handy logic, for example the static function <code>isBinary</code> to tell if
+the associated format is binary or text based. In addition, it has a method to
+convert a utf8 binary buffer into a utf8 string. This is usefull in case the
+associated filetype is text based but the given buffer (of a valid file) is encoded
+in a binary way.
+The metadata <code>targetType</code> must be overwritten with a string matching one of the
+Pixpipe type (e.g. &quot;Image3DAlt&quot;);</p>
+
+      <h4>Static members</h4>
+        <div class='collapsible' id='Decoder.isBinary'>
+          <a href='#Decoder.isBinary'>
+            <code>
+              isBinary<span class='gray'></span>
+            </code>
+            <div class='force-inline'>
+              <p>Static method to tell if the file format of this decoder is binary based or text based.
+This function must be overwritten for decoder that handle text based files.</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2 m2'>
+<section class='py2 clearfix'>
+  <h2 id='Decoder.isBinary' class='mt0'>
+    isBinary<span class='gray'></span>
+  </h2>
+  <p>Static method to tell if the file format of this decoder is binary based or text based.
+This function must be overwritten for decoder that handle text based files.</p>
+
+      <h4>Returns</h4>
+      <code><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean">Boolean</a></code></code>
+      :
+      <div class='force-inline'>
+        <p>true if binary, false if text</p>
+
+      </div>
+</section>
+          </div>
+        </div>
+      <h4>Instance members</h4>
+        <div class='collapsible' id='Decoder._getInput'>
+          <a href='#Decoder._getInput'>
+            <code>
+              _getInput<span class='gray'>(category)</span>
+            </code>
+            <div class='force-inline'>
+              <p>[PRIVATE]
+Overloads <code>Filter._getInput()</code> and add the logic of converting a binary buffer
+into a utf8 string when it is required and possible.</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2'>
+<section class='py2 clearfix'>
+  <h2 id='Decoder._getInput' class='mt0'>
+    _getInput<span class='gray'>(category)</span>
+  </h2>
+  <p>[PRIVATE]
+Overloads <code>Filter._getInput()</code> and add the logic of converting a binary buffer
+into a utf8 string when it is required and possible.</p>
+
+    <h4>Parameters</h4>
+    <ul class='suppress-p-margin'>
+        <li><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a></code> <strong>category</strong>
+          :
+          <div class='force-inline'>
+            <p>category of input (default: 0)</p>
+
+          </div>
+        </li>
+    </ul>
+      <h4>Returns</h4>
+      <code><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></code> or <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/ArrayBuffer">ArrayBuffer</a></code></code>
+      :
+      <div class='force-inline'>
+        <p>the input as an ArrayBuffer or as a string if required and possible. Will return null if a string is expected but could not convert the binary buffer into a valid utf8 string.</p>
+
+      </div>
+</section>
+          </div>
+        </div>
+        <div class='collapsible' id='Decoder._isBinary'>
+          <a href='#Decoder._isBinary'>
+            <code>
+              _isBinary<span class='gray'></span>
+            </code>
+            <div class='force-inline'>
+              <p>[PRIVATE]
+Non static counterpart of <code>isBinary</code>. It&apos;s mostly just a shortcut to call isBinary from <code>this</code> easily.</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2'>
+<section class='py2 clearfix'>
+  <h2 id='Decoder._isBinary' class='mt0'>
+    _isBinary<span class='gray'></span>
+  </h2>
+  <p>[PRIVATE]
+Non static counterpart of <code>isBinary</code>. It&apos;s mostly just a shortcut to call isBinary from <code>this</code> easily.</p>
+
+      <h4>Returns</h4>
+      <code><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean">Boolean</a></code></code>
+      :
+      <div class='force-inline'>
+        <p>true if binary, false if text</p>
+
+      </div>
+</section>
+          </div>
+        </div>
+</section>
+</div><div class='py1'><section class='py2 clearfix'>
   <h2 id='AngleToHueWheelHelper' class='mt0'>
     AngleToHueWheelHelper<span class='gray'></span>
   </h2>
@@ -6948,42 +7114,6 @@ Perform a XMLHttpRequest with the given url and adds it to the output</p>
         </div>
 </section>
 </div><div class='py1'><section class='py2 clearfix'>
-  <h2 id='SpectralScaleImageFilter' class='mt0'>
-    SpectralScaleImageFilter<span class='gray'></span>
-  </h2>
-  <p>Multiply an image by the other, like a scaling function.
-The image requires two inputs named &quot;0&quot; and &quot;1&quot;.
-Simply use <code>addInput( myImg1, &quot;0&quot; )</code>
-and <code>addInput( myImg2, &quot;1&quot; )</code>. The input &quot;0&quot; can have 1 or more bands while
-the input &quot;1&quot; can have only one band since the same scale is apply to each band.</p>
-<p><strong>Usage</strong></p>
-<ul>
-<li><a href="../examples/forEachPixelGadient.html">examples/forEachPixelGadient.html</a></li>
-</ul>
-
-      <h4>Instance members</h4>
-        <div class='collapsible' id='SpectralScaleImageFilter._run'>
-          <a href='#SpectralScaleImageFilter._run'>
-            <code>
-              _run<span class='gray'></span>
-            </code>
-            <div class='force-inline'>
-              <p>Run the filter</p>
-
-            </div>
-          </a>
-          <div class='collapser border px2'>
-<section class='py2 clearfix'>
-  <h2 id='SpectralScaleImageFilter._run' class='mt0'>
-    _run<span class='gray'></span>
-  </h2>
-  <p>Run the filter</p>
-
-</section>
-          </div>
-        </div>
-</section>
-</div><div class='py1'><section class='py2 clearfix'>
   <h2 id='FileImageReader' class='mt0'>
     FileImageReader<span class='gray'></span>
   </h2>
@@ -7040,6 +7170,42 @@ file2ImgFilter.update();</pre>
     hasValidInput<span class='gray'></span>
   </h2>
   <p>Overload the default method because HTML5 File is not a Pixpipe type</p>
+
+</section>
+          </div>
+        </div>
+</section>
+</div><div class='py1'><section class='py2 clearfix'>
+  <h2 id='SpectralScaleImageFilter' class='mt0'>
+    SpectralScaleImageFilter<span class='gray'></span>
+  </h2>
+  <p>Multiply an image by the other, like a scaling function.
+The image requires two inputs named &quot;0&quot; and &quot;1&quot;.
+Simply use <code>addInput( myImg1, &quot;0&quot; )</code>
+and <code>addInput( myImg2, &quot;1&quot; )</code>. The input &quot;0&quot; can have 1 or more bands while
+the input &quot;1&quot; can have only one band since the same scale is apply to each band.</p>
+<p><strong>Usage</strong></p>
+<ul>
+<li><a href="../examples/forEachPixelGadient.html">examples/forEachPixelGadient.html</a></li>
+</ul>
+
+      <h4>Instance members</h4>
+        <div class='collapsible' id='SpectralScaleImageFilter._run'>
+          <a href='#SpectralScaleImageFilter._run'>
+            <code>
+              _run<span class='gray'></span>
+            </code>
+            <div class='force-inline'>
+              <p>Run the filter</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2'>
+<section class='py2 clearfix'>
+  <h2 id='SpectralScaleImageFilter._run' class='mt0'>
+    _run<span class='gray'></span>
+  </h2>
+  <p>Run the filter</p>
 
 </section>
           </div>
@@ -7678,6 +7844,66 @@ is still empty.</p>
         </div>
 </section>
 </div><div class='py1'><section class='py2 clearfix'>
+  <h2 id='PixBinDecoder' class='mt0'>
+    PixBinDecoder<span class='gray'></span>
+  </h2>
+  <p>A PixBinDecoder instance decodes a <em>.pixp file and output an Image2D or Image3D.
+The input, specified by <code>.addInput(...)</code> must be an ArrayBuffer
+(from an <code>UrlToArrayBufferFilter</code>, an <code>UrlToArrayBufferReader</code> or anothrer source ).
+The metadata <code>targetType</code> can be a string or an array of
+string being the name(s) of the accepted contructor(s). The defaut value (&grave;&quot;</em>&quot;<code>) means the decoder will decode blocks of the pixBin file that are of any type. If the you decide to use</code>myPixBinDecoder.setMetadata(&quot;targetType&quot;, [&quot;Image2D&quot;, &quot;Mesh3D&quot;]);&grave;
+then the block being something else will bne skiped and not part of the outputs.</p>
+<p><strong>Usage</strong></p>
+<ul>
+<li><a href="../examples/decodePixBin.html">examples/decodePixBin.html</a></li>
+</ul>
+
+      <h4>Instance members</h4>
+        <div class='collapsible' id='PixBinDecoder._shouldDecodeType'>
+          <a href='#PixBinDecoder._shouldDecodeType'>
+            <code>
+              _shouldDecodeType<span class='gray'>(t)</span>
+            </code>
+            <div class='force-inline'>
+              <p>[PRIVATE]
+Tells if the given type matches the whitelist of types to decode.
+This whitelist is specified in the <code>targetType</code> metadata and can be a single
+string or an array of strings.</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2'>
+<section class='py2 clearfix'>
+  <h2 id='PixBinDecoder._shouldDecodeType' class='mt0'>
+    _shouldDecodeType<span class='gray'>(t)</span>
+  </h2>
+  <p>[PRIVATE]
+Tells if the given type matches the whitelist of types to decode.
+This whitelist is specified in the <code>targetType</code> metadata and can be a single
+string or an array of strings.</p>
+
+    <h4>Parameters</h4>
+    <ul class='suppress-p-margin'>
+        <li><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a></code> <strong>t</strong>
+          :
+          <div class='force-inline'>
+            <p>the type to test is in the whitelist</p>
+
+          </div>
+        </li>
+    </ul>
+      <h4>Returns</h4>
+      <code><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean">Boolean</a></code></code>
+      :
+      <div class='force-inline'>
+        <p>true if the type in arg in in the whitelist, false if not</p>
+
+      </div>
+</section>
+          </div>
+        </div>
+</section>
+</div><div class='py1'><section class='py2 clearfix'>
   <h2 id='Colormap' class='mt0'>
     Colormap<span class='gray'>(options)</span>
   </h2>
@@ -8310,6 +8536,23 @@ instance and <code>c</code> is an Array representing a color (i.e. [255, 0, 0] f
 </section>
           </div>
         </div>
+</section>
+</div><div class='py1'><section class='py2 clearfix'>
+  <h2 id='AllFormatsGenericDecoder' class='mt0'>
+    AllFormatsGenericDecoder<span class='gray'></span>
+  </h2>
+  <p>AllFormatsGenericDecoder is a generic decoder for all the file formats Pixpipe
+can handle. This means an instance of <code>AllFormatsGenericDecoder</code> can output
+object of various modality: a <code>Image3D</code>, <code>Image2D</code>, <code>Signal1D</code> or a <code>Mesh3D</code>.
+As any generic decoder, this one performs attemps of decoding and if it suceeds,
+an object is created. Some of the compatible formats do not have a easy escape
+like a magic number checking and thus need a full decoding attemps before the
+decoder can take a decision if wether or not the buffer being decoded matches
+the such or such decoder. This can create a bottel neck and we advise not to use
+<code>AllFormatsGenericDecoder</code> if you know your file will be of a specific type or
+of a specific modality.</p>
+<p>Notice: at the moment, <code>AllFormatsGenericDecoder</code> does not decode the <code>pixBin</code> format.</p>
+
 </section>
 </div><div class='py1'><section class='py2 clearfix'>
   <h2 id='BandPassSignal1D' class='mt0'>
@@ -12664,7 +12907,7 @@ In other word, not the same order but not an issue.</p>
               getData<span class='gray'>(name)</span>
             </code>
             <div class='force-inline'>
-              <p>Get a sub-dataset given its name.<br>
+              <p>Get a sub-dataset given its name.
 Notice: This gives a pointer, not a copy. Modifying the returns array will affect this object.</p>
 
             </div>
@@ -12674,7 +12917,7 @@ Notice: This gives a pointer, not a copy. Modifying the returns array will affec
   <h2 id='PixpipeContainerMultiData.getData' class='mt0'>
     getData<span class='gray'>(name)</span>
   </h2>
-  <p>Get a sub-dataset given its name.<br>
+  <p>Get a sub-dataset given its name.
 Notice: This gives a pointer, not a copy. Modifying the returns array will affect this object.</p>
 
     <h4>Parameters</h4>
@@ -12703,7 +12946,7 @@ Notice: This gives a pointer, not a copy. Modifying the returns array will affec
               getDataCopy<span class='gray'>(name)</span>
             </code>
             <div class='force-inline'>
-              <p>Get a copy of a sub-dataset given its name.<br>
+              <p>Get a copy of a sub-dataset given its name.
 Notice: This gives a copy of a typed array. Modifying the returns array will NOT affect this object.</p>
 
             </div>
@@ -12713,7 +12956,7 @@ Notice: This gives a copy of a typed array. Modifying the returns array will NOT
   <h2 id='PixpipeContainerMultiData.getDataCopy' class='mt0'>
     getDataCopy<span class='gray'>(name)</span>
   </h2>
-  <p>Get a copy of a sub-dataset given its name.<br>
+  <p>Get a copy of a sub-dataset given its name.
 Notice: This gives a copy of a typed array. Modifying the returns array will NOT affect this object.</p>
 
     <h4>Parameters</h4>
@@ -12773,10 +13016,10 @@ Notice: This gives a copy of a typed array. Modifying the returns array will NOT
 </section>
           </div>
         </div>
-        <div class='collapsible' id='PixpipeContainerMultiData.setRawData'>
-          <a href='#PixpipeContainerMultiData.setRawData'>
+        <div class='collapsible' id='PixpipeContainerMultiData.setData'>
+          <a href='#PixpipeContainerMultiData.setData'>
             <code>
-              setRawData<span class='gray'>(d, name)</span>
+              setData<span class='gray'>(d, name)</span>
             </code>
             <div class='force-inline'>
               <p>Associate d with the internal sub-dataset by pointer copy (if Object or Array).
@@ -12787,8 +13030,8 @@ to process it of to retrieve it.</p>
           </a>
           <div class='collapser border px2'>
 <section class='py2 clearfix'>
-  <h2 id='PixpipeContainerMultiData.setRawData' class='mt0'>
-    setRawData<span class='gray'>(d, name)</span>
+  <h2 id='PixpipeContainerMultiData.setData' class='mt0'>
+    setData<span class='gray'>(d, name)</span>
   </h2>
   <p>Associate d with the internal sub-dataset by pointer copy (if Object or Array).
 A name is necessary so that the internal structure can indentify the sub-dataset,
@@ -14200,6 +14443,18 @@ for the gaussian as an impulse response, check the method
         </div>
 </section>
 </div><div class='py1'><section class='py2 clearfix'>
+  <h2 id='GenericDecoderInterface' class='mt0'>
+    GenericDecoderInterface<span class='gray'></span>
+  </h2>
+  <p>GenericDecoderInterface is an intreface and should not be used as is.
+GenericDecoderInterface provides the elementary kit ti build a multiformat decoder.
+Classes that implements GenericDecoderInterface must have a list of decoder constructors
+stored in <code>this._decoders</code>.
+The classes <code>Image2DGenericDecoder</code>, <code>Image3DGenericDecoderAlt</code> and <code>Mesh3DGenericDecoder</code>
+are using <code>GenericDecoderInterface</code>.</p>
+
+</section>
+</div><div class='py1'><section class='py2 clearfix'>
   <h2 id='MatrixTricks' class='mt0'>
     MatrixTricks<span class='gray'>(matrix, colIndex, rowIndex, value)</span>
   </h2>
@@ -14863,7 +15118,10 @@ ignore_offsets to false.</p>
   <h2 id='Image2DGenericDecoder' class='mt0'>
     Image2DGenericDecoder<span class='gray'></span>
   </h2>
-  <p>An instance of Image2DGenericDecoder takes a ArrayBuffer
+  <p>This class implements <code>GenericDecoderInterface</code> that already contains the
+successive decoding logic. For this reason this filter does not need to have the
+<code>_run</code> method to be reimplemented.</p>
+<p>An instance of Image2DGenericDecoder takes a ArrayBuffer
 as input 0 (<code>.addInput(myArrayBuffer)</code>) and output an Image2D.
 The <code>update</code> method will perform several decoding attempts, using the readers
 specified in the constructor.
@@ -14897,7 +15155,10 @@ this filter will not have any output.</p>
   <h2 id='Image3DGenericDecoderAlt' class='mt0'>
     Image3DGenericDecoderAlt<span class='gray'></span>
   </h2>
-  <p>An instance of Image3DGenericDecoderAlt takes a ArrayBuffer
+  <p>This class implements <code>GenericDecoderInterface</code> that already contains the
+successive decoding logic. For this reason this filter does not need to have the
+<code>_run</code> method to be reimplemented.</p>
+<p>An instance of Image3DGenericDecoderAlt takes a ArrayBuffer
 as input 0 (<code>.addInput(myArrayBuffer)</code>) and output an Image3D.
 The <code>update</code> method will perform several decoding attempts, using the readers
 specified in the constructor.
@@ -14906,6 +15167,10 @@ the metadata <code>decoderConstructor</code> and <code>decoderName</code> are ma
 information about the file format. If no decoder managed to decode the input buffer,
 this filter will not have any output.</p>
 <p>Developers: if a new 3D dataset decoder is added, reference it here.</p>
+<p><strong>Usage</strong></p>
+<ul>
+<li><a href="../examples/fileToGenericImage3DAlt.html">examples/fileToGenericImage3DAlt.html</a></li>
+</ul>
 
 </section>
 </div><div class='py1'><section class='py2 clearfix'>
@@ -15008,6 +15273,54 @@ on an Image2D or a Signa1D.</p>
 
 </section>
 </div><div class='py1'><section class='py2 clearfix'>
+  <h2 id='MniObjDecoder' class='mt0'>
+    MniObjDecoder<span class='gray'></span>
+  </h2>
+  <p>When most parser need an ArrayBuffer as input, the MNI OBJ mesh file being text
+files, an instance of MniObjDecoder takes the string content of such files.
+The string content of a file can be provided by a FileToArrayBufferReader or
+UrlToArrayBufferReader with the metadata <code>readAsText</code> being true.
+Then use the method <code>.addInput( myString )</code> to provide the input and call
+the method <code>.update()</code>. If the input is suscceessfully parsed, the output of
+a MniObjDecoder is a Mesh3D. If the file is invalid, a message is probably written
+in the JS console and no output is available.</p>
+<p><strong>Usage</strong></p>
+<ul>
+<li><a href="../examples/fileToMniObj.html">examples/fileToMniObj.html</a></li>
+</ul>
+
+      <h4>Static members</h4>
+        <div class='collapsible' id='MniObjDecoder.isBinary'>
+          <a href='#MniObjDecoder.isBinary'>
+            <code>
+              isBinary<span class='gray'></span>
+            </code>
+            <div class='force-inline'>
+              <p>[STATIC]
+Overload of the <code>Decoder</code> function to precise <code>MniObjDecoder</code> works with text based files.</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2 m2'>
+<section class='py2 clearfix'>
+  <h2 id='MniObjDecoder.isBinary' class='mt0'>
+    isBinary<span class='gray'></span>
+  </h2>
+  <p>[STATIC]
+Overload of the <code>Decoder</code> function to precise <code>MniObjDecoder</code> works with text based files.</p>
+
+      <h4>Returns</h4>
+      <code><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean">Boolean</a></code></code>
+      :
+      <div class='force-inline'>
+        <p>true is the file typed decoded by this class is binary, false if it&apos;s text based.</p>
+
+      </div>
+</section>
+          </div>
+        </div>
+</section>
+</div><div class='py1'><section class='py2 clearfix'>
   <h2 id='JpegDecoder' class='mt0'>
     JpegDecoder<span class='gray'></span>
   </h2>
@@ -15025,36 +15338,6 @@ but this is compatible with Node and not rely on HTML5 Canvas.</p>
     LowPassSignal1D<span class='gray'></span>
   </h2>
   
-</section>
-</div><div class='py1'><section class='py2 clearfix'>
-  <h2 id='PixBinEncoder' class='mt0'>
-    PixBinEncoder<span class='gray'></span>
-  </h2>
-  <p>Download the generated file</p>
-
-      <h4>Static members</h4>
-        <div class='collapsible' id='PixBinEncoder.MAGIC_NUMBER'>
-          <a href='#PixBinEncoder.MAGIC_NUMBER'>
-            <code>
-              MAGIC_NUMBER<span class='gray'></span>
-            </code>
-            <div class='force-inline'>
-              <p>[static]
-the first sequence of bytes for a pixbin file is this ASCII string</p>
-
-            </div>
-          </a>
-          <div class='collapser border px2 m2'>
-<section class='py2 clearfix'>
-  <h2 id='PixBinEncoder.MAGIC_NUMBER' class='mt0'>
-    MAGIC_NUMBER<span class='gray'></span>
-  </h2>
-  <p>[static]
-the first sequence of bytes for a pixbin file is this ASCII string</p>
-
-</section>
-          </div>
-        </div>
 </section>
 </div><div class='py1'><section class='py2 clearfix'>
   <h2 id='PixBinEncoder' class='mt0'>
@@ -15097,6 +15380,58 @@ the first sequence of bytes for a pixbin file is this ASCII string</p>
         </div>
 </section>
 </div><div class='py1'><section class='py2 clearfix'>
+  <h2 id='PixBinEncoder' class='mt0'>
+    PixBinEncoder<span class='gray'></span>
+  </h2>
+  <p>Download the generated file</p>
+
+      <h4>Static members</h4>
+        <div class='collapsible' id='PixBinEncoder.MAGIC_NUMBER'>
+          <a href='#PixBinEncoder.MAGIC_NUMBER'>
+            <code>
+              MAGIC_NUMBER<span class='gray'></span>
+            </code>
+            <div class='force-inline'>
+              <p>[static]
+the first sequence of bytes for a pixbin file is this ASCII string</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2 m2'>
+<section class='py2 clearfix'>
+  <h2 id='PixBinEncoder.MAGIC_NUMBER' class='mt0'>
+    MAGIC_NUMBER<span class='gray'></span>
+  </h2>
+  <p>[static]
+the first sequence of bytes for a pixbin file is this ASCII string</p>
+
+</section>
+          </div>
+        </div>
+</section>
+</div><div class='py1'><section class='py2 clearfix'>
+  <h2 id='Mesh3DGenericDecoder' class='mt0'>
+    Mesh3DGenericDecoder<span class='gray'></span>
+  </h2>
+  <p>This class implements <code>GenericDecoderInterface</code> that already contains the
+successive decoding logic. For this reason this filter does not need to have the
+<code>_run</code> method to be reimplemented.</p>
+<p>An instance of Mesh3DGenericDecoder takes a ArrayBuffer
+as input 0 (<code>.addInput(myArrayBuffer)</code>) and output a Mesh3D object.
+The <code>update</code> method will perform several decoding attempts, using the readers
+specified in the constructor.
+In case of success (one of the registered decoder was compatible to the data)
+the metadata <code>decoderConstructor</code> and <code>decoderName</code> are made accessible and give
+information about the file format. If no decoder managed to decode the input buffer,
+this filter will not have any output.</p>
+<p>Developers: if a new format decoder is added, reference it here.</p>
+<p><strong>Usage</strong></p>
+<ul>
+<li><a href="../examples/fileToGenericMesh3D.html">examples/fileToGenericMesh3D.html</a></li>
+</ul>
+
+</section>
+</div><div class='py1'><section class='py2 clearfix'>
   <h2 id='MghDecoder' class='mt0'>
     MghDecoder<span class='gray'></span>
   </h2>
@@ -15117,24 +15452,6 @@ Takes an ArrayBuffer as input (0) and output a <code>MniVolume</code> (which inh
 <p><strong>Usage</strong></p>
 <ul>
 <li><a href="../examples/fileToMgh.html">examples/fileToMgh.html</a></li>
-</ul>
-
-</section>
-</div><div class='py1'><section class='py2 clearfix'>
-  <h2 id='MniObjDecoder' class='mt0'>
-    MniObjDecoder<span class='gray'></span>
-  </h2>
-  <p>When most parser need an ArrayBuffer as input, the MNI OBJ mesh file being text
-files, an instance of MniObjDecoder takes the string content of such files.
-The string content of a file can be provided by a FileToArrayBufferReader or
-UrlToArrayBufferReader with the metadata <code>readAsText</code> being true.
-Then use the method <code>.addInput( myString )</code> to provide the input and call
-the method <code>.update()</code>. If the input is suscceessfully parsed, the output of
-a MniObjDecoder is a Mesh3D. If the file is invalid, a message is probably written
-in the JS console and no output is available.</p>
-<p><strong>Usage</strong></p>
-<ul>
-<li><a href="../examples/fileToMniObj.html">examples/fileToMniObj.html</a></li>
 </ul>
 
 </section>
@@ -15199,19 +15516,6 @@ of several patched applied on a image with a solid color background.</p>
 
 </section>
 </div><div class='py1'><section class='py2 clearfix'>
-  <h2 id='PixBinDecoder' class='mt0'>
-    PixBinDecoder<span class='gray'></span>
-  </h2>
-  <p>A PixBinDecoder instance decodes a *.pixp file and output an Image2D or Image3D.
-The input, specified by <code>.addInput(...)</code> must be an ArrayBuffer
-(from an <code>UrlToArrayBufferFilter</code>, an <code>UrlToArrayBufferReader</code> or anothrer source ).</p>
-<p><strong>Usage</strong></p>
-<ul>
-<li><a href="../examples/pixpFileToImage2D.html">examples/pixpFileToImage2D.html</a></li>
-</ul>
-
-</section>
-</div><div class='py1'><section class='py2 clearfix'>
   <h2 id='PixpDecoder' class='mt0'>
     PixpDecoder<span class='gray'></span>
   </h2>
@@ -15263,6 +15567,28 @@ Should not be used as-is.</p>
 </section>
           </div>
         </div>
+</section>
+</div><div class='py1'><section class='py2 clearfix'>
+  <h2 id='Signal1DGenericDecoder' class='mt0'>
+    Signal1DGenericDecoder<span class='gray'></span>
+  </h2>
+  <p>This class implements <code>GenericDecoderInterface</code> that already contains the
+successive decoding logic. For this reason this filter does not need to have the
+<code>_run</code> method to be reimplemented.</p>
+<p>An instance of Signal1DGenericDecoder takes a ArrayBuffer
+as input 0 (<code>.addInput(myArrayBuffer)</code>) and output an Signal1D.
+The <code>update</code> method will perform several decoding attempts, using the readers
+specified in the constructor.
+In case of success (one of the registered decoder was compatible to the data)
+the metadata <code>decoderConstructor</code> and <code>decoderName</code> are made accessible and give
+information about the file format. If no decoder managed to decode the input buffer,
+this filter will not have any output.</p>
+<p>Developers: if a new 2D dataset decoder is added, reference it here and in the import list</p>
+<p><strong>Usage</strong></p>
+<ul>
+<li><a href="../examples/fileToGenericImage2D.html">examples/fileToGenericImage2D.html</a></li>
+</ul>
+
 </section>
 </div><div class='py1'><section class='py2 clearfix'>
   <h2 id='SimpleThresholdFilter' class='mt0'>

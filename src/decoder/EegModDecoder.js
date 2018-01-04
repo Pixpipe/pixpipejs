@@ -6,7 +6,7 @@ class EegModDecoder extends Decoder {
 
   constructor() {
     super();
-    this.setMetadata("targetType", Signal1D.constructor.name);
+    //this.setMetadata("targetType", Signal1D.constructor.name); // not determined yet if it will take place in a Signal1D
     this.addInputValidator(0, ArrayBuffer);
     this.setMetadata("debug", false);
 
