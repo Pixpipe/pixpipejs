@@ -24,6 +24,7 @@ import { Image3D } from '../core/Image3D.js';
 class PixpDecoder extends Decoder {
   constructor(){
     super();
+    this.setMetadata("targetType", "*");
     this.addInputValidator(0, ArrayBuffer);
   }
 

@@ -48,6 +48,9 @@ export { Image2DGenericDecoder } from './decoder/Image2DGenericDecoder.js';
 export { Minc2DecoderAlt } from './decoder/Minc2DecoderAlt.js';
 export { MniObjDecoder } from './decoder/MniObjDecoder.js';
 export { EdfDecoder } from './decoder/EdfDecoder.js';
+export { Mesh3DGenericDecoder } from './decoder/Mesh3DGenericDecoder.js';
+export { AllFormatsGenericDecoder } from './decoder/AllFormatsGenericDecoder.js';
+export { Signal1DGenericDecoder } from './decoder/Signal1DGenericDecoder.js';
 
 // filters - processing of Images2D and Signal1D
 export { ComponentProjectionImage2DFilter } from './filter/ComponentProjectionImage2DFilter';

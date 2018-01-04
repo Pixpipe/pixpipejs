@@ -29,6 +29,7 @@ class EdfDecoder extends Decoder {
 
   constructor() {
     super();
+    this.setMetadata("targetType", Signal1D.name);
     this.addInputValidator(0, ArrayBuffer);
     this.setMetadata("debug", false);
     this.setMetadata("concatenateRecords", true);

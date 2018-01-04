@@ -27,6 +27,7 @@ class Minc2DecoderAlt extends Decoder{
 
   constructor(){
     super();
+    this.setMetadata("targetType", Image3DAlt.name);
     this.addInputValidator(0, ArrayBuffer);
 
     this.setMetadata("debug", false);

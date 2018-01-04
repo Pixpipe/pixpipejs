@@ -37,6 +37,7 @@ class MniObjDecoder extends Decoder {
 
   constructor(){
     super();
+    this.setMetadata("targetType", Mesh3D.name);
     //this.addInputValidator(0, string);
     // Adding an input validator with the type string is not possible because
     // a string is not an "instanceof" String unless it is created by the String

@@ -22,6 +22,7 @@ class MghDecoder extends Decoder {
 
   constructor() {
     super();
+    this.setMetadata("targetType", MniVolume.name);
     this.addInputValidator(0, ArrayBuffer);
     this.setMetadata("debug", false);
   }

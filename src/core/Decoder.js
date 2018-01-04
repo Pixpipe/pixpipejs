@@ -11,6 +11,8 @@ import { Filter } from "../core/Filter.js";
 * convert a utf8 binary buffer into a utf8 string. This is usefull in case the
 * associated filetype is text based but the given buffer (of a valid file) is encoded
 * in a binary way.
+* The metadata `targetType` must be overwritten with a string matching one of the
+* Pixpipe type (e.g. "Image3DAlt");
 */
 class Decoder extends Filter {
 
@@ -26,6 +28,7 @@ class Decoder extends Filter {
 
   constructor(){
     super();
+    this.setMetadata("targetType", null);
   }
 
 
@@ -49,15 +52,16 @@ class Decoder extends Filter {
     var input = super._getInput( category );
     var isBinary = this._isBinary();
 
-    // the decoder expects a string and a string is given.
-    // --> success (nothing additional to do)
-    if( !isBinary && (typeof input === "string" ) ){
-      return input;
-    }
-
+    // (This case is the most common)
     // the decoder expects a binary buffer (ArrayBuffer) and an ArrayBuffer is given
     // --> success (nothing additional to do)
     if( isBinary && (input instanceof ArrayBuffer ) ){
+      return input;
+    }
+
+    // the decoder expects a string and a string is given.
+    // --> success (nothing additional to do)
+    if( !isBinary && (typeof input === "string" ) ){
       return input;
     }
 

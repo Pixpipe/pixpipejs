@@ -13,7 +13,6 @@ import { GenericDecoderInterface } from './GenericDecoderInterface.js';
 import { TiffDecoder } from './TiffDecoder.js';
 import { JpegDecoder } from './JpegDecoder.js';
 import { PngDecoder } from './PngDecoder.js';
-import { PixpDecoder } from './PixpDecoder.js';
 //import { PixBinDecoder } from './PixBinDecoder.js';
 
 
@@ -40,13 +39,12 @@ class Image2DGenericDecoder extends GenericDecoderInterface {
 
   constructor(){
     super();
+    this.setMetadata("enablePixBin", true);
 
     this._decoders = [
       TiffDecoder,
       JpegDecoder,
       PngDecoder,
-      PixpDecoder,
-      //PixBinDecoder
     ];
   }
 

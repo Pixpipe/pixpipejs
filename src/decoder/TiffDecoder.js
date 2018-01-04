@@ -26,6 +26,7 @@ import { Image2D } from '../core/Image2D.js';
 class TiffDecoder extends Decoder {
   constructor() {
     super();
+    this.setMetadata("targetType", Image2D.name);
     this.addInputValidator(0, ArrayBuffer);
   }
 

@@ -48,6 +48,7 @@ import { Image3DAlt } from '../core/Image3DAlt.js';
 class NiftiDecoderAlt extends Decoder {
   constructor(){
     super();
+    this.setMetadata("targetType", Image3DAlt.name);
     this.addInputValidator(0, ArrayBuffer);
   }
 

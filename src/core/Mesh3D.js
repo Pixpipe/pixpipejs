@@ -76,7 +76,7 @@ class Mesh3D extends PixpipeContainerMultiData {
       console.warn("The array of vertex positions has a non-multiple-of-three size.");
       return;
     }
-    this.setRawData( data, this._datasetNames.vertexPositions );
+    this.setData( data, this._datasetNames.vertexPositions );
   }
 
 
@@ -106,7 +106,7 @@ class Mesh3D extends PixpipeContainerMultiData {
       console.warn("The array of vertext positions must have a size that is a multiple of the metadata 'verticesPerShapes'.");
       return;
     }
-    this.setRawData( data, this._datasetNames.polygonFaces );
+    this.setData( data, this._datasetNames.polygonFaces );
   }
 
 
@@ -137,7 +137,7 @@ class Mesh3D extends PixpipeContainerMultiData {
       console.warn("The array of vertext positions must have a size that is a multiple of 3.");
       return;
     }
-    this.setRawData( data, this._datasetNames.polygonNormals );
+    this.setData( data, this._datasetNames.polygonNormals );
   }
 
 
@@ -168,7 +168,7 @@ class Mesh3D extends PixpipeContainerMultiData {
       console.warn("The array of vertext positions must have a size that is a multiple of the metadata 'componentsPerColor'.");
       return;
     }
-    this.setRawData( data, this._datasetNames.vertexColors );
+    this.setData( data, this._datasetNames.vertexColors );
   }
 
 

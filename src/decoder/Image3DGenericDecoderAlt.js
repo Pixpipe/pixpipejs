@@ -13,8 +13,6 @@ import { GenericDecoderInterface } from './GenericDecoderInterface.js';
 import { Minc2DecoderAlt } from './Minc2DecoderAlt.js';
 import { NiftiDecoderAlt } from './NiftiDecoderAlt.js';
 import { MghDecoderAlt } from './MghDecoderAlt.js';
-//import { PixpDecoder } from './PixpDecoder.js';
-//import { PixBinDecoder } from './PixBinDecoder.js';
 
 
 /**
@@ -40,13 +38,12 @@ class Image3DGenericDecoderAlt extends GenericDecoderInterface {
 
   constructor(){
     super();
+    this.setMetadata("enablePixBin", true);
 
     this._decoders = [
       Minc2DecoderAlt,
       NiftiDecoderAlt,
       MghDecoderAlt,
-      //PixpDecoder,
-      //PixBinDecoder
     ];
   }
 

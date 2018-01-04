@@ -10,7 +10,7 @@
 import { GenericDecoderInterface } from './GenericDecoderInterface.js';
 
 // decoders
-import { Minc2DecoderAlt } from './MniObjDecoder.js';
+import { MniObjDecoder } from './MniObjDecoder.js';
 
 
 /**
@@ -32,11 +32,12 @@ import { Minc2DecoderAlt } from './MniObjDecoder.js';
 * **Usage**
 * - [examples/fileToGenericMesh3D.html](../examples/fileToGenericMesh3D.html)
 */
-class Mesh3DGenericDecoder extends import { GenericDecoderInterface } from './GenericDecoderInterface.js'; {
+class Mesh3DGenericDecoder extends GenericDecoderInterface {
 
   constructor(){
     super();
-
+    this.setMetadata("enablePixBin", true);
+    
     this._decoders = [
       MniObjDecoder,
     ];
