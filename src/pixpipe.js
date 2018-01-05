@@ -82,6 +82,7 @@ export { LowPassFreqSignal1D } from './filter/LowPassFreqSignal1D.js';
 export { LowPassSignal1D } from './filter/LowPassSignal1D.js';
 export { HighPassSignal1D } from './filter/HighPassSignal1D.js';
 export { BandPassSignal1D } from './filter/BandPassSignal1D.js';
+export { Mesh3DToVolumetricHullFilter } from './filter/Mesh3DToVolumetricHullFilter.js';
 
 // helpers
 export { AngleToHueWheelHelper } from './helper/AngleToHueWheelHelper.js';

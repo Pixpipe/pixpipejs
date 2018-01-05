@@ -453,7 +453,7 @@
           var outputMosaic = mosaicFilter.getOutput(nbOut);
           console.log( outputMosaic );
           outputMosaic.setMetadata("min", mniVolume.getMinValue());
-          outputMosaic.setMetadata("max", mniVolume.getMaxValue());
+          outputMosaic.setMetadata("max", mniVolume.getMaxValue()*1.001);
 
           var data = outputMosaic.getDataAsUInt8Array();
           //var data = outputMosaic.getData();

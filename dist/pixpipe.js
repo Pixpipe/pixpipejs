@@ -15394,7 +15394,7 @@ class Image3DAlt extends PixpipeContainer{
 
   /**
   * [PRIVATE]
-  * initialize some defualt values for metadata
+  * initialize some default values for metadata
   */
   _initMetadata(){
     var metaStat = { upToDate: true, min: NaN, max: NaN };
@@ -15480,61 +15480,64 @@ class Image3DAlt extends PixpipeContainer{
 
         var dimensions = [
           {
-            length: xSize,
+            length: options.xSize,
             widthDimension: 1,
             heightDimension: 2,
             nameVoxelSpace: "k",
             nameWorldSpace: "x",
             worldUnitSize: 1,
-            stride: 1
+            stride: 1,
+            step: 1
           },
           {
-            length: ySize,
+            length: options.ySize,
             widthDimension: 0,
             heightDimension: 2,
             nameVoxelSpace: "j",
             nameWorldSpace: "y",
             worldUnitSize: 1,
-            stride: xSize
+            stride: options.xSize,
+            step: 1
           },
           {
-            length: zSize,
+            length: options.zSize,
             widthDimension: 0,
             heightDimension: 1,
             nameVoxelSpace: "i",
             nameWorldSpace: "z",
             worldUnitSize: 1,
-            stride: xSize * ySize
+            stride: options.xSize * options.ySize,
+            step: 1
           },
         ];
 
-        var bufferSize = xSize * ySize * zSize * this.getMetadata("ncpp");
+        var bufferSize = options.xSize * options.ySize * options.zSize * this.getMetadata("ncpp");
 
         // if we get time dimension info, let's add it too
         if( "tSize" in options ){
           var timeDim = {
-            length: tSize,
+            length: options.tSize,
             widthDimension: -1, // could remove
             heightDimension: -1,
-            nameVoxelSpace: "l",
-            worldSpaceName: "t",
-            worldUnitSize: "",
-            stride: xSize * ySize * zSize,
+            nameVoxelSpace: "t",
+            nameWorldSpace: "t",
+            worldUnitSize: 1,
+            stride: options.xSize * options.ySize * options.zSize,
             step: 1
           };
-          bufferSize *= tSize;
+          bufferSize *= options.tSize;
 
           dimensions.push( timeDim );
           this.setMetadata("dimensions", dimensions);
         }
-        
+
         // default transformations
         var transformations = {
           "v2w": this._get4x4IdentityMatrix(),
           "w2v": this._get4x4IdentityMatrix()
         };
         this.setMetadata("transformations", transformations);
-        
+
 
         // if a buffer is provided, we perform a size-check
         if( buffer ){
@@ -15570,6 +15573,16 @@ class Image3DAlt extends PixpipeContainer{
     }else{
       return false;
     }
+  }
+
+
+  /**
+  * Fills the data with a single numerical value
+  * @param {Number} value - value to use as a reset value (default: 0)
+  */
+  resetData( value=0 ){
+    if( this._data && (typeof value === "number") )
+      this._data.fill( value );
   }
 
 
@@ -15795,7 +15808,7 @@ class Image3DAlt extends PixpipeContainer{
     }
     return uint8Buff;
   }
-  
+
 
   /**
   * Does this volume has the given transform registered?
@@ -15805,7 +15818,7 @@ class Image3DAlt extends PixpipeContainer{
   hasTransform( transformName ){
     return (transformName in this._metadata.transformations);
   }
-  
+
 
   /**
   * [PRIVATE]
@@ -15870,13 +15883,13 @@ class Image3DAlt extends PixpipeContainer{
       j: transPosUnordered[ this._worldPositionOrder[1] ],
       k: transPosUnordered[ this._worldPositionOrder[0] ]
     };
-    
+
     if( round$$1 ){
         posOrdered.i = Math.round(posOrdered.i);
         posOrdered.j = Math.round(posOrdered.j);
         posOrdered.k = Math.round(posOrdered.k);
     }
-    
+
     return posOrdered;
   }
 
@@ -15895,27 +15908,27 @@ class Image3DAlt extends PixpipeContainer{
   * @return {Array} the 3x3 matrix in a 1D Array[9] arranged as column-major
   */
   getVoxelCoordinatesSwapMatrix( hflip=true, output4x4=false ){
-    
+
     var mat33 = new Array(9).fill(0);
     MatrixTricks.setValueMatrix33( mat33, 0, this._worldPositionOrder[0], 1 );
     MatrixTricks.setValueMatrix33( mat33, 1, this._worldPositionOrder[1], 1 );
     MatrixTricks.setValueMatrix33( mat33, 2, this._worldPositionOrder[2], 1 );
     var outputMat = mat33;
-    
+
     if( hflip ){
       var mat33Flipped = MatrixTricks.getHorizontalFlipMatrix33( mat33 );
       outputMat = mat33Flipped;
     }
-    
+
     if( output4x4 ){
       outputMat = MatrixTricks.getExpandedMatrix3x3To4x4( mat33Flipped );
       MatrixTricks.setValueMatrix33( outputMat, 3, 3, 1 );
     }
-    
+
     return outputMat
   }
-  
-  
+
+
   /**
   * Get a value from the dataset using {x, y, z} coordinates of a transformed space.
   * Keep in mind world (or subject) are floating point but voxel coordinates are integers.
@@ -16117,7 +16130,7 @@ class Image3DAlt extends PixpipeContainer{
   isInsideVoxelSpace( pos ){
     var dimensions = this._metadata.dimensions;
     var isInside = false;
-    
+
     try{
     isInside = !(pos.i < 0 || pos.i >= dimensions[2].length ||
                  pos.j < 0 || pos.j >= dimensions[1].length ||
@@ -16125,10 +16138,10 @@ class Image3DAlt extends PixpipeContainer{
     }catch(e){
       console.warn( e );
     }
-    return isInside;    
+    return isInside;
   }
 
-  
+
   /**
   * Is the given point in a transform coordinates system (world or subject) inside the dataset?
   * This is achieved by converting the transformed coordinates into voxel coordinates.
@@ -16163,7 +16176,7 @@ class Image3DAlt extends PixpipeContainer{
                                                 }
      return null if posFrom or posTo is outside
   */
-  getSegmentSampleVoxelSpace( posFrom, posTo, time = 0 ){ 
+  getSegmentSampleVoxelSpace( posFrom, posTo, time = 0 ){
     // both position must be inside the image
     //if( !this.isInsideVoxelSpace(posFrom) || !this.isInsideVoxelSpace(posTo) )
     //  return null;
@@ -16218,7 +16231,7 @@ class Image3DAlt extends PixpipeContainer{
 
   /**
   * Sample voxels along a segment in a transform coordinates system (world or subject).
-  * This is achieved by converting the transformed coordinates into voxel coordinates, 
+  * This is achieved by converting the transformed coordinates into voxel coordinates,
   * then samples are taken respecting a voxel unit rather than the transform unit so that
   * it is more fine.
   * @param {String} space2voxelTransformName - id of a registered transformation that goes from arbitrary space to voxel space (aka. "*2v")
@@ -16244,22 +16257,22 @@ class Image3DAlt extends PixpipeContainer{
                                                 }
      return null if posFrom or posTo is outside
   */
-  getSegmentSampleTransfoSpace( space2voxelTransformName, voxel2spaceTransformName, posFrom, posTo, time = 0 ){ 
+  getSegmentSampleTransfoSpace( space2voxelTransformName, voxel2spaceTransformName, posFrom, posTo, time = 0 ){
     if( !this.hasTransform(space2voxelTransformName) ){
       console.warn(`The transform ${space2voxelTransformName} is not available.`);
       return null;
     }
-    
+
     var posFromVoxel = this.getPositionFromTransfoSpaceToVoxelSpace( posFrom, space2voxelTransformName, false );
     var posToVoxel = this.getPositionFromTransfoSpaceToVoxelSpace( posTo, space2voxelTransformName, false );
-    
+
     console.log(`voxelFrom {${posFromVoxel.i}, ${posFromVoxel.j}, ${posFromVoxel.k}} voxelTo {${posToVoxel.i}, ${posToVoxel.j}, ${posToVoxel.k}}`);
-    
+
     var segmentSample = this.getSegmentSampleVoxelSpace( posFromVoxel, posToVoxel, time);
-    
+
     if(! segmentSample )
       return null;
-    
+
     // re-writing the coord in the given transform space
     for(var i=0; i<segmentSample.positions.length; i++){
       var voxelPos = segmentSample.positions[i];
@@ -16268,15 +16281,15 @@ class Image3DAlt extends PixpipeContainer{
       segmentSample.positions[i] = spacePos;
       segmentSample.labels[i] = "(" + Math.round(spacePos.x*100)/100 + ", " + Math.round(spacePos.y*100)/100 + ", " + Math.round(spacePos.z*100)/100 + ")";
     }
-    
+
     return segmentSample;
   }
-  
-  
+
+
   /**
   * Get the voxel box, min-max for each dimension. The max values are not included.
   * @return {Object} Box of shape {min: {i:Number, j:Number, k:Number, t:Number}, max: {i:Number, j:Number, k:Number, t:Number} }
-  */ 
+  */
   getVoxelBox(){
     return {
       min: {i:0, j:0, k:0, t:0},
@@ -16288,8 +16301,8 @@ class Image3DAlt extends PixpipeContainer{
       }
     }
   }
-  
-  
+
+
   /**
   * Get the corners of the volume in the given space coordinates
   * @param {String} transformName - id of a registered transformation that goes from voxel space to arbitrary space (aka. "v2*")
@@ -16300,7 +16313,7 @@ class Image3DAlt extends PixpipeContainer{
       console.warn(`The transform ${transformName} is not available.`);
       return null;
     }
-    
+
     var corners = [
       this.getPositionFromVoxelSpaceToTransfoSpace( {i:0, j:0, k:0}, transformName ),
       this.getPositionFromVoxelSpaceToTransfoSpace( {i:this.getDimensionSize("i")-1, j:0, k:0}, transformName ),
@@ -16313,8 +16326,8 @@ class Image3DAlt extends PixpipeContainer{
     ];
     return corners;
   }
-  
-  
+
+
   /**
   * Get the space box in a the given transform space coordinates. Due a possible rotation
   * involved in a affine transformation, the box will possibly have some void space on the sides.
@@ -16324,10 +16337,10 @@ class Image3DAlt extends PixpipeContainer{
   */
   getTransfoBox( transformName ){
     if( !this.hasTransform(space2voxelTransformName) ){
-      console.warn(`The transform ${transformName} is not available.`); 
+      console.warn(`The transform ${transformName} is not available.`);
       return null;
     }
-    
+
     var corners = this.getTransfoVolumeCorners();
     var min$$1 = {
       x: +Infinity,
@@ -16339,7 +16352,7 @@ class Image3DAlt extends PixpipeContainer{
       y: -Infinity,
       z: -Infinity
     };
-    
+
     for(var i=0; i<corners.length; i++){
       min$$1.x = Math.min( min$$1.x, corners[i].x );
       min$$1.y = Math.min( min$$1.y, corners[i].y );
@@ -16348,7 +16361,7 @@ class Image3DAlt extends PixpipeContainer{
       max$$1.y = Math.max( max$$1.y, corners[i].y );
       max$$1.z = Math.max( max$$1.z, corners[i].z );
     }
-    
+
     var spaceBox = {
       min: {
         x: min$$1.x,
@@ -16363,12 +16376,12 @@ class Image3DAlt extends PixpipeContainer{
         t: this.getDimensionSize("t")
       },
     };
-    
+
     return spaceBox;
   }
 
 
-  
+
 
 } /* END of class Image3DAlt */
 
@@ -17385,17 +17398,6 @@ class PixpipeContainerMultiData extends PixpipeContainer {
 * Lab       MCIN - Montreal Neurological Institute
 */
 
-/**
-* A Mesh3D object contains the necessary informations to create a 3D mesh
-* (for example using ThreeJS) and provide a generic datastructure so that it can accept
-* data from arbitrary mesh file format.
-*
-* **Usage**
-* - [examples/fileToMniObj.html](../examples/fileToMniObj.html)
-* - [examples/meshInsideOutside.html](../examples/meshInsideOutside.html)
-* - [examples/meshInsideOutsideCube.html](../examples/meshInsideOutsideCube.html)
-* - [examples/meshInsideOutsideSphere.html](../examples/meshInsideOutsideSphere.html)
-*/
 class Mesh3D extends PixpipeContainerMultiData {
 
   constructor(){
@@ -67041,6 +67043,181 @@ class BandPassSignal1D extends Filter {
 } /* END of class BandPassSignal1D */
 
 /*
+* Author    Jonathan Lurie - http://me.jonathanlurie.fr
+*
+* License   MIT
+* Link      https://github.com/Pixpipe/pixpipejs
+* Lab       MCIN - Montreal Neurological Institute
+*/
+
+
+/**
+* An instance of Mesh3DToVolumetricHullFilter creates a voxel based volume (Image3DAlt)
+* of a Mesh3D (input). The hull of the mesh is represnted by voxels in the output.
+*
+*/
+class Mesh3DToVolumetricHullFilter extends Filter {
+
+  constructor(){
+    super();
+    this.addInputValidator("mesh", Mesh3D);
+
+    // voxel value to use in the void space of the output volume
+    this.setMetadata("voidValue", 0);
+
+    // voxel value to use in the voxel representing the hull
+    this.setMetadata("hullValue", 254);
+
+    // with a resolutionStep of 1, a distance of 1 in the mesh will be 1 voxel
+    // with a resolutionStep of 2, a distance of 1 in the mesh will be 0.5 voxels
+    // with a resolutionStep of 0.5, a distance of 2 in the mesh will be 2 voxels.
+    // Notice: a mesh can (and will) have floating point vertex position and floating
+    // point ray intersection while a volume (Image3DAlt) has only integer voxel indices.
+    this.setMetadata("resolutionStep", 1);
+
+    // The margin is the distance around the mesh bouding box to include in the output volume.
+    // This distance is in the mesh coordinate, if `resolutionStep` is `0.5` and the margin is `1`
+    // then, `2` empty voxel will pad the output volume in every dimension and bound.
+    this.setMetadata("margin", 1);
+  }
+
+
+  _run(){
+    // the input checking
+    if( ! this.hasValidInput()){
+      console.warn("A filter of type Mesh3DToVolumetricHullFilter requires 1 input of category 'mesh' of type Mesh3D");
+      return;
+    }
+
+    var inputMesh = this._getInput("mesh");
+    var meshBox = inputMesh.getBox();
+
+    var resolutionStep = this.getMetadata("resolutionStep");
+    var resolutionStepInverse = 1. / resolutionStep;
+    var margin = this.getMetadata("margin");
+
+    // the original box enlarged by the margin at each end
+    var enlargedMeshBox = {
+      min: [ Math.floor(meshBox.min[0] - margin), Math.floor(meshBox.min[1] - margin), Math.floor(meshBox.min[2] - margin)],
+      max: [ Math.ceil(meshBox.max[0] + margin), Math.ceil(meshBox.max[1] + margin), Math.ceil(meshBox.max[2] + margin)]
+    };
+
+    var enlargedBoxSize = {
+      x: enlargedMeshBox.max[0] - enlargedMeshBox.min[0],
+      y: enlargedMeshBox.max[1] - enlargedMeshBox.min[1],
+      z: enlargedMeshBox.max[2] - enlargedMeshBox.min[2]
+    };
+
+    /*
+    // (Ok, let's not care about that for now)
+    // Look what is the smallest side of the box in term of area
+    // so that we reduce the number of ray to cast.
+    var xy = enlargedBoxSize.x * enlargedBoxSize.y;
+    var yz = enlargedBoxSize.y * enlargedBoxSize.z;
+    var xz = enlargedBoxSize.x * enlargedBoxSize.z;
+    */
+
+    // array of intersections as [ {x, y, z}, {x, y, z}, ...]
+    var intersections = [];
+
+    // on XY plane
+    var rayDirection = [0, 0, 1];
+    for(var x=enlargedMeshBox.min[0]; x<enlargedMeshBox.max[0]; x+=resolutionStep){
+      for(var y=enlargedMeshBox.min[1]; y<enlargedMeshBox.max[1]; y+=resolutionStep){
+        var rayOrigin = [x, y, 0];
+        var intersectionResult = inputMesh.intersectRay( rayOrigin, rayDirection );
+
+        for(var i=0; i<intersectionResult.length; i++){
+          intersections.push( intersectionResult[i].intersectionPoint );
+        }
+
+      }
+    }
+
+    // on YZ plane
+    rayDirection = [1, 0, 0];
+    for(var y=enlargedMeshBox.min[1]; y<enlargedMeshBox.max[1]; y+=resolutionStep){
+      for(var z=enlargedMeshBox.min[2]; z<enlargedMeshBox.max[2]; z+=resolutionStep){
+        var rayOrigin = [0, y, z];
+        var intersectionResult = inputMesh.intersectRay( rayOrigin, rayDirection );
+
+        for(var i=0; i<intersectionResult.length; i++){
+          intersections.push( intersectionResult[i].intersectionPoint );
+        }
+
+      }
+    }
+
+
+    // on XZ plane
+    rayDirection = [0, 1, 0];
+    for(var x=enlargedMeshBox.min[0]; x<enlargedMeshBox.max[0]; x+=resolutionStep){
+      for(var z=enlargedMeshBox.min[2]; z<enlargedMeshBox.max[2]; z+=resolutionStep){
+        var rayOrigin = [x, 0, z];
+        var intersectionResult = inputMesh.intersectRay( rayOrigin, rayDirection );
+
+        for(var i=0; i<intersectionResult.length; i++){
+          intersections.push( intersectionResult[i].intersectionPoint );
+        }
+
+      }
+    }
+
+
+
+
+
+    var outputImage = new Image3DAlt({
+      xSize: enlargedBoxSize.x * resolutionStepInverse,
+      ySize: enlargedBoxSize.y * resolutionStepInverse,
+      zSize: enlargedBoxSize.z * resolutionStepInverse,
+      tSize: 1,
+      ncpp: 1
+    });
+
+    var voidValue = this.getMetadata("voidValue");
+    var hullValue = this.getMetadata("hullValue");
+    outputImage.resetData( voidValue );
+
+    // beware, this matrix is expected to be column major but appear on screen like it's a row major
+    var v2w = [
+      1, 0, 0, 0,
+      0, 1, 0, 0,
+      0, 0, 1, 0,
+      0, 0, 0, 1
+    ];
+
+    // beware, this matrix is expected to be column major but appear on screen like it's a row major
+    var w2v = [
+      1, 0, 0, 0,
+      0, 1, 0, 0,
+      0, 0, 1, 0,
+      0, 0, 0, 1
+    ];
+
+    outputImage.addTransformation( v2w, "v2w" );
+    outputImage.addTransformation( w2v, "w2v" );
+
+    for(var i=0; i<intersections.length; i++){
+      var point = intersections[i];
+      var pointVolume = {
+        x: (point.x - enlargedMeshBox.min[0]) * resolutionStepInverse,
+        y: (point.y - enlargedMeshBox.min[1]) * resolutionStepInverse,
+        z: (point.z - enlargedMeshBox.min[2]) * resolutionStepInverse,
+      };
+
+      outputImage.setVoxel({i: Math.round(pointVolume.z), j: Math.round(pointVolume.y), k: Math.round(pointVolume.x)}, hullValue);
+    }
+
+
+    console.log( outputImage );
+    this._output[0] = outputImage;
+
+  }
+
+} /* END of class Mesh3DToVolumetricHullFilter */
+
+/*
 * Author   Jonathan Lurie - http://me.jonathanlurie.fr
 * License  MIT
 * Link      https://github.com/Pixpipe/pixpipejs
@@ -68059,6 +68236,7 @@ exports.LowPassFreqSignal1D = LowPassFreqSignal1D;
 exports.LowPassSignal1D = LowPassSignal1D;
 exports.HighPassSignal1D = HighPassSignal1D;
 exports.BandPassSignal1D = BandPassSignal1D;
+exports.Mesh3DToVolumetricHullFilter = Mesh3DToVolumetricHullFilter;
 exports.AngleToHueWheelHelper = AngleToHueWheelHelper;
 exports.LineStringPrinterOnImage2DHelper = LineStringPrinterOnImage2DHelper;
 exports.Colormap = Colormap;

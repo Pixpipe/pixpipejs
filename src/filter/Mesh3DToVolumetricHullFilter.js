@@ -26,7 +26,7 @@ class Mesh3DToVolumetricHullFilter extends Filter {
     this.setMetadata("voidValue", 0);
 
     // voxel value to use in the voxel representing the hull
-    this.setMetadata("hullValue", 1);
+    this.setMetadata("hullValue", 254);
 
     // with a resolutionStep of 1, a distance of 1 in the mesh will be 1 voxel
     // with a resolutionStep of 2, a distance of 1 in the mesh will be 0.5 voxels
@@ -58,8 +58,8 @@ class Mesh3DToVolumetricHullFilter extends Filter {
 
     // the original box enlarged by the margin at each end
     var enlargedMeshBox = {
-      min: [ meshBox.min[0] - margin, meshBox.min[1] - margin, meshBox.min[2] - margin],
-      max: [ meshBox.max[0] + margin, meshBox.max[1] + margin, meshBox.max[2] + margin]
+      min: [ Math.floor(meshBox.min[0] - margin), Math.floor(meshBox.min[1] - margin), Math.floor(meshBox.min[2] - margin)],
+      max: [ Math.ceil(meshBox.max[0] + margin), Math.ceil(meshBox.max[1] + margin), Math.ceil(meshBox.max[2] + margin)]
     }
 
     var enlargedBoxSize = {
@@ -79,8 +79,9 @@ class Mesh3DToVolumetricHullFilter extends Filter {
 
     // array of intersections as [ {x, y, z}, {x, y, z}, ...]
     var intersections = [];
-    var rayDirection = [0, 0, 1];
 
+    // on XY plane
+    var rayDirection = [0, 0, 1];
     for(var x=enlargedMeshBox.min[0]; x<enlargedMeshBox.max[0]; x+=resolutionStep){
       for(var y=enlargedMeshBox.min[1]; y<enlargedMeshBox.max[1]; y+=resolutionStep){
         var rayOrigin = [x, y, 0];
@@ -93,9 +94,84 @@ class Mesh3DToVolumetricHullFilter extends Filter {
       }
     }
 
-    
+    // on YZ plane
+    rayDirection = [1, 0, 0];
+    for(var y=enlargedMeshBox.min[1]; y<enlargedMeshBox.max[1]; y+=resolutionStep){
+      for(var z=enlargedMeshBox.min[2]; z<enlargedMeshBox.max[2]; z+=resolutionStep){
+        var rayOrigin = [0, y, z];
+        var intersectionResult = inputMesh.intersectRay( rayOrigin, rayDirection );
+
+        for(var i=0; i<intersectionResult.length; i++){
+          intersections.push( intersectionResult[i].intersectionPoint );
+        }
+
+      }
+    }
 
 
+    // on XZ plane
+    rayDirection = [0, 1, 0];
+    for(var x=enlargedMeshBox.min[0]; x<enlargedMeshBox.max[0]; x+=resolutionStep){
+      for(var z=enlargedMeshBox.min[2]; z<enlargedMeshBox.max[2]; z+=resolutionStep){
+        var rayOrigin = [x, 0, z];
+        var intersectionResult = inputMesh.intersectRay( rayOrigin, rayDirection );
+
+        for(var i=0; i<intersectionResult.length; i++){
+          intersections.push( intersectionResult[i].intersectionPoint );
+        }
+
+      }
+    }
+
+
+
+
+
+    var outputImage = new Image3DAlt({
+      xSize: enlargedBoxSize.x * resolutionStepInverse,
+      ySize: enlargedBoxSize.y * resolutionStepInverse,
+      zSize: enlargedBoxSize.z * resolutionStepInverse,
+      tSize: 1,
+      ncpp: 1
+    })
+
+    var voidValue = this.getMetadata("voidValue");
+    var hullValue = this.getMetadata("hullValue");
+    outputImage.resetData( voidValue )
+
+    // beware, this matrix is expected to be column major but appear on screen like it's a row major
+    var v2w = [
+      1, 0, 0, 0,
+      0, 1, 0, 0,
+      0, 0, 1, 0,
+      0, 0, 0, 1
+    ];
+
+    // beware, this matrix is expected to be column major but appear on screen like it's a row major
+    var w2v = [
+      1, 0, 0, 0,
+      0, 1, 0, 0,
+      0, 0, 1, 0,
+      0, 0, 0, 1
+    ];
+
+    outputImage.addTransformation( v2w, "v2w" );
+    outputImage.addTransformation( w2v, "w2v" );
+
+    for(var i=0; i<intersections.length; i++){
+      var point = intersections[i];
+      var pointVolume = {
+        x: (point.x - enlargedMeshBox.min[0]) * resolutionStepInverse,
+        y: (point.y - enlargedMeshBox.min[1]) * resolutionStepInverse,
+        z: (point.z - enlargedMeshBox.min[2]) * resolutionStepInverse,
+      }
+
+      outputImage.setVoxel({i: Math.round(pointVolume.z), j: Math.round(pointVolume.y), k: Math.round(pointVolume.x)}, hullValue);
+    }
+
+
+    console.log( outputImage );
+    this._output[0] = outputImage;
 
   }
 
