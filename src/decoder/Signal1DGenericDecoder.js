@@ -29,7 +29,7 @@ import { EdfDecoder } from './EdfDecoder.js';
 * Developers: if a new 2D dataset decoder is added, reference it here and in the import list
 *
 * **Usage**
-* - [examples/fileToGenericImage2D.html](../examples/fileToGenericImage2D.html)
+* - [examples/fileToGenericSignal1D.html](../examples/fileToGenericSignal1D.html)
 */
 class Signal1DGenericDecoder extends GenericDecoderInterface {
 
