@@ -30,7 +30,7 @@ class Mesh3DToVolumetricHullFilter extends Filter {
 
     // with a resolutionStep of 1, a distance of 1 in the mesh will be 1 voxel
     // with a resolutionStep of 2, a distance of 1 in the mesh will be 0.5 voxels
-    // with a resolutionStep of 0.5, a distance of 2 in the mesh will be 2 voxels.
+    // with a resolutionStep of 0.5, a distance of 1 in the mesh will be 2 voxels.
     // Notice: a mesh can (and will) have floating point vertex position and floating
     // point ray intersection while a volume (Image3DAlt) has only integer voxel indices.
     this.setMetadata("resolutionStep", 1);
@@ -141,22 +141,28 @@ class Mesh3DToVolumetricHullFilter extends Filter {
 
     // beware, this matrix is expected to be column major but appear on screen like it's a row major
     var v2w = [
-      1, 0, 0, 0,
-      0, 1, 0, 0,
-      0, 0, 1, 0,
-      0, 0, 0, 1
+      resolutionStep, 0, 0, 0,
+      0, resolutionStep, 0, 0,
+      0, 0, resolutionStep, 0,
+      enlargedMeshBox.min[0], enlargedMeshBox.min[1], enlargedMeshBox.min[2], 1
     ];
 
     // beware, this matrix is expected to be column major but appear on screen like it's a row major
     var w2v = [
-      1, 0, 0, 0,
-      0, 1, 0, 0,
-      0, 0, 1, 0,
-      0, 0, 0, 1
+      resolutionStepInverse, 0, 0, 0,
+      0, resolutionStepInverse, 0, 0,
+      0, 0, resolutionStepInverse, 0,
+      -enlargedMeshBox.min[0]*resolutionStepInverse, -enlargedMeshBox.min[1]*resolutionStepInverse, -enlargedMeshBox.min[2]*resolutionStepInverse, 1
     ];
 
     outputImage.addTransformation( v2w, "v2w" );
     outputImage.addTransformation( w2v, "w2v" );
+
+    // updating the step metadata
+    var dims = outputImage.getMetadata("dimensions");
+    dims[0].step = dims[0].worldStep = dims[0].worldUnitSize = resolutionStep;
+    dims[1].step = dims[1].worldStep = dims[1].worldUnitSize = resolutionStep;
+    dims[2].step = dims[2].worldStep = dims[2].worldUnitSize = resolutionStep;
 
     for(var i=0; i<intersections.length; i++){
       var point = intersections[i];
@@ -169,10 +175,7 @@ class Mesh3DToVolumetricHullFilter extends Filter {
       outputImage.setVoxel({i: Math.round(pointVolume.z), j: Math.round(pointVolume.y), k: Math.round(pointVolume.x)}, hullValue);
     }
 
-
-    console.log( outputImage );
     this._output[0] = outputImage;
-
   }
 
 } /* END of class Mesh3DToVolumetricHullFilter */

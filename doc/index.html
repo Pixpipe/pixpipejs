@@ -318,6 +318,11 @@
                   isInsideVoxelSpace
                 </a>
                 <a
+                  href='#Image3DAlt.resetData'
+                  class='regular block'>
+                  resetData
+                </a>
+                <a
                   href='#Image3DAlt.scanDataRange'
                   class='regular block'>
                   scanDataRange
@@ -1033,9 +1038,9 @@
                   buildTriangleList
                 </a>
                 <a
-                  href='#Mesh3D.buildTriangleList_ORIG'
+                  href='#Mesh3D.buildTriangleList'
                   class='regular block'>
-                  buildTriangleList_ORIG
+                  buildTriangleList
                 </a>
                 <a
                   href='#Mesh3D.getBox'
@@ -2118,6 +2123,11 @@
                 Mesh3DGenericDecoder
               </a>
               <a
+                href='#Mesh3DToVolumetricHullFilter'
+                class='block bold h3 bg-pink-alpha'>
+                Mesh3DToVolumetricHullFilter
+              </a>
+              <a
                 href='#MghDecoder'
                 class='block bold h3 bg-pink-alpha'>
                 MghDecoder
@@ -3077,7 +3087,7 @@ Called from the constructor or the setData method</p>
             </code>
             <div class='force-inline'>
               <p>[PRIVATE]
-initialize some defualt values for metadata</p>
+initialize some default values for metadata</p>
 
             </div>
           </a>
@@ -3087,7 +3097,7 @@ initialize some defualt values for metadata</p>
     _initMetadata<span class='gray'></span>
   </h2>
   <p>[PRIVATE]
-initialize some defualt values for metadata</p>
+initialize some default values for metadata</p>
 
 </section>
           </div>
@@ -4280,6 +4290,36 @@ where i is along the slowest varying dimension and k is along the fastest.</p>
         <p>true if inside, false if outside</p>
 
       </div>
+</section>
+          </div>
+        </div>
+        <div class='collapsible' id='Image3DAlt.resetData'>
+          <a href='#Image3DAlt.resetData'>
+            <code>
+              resetData<span class='gray'>(value)</span>
+            </code>
+            <div class='force-inline'>
+              <p>Fills the data with a single numerical value</p>
+
+            </div>
+          </a>
+          <div class='collapser border px2'>
+<section class='py2 clearfix'>
+  <h2 id='Image3DAlt.resetData' class='mt0'>
+    resetData<span class='gray'>(value)</span>
+  </h2>
+  <p>Fills the data with a single numerical value</p>
+
+    <h4>Parameters</h4>
+    <ul class='suppress-p-margin'>
+        <li><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">Number</a></code> <strong>value</strong>
+          :
+          <div class='force-inline'>
+            <p>value to use as a reset value (default: 0)</p>
+
+          </div>
+        </li>
+    </ul>
 </section>
           </div>
         </div>
@@ -8668,10 +8708,10 @@ Stores it in this._aabb</p>
 </section>
           </div>
         </div>
-        <div class='collapsible' id='Mesh3D.buildTriangleList_ORIG'>
-          <a href='#Mesh3D.buildTriangleList_ORIG'>
+        <div class='collapsible' id='Mesh3D.buildTriangleList'>
+          <a href='#Mesh3D.buildTriangleList'>
             <code>
-              buildTriangleList_ORIG<span class='gray'></span>
+              buildTriangleList<span class='gray'></span>
             </code>
             <div class='force-inline'>
               <p>Build the list of triangles</p>
@@ -8680,8 +8720,8 @@ Stores it in this._aabb</p>
           </a>
           <div class='collapser border px2'>
 <section class='py2 clearfix'>
-  <h2 id='Mesh3D.buildTriangleList_ORIG' class='mt0'>
-    buildTriangleList_ORIG<span class='gray'></span>
+  <h2 id='Mesh3D.buildTriangleList' class='mt0'>
+    buildTriangleList<span class='gray'></span>
   </h2>
   <p>Build the list of triangles</p>
 
@@ -8694,7 +8734,7 @@ Stores it in this._aabb</p>
               getBox<span class='gray'></span>
             </code>
             <div class='force-inline'>
-              <p>Get the bounding box of the mesh</p>
+              <p>Get the bounding box of the mesh (notice: this is a reference to the attribute)</p>
 
             </div>
           </a>
@@ -8703,7 +8743,7 @@ Stores it in this._aabb</p>
   <h2 id='Mesh3D.getBox' class='mt0'>
     getBox<span class='gray'></span>
   </h2>
-  <p>Get the bounding box of the mesh</p>
+  <p>Get the bounding box of the mesh (notice: this is a reference to the attribute)</p>
 
       <h4>Returns</h4>
       <code><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a></code></code>
@@ -15432,6 +15472,14 @@ this filter will not have any output.</p>
 
 </section>
 </div><div class='py1'><section class='py2 clearfix'>
+  <h2 id='Mesh3DToVolumetricHullFilter' class='mt0'>
+    Mesh3DToVolumetricHullFilter<span class='gray'></span>
+  </h2>
+  <p>An instance of Mesh3DToVolumetricHullFilter creates a voxel based volume (Image3DAlt)
+of a Mesh3D (input). The hull of the mesh is represnted by voxels in the output.</p>
+
+</section>
+</div><div class='py1'><section class='py2 clearfix'>
   <h2 id='MghDecoder' class='mt0'>
     MghDecoder<span class='gray'></span>
   </h2>
@@ -15586,7 +15634,7 @@ this filter will not have any output.</p>
 <p>Developers: if a new 2D dataset decoder is added, reference it here and in the import list</p>
 <p><strong>Usage</strong></p>
 <ul>
-<li><a href="../examples/fileToGenericImage2D.html">examples/fileToGenericImage2D.html</a></li>
+<li><a href="../examples/fileToGenericSignal1D.html">examples/fileToGenericSignal1D.html</a></li>
 </ul>
 
 </section>

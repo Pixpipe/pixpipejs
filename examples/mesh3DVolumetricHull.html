@@ -50,12 +50,14 @@
 
       if(mesh){
         var m2vh = new pixpipe.Mesh3DToVolumetricHullFilter();
+        m2vh.setMetadata("resolutionStep", 0.5);
         m2vh.addInput( mesh, "mesh" );
         m2vh.update();
 
         var volumetricHull = m2vh.getOutput();
 
         if( volumetricHull ){
+          console.log( volumetricHull );
           encodeAndDownload( volumetricHull );
         }
       }else{

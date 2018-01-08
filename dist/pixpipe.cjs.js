@@ -16376,7 +16376,7 @@ var Image3DAlt = function (_PixpipeContainer) {
 
     /**
     * [PRIVATE]
-    * initialize some defualt values for metadata
+    * initialize some default values for metadata
     */
 
   }, {
@@ -16470,46 +16470,49 @@ var Image3DAlt = function (_PixpipeContainer) {
         if ("xSize" in options && "ySize" in options && "zSize" in options) {
 
           var dimensions = [{
-            length: xSize,
+            length: options.xSize,
             widthDimension: 1,
             heightDimension: 2,
             nameVoxelSpace: "k",
             nameWorldSpace: "x",
             worldUnitSize: 1,
-            stride: 1
+            stride: 1,
+            step: 1
           }, {
-            length: ySize,
+            length: options.ySize,
             widthDimension: 0,
             heightDimension: 2,
             nameVoxelSpace: "j",
             nameWorldSpace: "y",
             worldUnitSize: 1,
-            stride: xSize
+            stride: options.xSize,
+            step: 1
           }, {
-            length: zSize,
+            length: options.zSize,
             widthDimension: 0,
             heightDimension: 1,
             nameVoxelSpace: "i",
             nameWorldSpace: "z",
             worldUnitSize: 1,
-            stride: xSize * ySize
+            stride: options.xSize * options.ySize,
+            step: 1
           }];
 
-          var bufferSize = xSize * ySize * zSize * this.getMetadata("ncpp");
+          var bufferSize = options.xSize * options.ySize * options.zSize * this.getMetadata("ncpp");
 
           // if we get time dimension info, let's add it too
           if ("tSize" in options) {
             var timeDim = {
-              length: tSize,
+              length: options.tSize,
               widthDimension: -1, // could remove
               heightDimension: -1,
-              nameVoxelSpace: "l",
-              worldSpaceName: "t",
-              worldUnitSize: "",
-              stride: xSize * ySize * zSize,
+              nameVoxelSpace: "t",
+              nameWorldSpace: "t",
+              worldUnitSize: 1,
+              stride: options.xSize * options.ySize * options.zSize,
               step: 1
             };
-            bufferSize *= tSize;
+            bufferSize *= options.tSize;
 
             dimensions.push(timeDim);
             this.setMetadata("dimensions", dimensions);
@@ -16555,6 +16558,19 @@ var Image3DAlt = function (_PixpipeContainer) {
       } else {
         return false;
       }
+    }
+
+    /**
+    * Fills the data with a single numerical value
+    * @param {Number} value - value to use as a reset value (default: 0)
+    */
+
+  }, {
+    key: 'resetData',
+    value: function resetData() {
+      var value = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 0;
+
+      if (this._data && typeof value === "number") this._data.fill(value);
     }
 
     /**
@@ -16666,7 +16682,7 @@ var Image3DAlt = function (_PixpipeContainer) {
       var j = position.j;
       var k = position.k;
 
-      if (i < 0 || j < 0 || k < 0 || time < 0 || i >= dimensions[0].length || j >= dimensions[1].length || k >= dimensions[2].length || dimensions.length > 3 && time >= dimensions[3].length) {
+      if (i < 0 || j < 0 || k < 0 || time < 0 || i >= dimensions[2].length || j >= dimensions[1].length || k >= dimensions[0].length || dimensions.length > 3 && time >= dimensions[3].length) {
         console.warn("Voxel query is out of bound.");
         return null;
       }
@@ -17248,7 +17264,7 @@ var Image3DAlt = function (_PixpipeContainer) {
 
     /**
     * Sample voxels along a segment in a transform coordinates system (world or subject).
-    * This is achieved by converting the transformed coordinates into voxel coordinates, 
+    * This is achieved by converting the transformed coordinates into voxel coordinates,
     * then samples are taken respecting a voxel unit rather than the transform unit so that
     * it is more fine.
     * @param {String} space2voxelTransformName - id of a registered transformation that goes from arbitrary space to voxel space (aka. "*2v")
@@ -18697,7 +18713,7 @@ var Mesh3D = function (_PixpipeContainerMult) {
     }
 
     /**
-    * Get the bounding box of the mesh
+    * Get the bounding box of the mesh (notice: this is a reference to the attribute)
     * @return {Object} the box as {min: [x, y, z], max: [x, y, z]}
     */
 
@@ -18729,22 +18745,24 @@ var Mesh3D = function (_PixpipeContainerMult) {
     /**
     * Build the list of triangles
     */
+    // buildTriangleList_ORIG(){
+    //   var vertices = this.getVertexPositions();
+    //   var faces = this.getPolygonFacesOrder();
+    //   this._triangleList = new Array( faces.length / 3 );
+    //   var counter = 0;
+    //
+    //   for(var i=0; i<faces.length; i+=3){
+    //     var tgl = [
+    //       {x: vertices[ faces[ i ] * 3 ], y: vertices[faces[ i ] * 3 +1], z: vertices[faces[ i ] * 3 +2]},
+    //       {x: vertices[ faces[ i+1 ] * 3 ], y: vertices[faces[ i+1 ] * 3 +1], z: vertices[faces[ i+1 ] * 3 +2]},
+    //       {x: vertices[ faces[ i+2 ] * 3 ], y: vertices[faces[ i+2 ] * 3 +1], z: vertices[faces[ i+2 ] * 3 +2]}
+    //     ]
+    //
+    //     this._triangleList[ counter ] = tgl;
+    //     counter++;
+    //   }
+    // }
 
-  }, {
-    key: 'buildTriangleList_ORIG',
-    value: function buildTriangleList_ORIG() {
-      var vertices = this.getVertexPositions();
-      var faces = this.getPolygonFacesOrder();
-      this._triangleList = new Array(faces.length / 3);
-      var counter = 0;
-
-      for (var i = 0; i < faces.length; i += 3) {
-        var tgl = [{ x: vertices[faces[i] * 3], y: vertices[faces[i] * 3 + 1], z: vertices[faces[i] * 3 + 2] }, { x: vertices[faces[i + 1] * 3], y: vertices[faces[i + 1] * 3 + 1], z: vertices[faces[i + 1] * 3 + 2] }, { x: vertices[faces[i + 2] * 3], y: vertices[faces[i + 2] * 3 + 1], z: vertices[faces[i + 2] * 3 + 2] }];
-
-        this._triangleList[counter] = tgl;
-        counter++;
-      }
-    }
 
     /**
     * Build the list of triangles
@@ -62345,7 +62363,7 @@ var Mesh3DGenericDecoder = function (_GenericDecoderInterf) {
 * Developers: if a new 2D dataset decoder is added, reference it here and in the import list
 *
 * **Usage**
-* - [examples/fileToGenericImage2D.html](../examples/fileToGenericImage2D.html)
+* - [examples/fileToGenericSignal1D.html](../examples/fileToGenericSignal1D.html)
 */
 
 var Signal1DGenericDecoder = function (_GenericDecoderInterf) {
@@ -69571,6 +69589,172 @@ var BandPassSignal1D = function (_Filter) {
 }(Filter); /* END of class BandPassSignal1D */
 
 /*
+* Author    Jonathan Lurie - http://me.jonathanlurie.fr
+*
+* License   MIT
+* Link      https://github.com/Pixpipe/pixpipejs
+* Lab       MCIN - Montreal Neurological Institute
+*/
+
+/**
+* An instance of Mesh3DToVolumetricHullFilter creates a voxel based volume (Image3DAlt)
+* of a Mesh3D (input). The hull of the mesh is represnted by voxels in the output.
+*
+*/
+
+var Mesh3DToVolumetricHullFilter = function (_Filter) {
+  inherits(Mesh3DToVolumetricHullFilter, _Filter);
+
+  function Mesh3DToVolumetricHullFilter() {
+    classCallCheck(this, Mesh3DToVolumetricHullFilter);
+
+    var _this = possibleConstructorReturn(this, (Mesh3DToVolumetricHullFilter.__proto__ || Object.getPrototypeOf(Mesh3DToVolumetricHullFilter)).call(this));
+
+    _this.addInputValidator("mesh", Mesh3D);
+
+    // voxel value to use in the void space of the output volume
+    _this.setMetadata("voidValue", 0);
+
+    // voxel value to use in the voxel representing the hull
+    _this.setMetadata("hullValue", 254);
+
+    // with a resolutionStep of 1, a distance of 1 in the mesh will be 1 voxel
+    // with a resolutionStep of 2, a distance of 1 in the mesh will be 0.5 voxels
+    // with a resolutionStep of 0.5, a distance of 1 in the mesh will be 2 voxels.
+    // Notice: a mesh can (and will) have floating point vertex position and floating
+    // point ray intersection while a volume (Image3DAlt) has only integer voxel indices.
+    _this.setMetadata("resolutionStep", 1);
+
+    // The margin is the distance around the mesh bouding box to include in the output volume.
+    // This distance is in the mesh coordinate, if `resolutionStep` is `0.5` and the margin is `1`
+    // then, `2` empty voxel will pad the output volume in every dimension and bound.
+    _this.setMetadata("margin", 1);
+    return _this;
+  }
+
+  createClass(Mesh3DToVolumetricHullFilter, [{
+    key: '_run',
+    value: function _run() {
+      // the input checking
+      if (!this.hasValidInput()) {
+        console.warn("A filter of type Mesh3DToVolumetricHullFilter requires 1 input of category 'mesh' of type Mesh3D");
+        return;
+      }
+
+      var inputMesh = this._getInput("mesh");
+      var meshBox = inputMesh.getBox();
+
+      var resolutionStep = this.getMetadata("resolutionStep");
+      var resolutionStepInverse = 1. / resolutionStep;
+      var margin = this.getMetadata("margin");
+
+      // the original box enlarged by the margin at each end
+      var enlargedMeshBox = {
+        min: [Math.floor(meshBox.min[0] - margin), Math.floor(meshBox.min[1] - margin), Math.floor(meshBox.min[2] - margin)],
+        max: [Math.ceil(meshBox.max[0] + margin), Math.ceil(meshBox.max[1] + margin), Math.ceil(meshBox.max[2] + margin)]
+      };
+
+      var enlargedBoxSize = {
+        x: enlargedMeshBox.max[0] - enlargedMeshBox.min[0],
+        y: enlargedMeshBox.max[1] - enlargedMeshBox.min[1],
+        z: enlargedMeshBox.max[2] - enlargedMeshBox.min[2]
+
+        /*
+        // (Ok, let's not care about that for now)
+        // Look what is the smallest side of the box in term of area
+        // so that we reduce the number of ray to cast.
+        var xy = enlargedBoxSize.x * enlargedBoxSize.y;
+        var yz = enlargedBoxSize.y * enlargedBoxSize.z;
+        var xz = enlargedBoxSize.x * enlargedBoxSize.z;
+        */
+
+        // array of intersections as [ {x, y, z}, {x, y, z}, ...]
+      };var intersections = [];
+
+      // on XY plane
+      var rayDirection = [0, 0, 1];
+      for (var x = enlargedMeshBox.min[0]; x < enlargedMeshBox.max[0]; x += resolutionStep) {
+        for (var y = enlargedMeshBox.min[1]; y < enlargedMeshBox.max[1]; y += resolutionStep) {
+          var rayOrigin = [x, y, 0];
+          var intersectionResult = inputMesh.intersectRay(rayOrigin, rayDirection);
+
+          for (var i = 0; i < intersectionResult.length; i++) {
+            intersections.push(intersectionResult[i].intersectionPoint);
+          }
+        }
+      }
+
+      // on YZ plane
+      rayDirection = [1, 0, 0];
+      for (var y = enlargedMeshBox.min[1]; y < enlargedMeshBox.max[1]; y += resolutionStep) {
+        for (var z = enlargedMeshBox.min[2]; z < enlargedMeshBox.max[2]; z += resolutionStep) {
+          var rayOrigin = [0, y, z];
+          var intersectionResult = inputMesh.intersectRay(rayOrigin, rayDirection);
+
+          for (var i = 0; i < intersectionResult.length; i++) {
+            intersections.push(intersectionResult[i].intersectionPoint);
+          }
+        }
+      }
+
+      // on XZ plane
+      rayDirection = [0, 1, 0];
+      for (var x = enlargedMeshBox.min[0]; x < enlargedMeshBox.max[0]; x += resolutionStep) {
+        for (var z = enlargedMeshBox.min[2]; z < enlargedMeshBox.max[2]; z += resolutionStep) {
+          var rayOrigin = [x, 0, z];
+          var intersectionResult = inputMesh.intersectRay(rayOrigin, rayDirection);
+
+          for (var i = 0; i < intersectionResult.length; i++) {
+            intersections.push(intersectionResult[i].intersectionPoint);
+          }
+        }
+      }
+
+      var outputImage = new Image3DAlt({
+        xSize: enlargedBoxSize.x * resolutionStepInverse,
+        ySize: enlargedBoxSize.y * resolutionStepInverse,
+        zSize: enlargedBoxSize.z * resolutionStepInverse,
+        tSize: 1,
+        ncpp: 1
+      });
+
+      var voidValue = this.getMetadata("voidValue");
+      var hullValue = this.getMetadata("hullValue");
+      outputImage.resetData(voidValue);
+
+      // beware, this matrix is expected to be column major but appear on screen like it's a row major
+      var v2w = [resolutionStep, 0, 0, 0, 0, resolutionStep, 0, 0, 0, 0, resolutionStep, 0, enlargedMeshBox.min[0], enlargedMeshBox.min[1], enlargedMeshBox.min[2], 1];
+
+      // beware, this matrix is expected to be column major but appear on screen like it's a row major
+      var w2v = [resolutionStepInverse, 0, 0, 0, 0, resolutionStepInverse, 0, 0, 0, 0, resolutionStepInverse, 0, -enlargedMeshBox.min[0] * resolutionStepInverse, -enlargedMeshBox.min[1] * resolutionStepInverse, -enlargedMeshBox.min[2] * resolutionStepInverse, 1];
+
+      outputImage.addTransformation(v2w, "v2w");
+      outputImage.addTransformation(w2v, "w2v");
+
+      // updating the step metadata
+      var dims = outputImage.getMetadata("dimensions");
+      dims[0].step = dims[0].worldStep = dims[0].worldUnitSize = resolutionStep;
+      dims[1].step = dims[1].worldStep = dims[1].worldUnitSize = resolutionStep;
+      dims[2].step = dims[2].worldStep = dims[2].worldUnitSize = resolutionStep;
+
+      for (var i = 0; i < intersections.length; i++) {
+        var point = intersections[i];
+        var pointVolume = {
+          x: (point.x - enlargedMeshBox.min[0]) * resolutionStepInverse,
+          y: (point.y - enlargedMeshBox.min[1]) * resolutionStepInverse,
+          z: (point.z - enlargedMeshBox.min[2]) * resolutionStepInverse
+        };
+
+        outputImage.setVoxel({ i: Math.round(pointVolume.z), j: Math.round(pointVolume.y), k: Math.round(pointVolume.x) }, hullValue);
+      }
+
+      this._output[0] = outputImage;
+    }
+  }]);
+  return Mesh3DToVolumetricHullFilter;
+}(Filter); /* END of class Mesh3DToVolumetricHullFilter */
+
+/*
 * Author   Jonathan Lurie - http://me.jonathanlurie.fr
 * License  MIT
 * Link      https://github.com/Pixpipe/pixpipejs
@@ -70715,6 +70899,7 @@ exports.LowPassFreqSignal1D = LowPassFreqSignal1D;
 exports.LowPassSignal1D = LowPassSignal1D;
 exports.HighPassSignal1D = HighPassSignal1D;
 exports.BandPassSignal1D = BandPassSignal1D;
+exports.Mesh3DToVolumetricHullFilter = Mesh3DToVolumetricHullFilter;
 exports.AngleToHueWheelHelper = AngleToHueWheelHelper;
 exports.LineStringPrinterOnImage2DHelper = LineStringPrinterOnImage2DHelper;
 exports.Colormap = Colormap;

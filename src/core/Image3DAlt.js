@@ -469,9 +469,9 @@ class Image3DAlt extends PixpipeContainer{
     var k = position.k;
 
     if(i<0 || j<0 || k<0 || time<0 ||
-       i>=dimensions[0].length  ||
+       i>=dimensions[2].length  ||
        j>=dimensions[1].length  ||
-       k>=dimensions[2].length  ||
+       k>=dimensions[0].length  ||
        ( dimensions.length>3 && time>=dimensions[3].length) )
     {
       console.warn("Voxel query is out of bound.");
