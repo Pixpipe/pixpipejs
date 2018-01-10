@@ -1,11 +1,12 @@
-import { Filter } from '../core/Filter.js';
+import { Decoder } from '../core/Decoder.js';
 import { QeegModFileParser } from 'qeegmodfile';
 
 
-class EegModDecoder extends Filter {
+class EegModDecoder extends Decoder {
 
   constructor() {
     super();
+    //this.setMetadata("targetType", Signal1D.constructor.name); // not determined yet if it will take place in a Signal1D
     this.addInputValidator(0, ArrayBuffer);
     this.setMetadata("debug", false);
 

@@ -9,7 +9,7 @@
 
 //import pngjs from 'pngjs'; // ependency issues
 import upng from 'upng-js'; // does not halt when wrong format + additional line!
-import { Filter } from '../core/Filter.js';
+import { Decoder } from '../core/Decoder.js';
 import { Image2D } from '../core/Image2D.js';
 
 
@@ -21,12 +21,13 @@ import { Image2D } from '../core/Image2D.js';
 * **Usage**
 * - [examples/fileToPng.html](../examples/fileToPng.html)
 */
-class PngDecoder extends Filter {
+class PngDecoder extends Decoder {
   constructor() {
     super();
+    this.setMetadata("targetType", Image2D.name);
     this.addInputValidator(0, ArrayBuffer);
   }
-  
+
   _run(){
     var inputBuffer = this._getInput(0);
 
@@ -34,12 +35,12 @@ class PngDecoder extends Filter {
       console.warn("PngDecoder requires an ArrayBuffer as input \"0\". Unable to continue.");
       return;
     }
-    
+
     if( !this._isPng( inputBuffer ) ){
       console.warn("This is not a PNG file, unable to decode this file.");
       return;
     }
-    
+
     // The decode method uses Pako to uncompress the data. Pako outputs a larger array
     // than the expected size, so we have to cut it - It seems a bit cumbersome or being
     // kindof manual work, but it's 2x faster than using upng.toRGBA8()
@@ -53,10 +54,10 @@ class PngDecoder extends Filter {
     }catch(e){
       console.warn(e);
     }
-    
+
   }
-  
-  
+
+
   /**
   * Checks if the input buffer is of a png file
   * @param {ArrayBuffer} buffer - an array buffer inside which a PNG could be hiding!
@@ -65,16 +66,16 @@ class PngDecoder extends Filter {
   _isPng( buffer ){
     var first8Bytes = new Uint8Array( buffer, 0, 8);
     var validSequence = new Uint8Array( [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a])
-    
+
     for(var i=0; i<first8Bytes.length; i++){
       if(first8Bytes[i] != validSequence[i])
         return false;
     }
-    
+
     return true;
   }
-  
-  
+
+
 } /* PngDecoder */
 
 export { PngDecoder }

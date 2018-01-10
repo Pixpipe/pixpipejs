@@ -8,12 +8,8 @@
 
 
 import { GenericDecoderInterface } from './GenericDecoderInterface.js';
-
 // decoders
-import { TiffDecoder } from './TiffDecoder.js';
-import { JpegDecoder } from './JpegDecoder.js';
-import { PngDecoder } from './PngDecoder.js';
-//import { PixBinDecoder } from './PixBinDecoder.js';
+import { EdfDecoder } from './EdfDecoder.js';
 
 
 /**
@@ -21,8 +17,8 @@ import { PngDecoder } from './PngDecoder.js';
 * successive decoding logic. For this reason this filter does not need to have the
 * `_run` method to be reimplemented.
 *
-* An instance of Image2DGenericDecoder takes a ArrayBuffer
-* as input 0 (`.addInput(myArrayBuffer)`) and output an Image2D.
+* An instance of Signal1DGenericDecoder takes a ArrayBuffer
+* as input 0 (`.addInput(myArrayBuffer)`) and output an Signal1D.
 * The `update` method will perform several decoding attempts, using the readers
 * specified in the constructor.
 * In case of success (one of the registered decoder was compatible to the data)
@@ -33,21 +29,19 @@ import { PngDecoder } from './PngDecoder.js';
 * Developers: if a new 2D dataset decoder is added, reference it here and in the import list
 *
 * **Usage**
-* - [examples/fileToGenericImage2D.html](../examples/fileToGenericImage2D.html)
+* - [examples/fileToGenericSignal1D.html](../examples/fileToGenericSignal1D.html)
 */
-class Image2DGenericDecoder extends GenericDecoderInterface {
+class Signal1DGenericDecoder extends GenericDecoderInterface {
 
   constructor(){
     super();
     this.setMetadata("enablePixBin", true);
 
     this._decoders = [
-      TiffDecoder,
-      JpegDecoder,
-      PngDecoder,
+      EdfDecoder,
     ];
   }
 
-} /* END of class Image2DGenericDecoder */
+} /* END of class Signal1DGenericDecoder */
 
-export { Image2DGenericDecoder }
+export { Signal1DGenericDecoder }

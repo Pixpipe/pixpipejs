@@ -5,6 +5,12 @@
   <script src="../dist/pixpipe.js"></script>
   <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700,900" rel="stylesheet">
   <link rel="stylesheet" href="css/style.css">
+
+  <style>
+  .error {
+    color: #FF6666;
+  }
+  </style>
 </head>
 <body>
   <h1><a href="https://github.com/Pixpipe/pixpipejs"><span style="color: #ff91d7">Pixpipe</span><span style="color: #FFFFFF">js</span></a></h1>
@@ -12,10 +18,7 @@
   This example shows that we can open files of different formats and modality and group them within a single <code>PixBin</code> file.<br>
   This does the following :
   <ul>
-    <li>opening a local file, using <code>pixpipe.FileToArrayBufferReader</code>of type PNG/Jpeg/Tiff/NIfTI/Minc2/MGH</li>
-    <!--<li>redirect the file buffers into a <code>pixpipe.Image2DGenericDecoder</code></li>
-    <li>get the outputs as generic <code>pixpipe.PixContainer</code> objects</li>
-    <li>display the image using <code>pixpipe.CanvasImageWriter</code></li>-->
+    <li>opening a local file, using <code>pixpipe.FileToArrayBufferReader</code> of type PNG/Jpeg/Tiff/NIfTI/Minc2/MGH/MniObj</li>
   </ul>
 
   </p>
@@ -28,7 +31,7 @@
     Start the encoding <input type="submit" onclick="encode()">
     <br>
     <br>
-    <span id="fileInfo"></span>
+    <ul id="fileInfo"></ul>
   </div>
 
   <div id="myDiv"></div>
@@ -54,37 +57,25 @@
       var filenames = this.getMetadata("filenames");
 
       file2Buff.forEachOutput( function( category, buffer){
-
-        // attempt to decode the buffer as an Image2D
-        var decoder2D = new pixpipe.Image2DGenericDecoder();
-        decoder2D.addInput( buffer );
-        decoder2D.update();
-
         var successDecodingType = false;
+        var output = null;
 
-        if( decoder2D.getNumberOfOutputs() ){
-          pixBinEncoder.addInput( decoder2D.getOutput(), inputCounter );
+        var allFormatDecoder = new pixpipe.AllFormatsGenericDecoder();
+        allFormatDecoder.addInput( buffer );
+        allFormatDecoder.update();
+
+        if( allFormatDecoder.getNumberOfOutputs() ){
+          output = allFormatDecoder.getOutput()
+          pixBinEncoder.addInput( output, inputCounter );
           inputCounter ++;
           successDecodingType = true;
         }
-        // attempt to decode the buffer as an Image3D
-        else{
-          var decoder3D = new pixpipe.Image3DGenericDecoder();
-          decoder3D.addInput( buffer );
-          decoder3D.update();
 
-          if( decoder3D.getNumberOfOutputs() ){
-            pixBinEncoder.addInput( decoder3D.getOutput(), inputCounter );
-            inputCounter ++;
-            successDecodingType = true;
-          }
-
-        }
 
         if( successDecodingType ){
-          document.getElementById('fileInfo').innerHTML += "OK: " + filenames[category] + "<br>";
+          document.getElementById('fileInfo').innerHTML += "<li><b>" + filenames[category] + "</b> encoded as <code>" + output.constructor.name + "</code></li>";
         }else{
-          document.getElementById('fileInfo').innerHTML += "ERROR: " + filenames[category] + " (format not recognized)" + "<br>";
+          document.getElementById('fileInfo').innerHTML += "<li class='error'> ERROR: <b>" + filenames[category] + "</b> (format not recognized)" + "</li>";
         }
 
 

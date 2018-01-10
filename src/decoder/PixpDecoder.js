@@ -8,7 +8,7 @@
 
 import pako from 'pako';
 import FileSaver from 'file-saver';
-import { Filter } from '../core/Filter.js';
+import { Decoder } from '../core/Decoder.js';
 import { Image2D } from '../core/Image2D.js';
 import { Image3D } from '../core/Image3D.js';
 
@@ -21,9 +21,10 @@ import { Image3D } from '../core/Image3D.js';
 * **Usage**
 * - [examples/pixpFileToImage2D.html](../examples/pixpFileToImage2D.html)
 */
-class PixpDecoder extends Filter {
+class PixpDecoder extends Decoder {
   constructor(){
     super();
+    this.setMetadata("targetType", "*");
     this.addInputValidator(0, ArrayBuffer);
   }
 
@@ -52,7 +53,7 @@ class PixpDecoder extends Filter {
       console.warn("This file is not a Pixp file.");
       return;
     }
-    
+
     var pixpObject = null;
 
     try{
@@ -69,7 +70,7 @@ class PixpDecoder extends Filter {
     }
 
     var constructorHost = null;
-    
+
     try{
       constructorHost = window;
     }catch( e ){
@@ -80,7 +81,7 @@ class PixpDecoder extends Filter {
         return;
       }
     }
-    
+
     if(! constructorHost[ pixpObject.dataType ]){
       console.warn( "Data array from pixp file is unknown: " + pixpObject.dataType );
       return;

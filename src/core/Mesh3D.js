@@ -76,7 +76,7 @@ class Mesh3D extends PixpipeContainerMultiData {
       console.warn("The array of vertex positions has a non-multiple-of-three size.");
       return;
     }
-    this.setRawData( data, this._datasetNames.vertexPositions );
+    this.setData( data, this._datasetNames.vertexPositions );
   }
 
 
@@ -106,7 +106,7 @@ class Mesh3D extends PixpipeContainerMultiData {
       console.warn("The array of vertext positions must have a size that is a multiple of the metadata 'verticesPerShapes'.");
       return;
     }
-    this.setRawData( data, this._datasetNames.polygonFaces );
+    this.setData( data, this._datasetNames.polygonFaces );
   }
 
 
@@ -137,7 +137,7 @@ class Mesh3D extends PixpipeContainerMultiData {
       console.warn("The array of vertext positions must have a size that is a multiple of 3.");
       return;
     }
-    this.setRawData( data, this._datasetNames.polygonNormals );
+    this.setData( data, this._datasetNames.polygonNormals );
   }
 
 
@@ -168,7 +168,7 @@ class Mesh3D extends PixpipeContainerMultiData {
       console.warn("The array of vertext positions must have a size that is a multiple of the metadata 'componentsPerColor'.");
       return;
     }
-    this.setRawData( data, this._datasetNames.vertexColors );
+    this.setData( data, this._datasetNames.vertexColors );
   }
 
 
@@ -293,7 +293,7 @@ class Mesh3D extends PixpipeContainerMultiData {
 
 
   /**
-  * Get the bounding box of the mesh
+  * Get the bounding box of the mesh (notice: this is a reference to the attribute)
   * @return {Object} the box as {min: [x, y, z], max: [x, y, z]}
   */
   getBox(){
@@ -323,23 +323,23 @@ class Mesh3D extends PixpipeContainerMultiData {
   /**
   * Build the list of triangles
   */
-  buildTriangleList_ORIG(){
-    var vertices = this.getVertexPositions();
-    var faces = this.getPolygonFacesOrder();
-    this._triangleList = new Array( faces.length / 3 );
-    var counter = 0;
-
-    for(var i=0; i<faces.length; i+=3){
-      var tgl = [
-        {x: vertices[ faces[ i ] * 3 ], y: vertices[faces[ i ] * 3 +1], z: vertices[faces[ i ] * 3 +2]},
-        {x: vertices[ faces[ i+1 ] * 3 ], y: vertices[faces[ i+1 ] * 3 +1], z: vertices[faces[ i+1 ] * 3 +2]},
-        {x: vertices[ faces[ i+2 ] * 3 ], y: vertices[faces[ i+2 ] * 3 +1], z: vertices[faces[ i+2 ] * 3 +2]}
-      ]
-
-      this._triangleList[ counter ] = tgl;
-      counter++;
-    }
-  }
+  // buildTriangleList_ORIG(){
+  //   var vertices = this.getVertexPositions();
+  //   var faces = this.getPolygonFacesOrder();
+  //   this._triangleList = new Array( faces.length / 3 );
+  //   var counter = 0;
+  //
+  //   for(var i=0; i<faces.length; i+=3){
+  //     var tgl = [
+  //       {x: vertices[ faces[ i ] * 3 ], y: vertices[faces[ i ] * 3 +1], z: vertices[faces[ i ] * 3 +2]},
+  //       {x: vertices[ faces[ i+1 ] * 3 ], y: vertices[faces[ i+1 ] * 3 +1], z: vertices[faces[ i+1 ] * 3 +2]},
+  //       {x: vertices[ faces[ i+2 ] * 3 ], y: vertices[faces[ i+2 ] * 3 +1], z: vertices[faces[ i+2 ] * 3 +2]}
+  //     ]
+  //
+  //     this._triangleList[ counter ] = tgl;
+  //     counter++;
+  //   }
+  // }
 
 
   /**

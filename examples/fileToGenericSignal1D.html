@@ -1,32 +1,41 @@
 <html>
 <head>
-  <title>File to Jpeg</title>
+  <title>File to Signal1D</title>
 
   <script src="../dist/pixpipe.js"></script>
   <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700,900" rel="stylesheet">
   <link rel="stylesheet" href="css/style.css">
+
+  <style>
+  #logArea {
+    width: 100%;
+    height: 300px;
+    max-width: 100%;
+    resize: vertical;
+  }
+  </style>
+
 </head>
 <body>
   <h1><a href="https://github.com/Pixpipe/pixpipejs"><span style="color: #ff91d7">Pixpipe</span><span style="color: #FFFFFF">js</span></a></h1>
   <p>
   This does the following :
   <ul>
-    <li>open a local Png file, using <code>pixpipe.FileToArrayBufferReader</code></li>
-    <li>redirect the file buffer into a <code>pixpipe.PngDecoder</code> to extract png dataset and metadata</li>
-    <li>get the output as a generic <code>pixpipe.Image2D</code> object</li>
-    <li>display the image using <code>pixpipe.CanvasImageWriter</code></li>
+    <li>open a local Signal1D file, using <code>pixpipe.FileToArrayBufferReader</code></li>
+    <li>redirect the file buffer into a <code>pixpipe.Signal1DGenericDecoder</code> to extract dataset and metadata</li>
+    <li>get the output as a string description</li>
+    <li>Note: open the javascript console where the opbject is printed</li>
   </ul>
 
   </p>
 
   <div>
-		Select an file:
-		<input type="file" id="fileInput">
+    Select an file:
+    <input type="file" id="fileInput">
     <br>
     <span id="fileInfo"></span>
-	</div>
-
-  <div id="myDiv"></div>
+    <textarea id="logArea"></textarea>
+  </div>
 
   <script>
   window.onload = function() {
@@ -39,25 +48,17 @@
     // the image is loaded...
     // here, this = url2ImgFilter
     file2Buff.on("ready", function(){
-
       var filenames = this.getMetadata("filenames");
+      var mghBuff = this.getOutput();
+      var decoder = new pixpipe.Signal1DGenericDecoder();
+      decoder.addInput( mghBuff );
+      decoder.update();
 
-      var buff = this.getOutput();
-
-      var pngDecoder = new pixpipe.PngDecoder();
-      pngDecoder.addInput( buff );
-      pngDecoder.update();
-
-      if( pngDecoder.getNumberOfOutputs() ){
-        var img = pngDecoder.getOutput();
-
-        // create a filter to write the image into a canvas
-        var imageToCanvasFilter = new pixpipe.CanvasImageWriter( );
-        imageToCanvasFilter.setMetadata( "parentDivID", "myDiv" );
-        imageToCanvasFilter.addInput( img );
-        imageToCanvasFilter.update();
-      }
-
+      decoder.forEachOutput(function(index, sig1D){
+        console.log( sig1D );
+        log(`-------------- SIGNAL ${index} ----------------------`)
+        log( sig1D.toString() );
+      })
     });
 
 
@@ -76,7 +77,20 @@
 
       // Perform the reading + conversion ibto ArrayBuffer
       file2Buff.update();
-		});
+    });
+
+
+
+    function log( msg ){
+      var logArea = document.getElementById("logArea");
+
+      if( msg instanceof Object ){
+        msg = "[Object]:\n" + JSON.stringify(msg)
+      }
+
+      logArea.innerHTML += msg;
+      logArea.innerHTML += "\n\n";
+    }
 
   }
   </script>

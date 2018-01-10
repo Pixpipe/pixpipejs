@@ -17,6 +17,7 @@ export { MniVolume } from './core/MniVolume.js';
 export { LineString } from './core/LineString.js';
 export { Image3DAlt } from './core/Image3DAlt.js';
 export { Mesh3D } from './core/Mesh3D.js';
+export { Decoder } from './core/Decoder.js';
 
 // io - Readers and writers
 export { CanvasImageWriter } from './io/CanvasImageWriter.js';
@@ -27,6 +28,7 @@ export { UrlToArrayBufferReader } from './io/UrlToArrayBufferReader.js';
 export { BrowserDownloadBuffer } from './io/BrowserDownloadBuffer.js';
 
 // decoders
+export { GenericDecoderInterface } from './decoder/GenericDecoderInterface.js'
 export { Minc2Decoder } from './decoder/Minc2Decoder.js';
 export { NiftiDecoder } from './decoder/NiftiDecoder.js';
 export { NiftiDecoderAlt } from './decoder/NiftiDecoderAlt.js';
@@ -46,6 +48,9 @@ export { Image2DGenericDecoder } from './decoder/Image2DGenericDecoder.js';
 export { Minc2DecoderAlt } from './decoder/Minc2DecoderAlt.js';
 export { MniObjDecoder } from './decoder/MniObjDecoder.js';
 export { EdfDecoder } from './decoder/EdfDecoder.js';
+export { Mesh3DGenericDecoder } from './decoder/Mesh3DGenericDecoder.js';
+export { AllFormatsGenericDecoder } from './decoder/AllFormatsGenericDecoder.js';
+export { Signal1DGenericDecoder } from './decoder/Signal1DGenericDecoder.js';
 
 // filters - processing of Images2D and Signal1D
 export { ComponentProjectionImage2DFilter } from './filter/ComponentProjectionImage2DFilter';
@@ -77,6 +82,7 @@ export { LowPassFreqSignal1D } from './filter/LowPassFreqSignal1D.js';
 export { LowPassSignal1D } from './filter/LowPassSignal1D.js';
 export { HighPassSignal1D } from './filter/HighPassSignal1D.js';
 export { BandPassSignal1D } from './filter/BandPassSignal1D.js';
+export { Mesh3DToVolumetricHullFilter } from './filter/Mesh3DToVolumetricHullFilter.js';
 
 // helpers
 export { AngleToHueWheelHelper } from './helper/AngleToHueWheelHelper.js';

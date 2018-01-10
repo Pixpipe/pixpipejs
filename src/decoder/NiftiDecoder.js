@@ -8,7 +8,7 @@
 */
 
 import pako from 'pako';
-import { Filter } from '../core/Filter.js';
+import { Decoder } from '../core/Decoder.js';
 import { MniVolume } from '../core/MniVolume.js';
 
 
@@ -19,10 +19,11 @@ import { MniVolume } from '../core/MniVolume.js';
 * **Usage**
 * - [examples/fileToNifti.html](../examples/fileToNifti.html)
 */
-class NiftiDecoder extends Filter {
+class NiftiDecoder extends Decoder {
 
   constructor(){
     super();
+    this.setMetadata("targetType", MniVolume.name);
     this.addInputValidator(0, ArrayBuffer);
     this.setMetadata("debug", false);
   }
@@ -160,12 +161,12 @@ class NiftiDecoder extends Filter {
                      [0, 0, 0, 0],
                      [0, 0, 0, 0],
                      [0, 0, 0, 1]];
-                     
+
     for (i = 0; i < 3; i++) {
       var c_x = Math.abs(nifti_xfm[0][i]);
       var c_y = Math.abs(nifti_xfm[1][i]);
       var c_z = Math.abs(nifti_xfm[2][i]);
-      
+
       if (c_x > c_y && c_x > c_z) {
         header.order[2 - i] = "xspace";
         axis_index_from_file[i] = 0;
@@ -179,7 +180,7 @@ class NiftiDecoder extends Filter {
         axis_index_from_file[i] = 2;
       }
     }
-    
+
     for (i = 0; i < 3; i++) {
       for (j = 0; j < 4; j++) {
         var volume_axis = j;
@@ -198,7 +199,7 @@ class NiftiDecoder extends Filter {
     header[header.order[2]].space_length = dview.getUint16(42, littleEndian);
     header[header.order[1]].space_length = dview.getUint16(44, littleEndian);
     header[header.order[0]].space_length = dview.getUint16(46, littleEndian);
-     
+
     if (tlength >= 1) {
        header.order.unshift("time");
     }
@@ -370,14 +371,14 @@ class NiftiDecoder extends Filter {
     }catch(e){
       //console.warn( e );
     }
-    
+
 
     // abort if header not valid
     if(!header){
       console.warn("This file is not a NIfTI file.");
       return;
     }
-      
+
 
     var dataArray = this.createNifti1Data(header, inputBuffer)
 

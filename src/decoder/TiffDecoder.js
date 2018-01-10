@@ -6,7 +6,7 @@
 */
 
 import geotiff from 'geotiff';
-import { Filter } from '../core/Filter.js';
+import { Decoder } from '../core/Decoder.js';
 import { Image2D } from '../core/Image2D.js';
 
 
@@ -23,12 +23,13 @@ import { Image2D } from '../core/Image2D.js';
 * - [examples/fileToTiff.html](../examples/fileToTiff.html)
 *
 */
-class TiffDecoder extends Filter {
+class TiffDecoder extends Decoder {
   constructor() {
     super();
+    this.setMetadata("targetType", Image2D.name);
     this.addInputValidator(0, ArrayBuffer);
   }
-  
+
   _run(){
 
     var inputBuffer = this._getInput(0);
@@ -37,22 +38,22 @@ class TiffDecoder extends Filter {
       console.warn("TiffDecoder requires an ArrayBuffer as input \"0\". Unable to continue.");
       return;
     }
-    
+
     var success = false;
-    
+
     try{
       var tiffData = geotiff.parse(inputBuffer);
       var tiffImage = tiffData.getImage();
-      
+
       var data = tiffImage.readRasters( {interleave: true} );
       var width = tiffImage.getWidth();
       var height = tiffImage.getHeight();
       var ncpp = tiffImage.getSamplesPerPixel();
-      
+
       if(ncpp == (data.length / (width*height))){
         success = true;
       }
-      
+
       if( success ){
         var outputImg = this._addOutput( Image2D );
         outputImg.setData( data, width, height, ncpp);
@@ -62,10 +63,10 @@ class TiffDecoder extends Filter {
     }catch(e){
       console.warn("This buffer is not from a TIFF file.");
     }
-    
+
   }
-  
-  
+
+
 } /* END of class TiffDecoder */
 
 export { TiffDecoder }

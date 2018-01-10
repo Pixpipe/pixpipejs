@@ -56,9 +56,8 @@
     <p>
     This does the following :
     <ul>
-      <li>open a local MNI OBJ file, using <code>pixpipe.FileToArrayBufferReader</code></li>
-      <li>Set the metadata <code>readAsText</code> of the <code>pixpipe.FileToArrayBufferReader</code> to <code>true</code></li>
-      <li>redirect the file buffer into a <code>pixpipe.MniObjDecoder</code> to extract mesh data</li>
+      <li>open a local mesh file, using <code>pixpipe.FileToArrayBufferReader</code></li>
+      <li>redirect the file buffer into a <code>pixpipe.fileToGenericMesh3D</code> to extract mesh data</li>
       <li>get the output as a generique <code>pixpipe.Mesh3D</code> object</li>
       <li>display the mesh using ThreeJS</li>
     </ul>
@@ -84,8 +83,6 @@
 
     // The filter to read image from URL
     var file2Buff = new pixpipe.FileToArrayBufferReader();
-    // this is not mandatory but will enable the faster text-file-reading capabilities of browsers:
-    file2Buff.setMetadata("readAsText", true);
 
     // the image is loaded...
     // here, this = url2ImgFilter
@@ -94,7 +91,7 @@
       var filenames = this.getMetadata("filenames");
       var str = this.getOutput();
 
-      var meshParser = new pixpipe.MniObjDecoder();
+      var meshParser = new pixpipe.Mesh3DGenericDecoder();
       meshParser.addInput( str );
       meshParser.update();
 

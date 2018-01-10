@@ -8,7 +8,7 @@
 */
 
 import pako from 'pako';
-import { Filter } from '../core/Filter.js';
+import { Decoder } from '../core/Decoder.js';
 import { MniVolume } from '../core/MniVolume.js';
 
 /**
@@ -18,15 +18,16 @@ import { MniVolume } from '../core/MniVolume.js';
 * **Usage**
 * - [examples/fileToMgh.html](../examples/fileToMgh.html)
 */
-class MghDecoder extends Filter {
-  
+class MghDecoder extends Decoder {
+
   constructor() {
     super();
+    this.setMetadata("targetType", MniVolume.name);
     this.addInputValidator(0, ArrayBuffer);
     this.setMetadata("debug", false);
   }
-  
-  
+
+
   /* Function to parse the basic MGH header. This is a 284-byte binary
    * object that begins at offset zero in the file.
    * The resulting header object will contain the following fields:
@@ -237,10 +238,10 @@ class MghDecoder extends Filter {
 
     return header;
   }
-  
-  
+
+
   _createMGHData(header, raw_data) {
-    
+
     var native_data = null;
     var bytes_per_voxel = 1;
 
@@ -295,7 +296,7 @@ class MghDecoder extends Filter {
 
   }
 
-  
+
   _run(){
     var inputBuffer = this._getInput(0);
 
@@ -305,24 +306,24 @@ class MghDecoder extends Filter {
     }
 
     var header = null;
-    
+
     try{
       header = this._parseMGHHeader( inputBuffer );
     }catch(e){
       //console.warn( e );
     }
-    
+
 
     // abort if header not valid
     if(!header){
       console.log("The input file is not a MGH file.");
       return;
     }
-      
+
 
 
     var dataArray = this._createMGHData(header, inputBuffer)
-    
+
     if(!dataArray)
       return null;
 
@@ -331,9 +332,9 @@ class MghDecoder extends Filter {
     var mniVol = this.getOutput();
     mniVol.setData(dataArray, header);
     mniVol.setMetadata("format", "mgh");
-    
+
   }
-  
+
 } /* END of class MghDecoder */
 
 export { MghDecoder };

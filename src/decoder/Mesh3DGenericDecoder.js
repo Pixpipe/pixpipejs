@@ -10,10 +10,7 @@
 import { GenericDecoderInterface } from './GenericDecoderInterface.js';
 
 // decoders
-import { TiffDecoder } from './TiffDecoder.js';
-import { JpegDecoder } from './JpegDecoder.js';
-import { PngDecoder } from './PngDecoder.js';
-//import { PixBinDecoder } from './PixBinDecoder.js';
+import { MniObjDecoder } from './MniObjDecoder.js';
 
 
 /**
@@ -21,8 +18,8 @@ import { PngDecoder } from './PngDecoder.js';
 * successive decoding logic. For this reason this filter does not need to have the
 * `_run` method to be reimplemented.
 *
-* An instance of Image2DGenericDecoder takes a ArrayBuffer
-* as input 0 (`.addInput(myArrayBuffer)`) and output an Image2D.
+* An instance of Mesh3DGenericDecoder takes a ArrayBuffer
+* as input 0 (`.addInput(myArrayBuffer)`) and output a Mesh3D object.
 * The `update` method will perform several decoding attempts, using the readers
 * specified in the constructor.
 * In case of success (one of the registered decoder was compatible to the data)
@@ -30,24 +27,22 @@ import { PngDecoder } from './PngDecoder.js';
 * information about the file format. If no decoder managed to decode the input buffer,
 * this filter will not have any output.
 *
-* Developers: if a new 2D dataset decoder is added, reference it here and in the import list
+* Developers: if a new format decoder is added, reference it here.
 *
 * **Usage**
-* - [examples/fileToGenericImage2D.html](../examples/fileToGenericImage2D.html)
+* - [examples/fileToGenericMesh3D.html](../examples/fileToGenericMesh3D.html)
 */
-class Image2DGenericDecoder extends GenericDecoderInterface {
+class Mesh3DGenericDecoder extends GenericDecoderInterface {
 
   constructor(){
     super();
     this.setMetadata("enablePixBin", true);
-
+    
     this._decoders = [
-      TiffDecoder,
-      JpegDecoder,
-      PngDecoder,
+      MniObjDecoder,
     ];
   }
 
-} /* END of class Image2DGenericDecoder */
+} /* END of lcass Mesh3DGenericDecoder */
 
-export { Image2DGenericDecoder }
+export { Mesh3DGenericDecoder };
