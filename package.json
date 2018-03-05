@@ -46,6 +46,7 @@
     "jpeg-js": "^0.3.3",
     "js-md5": "^0.4.2",
     "mniobjparser": "github:pixpipe/mniobjparser",
+    "natninter": "file:../../github/natninter",
     "ndarray": "^1.0.18",
     "ndarray-fft": "^1.0.3",
     "nifti-reader-js": "^0.5.4",
