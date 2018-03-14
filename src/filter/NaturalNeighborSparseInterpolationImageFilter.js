@@ -6,57 +6,92 @@
 * Lab       MCIN - Montreal Neurological Institute
 */
 
-import { natninter } from 'natninter';
+//import { Interpolator } from 'natninter';
+//import { Interpolator } from 'natninter'; // ok and then use Interpolator
+import * as natninter from 'natninter'; // ok and then use natninter.Interpolator
 import { Filter } from '../core/Filter.js';
 import { Image2D } from '../core/Image2D.js';
 
-
+/**
+ * Inputs are alternatively
+ * - "seeds" , an array of seeds
+ * - "samplingMap"
+ *
+ * As metadata:
+ * - "outputSize" as {width: Number, height: Number}
+ * - "samplingMapOnly" as a boolean. If true generated only the sampling map, if false, generate the sampling map and the output image
+ *
+ * As output:
+ * - "0" or not arg, the output image
+ * - "samplingMap", the sampling map. Only available if "samplingMap" is not already as input
+ *
+ * @extends Filter
+ */
 class NaturalNeighborSparseInterpolationImageFilter extends Filter {
   constructor(){
     super()
-    this.setMetadata( "outputSize", {width: 0, height: 0})
+    this.setMetadata( "outputSize", {width: 0, height: 0});
+    this.setMetadata( "samplingMapOnly", false);
+
+    console.log( natninter );
   }
 
+
+
   _run(){
+    var inputSeeds = this._getInput("seeds");
+    var inputSamplingMap = this._getInput("samplingMap");
+    var outputSize = this.getMetadata("outputSize");
+    var samplingMapOnly = this.getMetadata("samplingMapOnly");
 
-    var points = null;
-
-    // getting the input
-    if( "0" in this._input ){
-      points = this._input[ 0 ];
-    }else{
-      console.warn("No input point set were given.");
+    if( !inputSeeds ){
+      console.log("The sparse nn interpolation needs seeds to process.");
       return;
     }
 
-    var outputSize = this.getMetadata( "outputSize" );
-
-    // checking output size
-    if( outputSize.width == 0 || outputSize.height == 0 ){
-      console.warn("The output size cannot be 0.");
+    if( !(outputSize && outputSize.width > 0 && outputSize.height > 0)){
+      console.log("The output size must be of form {width: Number, height: Number}, both being positive.");
       return;
     }
 
+    //
 
     var nnInter = new natninter.Interpolator();
-    nnInter.computeMap();
-    var samplingMap = nnInter.getMap();
+    nnInter.setOutputSize( outputSize.width, outputSize.height );
+    nnInter.addSeeds( inputSeeds );
 
-    // creating the output image
-    var out = new pixpipe.Image2D({width: outputSize.width, height: outputSize.height, color: [0]})
+    if( nnInter.getNumberOfSeeds() === 0 ){
+      console.log("Seeds are probably of the wrong format, check documentation.");
+      return;
+    }
 
-    // for each pixel of the image...
-    for(var i=0; i<outputSize.width; i++){
-      for(var j=0; j<outputSize.height; j++){
-        var index1D = i + j * outputSize.height;
-        var pixValue = 0;
+    // here we have the alternative, or we already have a sampling map to use...
+    if( inputSamplingMap ){
+      var validSize = nnInter.setMap( inputSamplingMap );
+      if( !validSize ){
+        console.log("The provided sampling map is of the wrong size.");
+        return;
+      }
 
-
-        out.setPixel( {x: i, y: j}, [ points[nearestPointIndex].value ] );
+    // ...of compute the sampling map
+    }else{
+      var mapOk = nnInter.generateMap();
+      if( !mapOk ){
+        console.log("The sampling map generation went wrong.");
+        return;
+      }else{
+        this._output["samplingMap"] = nnInter.getMap();
       }
     }
 
-    this._output[ 0 ] = out;
+    if( samplingMapOnly )
+      return;
+
+    var imgArray = nnInter.generateImage();
+    var out = new Image2D();
+    out.setData( imgArray._data, outputSize.width, outputSize.height, 1 );
+
+    this._output[0] = out;
   }
 
 } /* END of class NaturalNeighborSparseInterpolationImageFilter */
