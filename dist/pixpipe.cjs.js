@@ -21,16 +21,7 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE. */
-
-/**
- * Common utilities
- * @module glMatrix
- */
-
-// Configuration Constants
-
 var ARRAY_TYPE = typeof Float32Array !== 'undefined' ? Float32Array : Array;
-
 
 /**
  * Sets the type of array used when creating new vectors and matrices
@@ -41,22 +32,7 @@ function setMatrixArrayType(type) {
   ARRAY_TYPE = type;
 }
 
-/**
- * Convert Degree To Radian
- *
- * @param {Number} a Angle in Degrees
- */
-
-
-/**
- * Tests whether or not the arguments have approximately the same value, within an absolute
- * or relative tolerance of glMatrix.EPSILON (an absolute tolerance is used for values less
- * than or equal to 1.0, and a relative tolerance is used for larger values)
- *
- * @param {Number} a The first number to test.
- * @param {Number} b The second number to test.
- * @returns {Boolean} True if the numbers are approximately equal, false otherwise.
- */
+var degree = Math.PI / 180;
 
 /* Copyright (c) 2015, Brandon Jones, Colin MacKenzie IV.
 
@@ -78,253 +54,6 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE. */
 
-/**
- * 2x2 Matrix
- * @module mat2
- */
-
-/**
- * Creates a new identity mat2
- *
- * @returns {mat2} a new 2x2 matrix
- */
-
-
-/**
- * Creates a new mat2 initialized with values from an existing matrix
- *
- * @param {mat2} a matrix to clone
- * @returns {mat2} a new 2x2 matrix
- */
-
-
-/**
- * Copy the values from one mat2 to another
- *
- * @param {mat2} out the receiving matrix
- * @param {mat2} a the source matrix
- * @returns {mat2} out
- */
-
-
-/**
- * Set a mat2 to the identity matrix
- *
- * @param {mat2} out the receiving matrix
- * @returns {mat2} out
- */
-
-
-/**
- * Create a new mat2 with the given values
- *
- * @param {Number} m00 Component in column 0, row 0 position (index 0)
- * @param {Number} m01 Component in column 0, row 1 position (index 1)
- * @param {Number} m10 Component in column 1, row 0 position (index 2)
- * @param {Number} m11 Component in column 1, row 1 position (index 3)
- * @returns {mat2} out A new 2x2 matrix
- */
-
-
-/**
- * Set the components of a mat2 to the given values
- *
- * @param {mat2} out the receiving matrix
- * @param {Number} m00 Component in column 0, row 0 position (index 0)
- * @param {Number} m01 Component in column 0, row 1 position (index 1)
- * @param {Number} m10 Component in column 1, row 0 position (index 2)
- * @param {Number} m11 Component in column 1, row 1 position (index 3)
- * @returns {mat2} out
- */
-
-
-/**
- * Transpose the values of a mat2
- *
- * @param {mat2} out the receiving matrix
- * @param {mat2} a the source matrix
- * @returns {mat2} out
- */
-
-
-/**
- * Inverts a mat2
- *
- * @param {mat2} out the receiving matrix
- * @param {mat2} a the source matrix
- * @returns {mat2} out
- */
-
-
-/**
- * Calculates the adjugate of a mat2
- *
- * @param {mat2} out the receiving matrix
- * @param {mat2} a the source matrix
- * @returns {mat2} out
- */
-
-
-/**
- * Calculates the determinant of a mat2
- *
- * @param {mat2} a the source matrix
- * @returns {Number} determinant of a
- */
-
-
-/**
- * Multiplies two mat2's
- *
- * @param {mat2} out the receiving matrix
- * @param {mat2} a the first operand
- * @param {mat2} b the second operand
- * @returns {mat2} out
- */
-
-
-/**
- * Rotates a mat2 by the given angle
- *
- * @param {mat2} out the receiving matrix
- * @param {mat2} a the matrix to rotate
- * @param {Number} rad the angle to rotate the matrix by
- * @returns {mat2} out
- */
-
-
-/**
- * Scales the mat2 by the dimensions in the given vec2
- *
- * @param {mat2} out the receiving matrix
- * @param {mat2} a the matrix to rotate
- * @param {vec2} v the vec2 to scale the matrix by
- * @returns {mat2} out
- **/
-
-
-/**
- * Creates a matrix from a given angle
- * This is equivalent to (but much faster than):
- *
- *     mat2.identity(dest);
- *     mat2.rotate(dest, dest, rad);
- *
- * @param {mat2} out mat2 receiving operation result
- * @param {Number} rad the angle to rotate the matrix by
- * @returns {mat2} out
- */
-
-
-/**
- * Creates a matrix from a vector scaling
- * This is equivalent to (but much faster than):
- *
- *     mat2.identity(dest);
- *     mat2.scale(dest, dest, vec);
- *
- * @param {mat2} out mat2 receiving operation result
- * @param {vec2} v Scaling vector
- * @returns {mat2} out
- */
-
-
-/**
- * Returns a string representation of a mat2
- *
- * @param {mat2} a matrix to represent as a string
- * @returns {String} string representation of the matrix
- */
-
-
-/**
- * Returns Frobenius norm of a mat2
- *
- * @param {mat2} a the matrix to calculate Frobenius norm of
- * @returns {Number} Frobenius norm
- */
-
-
-/**
- * Returns L, D and U matrices (Lower triangular, Diagonal and Upper triangular) by factorizing the input matrix
- * @param {mat2} L the lower triangular matrix
- * @param {mat2} D the diagonal matrix
- * @param {mat2} U the upper triangular matrix
- * @param {mat2} a the input matrix to factorize
- */
-
-
-
-/**
- * Adds two mat2's
- *
- * @param {mat2} out the receiving matrix
- * @param {mat2} a the first operand
- * @param {mat2} b the second operand
- * @returns {mat2} out
- */
-
-
-/**
- * Subtracts matrix b from matrix a
- *
- * @param {mat2} out the receiving matrix
- * @param {mat2} a the first operand
- * @param {mat2} b the second operand
- * @returns {mat2} out
- */
-
-
-/**
- * Returns whether or not the matrices have exactly the same elements in the same position (when compared with ===)
- *
- * @param {mat2} a The first matrix.
- * @param {mat2} b The second matrix.
- * @returns {Boolean} True if the matrices are equal, false otherwise.
- */
-
-
-/**
- * Returns whether or not the matrices have approximately the same elements in the same position.
- *
- * @param {mat2} a The first matrix.
- * @param {mat2} b The second matrix.
- * @returns {Boolean} True if the matrices are equal, false otherwise.
- */
-
-
-/**
- * Multiply each element of the matrix by a scalar.
- *
- * @param {mat2} out the receiving matrix
- * @param {mat2} a the matrix to scale
- * @param {Number} b amount to scale the matrix's elements by
- * @returns {mat2} out
- */
-
-
-/**
- * Adds two mat2's after multiplying each element of the second operand by a scalar value.
- *
- * @param {mat2} out the receiving vector
- * @param {mat2} a the first operand
- * @param {mat2} b the second operand
- * @param {Number} scale the amount to scale b's elements by before adding
- * @returns {mat2} out
- */
-
-
-/**
- * Alias for {@link mat2.multiply}
- * @function
- */
-
-
-/**
- * Alias for {@link mat2.subtract}
- * @function
- */
-
 /* Copyright (c) 2015, Brandon Jones, Colin MacKenzie IV.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -344,266 +73,6 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE. */
-
-/**
- * 2x3 Matrix
- * @module mat2d
- *
- * @description
- * A mat2d contains six elements defined as:
- * <pre>
- * [a, c, tx,
- *  b, d, ty]
- * </pre>
- * This is a short form for the 3x3 matrix:
- * <pre>
- * [a, c, tx,
- *  b, d, ty,
- *  0, 0, 1]
- * </pre>
- * The last row is ignored so the array is shorter and operations are faster.
- */
-
-/**
- * Creates a new identity mat2d
- *
- * @returns {mat2d} a new 2x3 matrix
- */
-
-
-/**
- * Creates a new mat2d initialized with values from an existing matrix
- *
- * @param {mat2d} a matrix to clone
- * @returns {mat2d} a new 2x3 matrix
- */
-
-
-/**
- * Copy the values from one mat2d to another
- *
- * @param {mat2d} out the receiving matrix
- * @param {mat2d} a the source matrix
- * @returns {mat2d} out
- */
-
-
-/**
- * Set a mat2d to the identity matrix
- *
- * @param {mat2d} out the receiving matrix
- * @returns {mat2d} out
- */
-
-
-/**
- * Create a new mat2d with the given values
- *
- * @param {Number} a Component A (index 0)
- * @param {Number} b Component B (index 1)
- * @param {Number} c Component C (index 2)
- * @param {Number} d Component D (index 3)
- * @param {Number} tx Component TX (index 4)
- * @param {Number} ty Component TY (index 5)
- * @returns {mat2d} A new mat2d
- */
-
-
-/**
- * Set the components of a mat2d to the given values
- *
- * @param {mat2d} out the receiving matrix
- * @param {Number} a Component A (index 0)
- * @param {Number} b Component B (index 1)
- * @param {Number} c Component C (index 2)
- * @param {Number} d Component D (index 3)
- * @param {Number} tx Component TX (index 4)
- * @param {Number} ty Component TY (index 5)
- * @returns {mat2d} out
- */
-
-
-/**
- * Inverts a mat2d
- *
- * @param {mat2d} out the receiving matrix
- * @param {mat2d} a the source matrix
- * @returns {mat2d} out
- */
-
-
-/**
- * Calculates the determinant of a mat2d
- *
- * @param {mat2d} a the source matrix
- * @returns {Number} determinant of a
- */
-
-
-/**
- * Multiplies two mat2d's
- *
- * @param {mat2d} out the receiving matrix
- * @param {mat2d} a the first operand
- * @param {mat2d} b the second operand
- * @returns {mat2d} out
- */
-
-
-/**
- * Rotates a mat2d by the given angle
- *
- * @param {mat2d} out the receiving matrix
- * @param {mat2d} a the matrix to rotate
- * @param {Number} rad the angle to rotate the matrix by
- * @returns {mat2d} out
- */
-
-
-/**
- * Scales the mat2d by the dimensions in the given vec2
- *
- * @param {mat2d} out the receiving matrix
- * @param {mat2d} a the matrix to translate
- * @param {vec2} v the vec2 to scale the matrix by
- * @returns {mat2d} out
- **/
-
-
-/**
- * Translates the mat2d by the dimensions in the given vec2
- *
- * @param {mat2d} out the receiving matrix
- * @param {mat2d} a the matrix to translate
- * @param {vec2} v the vec2 to translate the matrix by
- * @returns {mat2d} out
- **/
-
-
-/**
- * Creates a matrix from a given angle
- * This is equivalent to (but much faster than):
- *
- *     mat2d.identity(dest);
- *     mat2d.rotate(dest, dest, rad);
- *
- * @param {mat2d} out mat2d receiving operation result
- * @param {Number} rad the angle to rotate the matrix by
- * @returns {mat2d} out
- */
-
-
-/**
- * Creates a matrix from a vector scaling
- * This is equivalent to (but much faster than):
- *
- *     mat2d.identity(dest);
- *     mat2d.scale(dest, dest, vec);
- *
- * @param {mat2d} out mat2d receiving operation result
- * @param {vec2} v Scaling vector
- * @returns {mat2d} out
- */
-
-
-/**
- * Creates a matrix from a vector translation
- * This is equivalent to (but much faster than):
- *
- *     mat2d.identity(dest);
- *     mat2d.translate(dest, dest, vec);
- *
- * @param {mat2d} out mat2d receiving operation result
- * @param {vec2} v Translation vector
- * @returns {mat2d} out
- */
-
-
-/**
- * Returns a string representation of a mat2d
- *
- * @param {mat2d} a matrix to represent as a string
- * @returns {String} string representation of the matrix
- */
-
-
-/**
- * Returns Frobenius norm of a mat2d
- *
- * @param {mat2d} a the matrix to calculate Frobenius norm of
- * @returns {Number} Frobenius norm
- */
-
-
-/**
- * Adds two mat2d's
- *
- * @param {mat2d} out the receiving matrix
- * @param {mat2d} a the first operand
- * @param {mat2d} b the second operand
- * @returns {mat2d} out
- */
-
-
-/**
- * Subtracts matrix b from matrix a
- *
- * @param {mat2d} out the receiving matrix
- * @param {mat2d} a the first operand
- * @param {mat2d} b the second operand
- * @returns {mat2d} out
- */
-
-
-/**
- * Multiply each element of the matrix by a scalar.
- *
- * @param {mat2d} out the receiving matrix
- * @param {mat2d} a the matrix to scale
- * @param {Number} b amount to scale the matrix's elements by
- * @returns {mat2d} out
- */
-
-
-/**
- * Adds two mat2d's after multiplying each element of the second operand by a scalar value.
- *
- * @param {mat2d} out the receiving vector
- * @param {mat2d} a the first operand
- * @param {mat2d} b the second operand
- * @param {Number} scale the amount to scale b's elements by before adding
- * @returns {mat2d} out
- */
-
-
-/**
- * Returns whether or not the matrices have exactly the same elements in the same position (when compared with ===)
- *
- * @param {mat2d} a The first matrix.
- * @param {mat2d} b The second matrix.
- * @returns {Boolean} True if the matrices are equal, false otherwise.
- */
-
-
-/**
- * Returns whether or not the matrices have approximately the same elements in the same position.
- *
- * @param {mat2d} a The first matrix.
- * @param {mat2d} b The second matrix.
- * @returns {Boolean} True if the matrices are equal, false otherwise.
- */
-
-
-/**
- * Alias for {@link mat2d.multiply}
- * @function
- */
-
-
-/**
- * Alias for {@link mat2d.subtract}
- * @function
- */
 
 /* Copyright (c) 2015, Brandon Jones, Colin MacKenzie IV.
 
@@ -648,312 +117,6 @@ function create$2() {
   out[8] = 1;
   return out;
 }
-
-/**
- * Copies the upper-left 3x3 values into the given mat3.
- *
- * @param {mat3} out the receiving 3x3 matrix
- * @param {mat4} a   the source 4x4 matrix
- * @returns {mat3} out
- */
-
-
-/**
- * Creates a new mat3 initialized with values from an existing matrix
- *
- * @param {mat3} a matrix to clone
- * @returns {mat3} a new 3x3 matrix
- */
-
-
-/**
- * Copy the values from one mat3 to another
- *
- * @param {mat3} out the receiving matrix
- * @param {mat3} a the source matrix
- * @returns {mat3} out
- */
-
-
-/**
- * Create a new mat3 with the given values
- *
- * @param {Number} m00 Component in column 0, row 0 position (index 0)
- * @param {Number} m01 Component in column 0, row 1 position (index 1)
- * @param {Number} m02 Component in column 0, row 2 position (index 2)
- * @param {Number} m10 Component in column 1, row 0 position (index 3)
- * @param {Number} m11 Component in column 1, row 1 position (index 4)
- * @param {Number} m12 Component in column 1, row 2 position (index 5)
- * @param {Number} m20 Component in column 2, row 0 position (index 6)
- * @param {Number} m21 Component in column 2, row 1 position (index 7)
- * @param {Number} m22 Component in column 2, row 2 position (index 8)
- * @returns {mat3} A new mat3
- */
-
-
-/**
- * Set the components of a mat3 to the given values
- *
- * @param {mat3} out the receiving matrix
- * @param {Number} m00 Component in column 0, row 0 position (index 0)
- * @param {Number} m01 Component in column 0, row 1 position (index 1)
- * @param {Number} m02 Component in column 0, row 2 position (index 2)
- * @param {Number} m10 Component in column 1, row 0 position (index 3)
- * @param {Number} m11 Component in column 1, row 1 position (index 4)
- * @param {Number} m12 Component in column 1, row 2 position (index 5)
- * @param {Number} m20 Component in column 2, row 0 position (index 6)
- * @param {Number} m21 Component in column 2, row 1 position (index 7)
- * @param {Number} m22 Component in column 2, row 2 position (index 8)
- * @returns {mat3} out
- */
-
-
-/**
- * Set a mat3 to the identity matrix
- *
- * @param {mat3} out the receiving matrix
- * @returns {mat3} out
- */
-
-
-/**
- * Transpose the values of a mat3
- *
- * @param {mat3} out the receiving matrix
- * @param {mat3} a the source matrix
- * @returns {mat3} out
- */
-
-
-/**
- * Inverts a mat3
- *
- * @param {mat3} out the receiving matrix
- * @param {mat3} a the source matrix
- * @returns {mat3} out
- */
-
-
-/**
- * Calculates the adjugate of a mat3
- *
- * @param {mat3} out the receiving matrix
- * @param {mat3} a the source matrix
- * @returns {mat3} out
- */
-
-
-/**
- * Calculates the determinant of a mat3
- *
- * @param {mat3} a the source matrix
- * @returns {Number} determinant of a
- */
-
-
-/**
- * Multiplies two mat3's
- *
- * @param {mat3} out the receiving matrix
- * @param {mat3} a the first operand
- * @param {mat3} b the second operand
- * @returns {mat3} out
- */
-
-
-/**
- * Translate a mat3 by the given vector
- *
- * @param {mat3} out the receiving matrix
- * @param {mat3} a the matrix to translate
- * @param {vec2} v vector to translate by
- * @returns {mat3} out
- */
-
-
-/**
- * Rotates a mat3 by the given angle
- *
- * @param {mat3} out the receiving matrix
- * @param {mat3} a the matrix to rotate
- * @param {Number} rad the angle to rotate the matrix by
- * @returns {mat3} out
- */
-
-
-/**
- * Scales the mat3 by the dimensions in the given vec2
- *
- * @param {mat3} out the receiving matrix
- * @param {mat3} a the matrix to rotate
- * @param {vec2} v the vec2 to scale the matrix by
- * @returns {mat3} out
- **/
-
-
-/**
- * Creates a matrix from a vector translation
- * This is equivalent to (but much faster than):
- *
- *     mat3.identity(dest);
- *     mat3.translate(dest, dest, vec);
- *
- * @param {mat3} out mat3 receiving operation result
- * @param {vec2} v Translation vector
- * @returns {mat3} out
- */
-
-
-/**
- * Creates a matrix from a given angle
- * This is equivalent to (but much faster than):
- *
- *     mat3.identity(dest);
- *     mat3.rotate(dest, dest, rad);
- *
- * @param {mat3} out mat3 receiving operation result
- * @param {Number} rad the angle to rotate the matrix by
- * @returns {mat3} out
- */
-
-
-/**
- * Creates a matrix from a vector scaling
- * This is equivalent to (but much faster than):
- *
- *     mat3.identity(dest);
- *     mat3.scale(dest, dest, vec);
- *
- * @param {mat3} out mat3 receiving operation result
- * @param {vec2} v Scaling vector
- * @returns {mat3} out
- */
-
-
-/**
- * Copies the values from a mat2d into a mat3
- *
- * @param {mat3} out the receiving matrix
- * @param {mat2d} a the matrix to copy
- * @returns {mat3} out
- **/
-
-
-/**
-* Calculates a 3x3 matrix from the given quaternion
-*
-* @param {mat3} out mat3 receiving operation result
-* @param {quat} q Quaternion to create matrix from
-*
-* @returns {mat3} out
-*/
-
-
-/**
-* Calculates a 3x3 normal matrix (transpose inverse) from the 4x4 matrix
-*
-* @param {mat3} out mat3 receiving operation result
-* @param {mat4} a Mat4 to derive the normal matrix from
-*
-* @returns {mat3} out
-*/
-
-
-/**
- * Generates a 2D projection matrix with the given bounds
- *
- * @param {mat3} out mat3 frustum matrix will be written into
- * @param {number} width Width of your gl context
- * @param {number} height Height of gl context
- * @returns {mat3} out
- */
-
-
-/**
- * Returns a string representation of a mat3
- *
- * @param {mat3} a matrix to represent as a string
- * @returns {String} string representation of the matrix
- */
-
-
-/**
- * Returns Frobenius norm of a mat3
- *
- * @param {mat3} a the matrix to calculate Frobenius norm of
- * @returns {Number} Frobenius norm
- */
-
-
-/**
- * Adds two mat3's
- *
- * @param {mat3} out the receiving matrix
- * @param {mat3} a the first operand
- * @param {mat3} b the second operand
- * @returns {mat3} out
- */
-
-
-/**
- * Subtracts matrix b from matrix a
- *
- * @param {mat3} out the receiving matrix
- * @param {mat3} a the first operand
- * @param {mat3} b the second operand
- * @returns {mat3} out
- */
-
-
-/**
- * Multiply each element of the matrix by a scalar.
- *
- * @param {mat3} out the receiving matrix
- * @param {mat3} a the matrix to scale
- * @param {Number} b amount to scale the matrix's elements by
- * @returns {mat3} out
- */
-
-
-/**
- * Adds two mat3's after multiplying each element of the second operand by a scalar value.
- *
- * @param {mat3} out the receiving vector
- * @param {mat3} a the first operand
- * @param {mat3} b the second operand
- * @param {Number} scale the amount to scale b's elements by before adding
- * @returns {mat3} out
- */
-
-
-/**
- * Returns whether or not the matrices have exactly the same elements in the same position (when compared with ===)
- *
- * @param {mat3} a The first matrix.
- * @param {mat3} b The second matrix.
- * @returns {Boolean} True if the matrices are equal, false otherwise.
- */
-
-
-/**
- * Returns whether or not the matrices have approximately the same elements in the same position.
- *
- * @param {mat3} a The first matrix.
- * @param {mat3} b The second matrix.
- * @returns {Boolean} True if the matrices are equal, false otherwise.
- */
-
-
-/**
- * Alias for {@link mat3.multiply}
- * @function
- */
-
-
-/**
- * Alias for {@link mat3.subtract}
- * @function
- */
 
 /* Copyright (c) 2015, Brandon Jones, Colin MacKenzie IV.
 
@@ -1007,23 +170,6 @@ function create$3() {
 }
 
 /**
- * Creates a new mat4 initialized with values from an existing matrix
- *
- * @param {mat4} a matrix to clone
- * @returns {mat4} a new 4x4 matrix
- */
-
-
-/**
- * Copy the values from one mat4 to another
- *
- * @param {mat4} out the receiving matrix
- * @param {mat4} a the source matrix
- * @returns {mat4} out
- */
-
-
-/**
  * Create a new mat4 with the given values
  *
  * @param {Number} m00 Component in column 0, row 0 position (index 0)
@@ -1064,47 +210,6 @@ function fromValues$3(m00, m01, m02, m03, m10, m11, m12, m13, m20, m21, m22, m23
   out[15] = m33;
   return out;
 }
-
-/**
- * Set the components of a mat4 to the given values
- *
- * @param {mat4} out the receiving matrix
- * @param {Number} m00 Component in column 0, row 0 position (index 0)
- * @param {Number} m01 Component in column 0, row 1 position (index 1)
- * @param {Number} m02 Component in column 0, row 2 position (index 2)
- * @param {Number} m03 Component in column 0, row 3 position (index 3)
- * @param {Number} m10 Component in column 1, row 0 position (index 4)
- * @param {Number} m11 Component in column 1, row 1 position (index 5)
- * @param {Number} m12 Component in column 1, row 2 position (index 6)
- * @param {Number} m13 Component in column 1, row 3 position (index 7)
- * @param {Number} m20 Component in column 2, row 0 position (index 8)
- * @param {Number} m21 Component in column 2, row 1 position (index 9)
- * @param {Number} m22 Component in column 2, row 2 position (index 10)
- * @param {Number} m23 Component in column 2, row 3 position (index 11)
- * @param {Number} m30 Component in column 3, row 0 position (index 12)
- * @param {Number} m31 Component in column 3, row 1 position (index 13)
- * @param {Number} m32 Component in column 3, row 2 position (index 14)
- * @param {Number} m33 Component in column 3, row 3 position (index 15)
- * @returns {mat4} out
- */
-
-
-/**
- * Set a mat4 to the identity matrix
- *
- * @param {mat4} out the receiving matrix
- * @returns {mat4} out
- */
-
-
-/**
- * Transpose the values of a mat4
- *
- * @param {mat4} out the receiving matrix
- * @param {mat4} a the source matrix
- * @returns {mat4} out
- */
-
 
 /**
  * Inverts a mat4
@@ -1172,436 +277,6 @@ function invert$3(out, a) {
   return out;
 }
 
-/**
- * Calculates the adjugate of a mat4
- *
- * @param {mat4} out the receiving matrix
- * @param {mat4} a the source matrix
- * @returns {mat4} out
- */
-
-
-/**
- * Calculates the determinant of a mat4
- *
- * @param {mat4} a the source matrix
- * @returns {Number} determinant of a
- */
-
-
-/**
- * Multiplies two mat4s
- *
- * @param {mat4} out the receiving matrix
- * @param {mat4} a the first operand
- * @param {mat4} b the second operand
- * @returns {mat4} out
- */
-
-
-/**
- * Translate a mat4 by the given vector
- *
- * @param {mat4} out the receiving matrix
- * @param {mat4} a the matrix to translate
- * @param {vec3} v vector to translate by
- * @returns {mat4} out
- */
-
-
-/**
- * Scales the mat4 by the dimensions in the given vec3 not using vectorization
- *
- * @param {mat4} out the receiving matrix
- * @param {mat4} a the matrix to scale
- * @param {vec3} v the vec3 to scale the matrix by
- * @returns {mat4} out
- **/
-
-
-/**
- * Rotates a mat4 by the given angle around the given axis
- *
- * @param {mat4} out the receiving matrix
- * @param {mat4} a the matrix to rotate
- * @param {Number} rad the angle to rotate the matrix by
- * @param {vec3} axis the axis to rotate around
- * @returns {mat4} out
- */
-
-
-/**
- * Rotates a matrix by the given angle around the X axis
- *
- * @param {mat4} out the receiving matrix
- * @param {mat4} a the matrix to rotate
- * @param {Number} rad the angle to rotate the matrix by
- * @returns {mat4} out
- */
-
-
-/**
- * Rotates a matrix by the given angle around the Y axis
- *
- * @param {mat4} out the receiving matrix
- * @param {mat4} a the matrix to rotate
- * @param {Number} rad the angle to rotate the matrix by
- * @returns {mat4} out
- */
-
-
-/**
- * Rotates a matrix by the given angle around the Z axis
- *
- * @param {mat4} out the receiving matrix
- * @param {mat4} a the matrix to rotate
- * @param {Number} rad the angle to rotate the matrix by
- * @returns {mat4} out
- */
-
-
-/**
- * Creates a matrix from a vector translation
- * This is equivalent to (but much faster than):
- *
- *     mat4.identity(dest);
- *     mat4.translate(dest, dest, vec);
- *
- * @param {mat4} out mat4 receiving operation result
- * @param {vec3} v Translation vector
- * @returns {mat4} out
- */
-
-
-/**
- * Creates a matrix from a vector scaling
- * This is equivalent to (but much faster than):
- *
- *     mat4.identity(dest);
- *     mat4.scale(dest, dest, vec);
- *
- * @param {mat4} out mat4 receiving operation result
- * @param {vec3} v Scaling vector
- * @returns {mat4} out
- */
-
-
-/**
- * Creates a matrix from a given angle around a given axis
- * This is equivalent to (but much faster than):
- *
- *     mat4.identity(dest);
- *     mat4.rotate(dest, dest, rad, axis);
- *
- * @param {mat4} out mat4 receiving operation result
- * @param {Number} rad the angle to rotate the matrix by
- * @param {vec3} axis the axis to rotate around
- * @returns {mat4} out
- */
-
-
-/**
- * Creates a matrix from the given angle around the X axis
- * This is equivalent to (but much faster than):
- *
- *     mat4.identity(dest);
- *     mat4.rotateX(dest, dest, rad);
- *
- * @param {mat4} out mat4 receiving operation result
- * @param {Number} rad the angle to rotate the matrix by
- * @returns {mat4} out
- */
-
-
-/**
- * Creates a matrix from the given angle around the Y axis
- * This is equivalent to (but much faster than):
- *
- *     mat4.identity(dest);
- *     mat4.rotateY(dest, dest, rad);
- *
- * @param {mat4} out mat4 receiving operation result
- * @param {Number} rad the angle to rotate the matrix by
- * @returns {mat4} out
- */
-
-
-/**
- * Creates a matrix from the given angle around the Z axis
- * This is equivalent to (but much faster than):
- *
- *     mat4.identity(dest);
- *     mat4.rotateZ(dest, dest, rad);
- *
- * @param {mat4} out mat4 receiving operation result
- * @param {Number} rad the angle to rotate the matrix by
- * @returns {mat4} out
- */
-
-
-/**
- * Creates a matrix from a quaternion rotation and vector translation
- * This is equivalent to (but much faster than):
- *
- *     mat4.identity(dest);
- *     mat4.translate(dest, vec);
- *     let quatMat = mat4.create();
- *     quat4.toMat4(quat, quatMat);
- *     mat4.multiply(dest, quatMat);
- *
- * @param {mat4} out mat4 receiving operation result
- * @param {quat4} q Rotation quaternion
- * @param {vec3} v Translation vector
- * @returns {mat4} out
- */
-
-
-/**
- * Returns the translation vector component of a transformation
- *  matrix. If a matrix is built with fromRotationTranslation,
- *  the returned vector will be the same as the translation vector
- *  originally supplied.
- * @param  {vec3} out Vector to receive translation component
- * @param  {mat4} mat Matrix to be decomposed (input)
- * @return {vec3} out
- */
-
-
-/**
- * Returns the scaling factor component of a transformation
- *  matrix. If a matrix is built with fromRotationTranslationScale
- *  with a normalized Quaternion paramter, the returned vector will be
- *  the same as the scaling vector
- *  originally supplied.
- * @param  {vec3} out Vector to receive scaling factor component
- * @param  {mat4} mat Matrix to be decomposed (input)
- * @return {vec3} out
- */
-
-
-/**
- * Returns a quaternion representing the rotational component
- *  of a transformation matrix. If a matrix is built with
- *  fromRotationTranslation, the returned quaternion will be the
- *  same as the quaternion originally supplied.
- * @param {quat} out Quaternion to receive the rotation component
- * @param {mat4} mat Matrix to be decomposed (input)
- * @return {quat} out
- */
-
-
-/**
- * Creates a matrix from a quaternion rotation, vector translation and vector scale
- * This is equivalent to (but much faster than):
- *
- *     mat4.identity(dest);
- *     mat4.translate(dest, vec);
- *     let quatMat = mat4.create();
- *     quat4.toMat4(quat, quatMat);
- *     mat4.multiply(dest, quatMat);
- *     mat4.scale(dest, scale)
- *
- * @param {mat4} out mat4 receiving operation result
- * @param {quat4} q Rotation quaternion
- * @param {vec3} v Translation vector
- * @param {vec3} s Scaling vector
- * @returns {mat4} out
- */
-
-
-/**
- * Creates a matrix from a quaternion rotation, vector translation and vector scale, rotating and scaling around the given origin
- * This is equivalent to (but much faster than):
- *
- *     mat4.identity(dest);
- *     mat4.translate(dest, vec);
- *     mat4.translate(dest, origin);
- *     let quatMat = mat4.create();
- *     quat4.toMat4(quat, quatMat);
- *     mat4.multiply(dest, quatMat);
- *     mat4.scale(dest, scale)
- *     mat4.translate(dest, negativeOrigin);
- *
- * @param {mat4} out mat4 receiving operation result
- * @param {quat4} q Rotation quaternion
- * @param {vec3} v Translation vector
- * @param {vec3} s Scaling vector
- * @param {vec3} o The origin vector around which to scale and rotate
- * @returns {mat4} out
- */
-
-
-/**
- * Calculates a 4x4 matrix from the given quaternion
- *
- * @param {mat4} out mat4 receiving operation result
- * @param {quat} q Quaternion to create matrix from
- *
- * @returns {mat4} out
- */
-
-
-/**
- * Generates a frustum matrix with the given bounds
- *
- * @param {mat4} out mat4 frustum matrix will be written into
- * @param {Number} left Left bound of the frustum
- * @param {Number} right Right bound of the frustum
- * @param {Number} bottom Bottom bound of the frustum
- * @param {Number} top Top bound of the frustum
- * @param {Number} near Near bound of the frustum
- * @param {Number} far Far bound of the frustum
- * @returns {mat4} out
- */
-
-
-/**
- * Generates a perspective projection matrix with the given bounds
- *
- * @param {mat4} out mat4 frustum matrix will be written into
- * @param {number} fovy Vertical field of view in radians
- * @param {number} aspect Aspect ratio. typically viewport width/height
- * @param {number} near Near bound of the frustum
- * @param {number} far Far bound of the frustum
- * @returns {mat4} out
- */
-
-
-/**
- * Generates a perspective projection matrix with the given field of view.
- * This is primarily useful for generating projection matrices to be used
- * with the still experiemental WebVR API.
- *
- * @param {mat4} out mat4 frustum matrix will be written into
- * @param {Object} fov Object containing the following values: upDegrees, downDegrees, leftDegrees, rightDegrees
- * @param {number} near Near bound of the frustum
- * @param {number} far Far bound of the frustum
- * @returns {mat4} out
- */
-
-
-/**
- * Generates a orthogonal projection matrix with the given bounds
- *
- * @param {mat4} out mat4 frustum matrix will be written into
- * @param {number} left Left bound of the frustum
- * @param {number} right Right bound of the frustum
- * @param {number} bottom Bottom bound of the frustum
- * @param {number} top Top bound of the frustum
- * @param {number} near Near bound of the frustum
- * @param {number} far Far bound of the frustum
- * @returns {mat4} out
- */
-
-
-/**
- * Generates a look-at matrix with the given eye position, focal point, and up axis
- *
- * @param {mat4} out mat4 frustum matrix will be written into
- * @param {vec3} eye Position of the viewer
- * @param {vec3} center Point the viewer is looking at
- * @param {vec3} up vec3 pointing up
- * @returns {mat4} out
- */
-
-
-/**
- * Generates a matrix that makes something look at something else.
- *
- * @param {mat4} out mat4 frustum matrix will be written into
- * @param {vec3} eye Position of the viewer
- * @param {vec3} center Point the viewer is looking at
- * @param {vec3} up vec3 pointing up
- * @returns {mat4} out
- */
-
-
-/**
- * Returns a string representation of a mat4
- *
- * @param {mat4} a matrix to represent as a string
- * @returns {String} string representation of the matrix
- */
-
-
-/**
- * Returns Frobenius norm of a mat4
- *
- * @param {mat4} a the matrix to calculate Frobenius norm of
- * @returns {Number} Frobenius norm
- */
-
-
-/**
- * Adds two mat4's
- *
- * @param {mat4} out the receiving matrix
- * @param {mat4} a the first operand
- * @param {mat4} b the second operand
- * @returns {mat4} out
- */
-
-
-/**
- * Subtracts matrix b from matrix a
- *
- * @param {mat4} out the receiving matrix
- * @param {mat4} a the first operand
- * @param {mat4} b the second operand
- * @returns {mat4} out
- */
-
-
-/**
- * Multiply each element of the matrix by a scalar.
- *
- * @param {mat4} out the receiving matrix
- * @param {mat4} a the matrix to scale
- * @param {Number} b amount to scale the matrix's elements by
- * @returns {mat4} out
- */
-
-
-/**
- * Adds two mat4's after multiplying each element of the second operand by a scalar value.
- *
- * @param {mat4} out the receiving vector
- * @param {mat4} a the first operand
- * @param {mat4} b the second operand
- * @param {Number} scale the amount to scale b's elements by before adding
- * @returns {mat4} out
- */
-
-
-/**
- * Returns whether or not the matrices have exactly the same elements in the same position (when compared with ===)
- *
- * @param {mat4} a The first matrix.
- * @param {mat4} b The second matrix.
- * @returns {Boolean} True if the matrices are equal, false otherwise.
- */
-
-
-/**
- * Returns whether or not the matrices have approximately the same elements in the same position.
- *
- * @param {mat4} a The first matrix.
- * @param {mat4} b The second matrix.
- * @returns {Boolean} True if the matrices are equal, false otherwise.
- */
-
-
-/**
- * Alias for {@link mat4.multiply}
- * @function
- */
-
-
-/**
- * Alias for {@link mat4.subtract}
- * @function
- */
-
 /* Copyright (c) 2015, Brandon Jones, Colin MacKenzie IV.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -1632,7 +307,7 @@ THE SOFTWARE. */
  *
  * @returns {vec3} a new 3D vector
  */
-function create$5() {
+function create$4() {
   var out = new ARRAY_TYPE(3);
   out[0] = 0;
   out[1] = 0;
@@ -1641,20 +316,12 @@ function create$5() {
 }
 
 /**
- * Creates a new vec3 initialized with values from an existing vector
- *
- * @param {vec3} a vector to clone
- * @returns {vec3} a new 3D vector
- */
-
-
-/**
  * Calculates the length of a vec3
  *
  * @param {vec3} a vector to calculate length of
  * @returns {Number} length of a
  */
-function length$1(a) {
+function length(a) {
   var x = a[0];
   var y = a[1];
   var z = a[2];
@@ -1669,7 +336,7 @@ function length$1(a) {
  * @param {Number} z Z component
  * @returns {vec3} a new 3D vector
  */
-function fromValues$5(x, y, z) {
+function fromValues$4(x, y, z) {
   var out = new ARRAY_TYPE(3);
   out[0] = x;
   out[1] = y;
@@ -1678,185 +345,13 @@ function fromValues$5(x, y, z) {
 }
 
 /**
- * Copy the values from one vec3 to another
- *
- * @param {vec3} out the receiving vector
- * @param {vec3} a the source vector
- * @returns {vec3} out
- */
-
-
-/**
- * Set the components of a vec3 to the given values
- *
- * @param {vec3} out the receiving vector
- * @param {Number} x X component
- * @param {Number} y Y component
- * @param {Number} z Z component
- * @returns {vec3} out
- */
-
-
-/**
- * Adds two vec3's
- *
- * @param {vec3} out the receiving vector
- * @param {vec3} a the first operand
- * @param {vec3} b the second operand
- * @returns {vec3} out
- */
-
-
-/**
- * Subtracts vector b from vector a
- *
- * @param {vec3} out the receiving vector
- * @param {vec3} a the first operand
- * @param {vec3} b the second operand
- * @returns {vec3} out
- */
-
-
-/**
- * Multiplies two vec3's
- *
- * @param {vec3} out the receiving vector
- * @param {vec3} a the first operand
- * @param {vec3} b the second operand
- * @returns {vec3} out
- */
-
-
-/**
- * Divides two vec3's
- *
- * @param {vec3} out the receiving vector
- * @param {vec3} a the first operand
- * @param {vec3} b the second operand
- * @returns {vec3} out
- */
-
-
-/**
- * Math.ceil the components of a vec3
- *
- * @param {vec3} out the receiving vector
- * @param {vec3} a vector to ceil
- * @returns {vec3} out
- */
-
-
-/**
- * Math.floor the components of a vec3
- *
- * @param {vec3} out the receiving vector
- * @param {vec3} a vector to floor
- * @returns {vec3} out
- */
-
-
-/**
- * Returns the minimum of two vec3's
- *
- * @param {vec3} out the receiving vector
- * @param {vec3} a the first operand
- * @param {vec3} b the second operand
- * @returns {vec3} out
- */
-
-
-/**
- * Returns the maximum of two vec3's
- *
- * @param {vec3} out the receiving vector
- * @param {vec3} a the first operand
- * @param {vec3} b the second operand
- * @returns {vec3} out
- */
-
-
-/**
- * Math.round the components of a vec3
- *
- * @param {vec3} out the receiving vector
- * @param {vec3} a vector to round
- * @returns {vec3} out
- */
-
-
-/**
- * Scales a vec3 by a scalar number
- *
- * @param {vec3} out the receiving vector
- * @param {vec3} a the vector to scale
- * @param {Number} b amount to scale the vector by
- * @returns {vec3} out
- */
-
-
-/**
- * Adds two vec3's after scaling the second operand by a scalar value
- *
- * @param {vec3} out the receiving vector
- * @param {vec3} a the first operand
- * @param {vec3} b the second operand
- * @param {Number} scale the amount to scale b by before adding
- * @returns {vec3} out
- */
-
-
-/**
- * Calculates the euclidian distance between two vec3's
- *
- * @param {vec3} a the first operand
- * @param {vec3} b the second operand
- * @returns {Number} distance between a and b
- */
-
-
-/**
- * Calculates the squared euclidian distance between two vec3's
- *
- * @param {vec3} a the first operand
- * @param {vec3} b the second operand
- * @returns {Number} squared distance between a and b
- */
-
-
-/**
- * Calculates the squared length of a vec3
- *
- * @param {vec3} a vector to calculate squared length of
- * @returns {Number} squared length of a
- */
-
-
-/**
- * Negates the components of a vec3
- *
- * @param {vec3} out the receiving vector
- * @param {vec3} a vector to negate
- * @returns {vec3} out
- */
-
-
-/**
- * Returns the inverse of the components of a vec3
- *
- * @param {vec3} out the receiving vector
- * @param {vec3} a vector to invert
- * @returns {vec3} out
- */
-
-
-/**
  * Normalize a vec3
  *
  * @param {vec3} out the receiving vector
  * @param {vec3} a vector to normalize
  * @returns {vec3} out
  */
-function normalize$1(out, a) {
+function normalize(out, a) {
   var x = a[0];
   var y = a[1];
   var z = a[2];
@@ -1878,7 +373,7 @@ function normalize$1(out, a) {
  * @param {vec3} b the second operand
  * @returns {Number} dot product of a and b
  */
-function dot$1(a, b) {
+function dot(a, b) {
   return a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
 }
 
@@ -1905,187 +400,10 @@ function cross(out, a, b) {
 }
 
 /**
- * Performs a linear interpolation between two vec3's
- *
- * @param {vec3} out the receiving vector
- * @param {vec3} a the first operand
- * @param {vec3} b the second operand
- * @param {Number} t interpolation amount between the two inputs
- * @returns {vec3} out
- */
-
-
-/**
- * Performs a hermite interpolation with two control points
- *
- * @param {vec3} out the receiving vector
- * @param {vec3} a the first operand
- * @param {vec3} b the second operand
- * @param {vec3} c the third operand
- * @param {vec3} d the fourth operand
- * @param {Number} t interpolation amount between the two inputs
- * @returns {vec3} out
- */
-
-
-/**
- * Performs a bezier interpolation with two control points
- *
- * @param {vec3} out the receiving vector
- * @param {vec3} a the first operand
- * @param {vec3} b the second operand
- * @param {vec3} c the third operand
- * @param {vec3} d the fourth operand
- * @param {Number} t interpolation amount between the two inputs
- * @returns {vec3} out
- */
-
-
-/**
- * Generates a random vector with the given scale
- *
- * @param {vec3} out the receiving vector
- * @param {Number} [scale] Length of the resulting vector. If ommitted, a unit vector will be returned
- * @returns {vec3} out
- */
-
-
-/**
- * Transforms the vec3 with a mat4.
- * 4th vector component is implicitly '1'
- *
- * @param {vec3} out the receiving vector
- * @param {vec3} a the vector to transform
- * @param {mat4} m matrix to transform with
- * @returns {vec3} out
- */
-
-
-/**
- * Transforms the vec3 with a mat3.
- *
- * @param {vec3} out the receiving vector
- * @param {vec3} a the vector to transform
- * @param {mat3} m the 3x3 matrix to transform with
- * @returns {vec3} out
- */
-
-
-/**
- * Transforms the vec3 with a quat
- *
- * @param {vec3} out the receiving vector
- * @param {vec3} a the vector to transform
- * @param {quat} q quaternion to transform with
- * @returns {vec3} out
- */
-
-
-/**
- * Rotate a 3D vector around the x-axis
- * @param {vec3} out The receiving vec3
- * @param {vec3} a The vec3 point to rotate
- * @param {vec3} b The origin of the rotation
- * @param {Number} c The angle of rotation
- * @returns {vec3} out
- */
-
-
-/**
- * Rotate a 3D vector around the y-axis
- * @param {vec3} out The receiving vec3
- * @param {vec3} a The vec3 point to rotate
- * @param {vec3} b The origin of the rotation
- * @param {Number} c The angle of rotation
- * @returns {vec3} out
- */
-
-
-/**
- * Rotate a 3D vector around the z-axis
- * @param {vec3} out The receiving vec3
- * @param {vec3} a The vec3 point to rotate
- * @param {vec3} b The origin of the rotation
- * @param {Number} c The angle of rotation
- * @returns {vec3} out
- */
-
-
-/**
- * Get the angle between two 3D vectors
- * @param {vec3} a The first operand
- * @param {vec3} b The second operand
- * @returns {Number} The angle in radians
- */
-
-
-/**
- * Returns a string representation of a vector
- *
- * @param {vec3} a vector to represent as a string
- * @returns {String} string representation of the vector
- */
-
-
-/**
- * Returns whether or not the vectors have exactly the same elements in the same position (when compared with ===)
- *
- * @param {vec3} a The first vector.
- * @param {vec3} b The second vector.
- * @returns {Boolean} True if the vectors are equal, false otherwise.
- */
-
-
-/**
- * Returns whether or not the vectors have approximately the same elements in the same position.
- *
- * @param {vec3} a The first vector.
- * @param {vec3} b The second vector.
- * @returns {Boolean} True if the vectors are equal, false otherwise.
- */
-
-
-/**
- * Alias for {@link vec3.subtract}
- * @function
- */
-
-
-/**
- * Alias for {@link vec3.multiply}
- * @function
- */
-
-
-/**
- * Alias for {@link vec3.divide}
- * @function
- */
-
-
-/**
- * Alias for {@link vec3.distance}
- * @function
- */
-
-
-/**
- * Alias for {@link vec3.squaredDistance}
- * @function
- */
-
-
-/**
  * Alias for {@link vec3.length}
  * @function
  */
-var len$1 = length$1;
-
-/**
- * Alias for {@link vec3.squaredLength}
- * @function
- */
-
+var len = length;
 
 /**
  * Perform some operation over an array of vec3s.
@@ -2100,7 +418,7 @@ var len$1 = length$1;
  * @function
  */
 var forEach = function () {
-  var vec = create$5();
+  var vec = create$4();
 
   return function (a, stride, offset, count, fn, arg) {
     var i = void 0,
@@ -2159,7 +477,7 @@ THE SOFTWARE. */
  *
  * @returns {vec4} a new 4D vector
  */
-function create$6() {
+function create$5() {
   var out = new ARRAY_TYPE(4);
   out[0] = 0;
   out[1] = 0;
@@ -2167,14 +485,6 @@ function create$6() {
   out[3] = 0;
   return out;
 }
-
-/**
- * Creates a new vec4 initialized with values from an existing vector
- *
- * @param {vec4} a vector to clone
- * @returns {vec4} a new 4D vector
- */
-
 
 /**
  * Creates a new vec4 initialized with the given values
@@ -2185,7 +495,7 @@ function create$6() {
  * @param {Number} w W component
  * @returns {vec4} a new 4D vector
  */
-function fromValues$6(x, y, z, w) {
+function fromValues$5(x, y, z, w) {
   var out = new ARRAY_TYPE(4);
   out[0] = x;
   out[1] = y;
@@ -2195,194 +505,13 @@ function fromValues$6(x, y, z, w) {
 }
 
 /**
- * Copy the values from one vec4 to another
- *
- * @param {vec4} out the receiving vector
- * @param {vec4} a the source vector
- * @returns {vec4} out
- */
-
-
-/**
- * Set the components of a vec4 to the given values
- *
- * @param {vec4} out the receiving vector
- * @param {Number} x X component
- * @param {Number} y Y component
- * @param {Number} z Z component
- * @param {Number} w W component
- * @returns {vec4} out
- */
-
-
-/**
- * Adds two vec4's
- *
- * @param {vec4} out the receiving vector
- * @param {vec4} a the first operand
- * @param {vec4} b the second operand
- * @returns {vec4} out
- */
-
-
-/**
- * Subtracts vector b from vector a
- *
- * @param {vec4} out the receiving vector
- * @param {vec4} a the first operand
- * @param {vec4} b the second operand
- * @returns {vec4} out
- */
-
-
-/**
- * Multiplies two vec4's
- *
- * @param {vec4} out the receiving vector
- * @param {vec4} a the first operand
- * @param {vec4} b the second operand
- * @returns {vec4} out
- */
-
-
-/**
- * Divides two vec4's
- *
- * @param {vec4} out the receiving vector
- * @param {vec4} a the first operand
- * @param {vec4} b the second operand
- * @returns {vec4} out
- */
-
-
-/**
- * Math.ceil the components of a vec4
- *
- * @param {vec4} out the receiving vector
- * @param {vec4} a vector to ceil
- * @returns {vec4} out
- */
-
-
-/**
- * Math.floor the components of a vec4
- *
- * @param {vec4} out the receiving vector
- * @param {vec4} a vector to floor
- * @returns {vec4} out
- */
-
-
-/**
- * Returns the minimum of two vec4's
- *
- * @param {vec4} out the receiving vector
- * @param {vec4} a the first operand
- * @param {vec4} b the second operand
- * @returns {vec4} out
- */
-
-
-/**
- * Returns the maximum of two vec4's
- *
- * @param {vec4} out the receiving vector
- * @param {vec4} a the first operand
- * @param {vec4} b the second operand
- * @returns {vec4} out
- */
-
-
-/**
- * Math.round the components of a vec4
- *
- * @param {vec4} out the receiving vector
- * @param {vec4} a vector to round
- * @returns {vec4} out
- */
-
-
-/**
- * Scales a vec4 by a scalar number
- *
- * @param {vec4} out the receiving vector
- * @param {vec4} a the vector to scale
- * @param {Number} b amount to scale the vector by
- * @returns {vec4} out
- */
-
-
-/**
- * Adds two vec4's after scaling the second operand by a scalar value
- *
- * @param {vec4} out the receiving vector
- * @param {vec4} a the first operand
- * @param {vec4} b the second operand
- * @param {Number} scale the amount to scale b by before adding
- * @returns {vec4} out
- */
-
-
-/**
- * Calculates the euclidian distance between two vec4's
- *
- * @param {vec4} a the first operand
- * @param {vec4} b the second operand
- * @returns {Number} distance between a and b
- */
-
-
-/**
- * Calculates the squared euclidian distance between two vec4's
- *
- * @param {vec4} a the first operand
- * @param {vec4} b the second operand
- * @returns {Number} squared distance between a and b
- */
-
-
-/**
- * Calculates the length of a vec4
- *
- * @param {vec4} a vector to calculate length of
- * @returns {Number} length of a
- */
-
-
-/**
- * Calculates the squared length of a vec4
- *
- * @param {vec4} a vector to calculate squared length of
- * @returns {Number} squared length of a
- */
-
-
-/**
- * Negates the components of a vec4
- *
- * @param {vec4} out the receiving vector
- * @param {vec4} a vector to negate
- * @returns {vec4} out
- */
-
-
-/**
- * Returns the inverse of the components of a vec4
- *
- * @param {vec4} out the receiving vector
- * @param {vec4} a vector to invert
- * @returns {vec4} out
- */
-
-
-/**
  * Normalize a vec4
  *
  * @param {vec4} out the receiving vector
  * @param {vec4} a vector to normalize
  * @returns {vec4} out
  */
-function normalize$2(out, a) {
+function normalize$1(out, a) {
   var x = a[0];
   var y = a[1];
   var z = a[2];
@@ -2397,35 +526,6 @@ function normalize$2(out, a) {
   }
   return out;
 }
-
-/**
- * Calculates the dot product of two vec4's
- *
- * @param {vec4} a the first operand
- * @param {vec4} b the second operand
- * @returns {Number} dot product of a and b
- */
-
-
-/**
- * Performs a linear interpolation between two vec4's
- *
- * @param {vec4} out the receiving vector
- * @param {vec4} a the first operand
- * @param {vec4} b the second operand
- * @param {Number} t interpolation amount between the two inputs
- * @returns {vec4} out
- */
-
-
-/**
- * Generates a random vector with the given scale
- *
- * @param {vec4} out the receiving vector
- * @param {Number} [scale] Length of the resulting vector. If ommitted, a unit vector will be returned
- * @returns {vec4} out
- */
-
 
 /**
  * Transforms the vec4 with a mat4.
@@ -2448,84 +548,6 @@ function transformMat4$1(out, a, m) {
 }
 
 /**
- * Transforms the vec4 with a quat
- *
- * @param {vec4} out the receiving vector
- * @param {vec4} a the vector to transform
- * @param {quat} q quaternion to transform with
- * @returns {vec4} out
- */
-
-
-/**
- * Returns a string representation of a vector
- *
- * @param {vec4} a vector to represent as a string
- * @returns {String} string representation of the vector
- */
-
-
-/**
- * Returns whether or not the vectors have exactly the same elements in the same position (when compared with ===)
- *
- * @param {vec4} a The first vector.
- * @param {vec4} b The second vector.
- * @returns {Boolean} True if the vectors are equal, false otherwise.
- */
-
-
-/**
- * Returns whether or not the vectors have approximately the same elements in the same position.
- *
- * @param {vec4} a The first vector.
- * @param {vec4} b The second vector.
- * @returns {Boolean} True if the vectors are equal, false otherwise.
- */
-
-
-/**
- * Alias for {@link vec4.subtract}
- * @function
- */
-
-
-/**
- * Alias for {@link vec4.multiply}
- * @function
- */
-
-
-/**
- * Alias for {@link vec4.divide}
- * @function
- */
-
-
-/**
- * Alias for {@link vec4.distance}
- * @function
- */
-
-
-/**
- * Alias for {@link vec4.squaredDistance}
- * @function
- */
-
-
-/**
- * Alias for {@link vec4.length}
- * @function
- */
-
-
-/**
- * Alias for {@link vec4.squaredLength}
- * @function
- */
-
-
-/**
  * Perform some operation over an array of vec4s.
  *
  * @param {Array} a the array of vectors to iterate over
@@ -2538,7 +560,7 @@ function transformMat4$1(out, a, m) {
  * @function
  */
 var forEach$1 = function () {
-  var vec = create$6();
+  var vec = create$5();
 
   return function (a, stride, offset, count, fn, arg) {
     var i = void 0,
@@ -2597,7 +619,7 @@ THE SOFTWARE. */
  *
  * @returns {quat} a new quaternion
  */
-function create$4() {
+function create$6() {
   var out = new ARRAY_TYPE(4);
   out[0] = 0;
   out[1] = 0;
@@ -2605,14 +627,6 @@ function create$4() {
   out[3] = 1;
   return out;
 }
-
-/**
- * Set a quat to the identity quaternion
- *
- * @param {quat} out the receiving quaternion
- * @returns {quat} out
- */
-
 
 /**
  * Sets a quat from the given angle and rotation axis,
@@ -2632,72 +646,6 @@ function setAxisAngle(out, axis, rad) {
   out[3] = Math.cos(rad);
   return out;
 }
-
-/**
- * Gets the rotation axis and angle for a given
- *  quaternion. If a quaternion is created with
- *  setAxisAngle, this method will return the same
- *  values as providied in the original parameter list
- *  OR functionally equivalent values.
- * Example: The quaternion formed by axis [0, 0, 1] and
- *  angle -90 is the same as the quaternion formed by
- *  [0, 0, 1] and 270. This method favors the latter.
- * @param  {vec3} out_axis  Vector receiving the axis of rotation
- * @param  {quat} q     Quaternion to be decomposed
- * @return {Number}     Angle, in radians, of the rotation
- */
-
-
-/**
- * Multiplies two quat's
- *
- * @param {quat} out the receiving quaternion
- * @param {quat} a the first operand
- * @param {quat} b the second operand
- * @returns {quat} out
- */
-
-
-/**
- * Rotates a quaternion by the given angle about the X axis
- *
- * @param {quat} out quat receiving operation result
- * @param {quat} a quat to rotate
- * @param {number} rad angle (in radians) to rotate
- * @returns {quat} out
- */
-
-
-/**
- * Rotates a quaternion by the given angle about the Y axis
- *
- * @param {quat} out quat receiving operation result
- * @param {quat} a quat to rotate
- * @param {number} rad angle (in radians) to rotate
- * @returns {quat} out
- */
-
-
-/**
- * Rotates a quaternion by the given angle about the Z axis
- *
- * @param {quat} out quat receiving operation result
- * @param {quat} a quat to rotate
- * @param {number} rad angle (in radians) to rotate
- * @returns {quat} out
- */
-
-
-/**
- * Calculates the W component of a quat from the X, Y, and Z components.
- * Assumes that quaternion is 1 unit in length.
- * Any existing W component will be ignored.
- *
- * @param {quat} out the receiving quaternion
- * @param {quat} a quat to calculate W component of
- * @returns {quat} out
- */
-
 
 /**
  * Performs a spherical linear interpolation between two quat
@@ -2759,25 +707,6 @@ function slerp(out, a, b, t) {
 }
 
 /**
- * Calculates the inverse of a quat
- *
- * @param {quat} out the receiving quaternion
- * @param {quat} a quat to calculate inverse of
- * @returns {quat} out
- */
-
-
-/**
- * Calculates the conjugate of a quat
- * If the quaternion is normalized, this function is faster than quat.inverse and produces the same result.
- *
- * @param {quat} out the receiving quaternion
- * @param {quat} a quat to calculate conjugate of
- * @returns {quat} out
- */
-
-
-/**
  * Creates a quaternion from the given 3x3 rotation matrix.
  *
  * NOTE: The resultant quaternion is not normalized, so you should be sure
@@ -2822,149 +751,6 @@ function fromMat3(out, m) {
 }
 
 /**
- * Creates a quaternion from the given euler angle x, y, z.
- *
- * @param {quat} out the receiving quaternion
- * @param {x} Angle to rotate around X axis in degrees.
- * @param {y} Angle to rotate around Y axis in degrees.
- * @param {z} Angle to rotate around Z axis in degrees.
- * @returns {quat} out
- * @function
- */
-
-
-/**
- * Returns a string representation of a quatenion
- *
- * @param {quat} a vector to represent as a string
- * @returns {String} string representation of the vector
- */
-
-
-/**
- * Creates a new quat initialized with values from an existing quaternion
- *
- * @param {quat} a quaternion to clone
- * @returns {quat} a new quaternion
- * @function
- */
-
-
-/**
- * Creates a new quat initialized with the given values
- *
- * @param {Number} x X component
- * @param {Number} y Y component
- * @param {Number} z Z component
- * @param {Number} w W component
- * @returns {quat} a new quaternion
- * @function
- */
-
-
-/**
- * Copy the values from one quat to another
- *
- * @param {quat} out the receiving quaternion
- * @param {quat} a the source quaternion
- * @returns {quat} out
- * @function
- */
-
-
-/**
- * Set the components of a quat to the given values
- *
- * @param {quat} out the receiving quaternion
- * @param {Number} x X component
- * @param {Number} y Y component
- * @param {Number} z Z component
- * @param {Number} w W component
- * @returns {quat} out
- * @function
- */
-
-
-/**
- * Adds two quat's
- *
- * @param {quat} out the receiving quaternion
- * @param {quat} a the first operand
- * @param {quat} b the second operand
- * @returns {quat} out
- * @function
- */
-
-
-/**
- * Alias for {@link quat.multiply}
- * @function
- */
-
-
-/**
- * Scales a quat by a scalar number
- *
- * @param {quat} out the receiving vector
- * @param {quat} a the vector to scale
- * @param {Number} b amount to scale the vector by
- * @returns {quat} out
- * @function
- */
-
-
-/**
- * Calculates the dot product of two quat's
- *
- * @param {quat} a the first operand
- * @param {quat} b the second operand
- * @returns {Number} dot product of a and b
- * @function
- */
-
-
-/**
- * Performs a linear interpolation between two quat's
- *
- * @param {quat} out the receiving quaternion
- * @param {quat} a the first operand
- * @param {quat} b the second operand
- * @param {Number} t interpolation amount between the two inputs
- * @returns {quat} out
- * @function
- */
-
-
-/**
- * Calculates the length of a quat
- *
- * @param {quat} a vector to calculate length of
- * @returns {Number} length of a
- */
-
-
-/**
- * Alias for {@link quat.length}
- * @function
- */
-
-
-/**
- * Calculates the squared length of a quat
- *
- * @param {quat} a vector to calculate squared length of
- * @returns {Number} squared length of a
- * @function
- */
-
-
-/**
- * Alias for {@link quat.squaredLength}
- * @function
- */
-
-
-/**
  * Normalize a quat
  *
  * @param {quat} out the receiving quaternion
@@ -2972,25 +758,7 @@ function fromMat3(out, m) {
  * @returns {quat} out
  * @function
  */
-var normalize = normalize$2;
-
-/**
- * Returns whether or not the quaternions have exactly the same elements in the same position (when compared with ===)
- *
- * @param {quat} a The first quaternion.
- * @param {quat} b The second quaternion.
- * @returns {Boolean} True if the vectors are equal, false otherwise.
- */
-
-
-/**
- * Returns whether or not the quaternions have approximately the same elements in the same position.
- *
- * @param {quat} a The first vector.
- * @param {quat} b The second vector.
- * @returns {Boolean} True if the vectors are equal, false otherwise.
- */
-
+var normalize$2 = normalize$1;
 
 /**
  * Sets a quaternion to represent the shortest rotation from one
@@ -3004,19 +772,19 @@ var normalize = normalize$2;
  * @returns {quat} out
  */
 var rotationTo = function () {
-  var tmpvec3 = create$5();
-  var xUnitVec3 = fromValues$5(1, 0, 0);
-  var yUnitVec3 = fromValues$5(0, 1, 0);
+  var tmpvec3 = create$4();
+  var xUnitVec3 = fromValues$4(1, 0, 0);
+  var yUnitVec3 = fromValues$4(0, 1, 0);
 
   return function (out, a, b) {
-    var dot = dot$1(a, b);
-    if (dot < -0.999999) {
+    var dot$$1 = dot(a, b);
+    if (dot$$1 < -0.999999) {
       cross(tmpvec3, xUnitVec3, a);
-      if (len$1(tmpvec3) < 0.000001) cross(tmpvec3, yUnitVec3, a);
-      normalize$1(tmpvec3, tmpvec3);
+      if (len(tmpvec3) < 0.000001) cross(tmpvec3, yUnitVec3, a);
+      normalize(tmpvec3, tmpvec3);
       setAxisAngle(out, tmpvec3, Math.PI);
       return out;
-    } else if (dot > 0.999999) {
+    } else if (dot$$1 > 0.999999) {
       out[0] = 0;
       out[1] = 0;
       out[2] = 0;
@@ -3027,8 +795,8 @@ var rotationTo = function () {
       out[0] = tmpvec3[0];
       out[1] = tmpvec3[1];
       out[2] = tmpvec3[2];
-      out[3] = 1 + dot;
-      return normalize(out, out);
+      out[3] = 1 + dot$$1;
+      return normalize$2(out, out);
     }
   };
 }();
@@ -3045,8 +813,8 @@ var rotationTo = function () {
  * @returns {quat} out
  */
 var sqlerp = function () {
-  var temp1 = create$4();
-  var temp2 = create$4();
+  var temp1 = create$6();
+  var temp2 = create$6();
 
   return function (out, a, b, c, d, t) {
     slerp(temp1, a, d, t);
@@ -3083,7 +851,7 @@ var setAxes = function () {
     matr[5] = -view[1];
     matr[8] = -view[2];
 
-    return normalize(out, fromMat3(out, matr));
+    return normalize$2(out, fromMat3(out, matr));
   };
 }();
 
@@ -3123,362 +891,6 @@ function create$7() {
   out[1] = 0;
   return out;
 }
-
-/**
- * Creates a new vec2 initialized with values from an existing vector
- *
- * @param {vec2} a vector to clone
- * @returns {vec2} a new 2D vector
- */
-
-
-/**
- * Creates a new vec2 initialized with the given values
- *
- * @param {Number} x X component
- * @param {Number} y Y component
- * @returns {vec2} a new 2D vector
- */
-
-
-/**
- * Copy the values from one vec2 to another
- *
- * @param {vec2} out the receiving vector
- * @param {vec2} a the source vector
- * @returns {vec2} out
- */
-
-
-/**
- * Set the components of a vec2 to the given values
- *
- * @param {vec2} out the receiving vector
- * @param {Number} x X component
- * @param {Number} y Y component
- * @returns {vec2} out
- */
-
-
-/**
- * Adds two vec2's
- *
- * @param {vec2} out the receiving vector
- * @param {vec2} a the first operand
- * @param {vec2} b the second operand
- * @returns {vec2} out
- */
-
-
-/**
- * Subtracts vector b from vector a
- *
- * @param {vec2} out the receiving vector
- * @param {vec2} a the first operand
- * @param {vec2} b the second operand
- * @returns {vec2} out
- */
-
-
-/**
- * Multiplies two vec2's
- *
- * @param {vec2} out the receiving vector
- * @param {vec2} a the first operand
- * @param {vec2} b the second operand
- * @returns {vec2} out
- */
-
-
-/**
- * Divides two vec2's
- *
- * @param {vec2} out the receiving vector
- * @param {vec2} a the first operand
- * @param {vec2} b the second operand
- * @returns {vec2} out
- */
-
-
-/**
- * Math.ceil the components of a vec2
- *
- * @param {vec2} out the receiving vector
- * @param {vec2} a vector to ceil
- * @returns {vec2} out
- */
-
-
-/**
- * Math.floor the components of a vec2
- *
- * @param {vec2} out the receiving vector
- * @param {vec2} a vector to floor
- * @returns {vec2} out
- */
-
-
-/**
- * Returns the minimum of two vec2's
- *
- * @param {vec2} out the receiving vector
- * @param {vec2} a the first operand
- * @param {vec2} b the second operand
- * @returns {vec2} out
- */
-
-
-/**
- * Returns the maximum of two vec2's
- *
- * @param {vec2} out the receiving vector
- * @param {vec2} a the first operand
- * @param {vec2} b the second operand
- * @returns {vec2} out
- */
-
-
-/**
- * Math.round the components of a vec2
- *
- * @param {vec2} out the receiving vector
- * @param {vec2} a vector to round
- * @returns {vec2} out
- */
-
-
-/**
- * Scales a vec2 by a scalar number
- *
- * @param {vec2} out the receiving vector
- * @param {vec2} a the vector to scale
- * @param {Number} b amount to scale the vector by
- * @returns {vec2} out
- */
-
-
-/**
- * Adds two vec2's after scaling the second operand by a scalar value
- *
- * @param {vec2} out the receiving vector
- * @param {vec2} a the first operand
- * @param {vec2} b the second operand
- * @param {Number} scale the amount to scale b by before adding
- * @returns {vec2} out
- */
-
-
-/**
- * Calculates the euclidian distance between two vec2's
- *
- * @param {vec2} a the first operand
- * @param {vec2} b the second operand
- * @returns {Number} distance between a and b
- */
-
-
-/**
- * Calculates the squared euclidian distance between two vec2's
- *
- * @param {vec2} a the first operand
- * @param {vec2} b the second operand
- * @returns {Number} squared distance between a and b
- */
-
-
-/**
- * Calculates the length of a vec2
- *
- * @param {vec2} a vector to calculate length of
- * @returns {Number} length of a
- */
-
-
-/**
- * Calculates the squared length of a vec2
- *
- * @param {vec2} a vector to calculate squared length of
- * @returns {Number} squared length of a
- */
-
-
-/**
- * Negates the components of a vec2
- *
- * @param {vec2} out the receiving vector
- * @param {vec2} a vector to negate
- * @returns {vec2} out
- */
-
-
-/**
- * Returns the inverse of the components of a vec2
- *
- * @param {vec2} out the receiving vector
- * @param {vec2} a vector to invert
- * @returns {vec2} out
- */
-
-
-/**
- * Normalize a vec2
- *
- * @param {vec2} out the receiving vector
- * @param {vec2} a vector to normalize
- * @returns {vec2} out
- */
-
-
-/**
- * Calculates the dot product of two vec2's
- *
- * @param {vec2} a the first operand
- * @param {vec2} b the second operand
- * @returns {Number} dot product of a and b
- */
-
-
-/**
- * Computes the cross product of two vec2's
- * Note that the cross product must by definition produce a 3D vector
- *
- * @param {vec3} out the receiving vector
- * @param {vec2} a the first operand
- * @param {vec2} b the second operand
- * @returns {vec3} out
- */
-
-
-/**
- * Performs a linear interpolation between two vec2's
- *
- * @param {vec2} out the receiving vector
- * @param {vec2} a the first operand
- * @param {vec2} b the second operand
- * @param {Number} t interpolation amount between the two inputs
- * @returns {vec2} out
- */
-
-
-/**
- * Generates a random vector with the given scale
- *
- * @param {vec2} out the receiving vector
- * @param {Number} [scale] Length of the resulting vector. If ommitted, a unit vector will be returned
- * @returns {vec2} out
- */
-
-
-/**
- * Transforms the vec2 with a mat2
- *
- * @param {vec2} out the receiving vector
- * @param {vec2} a the vector to transform
- * @param {mat2} m matrix to transform with
- * @returns {vec2} out
- */
-
-
-/**
- * Transforms the vec2 with a mat2d
- *
- * @param {vec2} out the receiving vector
- * @param {vec2} a the vector to transform
- * @param {mat2d} m matrix to transform with
- * @returns {vec2} out
- */
-
-
-/**
- * Transforms the vec2 with a mat3
- * 3rd vector component is implicitly '1'
- *
- * @param {vec2} out the receiving vector
- * @param {vec2} a the vector to transform
- * @param {mat3} m matrix to transform with
- * @returns {vec2} out
- */
-
-
-/**
- * Transforms the vec2 with a mat4
- * 3rd vector component is implicitly '0'
- * 4th vector component is implicitly '1'
- *
- * @param {vec2} out the receiving vector
- * @param {vec2} a the vector to transform
- * @param {mat4} m matrix to transform with
- * @returns {vec2} out
- */
-
-
-/**
- * Returns a string representation of a vector
- *
- * @param {vec2} a vector to represent as a string
- * @returns {String} string representation of the vector
- */
-
-
-/**
- * Returns whether or not the vectors exactly have the same elements in the same position (when compared with ===)
- *
- * @param {vec2} a The first vector.
- * @param {vec2} b The second vector.
- * @returns {Boolean} True if the vectors are equal, false otherwise.
- */
-
-
-/**
- * Returns whether or not the vectors have approximately the same elements in the same position.
- *
- * @param {vec2} a The first vector.
- * @param {vec2} b The second vector.
- * @returns {Boolean} True if the vectors are equal, false otherwise.
- */
-
-
-/**
- * Alias for {@link vec2.length}
- * @function
- */
-
-
-/**
- * Alias for {@link vec2.subtract}
- * @function
- */
-
-
-/**
- * Alias for {@link vec2.multiply}
- * @function
- */
-
-
-/**
- * Alias for {@link vec2.divide}
- * @function
- */
-
-
-/**
- * Alias for {@link vec2.distance}
- * @function
- */
-
-
-/**
- * Alias for {@link vec2.squaredDistance}
- * @function
- */
-
-
-/**
- * Alias for {@link vec2.squaredLength}
- * @function
- */
-
 
 /**
  * Perform some operation over an array of vec2s.
@@ -3529,153 +941,11 @@ var forEach$2 = function () {
  * @version 2.4.0
  */
 
-/* Copyright (c) 2015, Brandon Jones, Colin MacKenzie IV.
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE. */
-// END HEADER
-
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) {
   return typeof obj;
 } : function (obj) {
   return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
 };
-
-
-
-
-
-var asyncGenerator = function () {
-  function AwaitValue(value) {
-    this.value = value;
-  }
-
-  function AsyncGenerator(gen) {
-    var front, back;
-
-    function send(key, arg) {
-      return new Promise(function (resolve, reject) {
-        var request = {
-          key: key,
-          arg: arg,
-          resolve: resolve,
-          reject: reject,
-          next: null
-        };
-
-        if (back) {
-          back = back.next = request;
-        } else {
-          front = back = request;
-          resume(key, arg);
-        }
-      });
-    }
-
-    function resume(key, arg) {
-      try {
-        var result = gen[key](arg);
-        var value = result.value;
-
-        if (value instanceof AwaitValue) {
-          Promise.resolve(value.value).then(function (arg) {
-            resume("next", arg);
-          }, function (arg) {
-            resume("throw", arg);
-          });
-        } else {
-          settle(result.done ? "return" : "normal", result.value);
-        }
-      } catch (err) {
-        settle("throw", err);
-      }
-    }
-
-    function settle(type, value) {
-      switch (type) {
-        case "return":
-          front.resolve({
-            value: value,
-            done: true
-          });
-          break;
-
-        case "throw":
-          front.reject(value);
-          break;
-
-        default:
-          front.resolve({
-            value: value,
-            done: false
-          });
-          break;
-      }
-
-      front = front.next;
-
-      if (front) {
-        resume(front.key, front.arg);
-      } else {
-        back = null;
-      }
-    }
-
-    this._invoke = send;
-
-    if (typeof gen.return !== "function") {
-      this.return = undefined;
-    }
-  }
-
-  if (typeof Symbol === "function" && Symbol.asyncIterator) {
-    AsyncGenerator.prototype[Symbol.asyncIterator] = function () {
-      return this;
-    };
-  }
-
-  AsyncGenerator.prototype.next = function (arg) {
-    return this._invoke("next", arg);
-  };
-
-  AsyncGenerator.prototype.throw = function (arg) {
-    return this._invoke("throw", arg);
-  };
-
-  AsyncGenerator.prototype.return = function (arg) {
-    return this._invoke("return", arg);
-  };
-
-  return {
-    wrap: function (fn) {
-      return function () {
-        return new AsyncGenerator(fn.apply(this, arguments));
-      };
-    },
-    await: function (value) {
-      return new AwaitValue(value);
-    }
-  };
-}();
-
-
-
-
 
 var classCallCheck = function (instance, Constructor) {
   if (!(instance instanceof Constructor)) {
@@ -3700,12 +970,6 @@ var createClass = function () {
     return Constructor;
   };
 }();
-
-
-
-
-
-
 
 var get = function get(object, property, receiver) {
   if (object === null) object = Function.prototype;
@@ -3748,16 +1012,6 @@ var inherits = function (subClass, superClass) {
   if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass;
 };
 
-
-
-
-
-
-
-
-
-
-
 var possibleConstructorReturn = function (self, call) {
   if (!self) {
     throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
@@ -3765,24 +1019,6 @@ var possibleConstructorReturn = function (self, call) {
 
   return call && (typeof call === "object" || typeof call === "function") ? call : self;
 };
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 var toConsumableArray = function (arr) {
   if (Array.isArray(arr)) {
@@ -3864,7 +1100,7 @@ function commonjsRequire () {
 }
 
 function unwrapExports (x) {
-	return x && x.__esModule ? x['default'] : x;
+	return x && x.__esModule && Object.prototype.hasOwnProperty.call(x, 'default') ? x['default'] : x;
 }
 
 function createCommonjsModule(fn, module) {
@@ -3923,8 +1159,6 @@ var joiBrowser = createCommonjsModule(function (module, exports) {
 			/* 0 */
 			/***/function (module, exports, __webpack_require__) {
 
-				'use strict';
-
 				var Joi = __webpack_require__(1);
 
 				module.exports = Joi;
@@ -3933,8 +1167,6 @@ var joiBrowser = createCommonjsModule(function (module, exports) {
 			},
 			/* 1 */
 			/***/function (module, exports, __webpack_require__) {
-
-				'use strict';
 
 				// Load modules
 
@@ -4382,7 +1614,6 @@ var joiBrowser = createCommonjsModule(function (module, exports) {
 			/***/function (module, exports, __webpack_require__) {
 
 				/* WEBPACK VAR INJECTION */(function (Buffer, process) {
-					'use strict';
 
 					// Load modules
 
@@ -6316,7 +3547,6 @@ var joiBrowser = createCommonjsModule(function (module, exports) {
 			/***/function (module, exports, __webpack_require__) {
 
 				/* WEBPACK VAR INJECTION */(function (Buffer) {
-					'use strict';
 
 					// Declare internals
 
@@ -6448,8 +3678,6 @@ var joiBrowser = createCommonjsModule(function (module, exports) {
 			},
 			/* 11 */
 			/***/function (module, exports, __webpack_require__) {
-
-				'use strict';
 
 				// Load modules
 
@@ -7320,13 +4548,9 @@ var joiBrowser = createCommonjsModule(function (module, exports) {
 			/* 12 */
 			/***/function (module, exports, __webpack_require__) {
 
-				'use strict';
-
 				// Load modules
 
 				var Hoek = __webpack_require__(2);
-
-				// Declare internals
 
 				exports.create = function (key, options) {
 
@@ -7371,8 +4595,6 @@ var joiBrowser = createCommonjsModule(function (module, exports) {
 			},
 			/* 13 */
 			/***/function (module, exports, __webpack_require__) {
-
-				'use strict';
 
 				// Load modules
 
@@ -7734,13 +4956,6 @@ var joiBrowser = createCommonjsModule(function (module, exports) {
 			/* 14 */
 			/***/function (module, exports) {
 
-				'use strict';
-
-				// Load modules
-
-
-				// Declare internals
-
 				exports.errors = {
 					root: 'value',
 					key: '"{{!key}}" ',
@@ -7888,7 +5103,6 @@ var joiBrowser = createCommonjsModule(function (module, exports) {
 			/***/function (module, exports, __webpack_require__) {
 
 				/* WEBPACK VAR INJECTION */(function (Buffer) {
-					'use strict';
 
 					var _typeof$$1 = typeof Symbol === "function" && _typeof(Symbol.iterator) === "symbol" ? function (obj) {
 						return typeof obj === 'undefined' ? 'undefined' : _typeof(obj);
@@ -8022,8 +5236,6 @@ var joiBrowser = createCommonjsModule(function (module, exports) {
 			/* 16 */
 			/***/function (module, exports, __webpack_require__) {
 
-				'use strict';
-
 				// Load modules
 
 				var _typeof$$1 = typeof Symbol === "function" && _typeof(Symbol.iterator) === "symbol" ? function (obj) {
@@ -8107,8 +5319,6 @@ var joiBrowser = createCommonjsModule(function (module, exports) {
 			},
 			/* 17 */
 			/***/function (module, exports, __webpack_require__) {
-
-				'use strict';
 
 				// Load modules
 
@@ -8315,7 +5525,6 @@ var joiBrowser = createCommonjsModule(function (module, exports) {
 			/***/function (module, exports, __webpack_require__) {
 
 				/* WEBPACK VAR INJECTION */(function (Buffer) {
-					'use strict';
 
 					// Load modules
 
@@ -8929,8 +6138,6 @@ var joiBrowser = createCommonjsModule(function (module, exports) {
 			/* 19 */
 			/***/function (module, exports, __webpack_require__) {
 
-				'use strict';
-
 				// Load Modules
 
 				var RFC3986 = __webpack_require__(20);
@@ -8977,8 +6184,6 @@ var joiBrowser = createCommonjsModule(function (module, exports) {
 			},
 			/* 20 */
 			/***/function (module, exports) {
-
-				'use strict';
 
 				// Load modules
 
@@ -9181,8 +6386,6 @@ var joiBrowser = createCommonjsModule(function (module, exports) {
 			/* 21 */
 			/***/function (module, exports, __webpack_require__) {
 
-				'use strict';
-
 				// Load modules
 
 				var RFC3986 = __webpack_require__(20);
@@ -9226,7 +6429,6 @@ var joiBrowser = createCommonjsModule(function (module, exports) {
 			/***/function (module, exports, __webpack_require__) {
 
 				/* WEBPACK VAR INJECTION */(function (process) {
-					'use strict';
 
 					// Load modules
 
@@ -10570,8 +7772,6 @@ var joiBrowser = createCommonjsModule(function (module, exports) {
 			/* 23 */
 			/***/function (module, exports, __webpack_require__) {
 
-				'use strict';
-
 				// Load modules
 
 				function _defaults(obj, defaults$$1) {
@@ -10781,8 +7981,6 @@ var joiBrowser = createCommonjsModule(function (module, exports) {
 			/* 24 */
 			/***/function (module, exports, __webpack_require__) {
 
-				'use strict';
-
 				// Load modules
 
 				function _defaults(obj, defaults$$1) {
@@ -10911,8 +8109,6 @@ var joiBrowser = createCommonjsModule(function (module, exports) {
 			},
 			/* 25 */
 			/***/function (module, exports, __webpack_require__) {
-
-				'use strict';
 
 				// Load modules
 
@@ -11123,8 +8319,6 @@ var joiBrowser = createCommonjsModule(function (module, exports) {
 			},
 			/* 26 */
 			/***/function (module, exports, __webpack_require__) {
-
-				'use strict';
 
 				// Load modules
 
@@ -12025,8 +9219,6 @@ var joiBrowser = createCommonjsModule(function (module, exports) {
 			/* 27 */
 			/***/function (module, exports, __webpack_require__) {
 
-				'use strict';
-
 				// Load modules
 
 				var Hoek = __webpack_require__(2);
@@ -12255,13 +9447,9 @@ var joiBrowser = createCommonjsModule(function (module, exports) {
 			/* 28 */
 			/***/function (module, exports, __webpack_require__) {
 
-				'use strict';
-
 				// Load modules
 
 				var Joi = __webpack_require__(1);
-
-				// Declare internals
 
 				exports.options = Joi.object({
 					abortEarly: Joi.boolean(),
@@ -12281,8 +9469,6 @@ var joiBrowser = createCommonjsModule(function (module, exports) {
 			},
 			/* 29 */
 			/***/function (module, exports, __webpack_require__) {
-
-				'use strict';
 
 				// Load modules
 
@@ -12369,8 +9555,6 @@ var joiBrowser = createCommonjsModule(function (module, exports) {
 			},
 			/* 30 */
 			/***/function (module, exports, __webpack_require__) {
-
-				'use strict';
 
 				// Load modules
 
@@ -13035,7 +10219,6 @@ var joiBrowser = createCommonjsModule(function (module, exports) {
 			/***/function (module, exports, __webpack_require__) {
 
 				/* WEBPACK VAR INJECTION */(function (Buffer) {
-					'use strict';
 
 					// Load modules
 
@@ -13272,7 +10455,6 @@ var joiBrowser = createCommonjsModule(function (module, exports) {
 			/******/])
 		);
 	});
-	
 });
 
 /*
@@ -13282,7 +10464,6 @@ var joiBrowser = createCommonjsModule(function (module, exports) {
 * Lab       MCIN - Montreal Neurological Institute
 */
 
-// Object schema validation
 /**
 * PixpipeObject is the base object of all. It creates a uuid and has few
 * generic attributes like type, name and description. Not all these attributes
@@ -13493,7 +10674,7 @@ var PixpipeObject = function () {
     key: 'isMetadataCyclic',
     value: function isMetadataCyclic() {
       try {
-        
+        JSON.stringify(this._metadata);
       } catch (e) {
         return true;
       }
@@ -15361,6 +12542,8 @@ var Image3D = function (_PixpipeContainer) {
   }, {
     key: 'getSegmentSample',
     value: function getSegmentSample(posFrom, posTo) {
+
+      // both position must be inside the image
       if (!this.isInside(posFrom) || !this.isInside(posTo)) return null;
 
       var dx = posTo.x - posFrom.x;
@@ -15973,6 +13156,7 @@ var LineString = function (_PixpipeContainer) {
         return null;
       }
 
+      var pointToReturn = new Array(this._lastPoint);
       this._lastPoint.length = this._lastPoint.length - this._metadata.nod;
       this._setLastPoint();
     }
@@ -16842,8 +14026,8 @@ var Image3DAlt = function (_PixpipeContainer) {
       }
 
       var transform = transformations[transformName];
-      var origPos = fromValues$6(positionArr[0], positionArr[1], positionArr[2], 1);
-      var transPos = create$6();
+      var origPos = fromValues$5(positionArr[0], positionArr[1], positionArr[2], 1);
+      var transPos = create$5();
       transformMat4$1(transPos, origPos, transform);
       return transPos;
     }
@@ -18193,6 +15377,8 @@ var bvhtree_1 = createCommonjsModule(function (module) {
     module.exports.intersectRay = bvhtree.intersectRay;
   }
 });
+var bvhtree_2 = bvhtree_1.BVH;
+var bvhtree_3 = bvhtree_1.intersectRay;
 
 /*
 * Author   Jonathan Lurie - http://me.jonathanlurie.fr
@@ -18681,7 +15867,6 @@ var Mesh3D = function (_PixpipeContainerMult) {
   }, {
     key: 'generateFacesNormalsVectors',
     value: function generateFacesNormalsVectors() {
-      
     }
 
     /**
@@ -18776,6 +15961,7 @@ var Mesh3D = function (_PixpipeContainerMult) {
       var vertices = this.getVertexPositions();
       var faces = this.getPolygonFacesOrder();
       this._triangleList = new Float32Array(faces.length * 3);
+
       for (var i = 0; i < faces.length; i += 3) {
 
         this._triangleList[i * 3] = vertices[faces[i] * 3]; // V0x
@@ -19270,119 +16456,6 @@ var traverse_1 = createCommonjsModule$1(function (module) {
     return key in obj;
   };
 });
-
-var asyncGenerator$1 = function () {
-  function AwaitValue(value) {
-    this.value = value;
-  }
-
-  function AsyncGenerator(gen) {
-    var front, back;
-
-    function send(key, arg) {
-      return new Promise(function (resolve, reject) {
-        var request = {
-          key: key,
-          arg: arg,
-          resolve: resolve,
-          reject: reject,
-          next: null
-        };
-
-        if (back) {
-          back = back.next = request;
-        } else {
-          front = back = request;
-          resume(key, arg);
-        }
-      });
-    }
-
-    function resume(key, arg) {
-      try {
-        var result = gen[key](arg);
-        var value = result.value;
-
-        if (value instanceof AwaitValue) {
-          Promise.resolve(value.value).then(function (arg) {
-            resume("next", arg);
-          }, function (arg) {
-            resume("throw", arg);
-          });
-        } else {
-          settle(result.done ? "return" : "normal", result.value);
-        }
-      } catch (err) {
-        settle("throw", err);
-      }
-    }
-
-    function settle(type, value) {
-      switch (type) {
-        case "return":
-          front.resolve({
-            value: value,
-            done: true
-          });
-          break;
-
-        case "throw":
-          front.reject(value);
-          break;
-
-        default:
-          front.resolve({
-            value: value,
-            done: false
-          });
-          break;
-      }
-
-      front = front.next;
-
-      if (front) {
-        resume(front.key, front.arg);
-      } else {
-        back = null;
-      }
-    }
-
-    this._invoke = send;
-
-    if (typeof gen.return !== "function") {
-      this.return = undefined;
-    }
-  }
-
-  if (typeof Symbol === "function" && Symbol.asyncIterator) {
-    AsyncGenerator.prototype[Symbol.asyncIterator] = function () {
-      return this;
-    };
-  }
-
-  AsyncGenerator.prototype.next = function (arg) {
-    return this._invoke("next", arg);
-  };
-
-  AsyncGenerator.prototype.throw = function (arg) {
-    return this._invoke("throw", arg);
-  };
-
-  AsyncGenerator.prototype.return = function (arg) {
-    return this._invoke("return", arg);
-  };
-
-  return {
-    wrap: function wrap(fn) {
-      return function () {
-        return new AsyncGenerator(fn.apply(this, arguments));
-      };
-    },
-    await: function _await(value) {
-      return new AwaitValue(value);
-    }
-  };
-}();
 
 var classCallCheck$1 = function classCallCheck$$1(instance, Constructor) {
   if (!(instance instanceof Constructor)) {
@@ -20178,6 +17251,8 @@ var CanvasImageWriter = function (_Filter) {
   }, {
     key: '_run',
     value: function _run() {
+
+      // abort if invalid input
       if (!this.hasValidInput()) return;
 
       var image = this._input[0];
@@ -20638,8 +17713,7 @@ function cwd() {
 }
 function chdir(dir) {
     throw new Error('process.chdir is not supported');
-}
-function umask() {
+}function umask() {
     return 0;
 }
 
@@ -20701,8 +17775,8 @@ var process = {
 
 var empty = {};
 
-var empty$1 = Object.freeze({
-	default: empty
+var empty$1 = /*#__PURE__*/Object.freeze({
+  default: empty
 });
 
 var lookup = [];
@@ -20906,14 +17980,6 @@ var isArray = Array.isArray || function (arr) {
   return toString.call(arr) == '[object Array]';
 };
 
-/*!
- * The buffer module from node.js, for the browser.
- *
- * @author   Feross Aboukhadijeh <feross@feross.org> <http://feross.org>
- * @license  MIT
- */
-/* eslint-disable no-proto */
-
 var INSPECT_MAX_BYTES = 50;
 
 /**
@@ -20946,6 +18012,7 @@ Buffer.TYPED_ARRAY_SUPPORT = global$1.TYPED_ARRAY_SUPPORT !== undefined ? global
  * Export kMaxLength after typed array support is determined.
  */
 var _kMaxLength = kMaxLength();
+
 function kMaxLength() {
   return Buffer.TYPED_ARRAY_SUPPORT ? 0x7fffffff : 0x3fffffff;
 }
@@ -21033,7 +18100,6 @@ Buffer.from = function (value, encodingOrOffset, length) {
 if (Buffer.TYPED_ARRAY_SUPPORT) {
   Buffer.prototype.__proto__ = Uint8Array.prototype;
   Buffer.__proto__ = Uint8Array;
-  
 }
 
 function assertSize(size) {
@@ -22631,17 +19697,15 @@ function isSlowBuffer(obj) {
   return typeof obj.readFloatLE === 'function' && typeof obj.slice === 'function' && isFastBuffer(obj.slice(0, 0));
 }
 
-var index = Object.freeze({
-	INSPECT_MAX_BYTES: INSPECT_MAX_BYTES,
-	kMaxLength: _kMaxLength,
-	Buffer: Buffer,
-	SlowBuffer: SlowBuffer,
-	isBuffer: isBuffer
+var bufferEs6 = /*#__PURE__*/Object.freeze({
+  INSPECT_MAX_BYTES: INSPECT_MAX_BYTES,
+  kMaxLength: _kMaxLength,
+  Buffer: Buffer,
+  SlowBuffer: SlowBuffer,
+  isBuffer: isBuffer
 });
 
 var require$$0 = ( empty$1 && empty ) || empty$1;
-
-var require$$1 = ( index && undefined ) || index;
 
 var md5 = createCommonjsModule(function (module) {
   /**
@@ -22654,7 +19718,6 @@ var md5 = createCommonjsModule(function (module) {
    * @license MIT
    */
   (function () {
-    'use strict';
 
     var root = (typeof window === 'undefined' ? 'undefined' : _typeof(window)) === 'object' ? window : {};
     var NODE_JS = !root.JS_MD5_NO_NODE_JS && (typeof process === 'undefined' ? 'undefined' : _typeof(process)) === 'object' && process.versions && process.versions.node;
@@ -22771,7 +19834,7 @@ var md5 = createCommonjsModule(function (module) {
 
     var nodeWrap = function nodeWrap(method) {
       var crypto = require$$0;
-      var Buffer = require$$1.Buffer;
+      var Buffer = bufferEs6.Buffer;
       var nodeMethod = function nodeMethod(message) {
         if (typeof message === 'string') {
           return crypto.createHash('md5').update(message, 'utf8').digest('hex');
@@ -23235,7 +20298,6 @@ var md5 = createCommonjsModule(function (module) {
 });
 
 var common = createCommonjsModule(function (module, exports) {
-  'use strict';
 
   var TYPED_OK = typeof Uint8Array !== 'undefined' && typeof Uint16Array !== 'undefined' && typeof Int32Array !== 'undefined';
 
@@ -23337,8 +20399,12 @@ var common = createCommonjsModule(function (module, exports) {
 
   exports.setTyped(TYPED_OK);
 });
-
-'use strict';
+var common_1 = common.assign;
+var common_2 = common.shrinkBuf;
+var common_3 = common.setTyped;
+var common_4 = common.Buf8;
+var common_5 = common.Buf16;
+var common_6 = common.Buf32;
 
 // (C) 1995-2013 Jean-loup Gailly and Mark Adler
 // (C) 2014-2017 Vitaly Puzrin and Andrey Tupitsin
@@ -23366,18 +20432,18 @@ var common = createCommonjsModule(function (module, exports) {
 //var Z_FILTERED          = 1;
 //var Z_HUFFMAN_ONLY      = 2;
 //var Z_RLE               = 3;
-var Z_FIXED$1 = 4;
+var Z_FIXED = 4;
 //var Z_DEFAULT_STRATEGY  = 0;
 
 /* Possible values of the data_type field (though see inflate()) */
 var Z_BINARY = 0;
 var Z_TEXT = 1;
 //var Z_ASCII             = 1; // = Z_TEXT
-var Z_UNKNOWN$1 = 2;
+var Z_UNKNOWN = 2;
 
 /*============================================================================*/
 
-function zero$1(buf) {
+function zero(buf) {
   var len = buf.length;while (--len >= 0) {
     buf[len] = 0;
   }
@@ -23390,8 +20456,8 @@ var STATIC_TREES = 1;
 var DYN_TREES = 2;
 /* The three kinds of block type */
 
-var MIN_MATCH$1 = 3;
-var MAX_MATCH$1 = 258;
+var MIN_MATCH = 3;
+var MAX_MATCH = 258;
 /* The minimum and maximum match lengths */
 
 // From deflate.h
@@ -23399,25 +20465,25 @@ var MAX_MATCH$1 = 258;
  * Internal compression state.
  */
 
-var LENGTH_CODES$1 = 29;
+var LENGTH_CODES = 29;
 /* number of length codes, not counting the special END_BLOCK code */
 
-var LITERALS$1 = 256;
+var LITERALS = 256;
 /* number of literal bytes 0..255 */
 
-var L_CODES$1 = LITERALS$1 + 1 + LENGTH_CODES$1;
+var L_CODES = LITERALS + 1 + LENGTH_CODES;
 /* number of Literal or Length codes, including the END_BLOCK code */
 
-var D_CODES$1 = 30;
+var D_CODES = 30;
 /* number of distance codes */
 
-var BL_CODES$1 = 19;
+var BL_CODES = 19;
 /* number of codes used to transfer the bit lengths */
 
-var HEAP_SIZE$1 = 2 * L_CODES$1 + 1;
+var HEAP_SIZE = 2 * L_CODES + 1;
 /* maximum heap size */
 
-var MAX_BITS$1 = 15;
+var MAX_BITS = 15;
 /* All codes must not exceed MAX_BITS bits */
 
 var Buf_size = 16;
@@ -23468,37 +20534,37 @@ var bl_order = [16, 17, 18, 0, 8, 7, 9, 6, 10, 5, 11, 4, 12, 3, 13, 2, 14, 1, 15
 var DIST_CODE_LEN = 512; /* see definition of array dist_code below */
 
 // !!!! Use flat array insdead of structure, Freq = i*2, Len = i*2+1
-var static_ltree = new Array((L_CODES$1 + 2) * 2);
-zero$1(static_ltree);
+var static_ltree = new Array((L_CODES + 2) * 2);
+zero(static_ltree);
 /* The static literal tree. Since the bit lengths are imposed, there is no
  * need for the L_CODES extra codes used during heap construction. However
  * The codes 286 and 287 are needed to build a canonical tree (see _tr_init
  * below).
  */
 
-var static_dtree = new Array(D_CODES$1 * 2);
-zero$1(static_dtree);
+var static_dtree = new Array(D_CODES * 2);
+zero(static_dtree);
 /* The static distance tree. (Actually a trivial tree since all codes use
  * 5 bits.)
  */
 
 var _dist_code = new Array(DIST_CODE_LEN);
-zero$1(_dist_code);
+zero(_dist_code);
 /* Distance codes. The first 256 values correspond to the distances
  * 3 .. 258, the last 256 values correspond to the top 8 bits of
  * the 15 bit distances.
  */
 
-var _length_code = new Array(MAX_MATCH$1 - MIN_MATCH$1 + 1);
-zero$1(_length_code);
+var _length_code = new Array(MAX_MATCH - MIN_MATCH + 1);
+zero(_length_code);
 /* length code for each normalized match length (0 == MIN_MATCH) */
 
-var base_length = new Array(LENGTH_CODES$1);
-zero$1(base_length);
+var base_length = new Array(LENGTH_CODES);
+zero(base_length);
 /* First normalized length for each code (0 = MIN_MATCH) */
 
-var base_dist = new Array(D_CODES$1);
-zero$1(base_dist);
+var base_dist = new Array(D_CODES);
+zero(base_dist);
 /* First normalized distance for each code (0 = distance of 1) */
 
 function StaticTreeDesc(static_tree, extra_bits, extra_base, elems, max_length) {
@@ -23616,7 +20682,7 @@ function gen_bitlen(s, desc)
   var f; /* frequency */
   var overflow = 0; /* number of elements with bit length too large */
 
-  for (bits = 0; bits <= MAX_BITS$1; bits++) {
+  for (bits = 0; bits <= MAX_BITS; bits++) {
     s.bl_count[bits] = 0;
   }
 
@@ -23625,7 +20691,7 @@ function gen_bitlen(s, desc)
    */
   tree[s.heap[s.heap_max] * 2 + 1] /*.Len*/ = 0; /* root of the heap */
 
-  for (h = s.heap_max + 1; h < HEAP_SIZE$1; h++) {
+  for (h = s.heap_max + 1; h < HEAP_SIZE; h++) {
     n = s.heap[h];
     bits = tree[tree[n * 2 + 1] /*.Dad*/ * 2 + 1] /*.Len*/ + 1;
     if (bits > max_length) {
@@ -23707,7 +20773,7 @@ function gen_codes(tree, max_code, bl_count)
 //    int max_code;              /* largest code with non zero frequency */
 //    ushf *bl_count;            /* number of codes at each bit length */
 {
-  var next_code = new Array(MAX_BITS$1 + 1); /* next code value for each bit length */
+  var next_code = new Array(MAX_BITS + 1); /* next code value for each bit length */
   var code = 0; /* running code value */
   var bits; /* bit index */
   var n; /* code index */
@@ -23715,7 +20781,7 @@ function gen_codes(tree, max_code, bl_count)
   /* The distribution counts are first used to generate the code values
    * without bit reversal.
    */
-  for (bits = 1; bits <= MAX_BITS$1; bits++) {
+  for (bits = 1; bits <= MAX_BITS; bits++) {
     next_code[bits] = code = code + bl_count[bits - 1] << 1;
   }
   /* Check that the bit counts in bl_count are consistent. The last code
@@ -23726,7 +20792,7 @@ function gen_codes(tree, max_code, bl_count)
   //Tracev((stderr,"\ngen_codes: max_code %d ", max_code));
 
   for (n = 0; n <= max_code; n++) {
-    var len = tree[n * 2 + 1];
+    var len = tree[n * 2 + 1] /*.Len*/;
     if (len === 0) {
       continue;
     }
@@ -23747,7 +20813,7 @@ function tr_static_init() {
   var length; /* length value */
   var code; /* code value */
   var dist; /* distance index */
-  var bl_count = new Array(MAX_BITS$1 + 1);
+  var bl_count = new Array(MAX_BITS + 1);
   /* number of codes at each bit length for an optimal tree */
 
   // do check in _tr_init()
@@ -23764,7 +20830,7 @@ function tr_static_init() {
 
   /* Initialize the mapping length (0..255) -> length code (0..28) */
   length = 0;
-  for (code = 0; code < LENGTH_CODES$1 - 1; code++) {
+  for (code = 0; code < LENGTH_CODES - 1; code++) {
     base_length[code] = length;
     for (n = 0; n < 1 << extra_lbits[code]; n++) {
       _length_code[length++] = code;
@@ -23787,7 +20853,7 @@ function tr_static_init() {
   }
   //Assert (dist == 256, "tr_static_init: dist != 256");
   dist >>= 7; /* from now on, all distances are divided by 128 */
-  for (; code < D_CODES$1; code++) {
+  for (; code < D_CODES; code++) {
     base_dist[code] = dist << 7;
     for (n = 0; n < 1 << extra_dbits[code] - 7; n++) {
       _dist_code[256 + dist++] = code;
@@ -23796,7 +20862,7 @@ function tr_static_init() {
   //Assert (dist == 256, "tr_static_init: 256+dist != 512");
 
   /* Construct the codes of the static literal tree */
-  for (bits = 0; bits <= MAX_BITS$1; bits++) {
+  for (bits = 0; bits <= MAX_BITS; bits++) {
     bl_count[bits] = 0;
   }
 
@@ -23825,18 +20891,18 @@ function tr_static_init() {
    * tree construction to get a canonical Huffman tree (longest code
    * all ones)
    */
-  gen_codes(static_ltree, L_CODES$1 + 1, bl_count);
+  gen_codes(static_ltree, L_CODES + 1, bl_count);
 
   /* The static distance tree is trivial: */
-  for (n = 0; n < D_CODES$1; n++) {
+  for (n = 0; n < D_CODES; n++) {
     static_dtree[n * 2 + 1] /*.Len*/ = 5;
     static_dtree[n * 2] /*.Code*/ = bi_reverse(n, 5);
   }
 
   // Now data ready and we can init static trees
-  static_l_desc = new StaticTreeDesc(static_ltree, extra_lbits, LITERALS$1 + 1, L_CODES$1, MAX_BITS$1);
-  static_d_desc = new StaticTreeDesc(static_dtree, extra_dbits, 0, D_CODES$1, MAX_BITS$1);
-  static_bl_desc = new StaticTreeDesc(new Array(0), extra_blbits, 0, BL_CODES$1, MAX_BL_BITS);
+  static_l_desc = new StaticTreeDesc(static_ltree, extra_lbits, LITERALS + 1, L_CODES, MAX_BITS);
+  static_d_desc = new StaticTreeDesc(static_dtree, extra_dbits, 0, D_CODES, MAX_BITS);
+  static_bl_desc = new StaticTreeDesc(new Array(0), extra_blbits, 0, BL_CODES, MAX_BL_BITS);
 
   //static_init_done = true;
 }
@@ -23848,13 +20914,13 @@ function init_block(s) {
   var n; /* iterates over tree elements */
 
   /* Initialize the trees. */
-  for (n = 0; n < L_CODES$1; n++) {
+  for (n = 0; n < L_CODES; n++) {
     s.dyn_ltree[n * 2] /*.Freq*/ = 0;
   }
-  for (n = 0; n < D_CODES$1; n++) {
+  for (n = 0; n < D_CODES; n++) {
     s.dyn_dtree[n * 2] /*.Freq*/ = 0;
   }
-  for (n = 0; n < BL_CODES$1; n++) {
+  for (n = 0; n < BL_CODES; n++) {
     s.bl_tree[n * 2] /*.Freq*/ = 0;
   }
 
@@ -23972,7 +21038,7 @@ function compress_block(s, ltree, dtree)
       } else {
         /* Here, lc is the match length - MIN_MATCH */
         code = _length_code[lc];
-        send_code(s, code + LITERALS$1 + 1, ltree); /* send the length code */
+        send_code(s, code + LITERALS + 1, ltree); /* send the length code */
         extra = extra_lbits[code];
         if (extra !== 0) {
           lc -= base_length[code];
@@ -24024,7 +21090,7 @@ function build_tree(s, desc)
    * heap[0] is not used.
    */
   s.heap_len = 0;
-  s.heap_max = HEAP_SIZE$1;
+  s.heap_max = HEAP_SIZE;
 
   for (n = 0; n < elems; n++) {
     if (tree[n * 2] /*.Freq*/ !== 0) {
@@ -24111,7 +21177,7 @@ function scan_tree(s, tree, max_code)
   var prevlen = -1; /* last emitted length */
   var curlen; /* length of current code */
 
-  var nextlen = tree[0 * 2 + 1]; /* length of next code */
+  var nextlen = tree[0 * 2 + 1] /*.Len*/; /* length of next code */
 
   var count = 0; /* repeat count of the current code */
   var max_count = 7; /* max repeat count */
@@ -24172,7 +21238,7 @@ function send_tree(s, tree, max_code)
   var prevlen = -1; /* last emitted length */
   var curlen; /* length of current code */
 
-  var nextlen = tree[0 * 2 + 1]; /* length of next code */
+  var nextlen = tree[0 * 2 + 1] /*.Len*/; /* length of next code */
 
   var count = 0; /* repeat count of the current code */
   var max_count = 7; /* max repeat count */
@@ -24246,7 +21312,7 @@ function build_bl_tree(s) {
    * requires that at least 4 bit length codes be sent. (appnote.txt says
    * 3 but the actual value used is 4.)
    */
-  for (max_blindex = BL_CODES$1 - 1; max_blindex >= 3; max_blindex--) {
+  for (max_blindex = BL_CODES - 1; max_blindex >= 3; max_blindex--) {
     if (s.bl_tree[bl_order[max_blindex] * 2 + 1] /*.Len*/ !== 0) {
       break;
     }
@@ -24322,7 +21388,7 @@ function detect_data_type(s) {
   if (s.dyn_ltree[9 * 2] /*.Freq*/ !== 0 || s.dyn_ltree[10 * 2] /*.Freq*/ !== 0 || s.dyn_ltree[13 * 2] /*.Freq*/ !== 0) {
     return Z_TEXT;
   }
-  for (n = 32; n < LITERALS$1; n++) {
+  for (n = 32; n < LITERALS; n++) {
     if (s.dyn_ltree[n * 2] /*.Freq*/ !== 0) {
       return Z_TEXT;
     }
@@ -24397,7 +21463,7 @@ function _tr_flush_block(s, buf, stored_len, last)
   if (s.level > 0) {
 
     /* Check if the file is binary or text */
-    if (s.strm.data_type === Z_UNKNOWN$1) {
+    if (s.strm.data_type === Z_UNKNOWN) {
       s.strm.data_type = detect_data_type(s);
     }
 
@@ -24444,7 +21510,7 @@ function _tr_flush_block(s, buf, stored_len, last)
      * transform a block into a stored block.
      */
     _tr_stored_block(s, buf, stored_len, last);
-  } else if (s.strategy === Z_FIXED$1 || static_lenb === opt_lenb) {
+  } else if (s.strategy === Z_FIXED || static_lenb === opt_lenb) {
 
     send_bits(s, (STATIC_TREES << 1) + (last ? 1 : 0), 3);
     compress_block(s, static_ltree, static_dtree);
@@ -24494,7 +21560,7 @@ function _tr_tally(s, dist, lc)
     //       (ush)lc <= (ush)(MAX_MATCH-MIN_MATCH) &&
     //       (ush)d_code(dist) < (ush)D_CODES,  "_tr_tally: bad match");
 
-    s.dyn_ltree[(_length_code[lc] + LITERALS$1 + 1) * 2] /*.Freq*/++;
+    s.dyn_ltree[(_length_code[lc] + LITERALS + 1) * 2] /*.Freq*/++;
     s.dyn_dtree[d_code(dist) * 2] /*.Freq*/++;
   }
 
@@ -24541,8 +21607,6 @@ var trees = {
   _tr_tally: _tr_tally_1,
   _tr_align: _tr_align_1
 };
-
-'use strict';
 
 // Note: adler32 takes 12% for level 0 and 2% for level 6.
 // It doesn't worth to make additional optimizationa as in original.
@@ -24592,8 +21656,6 @@ function adler32(adler, buf, len, pos) {
 }
 
 var adler32_1 = adler32;
-
-'use strict';
 
 // Note: we can't get significant speed boost here.
 // So write code to minimize size - no pregenerated tables
@@ -24653,8 +21715,6 @@ function crc32(crc, buf, len, pos) {
 
 var crc32_1 = crc32;
 
-'use strict';
-
 // (C) 1995-2013 Jean-loup Gailly and Mark Adler
 // (C) 2014-2017 Vitaly Puzrin and Andrey Tupitsin
 //
@@ -24686,8 +21746,6 @@ var messages = {
   '-6': 'incompatible version' /* Z_VERSION_ERROR (-6) */
 };
 
-'use strict';
-
 // (C) 1995-2013 Jean-loup Gailly and Mark Adler
 // (C) 2014-2017 Vitaly Puzrin and Andrey Tupitsin
 //
@@ -24712,11 +21770,11 @@ var messages = {
 /* ===========================================================================*/
 
 /* Allowed flush values; see deflate() and inflate() below for details */
-var Z_NO_FLUSH$1 = 0;
+var Z_NO_FLUSH = 0;
 var Z_PARTIAL_FLUSH = 1;
 //var Z_SYNC_FLUSH    = 2;
 var Z_FULL_FLUSH = 3;
-var Z_FINISH$1 = 4;
+var Z_FINISH = 4;
 var Z_BLOCK = 5;
 //var Z_TREES         = 6;
 
@@ -24724,8 +21782,8 @@ var Z_BLOCK = 5;
 /* Return codes for the compression/decompression functions. Negative values
  * are errors, positive values are used for special but normal events.
  */
-var Z_OK$1 = 0;
-var Z_STREAM_END$1 = 1;
+var Z_OK = 0;
+var Z_STREAM_END = 1;
 //var Z_NEED_DICT     = 2;
 //var Z_ERRNO         = -1;
 var Z_STREAM_ERROR = -2;
@@ -24739,22 +21797,22 @@ var Z_BUF_ERROR = -5;
 //var Z_NO_COMPRESSION      = 0;
 //var Z_BEST_SPEED          = 1;
 //var Z_BEST_COMPRESSION    = 9;
-var Z_DEFAULT_COMPRESSION$1 = -1;
+var Z_DEFAULT_COMPRESSION = -1;
 
 var Z_FILTERED = 1;
 var Z_HUFFMAN_ONLY = 2;
 var Z_RLE = 3;
-var Z_FIXED = 4;
-var Z_DEFAULT_STRATEGY$1 = 0;
+var Z_FIXED$1 = 4;
+var Z_DEFAULT_STRATEGY = 0;
 
 /* Possible values of the data_type field (though see inflate()) */
 //var Z_BINARY              = 0;
 //var Z_TEXT                = 1;
 //var Z_ASCII               = 1; // = Z_TEXT
-var Z_UNKNOWN = 2;
+var Z_UNKNOWN$1 = 2;
 
 /* The deflate compression method */
-var Z_DEFLATED$1 = 8;
+var Z_DEFLATED = 8;
 
 /*============================================================================*/
 
@@ -24764,24 +21822,24 @@ var MAX_WBITS = 15;
 /* 32K LZ77 window */
 var DEF_MEM_LEVEL = 8;
 
-var LENGTH_CODES = 29;
+var LENGTH_CODES$1 = 29;
 /* number of length codes, not counting the special END_BLOCK code */
-var LITERALS = 256;
+var LITERALS$1 = 256;
 /* number of literal bytes 0..255 */
-var L_CODES = LITERALS + 1 + LENGTH_CODES;
+var L_CODES$1 = LITERALS$1 + 1 + LENGTH_CODES$1;
 /* number of Literal or Length codes, including the END_BLOCK code */
-var D_CODES = 30;
+var D_CODES$1 = 30;
 /* number of distance codes */
-var BL_CODES = 19;
+var BL_CODES$1 = 19;
 /* number of codes used to transfer the bit lengths */
-var HEAP_SIZE = 2 * L_CODES + 1;
+var HEAP_SIZE$1 = 2 * L_CODES$1 + 1;
 /* maximum heap size */
-var MAX_BITS = 15;
+var MAX_BITS$1 = 15;
 /* All codes must not exceed MAX_BITS bits */
 
-var MIN_MATCH = 3;
-var MAX_MATCH = 258;
-var MIN_LOOKAHEAD = MAX_MATCH + MIN_MATCH + 1;
+var MIN_MATCH$1 = 3;
+var MAX_MATCH$1 = 258;
+var MIN_LOOKAHEAD = MAX_MATCH$1 + MIN_MATCH$1 + 1;
 
 var PRESET_DICT = 0x20;
 
@@ -24809,7 +21867,7 @@ function rank(f) {
   return (f << 1) - (f > 4 ? 9 : 0);
 }
 
-function zero(buf) {
+function zero$1(buf) {
   var len = buf.length;while (--len >= 0) {
     buf[len] = 0;
   }
@@ -24915,7 +21973,7 @@ function longest_match(s, cur_match) {
   var len; /* length of current match */
   var best_len = s.prev_length; /* best match length so far */
   var nice_match = s.nice_match; /* stop if match long enough */
-  var limit = s.strstart > s.w_size - MIN_LOOKAHEAD ? s.strstart - (s.w_size - MIN_LOOKAHEAD) : 0;
+  var limit = s.strstart > s.w_size - MIN_LOOKAHEAD ? s.strstart - (s.w_size - MIN_LOOKAHEAD) : 0 /*NIL*/;
 
   var _win = s.window; // shortcut
 
@@ -24926,7 +21984,7 @@ function longest_match(s, cur_match) {
    * we prevent matches with the string of window index 0.
    */
 
-  var strend = s.strstart + MAX_MATCH;
+  var strend = s.strstart + MAX_MATCH$1;
   var scan_end1 = _win[scan + best_len - 1];
   var scan_end = _win[scan + best_len];
 
@@ -24984,8 +22042,8 @@ function longest_match(s, cur_match) {
 
     // Assert(scan <= s->window+(unsigned)(s->window_size-1), "wild scan");
 
-    len = MAX_MATCH - (strend - scan);
-    scan = strend - MAX_MATCH;
+    len = MAX_MATCH$1 - (strend - scan);
+    scan = strend - MAX_MATCH$1;
 
     if (len > best_len) {
       s.match_start = cur_match;
@@ -25095,7 +22153,7 @@ function fill_window(s) {
     s.lookahead += n;
 
     /* Initialize the hash value now that we have some input: */
-    if (s.lookahead + s.insert >= MIN_MATCH) {
+    if (s.lookahead + s.insert >= MIN_MATCH$1) {
       str = s.strstart - s.insert;
       s.ins_h = s.window[str];
 
@@ -25106,13 +22164,13 @@ function fill_window(s) {
       //#endif
       while (s.insert) {
         /* UPDATE_HASH(s, s->ins_h, s->window[str + MIN_MATCH-1]); */
-        s.ins_h = (s.ins_h << s.hash_shift ^ s.window[str + MIN_MATCH - 1]) & s.hash_mask;
+        s.ins_h = (s.ins_h << s.hash_shift ^ s.window[str + MIN_MATCH$1 - 1]) & s.hash_mask;
 
         s.prev[str & s.w_mask] = s.head[s.ins_h];
         s.head[s.ins_h] = str;
         str++;
         s.insert--;
-        if (s.lookahead + s.insert < MIN_MATCH) {
+        if (s.lookahead + s.insert < MIN_MATCH$1) {
           break;
         }
       }
@@ -25192,7 +22250,7 @@ function deflate_stored(s, flush) {
       //      }
 
       fill_window(s);
-      if (s.lookahead === 0 && flush === Z_NO_FLUSH$1) {
+      if (s.lookahead === 0 && flush === Z_NO_FLUSH) {
         return BS_NEED_MORE;
       }
 
@@ -25236,7 +22294,7 @@ function deflate_stored(s, flush) {
 
   s.insert = 0;
 
-  if (flush === Z_FINISH$1) {
+  if (flush === Z_FINISH) {
     /*** FLUSH_BLOCK(s, 1); ***/
     flush_block_only(s, true);
     if (s.strm.avail_out === 0) {
@@ -25277,7 +22335,7 @@ function deflate_fast(s, flush) {
      */
     if (s.lookahead < MIN_LOOKAHEAD) {
       fill_window(s);
-      if (s.lookahead < MIN_LOOKAHEAD && flush === Z_NO_FLUSH$1) {
+      if (s.lookahead < MIN_LOOKAHEAD && flush === Z_NO_FLUSH) {
         return BS_NEED_MORE;
       }
       if (s.lookahead === 0) {
@@ -25289,9 +22347,9 @@ function deflate_fast(s, flush) {
      * dictionary, and set hash_head to the head of the hash chain:
      */
     hash_head = 0 /*NIL*/;
-    if (s.lookahead >= MIN_MATCH) {
+    if (s.lookahead >= MIN_MATCH$1) {
       /*** INSERT_STRING(s, s.strstart, hash_head); ***/
-      s.ins_h = (s.ins_h << s.hash_shift ^ s.window[s.strstart + MIN_MATCH - 1]) & s.hash_mask;
+      s.ins_h = (s.ins_h << s.hash_shift ^ s.window[s.strstart + MIN_MATCH$1 - 1]) & s.hash_mask;
       hash_head = s.prev[s.strstart & s.w_mask] = s.head[s.ins_h];
       s.head[s.ins_h] = s.strstart;
       /***/
@@ -25308,24 +22366,24 @@ function deflate_fast(s, flush) {
       s.match_length = longest_match(s, hash_head);
       /* longest_match() sets match_start */
     }
-    if (s.match_length >= MIN_MATCH) {
+    if (s.match_length >= MIN_MATCH$1) {
       // check_match(s, s.strstart, s.match_start, s.match_length); // for debug only
 
       /*** _tr_tally_dist(s, s.strstart - s.match_start,
                      s.match_length - MIN_MATCH, bflush); ***/
-      bflush = trees._tr_tally(s, s.strstart - s.match_start, s.match_length - MIN_MATCH);
+      bflush = trees._tr_tally(s, s.strstart - s.match_start, s.match_length - MIN_MATCH$1);
 
       s.lookahead -= s.match_length;
 
       /* Insert new strings in the hash table only if the match length
        * is not too large. This saves time but degrades compression.
        */
-      if (s.match_length <= s.max_lazy_match /*max_insert_length*/ && s.lookahead >= MIN_MATCH) {
+      if (s.match_length <= s.max_lazy_match /*max_insert_length*/ && s.lookahead >= MIN_MATCH$1) {
         s.match_length--; /* string at strstart already in table */
         do {
           s.strstart++;
           /*** INSERT_STRING(s, s.strstart, hash_head); ***/
-          s.ins_h = (s.ins_h << s.hash_shift ^ s.window[s.strstart + MIN_MATCH - 1]) & s.hash_mask;
+          s.ins_h = (s.ins_h << s.hash_shift ^ s.window[s.strstart + MIN_MATCH$1 - 1]) & s.hash_mask;
           hash_head = s.prev[s.strstart & s.w_mask] = s.head[s.ins_h];
           s.head[s.ins_h] = s.strstart;
           /***/
@@ -25366,8 +22424,8 @@ function deflate_fast(s, flush) {
       /***/
     }
   }
-  s.insert = s.strstart < MIN_MATCH - 1 ? s.strstart : MIN_MATCH - 1;
-  if (flush === Z_FINISH$1) {
+  s.insert = s.strstart < MIN_MATCH$1 - 1 ? s.strstart : MIN_MATCH$1 - 1;
+  if (flush === Z_FINISH) {
     /*** FLUSH_BLOCK(s, 1); ***/
     flush_block_only(s, true);
     if (s.strm.avail_out === 0) {
@@ -25407,7 +22465,7 @@ function deflate_slow(s, flush) {
      */
     if (s.lookahead < MIN_LOOKAHEAD) {
       fill_window(s);
-      if (s.lookahead < MIN_LOOKAHEAD && flush === Z_NO_FLUSH$1) {
+      if (s.lookahead < MIN_LOOKAHEAD && flush === Z_NO_FLUSH) {
         return BS_NEED_MORE;
       }
       if (s.lookahead === 0) {
@@ -25419,9 +22477,9 @@ function deflate_slow(s, flush) {
      * dictionary, and set hash_head to the head of the hash chain:
      */
     hash_head = 0 /*NIL*/;
-    if (s.lookahead >= MIN_MATCH) {
+    if (s.lookahead >= MIN_MATCH$1) {
       /*** INSERT_STRING(s, s.strstart, hash_head); ***/
-      s.ins_h = (s.ins_h << s.hash_shift ^ s.window[s.strstart + MIN_MATCH - 1]) & s.hash_mask;
+      s.ins_h = (s.ins_h << s.hash_shift ^ s.window[s.strstart + MIN_MATCH$1 - 1]) & s.hash_mask;
       hash_head = s.prev[s.strstart & s.w_mask] = s.head[s.ins_h];
       s.head[s.ins_h] = s.strstart;
       /***/
@@ -25431,7 +22489,7 @@ function deflate_slow(s, flush) {
      */
     s.prev_length = s.match_length;
     s.prev_match = s.match_start;
-    s.match_length = MIN_MATCH - 1;
+    s.match_length = MIN_MATCH$1 - 1;
 
     if (hash_head !== 0 /*NIL*/ && s.prev_length < s.max_lazy_match && s.strstart - hash_head <= s.w_size - MIN_LOOKAHEAD /*MAX_DIST(s)*/) {
         /* To simplify the code, we prevent matches with the string
@@ -25441,26 +22499,26 @@ function deflate_slow(s, flush) {
         s.match_length = longest_match(s, hash_head);
         /* longest_match() sets match_start */
 
-        if (s.match_length <= 5 && (s.strategy === Z_FILTERED || s.match_length === MIN_MATCH && s.strstart - s.match_start > 4096 /*TOO_FAR*/)) {
+        if (s.match_length <= 5 && (s.strategy === Z_FILTERED || s.match_length === MIN_MATCH$1 && s.strstart - s.match_start > 4096 /*TOO_FAR*/)) {
 
           /* If prev_match is also MIN_MATCH, match_start is garbage
            * but we will ignore the current match anyway.
            */
-          s.match_length = MIN_MATCH - 1;
+          s.match_length = MIN_MATCH$1 - 1;
         }
       }
     /* If there was a match at the previous step and the current
      * match is not better, output the previous match:
      */
-    if (s.prev_length >= MIN_MATCH && s.match_length <= s.prev_length) {
-      max_insert = s.strstart + s.lookahead - MIN_MATCH;
+    if (s.prev_length >= MIN_MATCH$1 && s.match_length <= s.prev_length) {
+      max_insert = s.strstart + s.lookahead - MIN_MATCH$1;
       /* Do not insert strings in hash table beyond this. */
 
       //check_match(s, s.strstart-1, s.prev_match, s.prev_length);
 
       /***_tr_tally_dist(s, s.strstart - 1 - s.prev_match,
                      s.prev_length - MIN_MATCH, bflush);***/
-      bflush = trees._tr_tally(s, s.strstart - 1 - s.prev_match, s.prev_length - MIN_MATCH);
+      bflush = trees._tr_tally(s, s.strstart - 1 - s.prev_match, s.prev_length - MIN_MATCH$1);
       /* Insert in hash table all strings up to the end of the match.
        * strstart-1 and strstart are already inserted. If there is not
        * enough lookahead, the last two strings are not inserted in
@@ -25471,14 +22529,14 @@ function deflate_slow(s, flush) {
       do {
         if (++s.strstart <= max_insert) {
           /*** INSERT_STRING(s, s.strstart, hash_head); ***/
-          s.ins_h = (s.ins_h << s.hash_shift ^ s.window[s.strstart + MIN_MATCH - 1]) & s.hash_mask;
+          s.ins_h = (s.ins_h << s.hash_shift ^ s.window[s.strstart + MIN_MATCH$1 - 1]) & s.hash_mask;
           hash_head = s.prev[s.strstart & s.w_mask] = s.head[s.ins_h];
           s.head[s.ins_h] = s.strstart;
           /***/
         }
       } while (--s.prev_length !== 0);
       s.match_available = 0;
-      s.match_length = MIN_MATCH - 1;
+      s.match_length = MIN_MATCH$1 - 1;
       s.strstart++;
 
       if (bflush) {
@@ -25525,8 +22583,8 @@ function deflate_slow(s, flush) {
 
     s.match_available = 0;
   }
-  s.insert = s.strstart < MIN_MATCH - 1 ? s.strstart : MIN_MATCH - 1;
-  if (flush === Z_FINISH$1) {
+  s.insert = s.strstart < MIN_MATCH$1 - 1 ? s.strstart : MIN_MATCH$1 - 1;
+  if (flush === Z_FINISH) {
     /*** FLUSH_BLOCK(s, 1); ***/
     flush_block_only(s, true);
     if (s.strm.avail_out === 0) {
@@ -25564,9 +22622,9 @@ function deflate_rle(s, flush) {
      * at the end of the input file. We need MAX_MATCH bytes
      * for the longest run, plus one for the unrolled loop.
      */
-    if (s.lookahead <= MAX_MATCH) {
+    if (s.lookahead <= MAX_MATCH$1) {
       fill_window(s);
-      if (s.lookahead <= MAX_MATCH && flush === Z_NO_FLUSH$1) {
+      if (s.lookahead <= MAX_MATCH$1 && flush === Z_NO_FLUSH) {
         return BS_NEED_MORE;
       }
       if (s.lookahead === 0) {
@@ -25576,15 +22634,15 @@ function deflate_rle(s, flush) {
 
     /* See how many times the previous byte repeats */
     s.match_length = 0;
-    if (s.lookahead >= MIN_MATCH && s.strstart > 0) {
+    if (s.lookahead >= MIN_MATCH$1 && s.strstart > 0) {
       scan = s.strstart - 1;
       prev = _win[scan];
       if (prev === _win[++scan] && prev === _win[++scan] && prev === _win[++scan]) {
-        strend = s.strstart + MAX_MATCH;
+        strend = s.strstart + MAX_MATCH$1;
         do {
           /*jshint noempty:false*/
         } while (prev === _win[++scan] && prev === _win[++scan] && prev === _win[++scan] && prev === _win[++scan] && prev === _win[++scan] && prev === _win[++scan] && prev === _win[++scan] && prev === _win[++scan] && scan < strend);
-        s.match_length = MAX_MATCH - (strend - scan);
+        s.match_length = MAX_MATCH$1 - (strend - scan);
         if (s.match_length > s.lookahead) {
           s.match_length = s.lookahead;
         }
@@ -25593,11 +22651,11 @@ function deflate_rle(s, flush) {
     }
 
     /* Emit match if have run of MIN_MATCH or longer, else emit literal */
-    if (s.match_length >= MIN_MATCH) {
+    if (s.match_length >= MIN_MATCH$1) {
       //check_match(s, s.strstart, s.strstart - 1, s.match_length);
 
       /*** _tr_tally_dist(s, 1, s.match_length - MIN_MATCH, bflush); ***/
-      bflush = trees._tr_tally(s, 1, s.match_length - MIN_MATCH);
+      bflush = trees._tr_tally(s, 1, s.match_length - MIN_MATCH$1);
 
       s.lookahead -= s.match_length;
       s.strstart += s.match_length;
@@ -25621,7 +22679,7 @@ function deflate_rle(s, flush) {
     }
   }
   s.insert = 0;
-  if (flush === Z_FINISH$1) {
+  if (flush === Z_FINISH) {
     /*** FLUSH_BLOCK(s, 1); ***/
     flush_block_only(s, true);
     if (s.strm.avail_out === 0) {
@@ -25653,7 +22711,7 @@ function deflate_huff(s, flush) {
     if (s.lookahead === 0) {
       fill_window(s);
       if (s.lookahead === 0) {
-        if (flush === Z_NO_FLUSH$1) {
+        if (flush === Z_NO_FLUSH) {
           return BS_NEED_MORE;
         }
         break; /* flush the current block */
@@ -25677,7 +22735,7 @@ function deflate_huff(s, flush) {
     }
   }
   s.insert = 0;
-  if (flush === Z_FINISH$1) {
+  if (flush === Z_FINISH) {
     /*** FLUSH_BLOCK(s, 1); ***/
     flush_block_only(s, true);
     if (s.strm.avail_out === 0) {
@@ -25734,7 +22792,7 @@ function lm_init(s) {
   s.window_size = 2 * s.w_size;
 
   /*** CLEAR_HASH(s); ***/
-  zero(s.head); // Fill with NIL (= 0);
+  zero$1(s.head); // Fill with NIL (= 0);
 
   /* Set the default configuration parameters:
    */
@@ -25747,7 +22805,7 @@ function lm_init(s) {
   s.block_start = 0;
   s.lookahead = 0;
   s.insert = 0;
-  s.match_length = s.prev_length = MIN_MATCH - 1;
+  s.match_length = s.prev_length = MIN_MATCH$1 - 1;
   s.match_available = 0;
   s.ins_h = 0;
 }
@@ -25762,7 +22820,7 @@ function DeflateState() {
   this.wrap = 0; /* bit 0 true for zlib, bit 1 true for gzip */
   this.gzhead = null; /* gzip header information to write */
   this.gzindex = 0; /* where in extra, name, or comment */
-  this.method = Z_DEFLATED$1; /* can only be DEFLATED */
+  this.method = Z_DEFLATED; /* can only be DEFLATED */
   this.last_flush = -1; /* value of flush param for previous deflate call */
 
   this.w_size = 0; /* LZ77 window size (32K by default) */
@@ -25855,24 +22913,24 @@ function DeflateState() {
 
   // Use flat array of DOUBLE size, with interleaved fata,
   // because JS does not support effective
-  this.dyn_ltree = new common.Buf16(HEAP_SIZE * 2);
-  this.dyn_dtree = new common.Buf16((2 * D_CODES + 1) * 2);
-  this.bl_tree = new common.Buf16((2 * BL_CODES + 1) * 2);
-  zero(this.dyn_ltree);
-  zero(this.dyn_dtree);
-  zero(this.bl_tree);
+  this.dyn_ltree = new common.Buf16(HEAP_SIZE$1 * 2);
+  this.dyn_dtree = new common.Buf16((2 * D_CODES$1 + 1) * 2);
+  this.bl_tree = new common.Buf16((2 * BL_CODES$1 + 1) * 2);
+  zero$1(this.dyn_ltree);
+  zero$1(this.dyn_dtree);
+  zero$1(this.bl_tree);
 
   this.l_desc = null; /* desc. for literal tree */
   this.d_desc = null; /* desc. for distance tree */
   this.bl_desc = null; /* desc. for bit length tree */
 
   //ush bl_count[MAX_BITS+1];
-  this.bl_count = new common.Buf16(MAX_BITS + 1);
+  this.bl_count = new common.Buf16(MAX_BITS$1 + 1);
   /* number of codes at each bit length for an optimal tree */
 
   //int heap[2*L_CODES+1];      /* heap used to build the Huffman trees */
-  this.heap = new common.Buf16(2 * L_CODES + 1); /* heap used to build the Huffman trees */
-  zero(this.heap);
+  this.heap = new common.Buf16(2 * L_CODES$1 + 1); /* heap used to build the Huffman trees */
+  zero$1(this.heap);
 
   this.heap_len = 0; /* number of elements in the heap */
   this.heap_max = 0; /* element of largest frequency */
@@ -25880,8 +22938,8 @@ function DeflateState() {
    * The same heap array is used to build all trees.
    */
 
-  this.depth = new common.Buf16(2 * L_CODES + 1); //uch depth[2*L_CODES+1];
-  zero(this.depth);
+  this.depth = new common.Buf16(2 * L_CODES$1 + 1); //uch depth[2*L_CODES+1];
+  zero$1(this.depth);
   /* Depth of each subtree used as tie breaker for trees of equal frequency
    */
 
@@ -25947,7 +23005,7 @@ function deflateResetKeep(strm) {
   }
 
   strm.total_in = strm.total_out = 0;
-  strm.data_type = Z_UNKNOWN;
+  strm.data_type = Z_UNKNOWN$1;
 
   s = strm.state;
   s.pending = 0;
@@ -25960,14 +23018,14 @@ function deflateResetKeep(strm) {
   s.status = s.wrap ? INIT_STATE : BUSY_STATE;
   strm.adler = s.wrap === 2 ? 0 // crc32(0, Z_NULL, 0)
   : 1; // adler32(0, Z_NULL, 0)
-  s.last_flush = Z_NO_FLUSH$1;
+  s.last_flush = Z_NO_FLUSH;
   trees._tr_init(s);
-  return Z_OK$1;
+  return Z_OK;
 }
 
 function deflateReset(strm) {
   var ret = deflateResetKeep(strm);
-  if (ret === Z_OK$1) {
+  if (ret === Z_OK) {
     lm_init(strm.state);
   }
   return ret;
@@ -25981,7 +23039,7 @@ function deflateSetHeader(strm, head) {
     return Z_STREAM_ERROR;
   }
   strm.state.gzhead = head;
-  return Z_OK$1;
+  return Z_OK;
 }
 
 function deflateInit2(strm, level, method, windowBits, memLevel, strategy) {
@@ -25991,7 +23049,7 @@ function deflateInit2(strm, level, method, windowBits, memLevel, strategy) {
   }
   var wrap = 1;
 
-  if (level === Z_DEFAULT_COMPRESSION$1) {
+  if (level === Z_DEFAULT_COMPRESSION) {
     level = 6;
   }
 
@@ -26004,7 +23062,7 @@ function deflateInit2(strm, level, method, windowBits, memLevel, strategy) {
     windowBits -= 16;
   }
 
-  if (memLevel < 1 || memLevel > MAX_MEM_LEVEL || method !== Z_DEFLATED$1 || windowBits < 8 || windowBits > 15 || level < 0 || level > 9 || strategy < 0 || strategy > Z_FIXED) {
+  if (memLevel < 1 || memLevel > MAX_MEM_LEVEL || method !== Z_DEFLATED || windowBits < 8 || windowBits > 15 || level < 0 || level > 9 || strategy < 0 || strategy > Z_FIXED$1) {
     return err(strm, Z_STREAM_ERROR);
   }
 
@@ -26027,7 +23085,7 @@ function deflateInit2(strm, level, method, windowBits, memLevel, strategy) {
   s.hash_bits = memLevel + 7;
   s.hash_size = 1 << s.hash_bits;
   s.hash_mask = s.hash_size - 1;
-  s.hash_shift = ~~((s.hash_bits + MIN_MATCH - 1) / MIN_MATCH);
+  s.hash_shift = ~~((s.hash_bits + MIN_MATCH$1 - 1) / MIN_MATCH$1);
 
   s.window = new common.Buf8(s.w_size * 2);
   s.head = new common.Buf16(s.hash_size);
@@ -26059,10 +23117,10 @@ function deflateInit2(strm, level, method, windowBits, memLevel, strategy) {
 }
 
 function deflateInit(strm, level) {
-  return deflateInit2(strm, level, Z_DEFLATED$1, MAX_WBITS, DEF_MEM_LEVEL, Z_DEFAULT_STRATEGY$1);
+  return deflateInit2(strm, level, Z_DEFLATED, MAX_WBITS, DEF_MEM_LEVEL, Z_DEFAULT_STRATEGY);
 }
 
-function deflate$1(strm, flush) {
+function deflate(strm, flush) {
   var old_flush, s;
   var beg, val; // for gzip header write only
 
@@ -26072,7 +23130,7 @@ function deflate$1(strm, flush) {
 
   s = strm.state;
 
-  if (!strm.output || !strm.input && strm.avail_in !== 0 || s.status === FINISH_STATE && flush !== Z_FINISH$1) {
+  if (!strm.output || !strm.input && strm.avail_in !== 0 || s.status === FINISH_STATE && flush !== Z_FINISH) {
     return err(strm, strm.avail_out === 0 ? Z_BUF_ERROR : Z_STREAM_ERROR);
   }
 
@@ -26119,7 +23177,7 @@ function deflate$1(strm, flush) {
       }
     } else // DEFLATE header
       {
-        var header = Z_DEFLATED$1 + (s.w_bits - 8 << 4) << 8;
+        var header = Z_DEFLATED + (s.w_bits - 8 << 4) << 8;
         var level_flags = -1;
 
         if (s.strategy >= Z_HUFFMAN_ONLY || s.level < 2) {
@@ -26280,14 +23338,14 @@ function deflate$1(strm, flush) {
        * return OK instead of BUF_ERROR at next call of deflate:
        */
       s.last_flush = -1;
-      return Z_OK$1;
+      return Z_OK;
     }
 
     /* Make sure there is something to do and avoid duplicate consecutive
      * flushes. For repeated and useless calls with Z_FINISH, we keep
      * returning Z_STREAM_END instead of Z_BUF_ERROR.
      */
-  } else if (strm.avail_in === 0 && rank(flush) <= rank(old_flush) && flush !== Z_FINISH$1) {
+  } else if (strm.avail_in === 0 && rank(flush) <= rank(old_flush) && flush !== Z_FINISH) {
     return err(strm, Z_BUF_ERROR);
   }
 
@@ -26298,7 +23356,7 @@ function deflate$1(strm, flush) {
 
   /* Start a new block or continue the current one.
    */
-  if (strm.avail_in !== 0 || s.lookahead !== 0 || flush !== Z_NO_FLUSH$1 && s.status !== FINISH_STATE) {
+  if (strm.avail_in !== 0 || s.lookahead !== 0 || flush !== Z_NO_FLUSH && s.status !== FINISH_STATE) {
     var bstate = s.strategy === Z_HUFFMAN_ONLY ? deflate_huff(s, flush) : s.strategy === Z_RLE ? deflate_rle(s, flush) : configuration_table[s.level].func(s, flush);
 
     if (bstate === BS_FINISH_STARTED || bstate === BS_FINISH_DONE) {
@@ -26309,7 +23367,7 @@ function deflate$1(strm, flush) {
         s.last_flush = -1;
         /* avoid BUF_ERROR next call, see above */
       }
-      return Z_OK$1;
+      return Z_OK;
       /* If flush != Z_NO_FLUSH && avail_out == 0, the next call
        * of deflate should use the same flush parameter to make sure
        * that the flush is complete. So we don't have to output an
@@ -26330,7 +23388,7 @@ function deflate$1(strm, flush) {
          */
         if (flush === Z_FULL_FLUSH) {
           /*** CLEAR_HASH(s); ***/ /* forget history */
-          zero(s.head); // Fill with NIL (= 0);
+          zero$1(s.head); // Fill with NIL (= 0);
 
           if (s.lookahead === 0) {
             s.strstart = 0;
@@ -26342,18 +23400,18 @@ function deflate$1(strm, flush) {
       flush_pending(strm);
       if (strm.avail_out === 0) {
         s.last_flush = -1; /* avoid BUF_ERROR at next call, see above */
-        return Z_OK$1;
+        return Z_OK;
       }
     }
   }
   //Assert(strm->avail_out > 0, "bug2");
   //if (strm.avail_out <= 0) { throw new Error("bug2");}
 
-  if (flush !== Z_FINISH$1) {
-    return Z_OK$1;
+  if (flush !== Z_FINISH) {
+    return Z_OK;
   }
   if (s.wrap <= 0) {
-    return Z_STREAM_END$1;
+    return Z_STREAM_END;
   }
 
   /* Write the trailer */
@@ -26379,7 +23437,7 @@ function deflate$1(strm, flush) {
     s.wrap = -s.wrap;
   }
   /* write the trailer only once! */
-  return s.pending !== 0 ? Z_OK$1 : Z_STREAM_END$1;
+  return s.pending !== 0 ? Z_OK : Z_STREAM_END;
 }
 
 function deflateEnd(strm) {
@@ -26396,7 +23454,7 @@ function deflateEnd(strm) {
 
   strm.state = null;
 
-  return status === BUSY_STATE ? err(strm, Z_DATA_ERROR) : Z_OK$1;
+  return status === BUSY_STATE ? err(strm, Z_DATA_ERROR) : Z_OK;
 }
 
 /* =========================================================================
@@ -26438,7 +23496,7 @@ function deflateSetDictionary(strm, dictionary) {
     if (wrap === 0) {
       /* already empty otherwise */
       /*** CLEAR_HASH(s); ***/
-      zero(s.head); // Fill with NIL (= 0);
+      zero$1(s.head); // Fill with NIL (= 0);
       s.strstart = 0;
       s.block_start = 0;
       s.insert = 0;
@@ -26458,12 +23516,12 @@ function deflateSetDictionary(strm, dictionary) {
   strm.next_in = 0;
   strm.input = dictionary;
   fill_window(s);
-  while (s.lookahead >= MIN_MATCH) {
+  while (s.lookahead >= MIN_MATCH$1) {
     str = s.strstart;
-    n = s.lookahead - (MIN_MATCH - 1);
+    n = s.lookahead - (MIN_MATCH$1 - 1);
     do {
       /* UPDATE_HASH(s, s->ins_h, s->window[str + MIN_MATCH-1]); */
-      s.ins_h = (s.ins_h << s.hash_shift ^ s.window[str + MIN_MATCH - 1]) & s.hash_mask;
+      s.ins_h = (s.ins_h << s.hash_shift ^ s.window[str + MIN_MATCH$1 - 1]) & s.hash_mask;
 
       s.prev[str & s.w_mask] = s.head[s.ins_h];
 
@@ -26471,20 +23529,20 @@ function deflateSetDictionary(strm, dictionary) {
       str++;
     } while (--n);
     s.strstart = str;
-    s.lookahead = MIN_MATCH - 1;
+    s.lookahead = MIN_MATCH$1 - 1;
     fill_window(s);
   }
   s.strstart += s.lookahead;
   s.block_start = s.strstart;
   s.insert = s.lookahead;
   s.lookahead = 0;
-  s.match_length = s.prev_length = MIN_MATCH - 1;
+  s.match_length = s.prev_length = MIN_MATCH$1 - 1;
   s.match_available = 0;
   strm.next_in = next;
   strm.input = input;
   strm.avail_in = avail;
   s.wrap = wrap;
-  return Z_OK$1;
+  return Z_OK;
 }
 
 var deflateInit_1 = deflateInit;
@@ -26492,7 +23550,7 @@ var deflateInit2_1 = deflateInit2;
 var deflateReset_1 = deflateReset;
 var deflateResetKeep_1 = deflateResetKeep;
 var deflateSetHeader_1 = deflateSetHeader;
-var deflate_2$1 = deflate$1;
+var deflate_2 = deflate;
 var deflateEnd_1 = deflateEnd;
 var deflateSetDictionary_1 = deflateSetDictionary;
 var deflateInfo = 'pako deflate (from Nodeca project)';
@@ -26506,20 +23564,17 @@ exports.deflatePrime = deflatePrime;
 exports.deflateTune = deflateTune;
 */
 
-var deflate_1$2 = {
+var deflate_1 = {
   deflateInit: deflateInit_1,
   deflateInit2: deflateInit2_1,
   deflateReset: deflateReset_1,
   deflateResetKeep: deflateResetKeep_1,
   deflateSetHeader: deflateSetHeader_1,
-  deflate: deflate_2$1,
+  deflate: deflate_2,
   deflateEnd: deflateEnd_1,
   deflateSetDictionary: deflateSetDictionary_1,
   deflateInfo: deflateInfo
 };
-
-// String encode/decode helpers
-'use strict';
 
 // Quick check if we can use fast array to bin string conversion
 //
@@ -26731,8 +23786,6 @@ var strings = {
   utf8border: utf8border
 };
 
-'use strict';
-
 // (C) 1995-2013 Jean-loup Gailly and Mark Adler
 // (C) 2014-2017 Vitaly Puzrin and Andrey Tupitsin
 //
@@ -26779,25 +23832,23 @@ function ZStream() {
 
 var zstream = ZStream;
 
-'use strict';
-
 var toString$1 = Object.prototype.toString;
 
 /* Public constants ==========================================================*/
 /* ===========================================================================*/
 
-var Z_NO_FLUSH = 0;
-var Z_FINISH = 4;
+var Z_NO_FLUSH$1 = 0;
+var Z_FINISH$1 = 4;
 
-var Z_OK = 0;
-var Z_STREAM_END = 1;
+var Z_OK$1 = 0;
+var Z_STREAM_END$1 = 1;
 var Z_SYNC_FLUSH = 2;
 
-var Z_DEFAULT_COMPRESSION = -1;
+var Z_DEFAULT_COMPRESSION$1 = -1;
 
-var Z_DEFAULT_STRATEGY = 0;
+var Z_DEFAULT_STRATEGY$1 = 0;
 
-var Z_DEFLATED = 8;
+var Z_DEFLATED$1 = 8;
 
 /* ===========================================================================*/
 
@@ -26893,12 +23944,12 @@ function Deflate(options) {
   if (!(this instanceof Deflate)) return new Deflate(options);
 
   this.options = common.assign({
-    level: Z_DEFAULT_COMPRESSION,
-    method: Z_DEFLATED,
+    level: Z_DEFAULT_COMPRESSION$1,
+    method: Z_DEFLATED$1,
     chunkSize: 16384,
     windowBits: 15,
     memLevel: 8,
-    strategy: Z_DEFAULT_STRATEGY,
+    strategy: Z_DEFAULT_STRATEGY$1,
     to: ''
   }, options || {});
 
@@ -26918,14 +23969,14 @@ function Deflate(options) {
   this.strm = new zstream();
   this.strm.avail_out = 0;
 
-  var status = deflate_1$2.deflateInit2(this.strm, opt.level, opt.method, opt.windowBits, opt.memLevel, opt.strategy);
+  var status = deflate_1.deflateInit2(this.strm, opt.level, opt.method, opt.windowBits, opt.memLevel, opt.strategy);
 
-  if (status !== Z_OK) {
+  if (status !== Z_OK$1) {
     throw new Error(messages[status]);
   }
 
   if (opt.header) {
-    deflate_1$2.deflateSetHeader(this.strm, opt.header);
+    deflate_1.deflateSetHeader(this.strm, opt.header);
   }
 
   if (opt.dictionary) {
@@ -26940,9 +23991,9 @@ function Deflate(options) {
       dict = opt.dictionary;
     }
 
-    status = deflate_1$2.deflateSetDictionary(this.strm, dict);
+    status = deflate_1.deflateSetDictionary(this.strm, dict);
 
-    if (status !== Z_OK) {
+    if (status !== Z_OK$1) {
       throw new Error(messages[status]);
     }
 
@@ -26988,7 +24039,7 @@ Deflate.prototype.push = function (data, mode) {
     return false;
   }
 
-  _mode = mode === ~~mode ? mode : mode === true ? Z_FINISH : Z_NO_FLUSH;
+  _mode = mode === ~~mode ? mode : mode === true ? Z_FINISH$1 : Z_NO_FLUSH$1;
 
   // Convert data if needed
   if (typeof data === 'string') {
@@ -27009,33 +24060,33 @@ Deflate.prototype.push = function (data, mode) {
       strm.next_out = 0;
       strm.avail_out = chunkSize;
     }
-    status = deflate_1$2.deflate(strm, _mode); /* no bad return value */
+    status = deflate_1.deflate(strm, _mode); /* no bad return value */
 
-    if (status !== Z_STREAM_END && status !== Z_OK) {
+    if (status !== Z_STREAM_END$1 && status !== Z_OK$1) {
       this.onEnd(status);
       this.ended = true;
       return false;
     }
-    if (strm.avail_out === 0 || strm.avail_in === 0 && (_mode === Z_FINISH || _mode === Z_SYNC_FLUSH)) {
+    if (strm.avail_out === 0 || strm.avail_in === 0 && (_mode === Z_FINISH$1 || _mode === Z_SYNC_FLUSH)) {
       if (this.options.to === 'string') {
         this.onData(strings.buf2binstring(common.shrinkBuf(strm.output, strm.next_out)));
       } else {
         this.onData(common.shrinkBuf(strm.output, strm.next_out));
       }
     }
-  } while ((strm.avail_in > 0 || strm.avail_out === 0) && status !== Z_STREAM_END);
+  } while ((strm.avail_in > 0 || strm.avail_out === 0) && status !== Z_STREAM_END$1);
 
   // Finalize on the last chunk.
-  if (_mode === Z_FINISH) {
-    status = deflate_1$2.deflateEnd(this.strm);
+  if (_mode === Z_FINISH$1) {
+    status = deflate_1.deflateEnd(this.strm);
     this.onEnd(status);
     this.ended = true;
-    return status === Z_OK;
+    return status === Z_OK$1;
   }
 
   // callback interim results if Z_SYNC_FLUSH.
   if (_mode === Z_SYNC_FLUSH) {
-    this.onEnd(Z_OK);
+    this.onEnd(Z_OK$1);
     strm.avail_out = 0;
     return true;
   }
@@ -27068,7 +24119,7 @@ Deflate.prototype.onData = function (chunk) {
  **/
 Deflate.prototype.onEnd = function (status) {
   // On success - join
-  if (status === Z_OK) {
+  if (status === Z_OK$1) {
     if (this.options.to === 'string') {
       this.result = this.chunks.join('');
     } else {
@@ -27114,7 +24165,7 @@ Deflate.prototype.onEnd = function (status) {
  * console.log(pako.deflate(data));
  * ```
  **/
-function deflate(input, options) {
+function deflate$1(input, options) {
   var deflator = new Deflate(options);
 
   deflator.push(input, true);
@@ -27138,7 +24189,7 @@ function deflate(input, options) {
 function deflateRaw(input, options) {
   options = options || {};
   options.raw = true;
-  return deflate(input, options);
+  return deflate$1(input, options);
 }
 
 /**
@@ -27152,22 +24203,20 @@ function deflateRaw(input, options) {
 function gzip(input, options) {
   options = options || {};
   options.gzip = true;
-  return deflate(input, options);
+  return deflate$1(input, options);
 }
 
 var Deflate_1 = Deflate;
-var deflate_2 = deflate;
+var deflate_2$1 = deflate$1;
 var deflateRaw_1 = deflateRaw;
 var gzip_1 = gzip;
 
-var deflate_1 = {
+var deflate_1$1 = {
   Deflate: Deflate_1,
-  deflate: deflate_2,
+  deflate: deflate_2$1,
   deflateRaw: deflateRaw_1,
   gzip: gzip_1
 };
-
-'use strict';
 
 // (C) 1995-2013 Jean-loup Gailly and Mark Adler
 // (C) 2014-2017 Vitaly Puzrin and Andrey Tupitsin
@@ -27190,8 +24239,8 @@ var deflate_1 = {
 
 // See state defs from inflate.js
 
-var BAD$1 = 30; /* got a data error -- remain here until reset */
-var TYPE$1 = 12; /* i: waiting for type bits, including last-flag bit */
+var BAD = 30; /* got a data error -- remain here until reset */
+var TYPE = 12; /* i: waiting for type bits, including last-flag bit */
 
 /*
    Decode literal, length, and distance codes and write out the resulting
@@ -27353,7 +24402,7 @@ var inffast = function inflate_fast(strm, start) {
             //#ifdef INFLATE_STRICT
             if (dist > dmax) {
               strm.msg = 'invalid distance too far back';
-              state.mode = BAD$1;
+              state.mode = BAD;
               break top;
             }
             //#endif
@@ -27367,7 +24416,7 @@ var inffast = function inflate_fast(strm, start) {
               if (op > whave) {
                 if (state.sane) {
                   strm.msg = 'invalid distance too far back';
-                  state.mode = BAD$1;
+                  state.mode = BAD;
                   break top;
                 }
 
@@ -27476,7 +24525,7 @@ var inffast = function inflate_fast(strm, start) {
             continue dodist;
           } else {
             strm.msg = 'invalid distance code';
-            state.mode = BAD$1;
+            state.mode = BAD;
             break top;
           }
 
@@ -27489,11 +24538,11 @@ var inffast = function inflate_fast(strm, start) {
       } else if (op & 32) {
         /* end-of-block */
         //Tracevv((stderr, "inflate:         end of block\n"));
-        state.mode = TYPE$1;
+        state.mode = TYPE;
         break top;
       } else {
         strm.msg = 'invalid literal/length code';
-        state.mode = BAD$1;
+        state.mode = BAD;
         break top;
       }
 
@@ -27517,8 +24566,6 @@ var inffast = function inflate_fast(strm, start) {
   return;
 };
 
-'use strict';
-
 // (C) 1995-2013 Jean-loup Gailly and Mark Adler
 // (C) 2014-2017 Vitaly Puzrin and Andrey Tupitsin
 //
@@ -27540,13 +24587,13 @@ var inffast = function inflate_fast(strm, start) {
 
 
 var MAXBITS = 15;
-var ENOUGH_LENS$1 = 852;
-var ENOUGH_DISTS$1 = 592;
+var ENOUGH_LENS = 852;
+var ENOUGH_DISTS = 592;
 //var ENOUGH = (ENOUGH_LENS+ENOUGH_DISTS);
 
-var CODES$1 = 0;
-var LENS$1 = 1;
-var DISTS$1 = 2;
+var CODES = 0;
+var LENS = 1;
+var DISTS = 2;
 
 var lbase = [/* Length codes 257..285 base */
 3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 15, 17, 19, 23, 27, 31, 35, 43, 51, 59, 67, 83, 99, 115, 131, 163, 195, 227, 258, 0, 0];
@@ -27669,7 +24716,7 @@ var inftrees = function inflate_table(type, lens, lens_index, codes, table, tabl
       return -1;
     } /* over-subscribed */
   }
-  if (left > 0 && (type === CODES$1 || max !== 1)) {
+  if (left > 0 && (type === CODES || max !== 1)) {
     return -1; /* incomplete set */
   }
 
@@ -27716,10 +24763,10 @@ var inftrees = function inflate_table(type, lens, lens_index, codes, table, tabl
   /* set up for code type */
   // poor man optimization - use if-else instead of switch,
   // to avoid deopts in old v8
-  if (type === CODES$1) {
+  if (type === CODES) {
     base = extra = work; /* dummy value--not used */
     end = 19;
-  } else if (type === LENS$1) {
+  } else if (type === LENS) {
     base = lbase;
     base_index -= 257;
     extra = lext;
@@ -27744,7 +24791,7 @@ var inftrees = function inflate_table(type, lens, lens_index, codes, table, tabl
   mask = used - 1; /* mask for comparing low */
 
   /* check available table space */
-  if (type === LENS$1 && used > ENOUGH_LENS$1 || type === DISTS$1 && used > ENOUGH_DISTS$1) {
+  if (type === LENS && used > ENOUGH_LENS || type === DISTS && used > ENOUGH_DISTS) {
     return 1;
   }
 
@@ -27817,7 +24864,7 @@ var inftrees = function inflate_table(type, lens, lens_index, codes, table, tabl
 
       /* check for enough space */
       used += 1 << curr;
-      if (type === LENS$1 && used > ENOUGH_LENS$1 || type === DISTS$1 && used > ENOUGH_DISTS$1) {
+      if (type === LENS && used > ENOUGH_LENS || type === DISTS && used > ENOUGH_DISTS) {
         return 1;
       }
 
@@ -27846,8 +24893,6 @@ var inftrees = function inflate_table(type, lens, lens_index, codes, table, tabl
   return 0;
 };
 
-'use strict';
-
 // (C) 1995-2013 Jean-loup Gailly and Mark Adler
 // (C) 2014-2017 Vitaly Puzrin and Andrey Tupitsin
 //
@@ -27868,9 +24913,9 @@ var inftrees = function inflate_table(type, lens, lens_index, codes, table, tabl
 // 3. This notice may not be removed or altered from any source distribution.
 
 
-var CODES = 0;
-var LENS = 1;
-var DISTS = 2;
+var CODES$1 = 0;
+var LENS$1 = 1;
+var DISTS$1 = 2;
 
 /* Public constants ==========================================================*/
 /* ===========================================================================*/
@@ -27914,7 +24959,7 @@ var COMMENT = 8; /* i: waiting for end of comment (gzip) */
 var HCRC = 9; /* i: waiting for header crc (gzip) */
 var DICTID = 10; /* i: waiting for dictionary check value */
 var DICT = 11; /* waiting for inflateSetDictionary() call */
-var TYPE = 12; /* i: waiting for type bits, including last-flag bit */
+var TYPE$1 = 12; /* i: waiting for type bits, including last-flag bit */
 var TYPEDO = 13; /* i: same, but skip check to exit inflate on new block */
 var STORED = 14; /* i: waiting for stored size (length and complement) */
 var COPY_ = 15; /* i/o: same as COPY below, but only first time in */
@@ -27932,14 +24977,14 @@ var LIT = 26; /* o: waiting for output space to write literal */
 var CHECK = 27; /* i: waiting for 32-bit check value */
 var LENGTH = 28; /* i: waiting for 32-bit length (gzip) */
 var DONE = 29; /* finished check, done -- remain here until reset */
-var BAD = 30; /* got a data error -- remain here until reset */
+var BAD$1 = 30; /* got a data error -- remain here until reset */
 var MEM = 31; /* got an inflate() memory error -- remain here until reset */
 var SYNC = 32; /* looking for synchronization bytes to restart inflate() */
 
 /* ===========================================================================*/
 
-var ENOUGH_LENS = 852;
-var ENOUGH_DISTS = 592;
+var ENOUGH_LENS$1 = 852;
+var ENOUGH_DISTS$1 = 592;
 //var ENOUGH =  (ENOUGH_LENS+ENOUGH_DISTS);
 
 var MAX_WBITS$1 = 15;
@@ -28029,8 +25074,8 @@ function inflateResetKeep(strm) {
   state.hold = 0;
   state.bits = 0;
   //state.lencode = state.distcode = state.next = state.codes;
-  state.lencode = state.lendyn = new common.Buf32(ENOUGH_LENS);
-  state.distcode = state.distdyn = new common.Buf32(ENOUGH_DISTS);
+  state.lencode = state.lendyn = new common.Buf32(ENOUGH_LENS$1);
+  state.distcode = state.distdyn = new common.Buf32(ENOUGH_DISTS$1);
 
   state.sane = 1;
   state.back = -1;
@@ -28124,8 +25169,7 @@ function inflateInit(strm) {
  */
 var virgin = true;
 
-var lenfix;
-var distfix; // We have no pointers in JS, so keep tables separate
+var lenfix, distfix; // We have no pointers in JS, so keep tables separate
 
 function fixedtables(state) {
   /* build fixed huffman tables if first call (may not be thread safe) */
@@ -28150,7 +25194,7 @@ function fixedtables(state) {
       state.lens[sym++] = 8;
     }
 
-    inftrees(LENS, state.lens, 0, 288, lenfix, 0, state.work, { bits: 9 });
+    inftrees(LENS$1, state.lens, 0, 288, lenfix, 0, state.work, { bits: 9 });
 
     /* distance table */
     sym = 0;
@@ -28158,7 +25202,7 @@ function fixedtables(state) {
       state.lens[sym++] = 5;
     }
 
-    inftrees(DISTS, state.lens, 0, 32, distfix, 0, state.work, { bits: 5 });
+    inftrees(DISTS$1, state.lens, 0, 32, distfix, 0, state.work, { bits: 5 });
 
     /* do this just once */
     virgin = false;
@@ -28228,7 +25272,7 @@ function updatewindow(strm, src, end, copy) {
   return 0;
 }
 
-function inflate$1(strm, flush) {
+function inflate(strm, flush) {
   var state;
   var input, output; // input/output buffers
   var next; /* next input INDEX */
@@ -28259,7 +25303,7 @@ function inflate$1(strm, flush) {
   }
 
   state = strm.state;
-  if (state.mode === TYPE) {
+  if (state.mode === TYPE$1) {
     state.mode = TYPEDO;
   } /* skip check */
 
@@ -28319,12 +25363,12 @@ function inflate$1(strm, flush) {
         if (!(state.wrap & 1) || /* check if zlib header allowed */
         (((hold & 0xff) << /*BITS(8)*/8) + (hold >> 8)) % 31) {
           strm.msg = 'incorrect header check';
-          state.mode = BAD;
+          state.mode = BAD$1;
           break;
         }
         if ((hold & 0x0f) !== /*BITS(4)*/Z_DEFLATED$2) {
           strm.msg = 'unknown compression method';
-          state.mode = BAD;
+          state.mode = BAD$1;
           break;
         }
         //--- DROPBITS(4) ---//
@@ -28336,13 +25380,13 @@ function inflate$1(strm, flush) {
           state.wbits = len;
         } else if (len > state.wbits) {
           strm.msg = 'invalid window size';
-          state.mode = BAD;
+          state.mode = BAD$1;
           break;
         }
         state.dmax = 1 << len;
         //Tracev((stderr, "inflate:   zlib header ok\n"));
         strm.adler = state.check = 1 /*adler32(0L, Z_NULL, 0)*/;
-        state.mode = hold & 0x200 ? DICTID : TYPE;
+        state.mode = hold & 0x200 ? DICTID : TYPE$1;
         //=== INITBITS();
         hold = 0;
         bits = 0;
@@ -28362,12 +25406,12 @@ function inflate$1(strm, flush) {
         state.flags = hold;
         if ((state.flags & 0xff) !== Z_DEFLATED$2) {
           strm.msg = 'unknown compression method';
-          state.mode = BAD;
+          state.mode = BAD$1;
           break;
         }
         if (state.flags & 0xe000) {
           strm.msg = 'unknown header flags set';
-          state.mode = BAD;
+          state.mode = BAD$1;
           break;
         }
         if (state.head) {
@@ -28581,7 +25625,7 @@ function inflate$1(strm, flush) {
           //===//
           if (hold !== (state.check & 0xffff)) {
             strm.msg = 'header crc mismatch';
-            state.mode = BAD;
+            state.mode = BAD$1;
             break;
           }
           //=== INITBITS();
@@ -28594,7 +25638,7 @@ function inflate$1(strm, flush) {
           state.head.done = true;
         }
         strm.adler = state.check = 0;
-        state.mode = TYPE;
+        state.mode = TYPE$1;
         break;
       case DICTID:
         //=== NEEDBITS(32); */
@@ -28627,9 +25671,9 @@ function inflate$1(strm, flush) {
           return Z_NEED_DICT;
         }
         strm.adler = state.check = 1 /*adler32(0L, Z_NULL, 0)*/;
-        state.mode = TYPE;
+        state.mode = TYPE$1;
       /* falls through */
-      case TYPE:
+      case TYPE$1:
         if (flush === Z_BLOCK$1 || flush === Z_TREES) {
           break inf_leave;
         }
@@ -28687,7 +25731,7 @@ function inflate$1(strm, flush) {
             break;
           case 3:
             strm.msg = 'invalid block type';
-            state.mode = BAD;
+            state.mode = BAD$1;
         }
         //--- DROPBITS(2) ---//
         hold >>>= 2;
@@ -28711,7 +25755,7 @@ function inflate$1(strm, flush) {
         //===//
         if ((hold & 0xffff) !== (hold >>> 16 ^ 0xffff)) {
           strm.msg = 'invalid stored block lengths';
-          state.mode = BAD;
+          state.mode = BAD$1;
           break;
         }
         state.length = hold & 0xffff;
@@ -28752,7 +25796,7 @@ function inflate$1(strm, flush) {
           break;
         }
         //Tracev((stderr, "inflate:       stored end\n"));
-        state.mode = TYPE;
+        state.mode = TYPE$1;
         break;
       case TABLE:
         //=== NEEDBITS(14); */
@@ -28783,7 +25827,7 @@ function inflate$1(strm, flush) {
         //#ifndef PKZIP_BUG_WORKAROUND
         if (state.nlen > 286 || state.ndist > 30) {
           strm.msg = 'too many length or distance symbols';
-          state.mode = BAD;
+          state.mode = BAD$1;
           break;
         }
         //#endif
@@ -28820,12 +25864,12 @@ function inflate$1(strm, flush) {
         state.lenbits = 7;
 
         opts = { bits: state.lenbits };
-        ret = inftrees(CODES, state.lens, 0, 19, state.lencode, 0, state.work, opts);
+        ret = inftrees(CODES$1, state.lens, 0, 19, state.lencode, 0, state.work, opts);
         state.lenbits = opts.bits;
 
         if (ret) {
           strm.msg = 'invalid code lengths set';
-          state.mode = BAD;
+          state.mode = BAD$1;
           break;
         }
         //Tracev((stderr, "inflate:       code lengths ok\n"));
@@ -28877,7 +25921,7 @@ function inflate$1(strm, flush) {
               //---//
               if (state.have === 0) {
                 strm.msg = 'invalid bit length repeat';
-                state.mode = BAD;
+                state.mode = BAD$1;
                 break;
               }
               len = state.lens[state.have - 1];
@@ -28933,7 +25977,7 @@ function inflate$1(strm, flush) {
             }
             if (state.have + copy > state.nlen + state.ndist) {
               strm.msg = 'invalid bit length repeat';
-              state.mode = BAD;
+              state.mode = BAD$1;
               break;
             }
             while (copy--) {
@@ -28943,14 +25987,14 @@ function inflate$1(strm, flush) {
         }
 
         /* handle error breaks in while */
-        if (state.mode === BAD) {
+        if (state.mode === BAD$1) {
           break;
         }
 
         /* check for end-of-block code (better have one) */
         if (state.lens[256] === 0) {
           strm.msg = 'invalid code -- missing end-of-block';
-          state.mode = BAD;
+          state.mode = BAD$1;
           break;
         }
 
@@ -28960,7 +26004,7 @@ function inflate$1(strm, flush) {
         state.lenbits = 9;
 
         opts = { bits: state.lenbits };
-        ret = inftrees(LENS, state.lens, 0, state.nlen, state.lencode, 0, state.work, opts);
+        ret = inftrees(LENS$1, state.lens, 0, state.nlen, state.lencode, 0, state.work, opts);
         // We have separate tables & no pointers. 2 commented lines below not needed.
         // state.next_index = opts.table_index;
         state.lenbits = opts.bits;
@@ -28968,7 +26012,7 @@ function inflate$1(strm, flush) {
 
         if (ret) {
           strm.msg = 'invalid literal/lengths set';
-          state.mode = BAD;
+          state.mode = BAD$1;
           break;
         }
 
@@ -28977,7 +26021,7 @@ function inflate$1(strm, flush) {
         // Switch to use dynamic table
         state.distcode = state.distdyn;
         opts = { bits: state.distbits };
-        ret = inftrees(DISTS, state.lens, state.nlen, state.ndist, state.distcode, 0, state.work, opts);
+        ret = inftrees(DISTS$1, state.lens, state.nlen, state.ndist, state.distcode, 0, state.work, opts);
         // We have separate tables & no pointers. 2 commented lines below not needed.
         // state.next_index = opts.table_index;
         state.distbits = opts.bits;
@@ -28985,7 +26029,7 @@ function inflate$1(strm, flush) {
 
         if (ret) {
           strm.msg = 'invalid distances set';
-          state.mode = BAD;
+          state.mode = BAD$1;
           break;
         }
         //Tracev((stderr, 'inflate:       codes ok\n'));
@@ -29019,7 +26063,7 @@ function inflate$1(strm, flush) {
           bits = state.bits;
           //---
 
-          if (state.mode === TYPE) {
+          if (state.mode === TYPE$1) {
             state.back = -1;
           }
           break;
@@ -29087,12 +26131,12 @@ function inflate$1(strm, flush) {
         if (here_op & 32) {
           //Tracevv((stderr, "inflate:         end of block\n"));
           state.back = -1;
-          state.mode = TYPE;
+          state.mode = TYPE$1;
           break;
         }
         if (here_op & 64) {
           strm.msg = 'invalid literal/length code';
-          state.mode = BAD;
+          state.mode = BAD$1;
           break;
         }
         state.extra = here_op & 15;
@@ -29176,7 +26220,7 @@ function inflate$1(strm, flush) {
         state.back += here_bits;
         if (here_op & 64) {
           strm.msg = 'invalid distance code';
-          state.mode = BAD;
+          state.mode = BAD$1;
           break;
         }
         state.offset = here_val;
@@ -29206,7 +26250,7 @@ function inflate$1(strm, flush) {
         //#ifdef INFLATE_STRICT
         if (state.offset > state.dmax) {
           strm.msg = 'invalid distance too far back';
-          state.mode = BAD;
+          state.mode = BAD$1;
           break;
         }
         //#endif
@@ -29224,7 +26268,7 @@ function inflate$1(strm, flush) {
           if (copy > state.whave) {
             if (state.sane) {
               strm.msg = 'invalid distance too far back';
-              state.mode = BAD;
+              state.mode = BAD$1;
               break;
             }
             // (!) This block is disabled in zlib defailts,
@@ -29304,7 +26348,7 @@ function inflate$1(strm, flush) {
           // NB: crc32 stored as signed 32-bit int, zswap32 returns signed too
           if ((state.flags ? hold : zswap32(hold)) !== state.check) {
             strm.msg = 'incorrect data check';
-            state.mode = BAD;
+            state.mode = BAD$1;
             break;
           }
           //=== INITBITS();
@@ -29329,7 +26373,7 @@ function inflate$1(strm, flush) {
           //===//
           if (hold !== (state.total & 0xffffffff)) {
             strm.msg = 'incorrect length check';
-            state.mode = BAD;
+            state.mode = BAD$1;
             break;
           }
           //=== INITBITS();
@@ -29343,7 +26387,7 @@ function inflate$1(strm, flush) {
       case DONE:
         ret = Z_STREAM_END$2;
         break inf_leave;
-      case BAD:
+      case BAD$1:
         ret = Z_DATA_ERROR$1;
         break inf_leave;
       case MEM:
@@ -29373,7 +26417,7 @@ function inflate$1(strm, flush) {
   state.bits = bits;
   //---
 
-  if (state.wsize || _out !== strm.avail_out && state.mode < BAD && (state.mode < CHECK || flush !== Z_FINISH$2)) {
+  if (state.wsize || _out !== strm.avail_out && state.mode < BAD$1 && (state.mode < CHECK || flush !== Z_FINISH$2)) {
     if (updatewindow(strm, strm.output, strm.next_out, _out - strm.avail_out)) {
       state.mode = MEM;
       return Z_MEM_ERROR;
@@ -29388,7 +26432,7 @@ function inflate$1(strm, flush) {
     strm.adler = state.check = /*UPDATE(state.check, strm.next_out - _out, _out);*/
     state.flags ? crc32_1(state.check, output, _out, strm.next_out - _out) : adler32_1(state.check, output, _out, strm.next_out - _out);
   }
-  strm.data_type = state.bits + (state.last ? 64 : 0) + (state.mode === TYPE ? 128 : 0) + (state.mode === LEN_ || state.mode === COPY_ ? 256 : 0);
+  strm.data_type = state.bits + (state.last ? 64 : 0) + (state.mode === TYPE$1 ? 128 : 0) + (state.mode === LEN_ || state.mode === COPY_ ? 256 : 0);
   if ((_in === 0 && _out === 0 || flush === Z_FINISH$2) && ret === Z_OK$2) {
     ret = Z_BUF_ERROR$1;
   }
@@ -29470,7 +26514,7 @@ var inflateReset2_1 = inflateReset2;
 var inflateResetKeep_1 = inflateResetKeep;
 var inflateInit_1 = inflateInit;
 var inflateInit2_1 = inflateInit2;
-var inflate_2$1 = inflate$1;
+var inflate_2 = inflate;
 var inflateEnd_1 = inflateEnd;
 var inflateGetHeader_1 = inflateGetHeader;
 var inflateSetDictionary_1 = inflateSetDictionary;
@@ -29486,20 +26530,18 @@ exports.inflateSyncPoint = inflateSyncPoint;
 exports.inflateUndermine = inflateUndermine;
 */
 
-var inflate_1$2 = {
+var inflate_1 = {
   inflateReset: inflateReset_1,
   inflateReset2: inflateReset2_1,
   inflateResetKeep: inflateResetKeep_1,
   inflateInit: inflateInit_1,
   inflateInit2: inflateInit2_1,
-  inflate: inflate_2$1,
+  inflate: inflate_2,
   inflateEnd: inflateEnd_1,
   inflateGetHeader: inflateGetHeader_1,
   inflateSetDictionary: inflateSetDictionary_1,
   inflateInfo: inflateInfo
 };
-
-'use strict';
 
 // (C) 1995-2013 Jean-loup Gailly and Mark Adler
 // (C) 2014-2017 Vitaly Puzrin and Andrey Tupitsin
@@ -29567,8 +26609,6 @@ var constants = {
   //Z_NULL:                 null // Use -1 or null inline, depending on var type
 };
 
-'use strict';
-
 // (C) 1995-2013 Jean-loup Gailly and Mark Adler
 // (C) 2014-2017 Vitaly Puzrin and Andrey Tupitsin
 //
@@ -29625,8 +26665,6 @@ function GZheader() {
 }
 
 var gzheader = GZheader;
-
-'use strict';
 
 var toString$2 = Object.prototype.toString;
 
@@ -29751,7 +26789,7 @@ function Inflate(options) {
   this.strm = new zstream();
   this.strm.avail_out = 0;
 
-  var status = inflate_1$2.inflateInit2(this.strm, opt.windowBits);
+  var status = inflate_1.inflateInit2(this.strm, opt.windowBits);
 
   if (status !== constants.Z_OK) {
     throw new Error(messages[status]);
@@ -29759,7 +26797,7 @@ function Inflate(options) {
 
   this.header = new gzheader();
 
-  inflate_1$2.inflateGetHeader(this.strm, this.header);
+  inflate_1.inflateGetHeader(this.strm, this.header);
 }
 
 /**
@@ -29827,7 +26865,7 @@ Inflate.prototype.push = function (data, mode) {
       strm.avail_out = chunkSize;
     }
 
-    status = inflate_1$2.inflate(strm, constants.Z_NO_FLUSH); /* no bad return value */
+    status = inflate_1.inflate(strm, constants.Z_NO_FLUSH); /* no bad return value */
 
     if (status === constants.Z_NEED_DICT && dictionary) {
       // Convert data if needed
@@ -29839,7 +26877,7 @@ Inflate.prototype.push = function (data, mode) {
         dict = dictionary;
       }
 
-      status = inflate_1$2.inflateSetDictionary(this.strm, dict);
+      status = inflate_1.inflateSetDictionary(this.strm, dict);
     }
 
     if (status === constants.Z_BUF_ERROR && allowBufError === true) {
@@ -29895,7 +26933,7 @@ Inflate.prototype.push = function (data, mode) {
 
   // Finalize on the last chunk.
   if (_mode === constants.Z_FINISH) {
-    status = inflate_1$2.inflateEnd(this.strm);
+    status = inflate_1.inflateEnd(this.strm);
     this.onEnd(status);
     this.ended = true;
     return status === constants.Z_OK;
@@ -29989,7 +27027,7 @@ Inflate.prototype.onEnd = function (status) {
  * }
  * ```
  **/
-function inflate(input, options) {
+function inflate$1(input, options) {
   var inflator = new Inflate(options);
 
   inflator.push(input, true);
@@ -30013,7 +27051,7 @@ function inflate(input, options) {
 function inflateRaw(input, options) {
   options = options || {};
   options.raw = true;
-  return inflate(input, options);
+  return inflate$1(input, options);
 }
 
 /**
@@ -30026,27 +27064,24 @@ function inflateRaw(input, options) {
  **/
 
 var Inflate_1 = Inflate;
-var inflate_2 = inflate;
+var inflate_2$1 = inflate$1;
 var inflateRaw_1 = inflateRaw;
-var ungzip = inflate;
+var ungzip = inflate$1;
 
-var inflate_1 = {
+var inflate_1$1 = {
   Inflate: Inflate_1,
-  inflate: inflate_2,
+  inflate: inflate_2$1,
   inflateRaw: inflateRaw_1,
   ungzip: ungzip
 };
-
-// Top level file is just a mixin of submodules & constants
-'use strict';
 
 var assign = common.assign;
 
 var pako = {};
 
-assign(pako, deflate_1, inflate_1, constants);
+assign(pako, deflate_1$1, inflate_1$1, constants);
 
-var index$1 = pako;
+var pako_1 = pako;
 
 /*
 * Author   Jonathan Lurie - http://me.jonathanlurie.fr
@@ -30172,7 +27207,7 @@ var FileToArrayBufferReader = function (_Filter) {
         if (extension.localeCompare("pixp")) {
           // trying to un-gzip it with Pako
           try {
-            result = index$1.inflate(result).buffer;
+            result = pako_1.inflate(result).buffer;
             console.log("File was un-gziped successfully");
           } catch (err) {
             console.log("Pako: not a gziped file (" + err + ")");
@@ -30320,7 +27355,7 @@ var UrlToArrayBufferReader = function (_Filter) {
         // trying to un-gzip it with Pako for non pixp files
         if (extension.localeCompare("pixp")) {
           try {
-            result = index$1.inflate(result).buffer;
+            result = pako_1.inflate(result).buffer;
             console.log("File was un-gziped successfully");
           } catch (err) {
             console.log("Pako: not a gziped file (" + err + ")");
@@ -30349,7 +27384,6 @@ var UrlToArrayBufferReader = function (_Filter) {
       var onLoadEndTextFile = function onLoadEndTextFile(event) {
         console.log("ooooooooo");
         var result = event.target.response;
-
         var basename = url.split(/[\\/]/).pop();
         var extension = basename.split('.').pop();
         var checksum = md5(result);
@@ -30417,7 +27451,6 @@ var FileSaver = createCommonjsModule(function (module) {
 	/*! @source http://purl.eligrey.com/github/FileSaver.js/blob/master/FileSaver.js */
 
 	var saveAs = saveAs || function (view) {
-		"use strict";
 		// IE <10 is explicitly unsupported
 
 		if (typeof view === "undefined" || typeof navigator !== "undefined" && /MSIE [1-9]\./.test(navigator.userAgent)) {
@@ -30582,6 +27615,7 @@ var FileSaver = createCommonjsModule(function (module) {
 		});
 	}
 });
+var FileSaver_1 = FileSaver.saveAs;
 
 /**
 * An instance of BrowserDownloadBuffer takes an ArrayBuffer as input and triggers
@@ -30634,8 +27668,7 @@ function createCommonjsModule$2(fn, module) {
   return module = { exports: {} }, fn(module, module.exports), module.exports;
 }
 
-var common$2 = createCommonjsModule$2(function (module, exports) {
-  'use strict';
+var common$1 = createCommonjsModule$2(function (module, exports) {
 
   var TYPED_OK = typeof Uint8Array !== 'undefined' && typeof Uint16Array !== 'undefined' && typeof Int32Array !== 'undefined';
 
@@ -30741,8 +27774,6 @@ var common$2 = createCommonjsModule$2(function (module, exports) {
 
   exports.setTyped(TYPED_OK);
 });
-
-'use strict';
 
 // (C) 1995-2013 Jean-loup Gailly and Mark Adler
 // (C) 2014-2017 Vitaly Puzrin and Andrey Tupitsin
@@ -31300,7 +28331,7 @@ function copy_block$1(s, buf, len, header)
   //  while (len--) {
   //    put_byte(s, *buf++);
   //  }
-  common$2.arraySet(s.pending_buf, s.window, buf, len, s.pending);
+  common$1.arraySet(s.pending_buf, s.window, buf, len, s.pending);
   s.pending += len;
 }
 
@@ -31938,15 +28969,13 @@ var _tr_flush_block_1$1 = _tr_flush_block$1;
 var _tr_tally_1$1 = _tr_tally$1;
 var _tr_align_1$1 = _tr_align$1;
 
-var trees$3 = {
+var trees$1 = {
   _tr_init: _tr_init_1$1,
   _tr_stored_block: _tr_stored_block_1$1,
   _tr_flush_block: _tr_flush_block_1$1,
   _tr_tally: _tr_tally_1$1,
   _tr_align: _tr_align_1$1
 };
-
-'use strict';
 
 // Note: adler32 takes 12% for level 0 and 2% for level 6.
 // It isn't worth it to make additional optimizations as in original.
@@ -31971,7 +29000,7 @@ var trees$3 = {
 //   misrepresented as being the original software.
 // 3. This notice may not be removed or altered from any source distribution.
 
-function adler32$2(adler, buf, len, pos) {
+function adler32$1(adler, buf, len, pos) {
   var s1 = adler & 0xffff | 0,
       s2 = adler >>> 16 & 0xffff | 0,
       n = 0;
@@ -31995,9 +29024,7 @@ function adler32$2(adler, buf, len, pos) {
   return s1 | s2 << 16 | 0;
 }
 
-var adler32_1$2 = adler32$2;
-
-'use strict';
+var adler32_1$1 = adler32$1;
 
 // Note: we can't get significant speed boost here.
 // So write code to minimize size - no pregenerated tables
@@ -32041,7 +29068,7 @@ function makeTable$1() {
 // Create table on load. Just 255 signed longs. Not a problem.
 var crcTable$1 = makeTable$1();
 
-function crc32$2(crc, buf, len, pos) {
+function crc32$1(crc, buf, len, pos) {
   var t = crcTable$1,
       end = pos + len;
 
@@ -32054,9 +29081,7 @@ function crc32$2(crc, buf, len, pos) {
   return crc ^ -1; // >>> 0;
 }
 
-var crc32_1$2 = crc32$2;
-
-'use strict';
+var crc32_1$1 = crc32$1;
 
 // (C) 1995-2013 Jean-loup Gailly and Mark Adler
 // (C) 2014-2017 Vitaly Puzrin and Andrey Tupitsin
@@ -32077,7 +29102,7 @@ var crc32_1$2 = crc32$2;
 //   misrepresented as being the original software.
 // 3. This notice may not be removed or altered from any source distribution.
 
-var messages$2 = {
+var messages$1 = {
   2: 'need dictionary', /* Z_NEED_DICT       2  */
   1: 'stream end', /* Z_STREAM_END      1  */
   0: '', /* Z_OK              0  */
@@ -32088,8 +29113,6 @@ var messages$2 = {
   '-5': 'buffer error', /* Z_BUF_ERROR     (-5) */
   '-6': 'incompatible version' /* Z_VERSION_ERROR (-6) */
 };
-
-'use strict';
 
 // (C) 1995-2013 Jean-loup Gailly and Mark Adler
 // (C) 2014-2017 Vitaly Puzrin and Andrey Tupitsin
@@ -32204,7 +29227,7 @@ var BS_FINISH_DONE$1 = 4; /* finish done, accept no more input or output */
 var OS_CODE$1 = 0x03; // Unix :) . Don't detect, use this default.
 
 function err$1(strm, errorCode) {
-  strm.msg = messages$2[errorCode];
+  strm.msg = messages$1[errorCode];
   return errorCode;
 }
 
@@ -32236,7 +29259,7 @@ function flush_pending$1(strm) {
     return;
   }
 
-  common$2.arraySet(strm.output, s.pending_buf, s.pending_out, len, strm.next_out);
+  common$1.arraySet(strm.output, s.pending_buf, s.pending_out, len, strm.next_out);
   strm.next_out += len;
   s.pending_out += len;
   strm.total_out += len;
@@ -32248,7 +29271,7 @@ function flush_pending$1(strm) {
 }
 
 function flush_block_only$1(s, last) {
-  trees$3._tr_flush_block(s, s.block_start >= 0 ? s.block_start : -1, s.strstart - s.block_start, last);
+  trees$1._tr_flush_block(s, s.block_start >= 0 ? s.block_start : -1, s.strstart - s.block_start, last);
   s.block_start = s.strstart;
   flush_pending$1(s.strm);
 }
@@ -32289,11 +29312,11 @@ function read_buf$1(strm, buf, start, size) {
   strm.avail_in -= len;
 
   // zmemcpy(buf, strm->next_in, len);
-  common$2.arraySet(buf, strm.input, strm.next_in, len, start);
+  common$1.arraySet(buf, strm.input, strm.next_in, len, start);
   if (strm.state.wrap === 1) {
-    strm.adler = adler32_1$2(strm.adler, buf, len, start);
+    strm.adler = adler32_1$1(strm.adler, buf, len, start);
   } else if (strm.state.wrap === 2) {
-    strm.adler = crc32_1$2(strm.adler, buf, len, start);
+    strm.adler = crc32_1$1(strm.adler, buf, len, start);
   }
 
   strm.next_in += len;
@@ -32446,7 +29469,7 @@ function fill_window$1(s) {
      */
     if (s.strstart >= _w_size + (_w_size - MIN_LOOKAHEAD$1)) {
 
-      common$2.arraySet(s.window, s.window, _w_size, _w_size, 0);
+      common$1.arraySet(s.window, s.window, _w_size, _w_size, 0);
       s.match_start -= _w_size;
       s.strstart -= _w_size;
       /* we now have strstart >= MAX_DIST */
@@ -32716,7 +29739,7 @@ function deflate_fast$1(s, flush) {
 
       /*** _tr_tally_dist(s, s.strstart - s.match_start,
                      s.match_length - MIN_MATCH, bflush); ***/
-      bflush = trees$3._tr_tally(s, s.strstart - s.match_start, s.match_length - MIN_MATCH$2);
+      bflush = trees$1._tr_tally(s, s.strstart - s.match_start, s.match_length - MIN_MATCH$2);
 
       s.lookahead -= s.match_length;
 
@@ -32755,7 +29778,7 @@ function deflate_fast$1(s, flush) {
       /* No match, output a literal byte */
       //Tracevv((stderr,"%c", s.window[s.strstart]));
       /*** _tr_tally_lit(s, s.window[s.strstart], bflush); ***/
-      bflush = trees$3._tr_tally(s, 0, s.window[s.strstart]);
+      bflush = trees$1._tr_tally(s, 0, s.window[s.strstart]);
 
       s.lookahead--;
       s.strstart++;
@@ -32863,7 +29886,7 @@ function deflate_slow$1(s, flush) {
 
       /***_tr_tally_dist(s, s.strstart - 1 - s.prev_match,
                      s.prev_length - MIN_MATCH, bflush);***/
-      bflush = trees$3._tr_tally(s, s.strstart - 1 - s.prev_match, s.prev_length - MIN_MATCH$2);
+      bflush = trees$1._tr_tally(s, s.strstart - 1 - s.prev_match, s.prev_length - MIN_MATCH$2);
       /* Insert in hash table all strings up to the end of the match.
        * strstart-1 and strstart are already inserted. If there is not
        * enough lookahead, the last two strings are not inserted in
@@ -32899,7 +29922,7 @@ function deflate_slow$1(s, flush) {
        */
       //Tracevv((stderr,"%c", s->window[s->strstart-1]));
       /*** _tr_tally_lit(s, s.window[s.strstart-1], bflush); ***/
-      bflush = trees$3._tr_tally(s, 0, s.window[s.strstart - 1]);
+      bflush = trees$1._tr_tally(s, 0, s.window[s.strstart - 1]);
 
       if (bflush) {
         /*** FLUSH_BLOCK_ONLY(s, 0) ***/
@@ -32924,7 +29947,7 @@ function deflate_slow$1(s, flush) {
   if (s.match_available) {
     //Tracevv((stderr,"%c", s->window[s->strstart-1]));
     /*** _tr_tally_lit(s, s.window[s.strstart-1], bflush); ***/
-    bflush = trees$3._tr_tally(s, 0, s.window[s.strstart - 1]);
+    bflush = trees$1._tr_tally(s, 0, s.window[s.strstart - 1]);
 
     s.match_available = 0;
   }
@@ -33000,7 +30023,7 @@ function deflate_rle$1(s, flush) {
       //check_match(s, s.strstart, s.strstart - 1, s.match_length);
 
       /*** _tr_tally_dist(s, 1, s.match_length - MIN_MATCH, bflush); ***/
-      bflush = trees$3._tr_tally(s, 1, s.match_length - MIN_MATCH$2);
+      bflush = trees$1._tr_tally(s, 1, s.match_length - MIN_MATCH$2);
 
       s.lookahead -= s.match_length;
       s.strstart += s.match_length;
@@ -33009,7 +30032,7 @@ function deflate_rle$1(s, flush) {
       /* No match, output a literal byte */
       //Tracevv((stderr,"%c", s->window[s->strstart]));
       /*** _tr_tally_lit(s, s.window[s.strstart], bflush); ***/
-      bflush = trees$3._tr_tally(s, 0, s.window[s.strstart]);
+      bflush = trees$1._tr_tally(s, 0, s.window[s.strstart]);
 
       s.lookahead--;
       s.strstart++;
@@ -33067,7 +30090,7 @@ function deflate_huff$1(s, flush) {
     s.match_length = 0;
     //Tracevv((stderr,"%c", s->window[s->strstart]));
     /*** _tr_tally_lit(s, s.window[s.strstart], bflush); ***/
-    bflush = trees$3._tr_tally(s, 0, s.window[s.strstart]);
+    bflush = trees$1._tr_tally(s, 0, s.window[s.strstart]);
     s.lookahead--;
     s.strstart++;
     if (bflush) {
@@ -33258,9 +30281,9 @@ function DeflateState$1() {
 
   // Use flat array of DOUBLE size, with interleaved fata,
   // because JS does not support effective
-  this.dyn_ltree = new common$2.Buf16(HEAP_SIZE$2 * 2);
-  this.dyn_dtree = new common$2.Buf16((2 * D_CODES$2 + 1) * 2);
-  this.bl_tree = new common$2.Buf16((2 * BL_CODES$2 + 1) * 2);
+  this.dyn_ltree = new common$1.Buf16(HEAP_SIZE$2 * 2);
+  this.dyn_dtree = new common$1.Buf16((2 * D_CODES$2 + 1) * 2);
+  this.bl_tree = new common$1.Buf16((2 * BL_CODES$2 + 1) * 2);
   zero$2(this.dyn_ltree);
   zero$2(this.dyn_dtree);
   zero$2(this.bl_tree);
@@ -33270,11 +30293,11 @@ function DeflateState$1() {
   this.bl_desc = null; /* desc. for bit length tree */
 
   //ush bl_count[MAX_BITS+1];
-  this.bl_count = new common$2.Buf16(MAX_BITS$2 + 1);
+  this.bl_count = new common$1.Buf16(MAX_BITS$2 + 1);
   /* number of codes at each bit length for an optimal tree */
 
   //int heap[2*L_CODES+1];      /* heap used to build the Huffman trees */
-  this.heap = new common$2.Buf16(2 * L_CODES$2 + 1); /* heap used to build the Huffman trees */
+  this.heap = new common$1.Buf16(2 * L_CODES$2 + 1); /* heap used to build the Huffman trees */
   zero$2(this.heap);
 
   this.heap_len = 0; /* number of elements in the heap */
@@ -33283,7 +30306,7 @@ function DeflateState$1() {
    * The same heap array is used to build all trees.
    */
 
-  this.depth = new common$2.Buf16(2 * L_CODES$2 + 1); //uch depth[2*L_CODES+1];
+  this.depth = new common$1.Buf16(2 * L_CODES$2 + 1); //uch depth[2*L_CODES+1];
   zero$2(this.depth);
   /* Depth of each subtree used as tie breaker for trees of equal frequency
    */
@@ -33364,7 +30387,7 @@ function deflateResetKeep$1(strm) {
   strm.adler = s.wrap === 2 ? 0 // crc32(0, Z_NULL, 0)
   : 1; // adler32(0, Z_NULL, 0)
   s.last_flush = Z_NO_FLUSH$1$1;
-  trees$3._tr_init(s);
+  trees$1._tr_init(s);
   return Z_OK$1$1;
 }
 
@@ -33432,9 +30455,9 @@ function deflateInit2$1(strm, level, method, windowBits, memLevel, strategy) {
   s.hash_mask = s.hash_size - 1;
   s.hash_shift = ~~((s.hash_bits + MIN_MATCH$2 - 1) / MIN_MATCH$2);
 
-  s.window = new common$2.Buf8(s.w_size * 2);
-  s.head = new common$2.Buf16(s.hash_size);
-  s.prev = new common$2.Buf16(s.w_size);
+  s.window = new common$1.Buf8(s.w_size * 2);
+  s.head = new common$1.Buf16(s.hash_size);
+  s.prev = new common$1.Buf16(s.w_size);
 
   // Don't need mem init magic for JS.
   //s.high_water = 0;  /* nothing written to s->window yet */
@@ -33445,7 +30468,7 @@ function deflateInit2$1(strm, level, method, windowBits, memLevel, strategy) {
 
   //overlay = (ushf *) ZALLOC(strm, s->lit_bufsize, sizeof(ush)+2);
   //s->pending_buf = (uchf *) overlay;
-  s.pending_buf = new common$2.Buf8(s.pending_buf_size);
+  s.pending_buf = new common$1.Buf8(s.pending_buf_size);
 
   // It is offset from `s.pending_buf` (size is `s.lit_bufsize * 2`)
   //s->d_buf = overlay + s->lit_bufsize/sizeof(ush);
@@ -33515,7 +30538,7 @@ function deflate$1$1(strm, flush) {
           put_byte$1(s, s.gzhead.extra.length >> 8 & 0xff);
         }
         if (s.gzhead.hcrc) {
-          strm.adler = crc32_1$2(strm.adler, s.pending_buf, s.pending, 0);
+          strm.adler = crc32_1$1(strm.adler, s.pending_buf, s.pending, 0);
         }
         s.gzindex = 0;
         s.status = EXTRA_STATE$1;
@@ -33560,7 +30583,7 @@ function deflate$1$1(strm, flush) {
         while (s.gzindex < (s.gzhead.extra.length & 0xffff)) {
           if (s.pending === s.pending_buf_size) {
             if (s.gzhead.hcrc && s.pending > beg) {
-              strm.adler = crc32_1$2(strm.adler, s.pending_buf, s.pending - beg, beg);
+              strm.adler = crc32_1$1(strm.adler, s.pending_buf, s.pending - beg, beg);
             }
             flush_pending$1(strm);
             beg = s.pending;
@@ -33572,7 +30595,7 @@ function deflate$1$1(strm, flush) {
           s.gzindex++;
         }
         if (s.gzhead.hcrc && s.pending > beg) {
-          strm.adler = crc32_1$2(strm.adler, s.pending_buf, s.pending - beg, beg);
+          strm.adler = crc32_1$1(strm.adler, s.pending_buf, s.pending - beg, beg);
         }
         if (s.gzindex === s.gzhead.extra.length) {
           s.gzindex = 0;
@@ -33590,7 +30613,7 @@ function deflate$1$1(strm, flush) {
         do {
           if (s.pending === s.pending_buf_size) {
             if (s.gzhead.hcrc && s.pending > beg) {
-              strm.adler = crc32_1$2(strm.adler, s.pending_buf, s.pending - beg, beg);
+              strm.adler = crc32_1$1(strm.adler, s.pending_buf, s.pending - beg, beg);
             }
             flush_pending$1(strm);
             beg = s.pending;
@@ -33609,7 +30632,7 @@ function deflate$1$1(strm, flush) {
         } while (val !== 0);
 
         if (s.gzhead.hcrc && s.pending > beg) {
-          strm.adler = crc32_1$2(strm.adler, s.pending_buf, s.pending - beg, beg);
+          strm.adler = crc32_1$1(strm.adler, s.pending_buf, s.pending - beg, beg);
         }
         if (val === 0) {
           s.gzindex = 0;
@@ -33627,7 +30650,7 @@ function deflate$1$1(strm, flush) {
         do {
           if (s.pending === s.pending_buf_size) {
             if (s.gzhead.hcrc && s.pending > beg) {
-              strm.adler = crc32_1$2(strm.adler, s.pending_buf, s.pending - beg, beg);
+              strm.adler = crc32_1$1(strm.adler, s.pending_buf, s.pending - beg, beg);
             }
             flush_pending$1(strm);
             beg = s.pending;
@@ -33646,7 +30669,7 @@ function deflate$1$1(strm, flush) {
         } while (val !== 0);
 
         if (s.gzhead.hcrc && s.pending > beg) {
-          strm.adler = crc32_1$2(strm.adler, s.pending_buf, s.pending - beg, beg);
+          strm.adler = crc32_1$1(strm.adler, s.pending_buf, s.pending - beg, beg);
         }
         if (val === 0) {
           s.status = HCRC_STATE$1;
@@ -33723,11 +30746,11 @@ function deflate$1$1(strm, flush) {
     }
     if (bstate === BS_BLOCK_DONE$1) {
       if (flush === Z_PARTIAL_FLUSH$1) {
-        trees$3._tr_align(s);
+        trees$1._tr_align(s);
       } else if (flush !== Z_BLOCK$2) {
         /* FULL_FLUSH or SYNC_FLUSH */
 
-        trees$3._tr_stored_block(s, 0, 0, false);
+        trees$1._tr_stored_block(s, 0, 0, false);
         /* For a full flush, this empty block will be recognized
          * as a special marker by inflate_sync().
          */
@@ -33831,7 +30854,7 @@ function deflateSetDictionary$1(strm, dictionary) {
   /* when using zlib wrappers, compute Adler-32 for provided dictionary */
   if (wrap === 1) {
     /* adler32(strm->adler, dictionary, dictLength); */
-    strm.adler = adler32_1$2(strm.adler, dictionary, dictLength, 0);
+    strm.adler = adler32_1$1(strm.adler, dictionary, dictLength, 0);
   }
 
   s.wrap = 0; /* avoid computing Adler-32 in read_buf */
@@ -33848,8 +30871,8 @@ function deflateSetDictionary$1(strm, dictionary) {
     }
     /* use the tail */
     // dictionary = dictionary.slice(dictLength - s.w_size);
-    tmpDict = new common$2.Buf8(s.w_size);
-    common$2.arraySet(tmpDict, dictionary, dictLength - s.w_size, s.w_size, 0);
+    tmpDict = new common$1.Buf8(s.w_size);
+    common$1.arraySet(tmpDict, dictionary, dictLength - s.w_size, s.w_size, 0);
     dictionary = tmpDict;
     dictLength = s.w_size;
   }
@@ -33909,7 +30932,7 @@ exports.deflatePrime = deflatePrime;
 exports.deflateTune = deflateTune;
 */
 
-var deflate_1$2$1 = {
+var deflate_1$2 = {
   deflateInit: deflateInit_1$1,
   deflateInit2: deflateInit2_1$1,
   deflateReset: deflateReset_1$1,
@@ -33920,9 +30943,6 @@ var deflate_1$2$1 = {
   deflateSetDictionary: deflateSetDictionary_1$1,
   deflateInfo: deflateInfo$1
 };
-
-// String encode/decode helpers
-'use strict';
 
 // Quick check if we can use fast array to bin string conversion
 //
@@ -33946,7 +30966,7 @@ try {
 // Table with utf8 lengths (calculated by first byte of sequence)
 // Note, that 5 & 6-byte values and some 4-byte values can not be represented in JS,
 // because max possible codepoint is 0x10ffff
-var _utf8len$1 = new common$2.Buf8(256);
+var _utf8len$1 = new common$1.Buf8(256);
 for (var q$1 = 0; q$1 < 256; q$1++) {
   _utf8len$1[q$1] = q$1 >= 252 ? 6 : q$1 >= 248 ? 5 : q$1 >= 240 ? 4 : q$1 >= 224 ? 3 : q$1 >= 192 ? 2 : 1;
 }
@@ -33977,7 +30997,7 @@ var string2buf$1 = function string2buf(str) {
   }
 
   // allocate buffer
-  buf = new common$2.Buf8(buf_len);
+  buf = new common$1.Buf8(buf_len);
 
   // convert
   for (i = 0, m_pos = 0; i < buf_len; m_pos++) {
@@ -34018,7 +31038,7 @@ function buf2binstring$1(buf, len) {
   // use fallback for big arrays to avoid stack overflow
   if (len < 65537) {
     if (buf.subarray && STR_APPLY_UIA_OK$1 || !buf.subarray && STR_APPLY_OK$1) {
-      return String.fromCharCode.apply(null, common$2.shrinkBuf(buf, len));
+      return String.fromCharCode.apply(null, common$1.shrinkBuf(buf, len));
     }
   }
 
@@ -34036,7 +31056,7 @@ var buf2binstring_1$1 = function buf2binstring_1(buf) {
 
 // Convert binary string (typed, when possible)
 var binstring2buf$1 = function binstring2buf(str) {
-  var buf = new common$2.Buf8(str.length);
+  var buf = new common$1.Buf8(str.length);
   for (var i = 0, len = buf.length; i < len; i++) {
     buf[i] = str.charCodeAt(i);
   }
@@ -34126,15 +31146,13 @@ var utf8border$1 = function utf8border(buf, max) {
   return pos + _utf8len$1[buf[pos]] > max ? pos : max;
 };
 
-var strings$3 = {
+var strings$1 = {
   string2buf: string2buf$1,
   buf2binstring: buf2binstring_1$1,
   binstring2buf: binstring2buf$1,
   buf2string: buf2string$1,
   utf8border: utf8border$1
 };
-
-'use strict';
 
 // (C) 1995-2013 Jean-loup Gailly and Mark Adler
 // (C) 2014-2017 Vitaly Puzrin and Andrey Tupitsin
@@ -34155,7 +31173,7 @@ var strings$3 = {
 //   misrepresented as being the original software.
 // 3. This notice may not be removed or altered from any source distribution.
 
-function ZStream$2() {
+function ZStream$1() {
   /* next input byte */
   this.input = null; // JS specific, because we have no pointers
   this.next_in = 0;
@@ -34180,9 +31198,7 @@ function ZStream$2() {
   this.adler = 0;
 }
 
-var zstream$2 = ZStream$2;
-
-'use strict';
+var zstream$1 = ZStream$1;
 
 var toString$3 = Object.prototype.toString;
 
@@ -34295,7 +31311,7 @@ var Z_DEFLATED$3 = 8;
 function Deflate$1(options) {
   if (!(this instanceof Deflate$1)) return new Deflate$1(options);
 
-  this.options = common$2.assign({
+  this.options = common$1.assign({
     level: Z_DEFAULT_COMPRESSION$2,
     method: Z_DEFLATED$3,
     chunkSize: 16384,
@@ -34318,17 +31334,17 @@ function Deflate$1(options) {
   this.ended = false; // used to avoid multiple onEnd() calls
   this.chunks = []; // chunks of compressed data
 
-  this.strm = new zstream$2();
+  this.strm = new zstream$1();
   this.strm.avail_out = 0;
 
-  var status = deflate_1$2$1.deflateInit2(this.strm, opt.level, opt.method, opt.windowBits, opt.memLevel, opt.strategy);
+  var status = deflate_1$2.deflateInit2(this.strm, opt.level, opt.method, opt.windowBits, opt.memLevel, opt.strategy);
 
   if (status !== Z_OK$3) {
-    throw new Error(messages$2[status]);
+    throw new Error(messages$1[status]);
   }
 
   if (opt.header) {
-    deflate_1$2$1.deflateSetHeader(this.strm, opt.header);
+    deflate_1$2.deflateSetHeader(this.strm, opt.header);
   }
 
   if (opt.dictionary) {
@@ -34336,17 +31352,17 @@ function Deflate$1(options) {
     // Convert data if needed
     if (typeof opt.dictionary === 'string') {
       // If we need to compress text, change encoding to utf8.
-      dict = strings$3.string2buf(opt.dictionary);
+      dict = strings$1.string2buf(opt.dictionary);
     } else if (toString$3.call(opt.dictionary) === '[object ArrayBuffer]') {
       dict = new Uint8Array(opt.dictionary);
     } else {
       dict = opt.dictionary;
     }
 
-    status = deflate_1$2$1.deflateSetDictionary(this.strm, dict);
+    status = deflate_1$2.deflateSetDictionary(this.strm, dict);
 
     if (status !== Z_OK$3) {
-      throw new Error(messages$2[status]);
+      throw new Error(messages$1[status]);
     }
 
     this._dict_set = true;
@@ -34396,7 +31412,7 @@ Deflate$1.prototype.push = function (data, mode) {
   // Convert data if needed
   if (typeof data === 'string') {
     // If we need to compress text, change encoding to utf8.
-    strm.input = strings$3.string2buf(data);
+    strm.input = strings$1.string2buf(data);
   } else if (toString$3.call(data) === '[object ArrayBuffer]') {
     strm.input = new Uint8Array(data);
   } else {
@@ -34408,11 +31424,11 @@ Deflate$1.prototype.push = function (data, mode) {
 
   do {
     if (strm.avail_out === 0) {
-      strm.output = new common$2.Buf8(chunkSize);
+      strm.output = new common$1.Buf8(chunkSize);
       strm.next_out = 0;
       strm.avail_out = chunkSize;
     }
-    status = deflate_1$2$1.deflate(strm, _mode); /* no bad return value */
+    status = deflate_1$2.deflate(strm, _mode); /* no bad return value */
 
     if (status !== Z_STREAM_END$3 && status !== Z_OK$3) {
       this.onEnd(status);
@@ -34421,16 +31437,16 @@ Deflate$1.prototype.push = function (data, mode) {
     }
     if (strm.avail_out === 0 || strm.avail_in === 0 && (_mode === Z_FINISH$3 || _mode === Z_SYNC_FLUSH$1)) {
       if (this.options.to === 'string') {
-        this.onData(strings$3.buf2binstring(common$2.shrinkBuf(strm.output, strm.next_out)));
+        this.onData(strings$1.buf2binstring(common$1.shrinkBuf(strm.output, strm.next_out)));
       } else {
-        this.onData(common$2.shrinkBuf(strm.output, strm.next_out));
+        this.onData(common$1.shrinkBuf(strm.output, strm.next_out));
       }
     }
   } while ((strm.avail_in > 0 || strm.avail_out === 0) && status !== Z_STREAM_END$3);
 
   // Finalize on the last chunk.
   if (_mode === Z_FINISH$3) {
-    status = deflate_1$2$1.deflateEnd(this.strm);
+    status = deflate_1$2.deflateEnd(this.strm);
     this.onEnd(status);
     this.ended = true;
     return status === Z_OK$3;
@@ -34475,7 +31491,7 @@ Deflate$1.prototype.onEnd = function (status) {
     if (this.options.to === 'string') {
       this.result = this.chunks.join('');
     } else {
-      this.result = common$2.flattenChunks(this.chunks);
+      this.result = common$1.flattenChunks(this.chunks);
     }
   }
   this.chunks = [];
@@ -34517,14 +31533,14 @@ Deflate$1.prototype.onEnd = function (status) {
  * console.log(pako.deflate(data));
  * ```
  **/
-function deflate$3(input, options) {
+function deflate$2(input, options) {
   var deflator = new Deflate$1(options);
 
   deflator.push(input, true);
 
   // That will never happens, if you don't cheat with options :)
   if (deflator.err) {
-    throw deflator.msg || messages$2[deflator.err];
+    throw deflator.msg || messages$1[deflator.err];
   }
 
   return deflator.result;
@@ -34541,7 +31557,7 @@ function deflate$3(input, options) {
 function deflateRaw$1(input, options) {
   options = options || {};
   options.raw = true;
-  return deflate$3(input, options);
+  return deflate$2(input, options);
 }
 
 /**
@@ -34555,22 +31571,20 @@ function deflateRaw$1(input, options) {
 function gzip$1(input, options) {
   options = options || {};
   options.gzip = true;
-  return deflate$3(input, options);
+  return deflate$2(input, options);
 }
 
 var Deflate_1$1 = Deflate$1;
-var deflate_2$2 = deflate$3;
+var deflate_2$2 = deflate$2;
 var deflateRaw_1$1 = deflateRaw$1;
 var gzip_1$1 = gzip$1;
 
-var deflate_1$4 = {
+var deflate_1$3 = {
   Deflate: Deflate_1$1,
   deflate: deflate_2$2,
   deflateRaw: deflateRaw_1$1,
   gzip: gzip_1$1
 };
-
-'use strict';
 
 // (C) 1995-2013 Jean-loup Gailly and Mark Adler
 // (C) 2014-2017 Vitaly Puzrin and Andrey Tupitsin
@@ -34630,7 +31644,7 @@ var TYPE$1$1 = 12; /* i: waiting for type bits, including last-flag bit */
       requires strm.avail_out >= 258 for each loop to avoid checking for
       output space.
  */
-var inffast$2 = function inflate_fast(strm, start) {
+var inffast$1 = function inflate_fast(strm, start) {
   var state;
   var _in; /* local strm.input */
   var last; /* have enough input while in < last */
@@ -34919,8 +31933,6 @@ var inffast$2 = function inflate_fast(strm, start) {
   return;
 };
 
-'use strict';
-
 // (C) 1995-2013 Jean-loup Gailly and Mark Adler
 // (C) 2014-2017 Vitaly Puzrin and Andrey Tupitsin
 //
@@ -34962,7 +31974,7 @@ var dbase$1 = [/* Distance codes 0..29 base */
 var dext$1 = [/* Distance codes 0..29 extra */
 16, 16, 16, 16, 17, 17, 18, 18, 19, 19, 20, 20, 21, 21, 22, 22, 23, 23, 24, 24, 25, 25, 26, 26, 27, 27, 28, 28, 29, 29, 64, 64];
 
-var inftrees$2 = function inflate_table(type, lens, lens_index, codes, table, table_index, work, opts) {
+var inftrees$1 = function inflate_table(type, lens, lens_index, codes, table, table_index, work, opts) {
   var bits = opts.bits;
   //here = opts.here; /* table entry for duplication */
 
@@ -34985,8 +31997,8 @@ var inftrees$2 = function inflate_table(type, lens, lens_index, codes, table, ta
   var base_index = 0;
   //  var shoextra;    /* extra bits table to use */
   var end; /* use base and extra for symbol > end */
-  var count = new common$2.Buf16(MAXBITS$1 + 1); //[MAXBITS+1];    /* number of codes of each length */
-  var offs = new common$2.Buf16(MAXBITS$1 + 1); //[MAXBITS+1];     /* offsets in table for each length */
+  var count = new common$1.Buf16(MAXBITS$1 + 1); //[MAXBITS+1];    /* number of codes of each length */
+  var offs = new common$1.Buf16(MAXBITS$1 + 1); //[MAXBITS+1];     /* offsets in table for each length */
   var extra = null;
   var extra_index = 0;
 
@@ -35248,8 +32260,6 @@ var inftrees$2 = function inflate_table(type, lens, lens_index, codes, table, ta
   return 0;
 };
 
-'use strict';
-
 // (C) 1995-2013 Jean-loup Gailly and Mark Adler
 // (C) 2014-2017 Vitaly Puzrin and Andrey Tupitsin
 //
@@ -35395,8 +32405,8 @@ function InflateState$1() {
   this.have = 0; /* number of code lengths in lens[] */
   this.next = null; /* next available space in codes[] */
 
-  this.lens = new common$2.Buf16(320); /* temporary storage for code lengths */
-  this.work = new common$2.Buf16(288); /* work area for code table building */
+  this.lens = new common$1.Buf16(320); /* temporary storage for code lengths */
+  this.work = new common$1.Buf16(288); /* work area for code table building */
 
   /*
    because we don't have pointers in js, we use lencode and distcode directly
@@ -35431,8 +32441,8 @@ function inflateResetKeep$1(strm) {
   state.hold = 0;
   state.bits = 0;
   //state.lencode = state.distcode = state.next = state.codes;
-  state.lencode = state.lendyn = new common$2.Buf32(ENOUGH_LENS$2);
-  state.distcode = state.distdyn = new common$2.Buf32(ENOUGH_DISTS$2);
+  state.lencode = state.lendyn = new common$1.Buf32(ENOUGH_LENS$2);
+  state.distcode = state.distdyn = new common$1.Buf32(ENOUGH_DISTS$2);
 
   state.sane = 1;
   state.back = -1;
@@ -35534,8 +32544,8 @@ function fixedtables$1(state) {
   if (virgin$1) {
     var sym;
 
-    lenfix$1 = new common$2.Buf32(512);
-    distfix$1 = new common$2.Buf32(32);
+    lenfix$1 = new common$1.Buf32(512);
+    distfix$1 = new common$1.Buf32(32);
 
     /* literal/length table */
     sym = 0;
@@ -35552,7 +32562,7 @@ function fixedtables$1(state) {
       state.lens[sym++] = 8;
     }
 
-    inftrees$2(LENS$2, state.lens, 0, 288, lenfix$1, 0, state.work, { bits: 9 });
+    inftrees$1(LENS$2, state.lens, 0, 288, lenfix$1, 0, state.work, { bits: 9 });
 
     /* distance table */
     sym = 0;
@@ -35560,7 +32570,7 @@ function fixedtables$1(state) {
       state.lens[sym++] = 5;
     }
 
-    inftrees$2(DISTS$2, state.lens, 0, 32, distfix$1, 0, state.work, { bits: 5 });
+    inftrees$1(DISTS$2, state.lens, 0, 32, distfix$1, 0, state.work, { bits: 5 });
 
     /* do this just once */
     virgin$1 = false;
@@ -35596,12 +32606,12 @@ function updatewindow$1(strm, src, end, copy) {
     state.wnext = 0;
     state.whave = 0;
 
-    state.window = new common$2.Buf8(state.wsize);
+    state.window = new common$1.Buf8(state.wsize);
   }
 
   /* copy state->wsize or less output bytes into the circular window */
   if (copy >= state.wsize) {
-    common$2.arraySet(state.window, src, end - state.wsize, state.wsize, 0);
+    common$1.arraySet(state.window, src, end - state.wsize, state.wsize, 0);
     state.wnext = 0;
     state.whave = state.wsize;
   } else {
@@ -35610,11 +32620,11 @@ function updatewindow$1(strm, src, end, copy) {
       dist = copy;
     }
     //zmemcpy(state->window + state->wnext, end - copy, dist);
-    common$2.arraySet(state.window, src, end - copy, dist, state.wnext);
+    common$1.arraySet(state.window, src, end - copy, dist, state.wnext);
     copy -= dist;
     if (copy) {
       //zmemcpy(state->window, end - copy, copy);
-      common$2.arraySet(state.window, src, end - copy, copy, 0);
+      common$1.arraySet(state.window, src, end - copy, copy, 0);
       state.wnext = copy;
       state.whave = state.wsize;
     } else {
@@ -35648,7 +32658,7 @@ function inflate$1$1(strm, flush) {
   var last_bits, last_op, last_val; // paked "last" denormalized (JS specific)
   var len; /* length to copy for repeats, bits to drop */
   var ret; /* return code */
-  var hbuf = new common$2.Buf8(4); /* buffer for gzip header crc calculation */
+  var hbuf = new common$1.Buf8(4); /* buffer for gzip header crc calculation */
   var opts;
 
   var n; // temporary var for NEED_BITS
@@ -35704,7 +32714,7 @@ function inflate$1$1(strm, flush) {
           //=== CRC2(state.check, hold);
           hbuf[0] = hold & 0xff;
           hbuf[1] = hold >>> 8 & 0xff;
-          state.check = crc32_1$2(state.check, hbuf, 2, 0);
+          state.check = crc32_1$1(state.check, hbuf, 2, 0);
           //===//
 
           //=== INITBITS();
@@ -35779,7 +32789,7 @@ function inflate$1$1(strm, flush) {
           //=== CRC2(state.check, hold);
           hbuf[0] = hold & 0xff;
           hbuf[1] = hold >>> 8 & 0xff;
-          state.check = crc32_1$2(state.check, hbuf, 2, 0);
+          state.check = crc32_1$1(state.check, hbuf, 2, 0);
           //===//
         }
         //=== INITBITS();
@@ -35808,7 +32818,7 @@ function inflate$1$1(strm, flush) {
           hbuf[1] = hold >>> 8 & 0xff;
           hbuf[2] = hold >>> 16 & 0xff;
           hbuf[3] = hold >>> 24 & 0xff;
-          state.check = crc32_1$2(state.check, hbuf, 4, 0);
+          state.check = crc32_1$1(state.check, hbuf, 4, 0);
           //===
         }
         //=== INITBITS();
@@ -35836,7 +32846,7 @@ function inflate$1$1(strm, flush) {
           //=== CRC2(state.check, hold);
           hbuf[0] = hold & 0xff;
           hbuf[1] = hold >>> 8 & 0xff;
-          state.check = crc32_1$2(state.check, hbuf, 2, 0);
+          state.check = crc32_1$1(state.check, hbuf, 2, 0);
           //===//
         }
         //=== INITBITS();
@@ -35865,7 +32875,7 @@ function inflate$1$1(strm, flush) {
             //=== CRC2(state.check, hold);
             hbuf[0] = hold & 0xff;
             hbuf[1] = hold >>> 8 & 0xff;
-            state.check = crc32_1$2(state.check, hbuf, 2, 0);
+            state.check = crc32_1$1(state.check, hbuf, 2, 0);
             //===//
           }
           //=== INITBITS();
@@ -35890,7 +32900,7 @@ function inflate$1$1(strm, flush) {
                 // Use untyped array for more convenient processing later
                 state.head.extra = new Array(state.head.extra_len);
               }
-              common$2.arraySet(state.head.extra, input, next,
+              common$1.arraySet(state.head.extra, input, next,
               // extra field is limited to 65536 bytes
               // - no need for additional size check
               copy,
@@ -35901,7 +32911,7 @@ function inflate$1$1(strm, flush) {
               //        state.head.extra_max - len : copy);
             }
             if (state.flags & 0x0200) {
-              state.check = crc32_1$2(state.check, input, copy, next);
+              state.check = crc32_1$1(state.check, input, copy, next);
             }
             have -= copy;
             next += copy;
@@ -35930,7 +32940,7 @@ function inflate$1$1(strm, flush) {
           } while (len && copy < have);
 
           if (state.flags & 0x0200) {
-            state.check = crc32_1$2(state.check, input, copy, next);
+            state.check = crc32_1$1(state.check, input, copy, next);
           }
           have -= copy;
           next += copy;
@@ -35957,7 +32967,7 @@ function inflate$1$1(strm, flush) {
             }
           } while (len && copy < have);
           if (state.flags & 0x0200) {
-            state.check = crc32_1$2(state.check, input, copy, next);
+            state.check = crc32_1$1(state.check, input, copy, next);
           }
           have -= copy;
           next += copy;
@@ -36144,7 +33154,7 @@ function inflate$1$1(strm, flush) {
             break inf_leave;
           }
           //--- zmemcpy(put, next, copy); ---
-          common$2.arraySet(output, input, next, copy, put);
+          common$1.arraySet(output, input, next, copy, put);
           //---//
           have -= copy;
           next += copy;
@@ -36222,7 +33232,7 @@ function inflate$1$1(strm, flush) {
         state.lenbits = 7;
 
         opts = { bits: state.lenbits };
-        ret = inftrees$2(CODES$2, state.lens, 0, 19, state.lencode, 0, state.work, opts);
+        ret = inftrees$1(CODES$2, state.lens, 0, 19, state.lencode, 0, state.work, opts);
         state.lenbits = opts.bits;
 
         if (ret) {
@@ -36362,7 +33372,7 @@ function inflate$1$1(strm, flush) {
         state.lenbits = 9;
 
         opts = { bits: state.lenbits };
-        ret = inftrees$2(LENS$2, state.lens, 0, state.nlen, state.lencode, 0, state.work, opts);
+        ret = inftrees$1(LENS$2, state.lens, 0, state.nlen, state.lencode, 0, state.work, opts);
         // We have separate tables & no pointers. 2 commented lines below not needed.
         // state.next_index = opts.table_index;
         state.lenbits = opts.bits;
@@ -36379,7 +33389,7 @@ function inflate$1$1(strm, flush) {
         // Switch to use dynamic table
         state.distcode = state.distdyn;
         opts = { bits: state.distbits };
-        ret = inftrees$2(DISTS$2, state.lens, state.nlen, state.ndist, state.distcode, 0, state.work, opts);
+        ret = inftrees$1(DISTS$2, state.lens, state.nlen, state.ndist, state.distcode, 0, state.work, opts);
         // We have separate tables & no pointers. 2 commented lines below not needed.
         // state.next_index = opts.table_index;
         state.distbits = opts.bits;
@@ -36409,7 +33419,7 @@ function inflate$1$1(strm, flush) {
           state.hold = hold;
           state.bits = bits;
           //---
-          inffast$2(strm, _out);
+          inffast$1(strm, _out);
           //--- LOAD() ---
           put = strm.next_out;
           output = strm.output;
@@ -36700,7 +33710,7 @@ function inflate$1$1(strm, flush) {
           if (_out) {
             strm.adler = state.check =
             /*UPDATE(state.check, put - _out, _out);*/
-            state.flags ? crc32_1$2(state.check, output, _out, put - _out) : adler32_1$2(state.check, output, _out, put - _out);
+            state.flags ? crc32_1$1(state.check, output, _out, put - _out) : adler32_1$1(state.check, output, _out, put - _out);
           }
           _out = left;
           // NB: crc32 stored as signed 32-bit int, zswap32 returns signed too
@@ -36788,7 +33798,7 @@ function inflate$1$1(strm, flush) {
   state.total += _out;
   if (state.wrap && _out) {
     strm.adler = state.check = /*UPDATE(state.check, strm.next_out - _out, _out);*/
-    state.flags ? crc32_1$2(state.check, output, _out, strm.next_out - _out) : adler32_1$2(state.check, output, _out, strm.next_out - _out);
+    state.flags ? crc32_1$1(state.check, output, _out, strm.next_out - _out) : adler32_1$1(state.check, output, _out, strm.next_out - _out);
   }
   strm.data_type = state.bits + (state.last ? 64 : 0) + (state.mode === TYPE$2 ? 128 : 0) + (state.mode === LEN_$1 || state.mode === COPY_$1 ? 256 : 0);
   if ((_in === 0 && _out === 0 || flush === Z_FINISH$2$1) && ret === Z_OK$2$1) {
@@ -36850,7 +33860,7 @@ function inflateSetDictionary$1(strm, dictionary) {
   if (state.mode === DICT$1) {
     dictid = 1; /* adler32(0, null, 0)*/
     /* dictid = adler32(dictid, dictionary, dictLength); */
-    dictid = adler32_1$2(dictid, dictionary, dictLength, 0);
+    dictid = adler32_1$1(dictid, dictionary, dictLength, 0);
     if (dictid !== state.check) {
       return Z_DATA_ERROR$1$1;
     }
@@ -36888,7 +33898,7 @@ exports.inflateSyncPoint = inflateSyncPoint;
 exports.inflateUndermine = inflateUndermine;
 */
 
-var inflate_1$2$1 = {
+var inflate_1$2 = {
   inflateReset: inflateReset_1$1,
   inflateReset2: inflateReset2_1$1,
   inflateResetKeep: inflateResetKeep_1$1,
@@ -36900,8 +33910,6 @@ var inflate_1$2$1 = {
   inflateSetDictionary: inflateSetDictionary_1$1,
   inflateInfo: inflateInfo$1
 };
-
-'use strict';
 
 // (C) 1995-2013 Jean-loup Gailly and Mark Adler
 // (C) 2014-2017 Vitaly Puzrin and Andrey Tupitsin
@@ -36922,7 +33930,7 @@ var inflate_1$2$1 = {
 //   misrepresented as being the original software.
 // 3. This notice may not be removed or altered from any source distribution.
 
-var constants$2 = {
+var constants$1 = {
 
   /* Allowed flush values; see deflate() and inflate() below for details */
   Z_NO_FLUSH: 0,
@@ -36969,8 +33977,6 @@ var constants$2 = {
   //Z_NULL:                 null // Use -1 or null inline, depending on var type
 };
 
-'use strict';
-
 // (C) 1995-2013 Jean-loup Gailly and Mark Adler
 // (C) 2014-2017 Vitaly Puzrin and Andrey Tupitsin
 //
@@ -36990,7 +33996,7 @@ var constants$2 = {
 //   misrepresented as being the original software.
 // 3. This notice may not be removed or altered from any source distribution.
 
-function GZheader$2() {
+function GZheader$1() {
   /* true if compressed data believed to be text */
   this.text = 0;
   /* modification time */
@@ -37026,9 +34032,7 @@ function GZheader$2() {
   this.done = false;
 }
 
-var gzheader$2 = GZheader$2;
-
-'use strict';
+var gzheader$1 = GZheader$1;
 
 var toString$1$1 = Object.prototype.toString;
 
@@ -37113,7 +34117,7 @@ var toString$1$1 = Object.prototype.toString;
 function Inflate$1(options) {
   if (!(this instanceof Inflate$1)) return new Inflate$1(options);
 
-  this.options = common$2.assign({
+  this.options = common$1.assign({
     chunkSize: 16384,
     windowBits: 0,
     to: ''
@@ -37150,18 +34154,18 @@ function Inflate$1(options) {
   this.ended = false; // used to avoid multiple onEnd() calls
   this.chunks = []; // chunks of compressed data
 
-  this.strm = new zstream$2();
+  this.strm = new zstream$1();
   this.strm.avail_out = 0;
 
-  var status = inflate_1$2$1.inflateInit2(this.strm, opt.windowBits);
+  var status = inflate_1$2.inflateInit2(this.strm, opt.windowBits);
 
-  if (status !== constants$2.Z_OK) {
-    throw new Error(messages$2[status]);
+  if (status !== constants$1.Z_OK) {
+    throw new Error(messages$1[status]);
   }
 
-  this.header = new gzheader$2();
+  this.header = new gzheader$1();
 
-  inflate_1$2$1.inflateGetHeader(this.strm, this.header);
+  inflate_1$2.inflateGetHeader(this.strm, this.header);
 }
 
 /**
@@ -37207,12 +34211,12 @@ Inflate$1.prototype.push = function (data, mode) {
   if (this.ended) {
     return false;
   }
-  _mode = mode === ~~mode ? mode : mode === true ? constants$2.Z_FINISH : constants$2.Z_NO_FLUSH;
+  _mode = mode === ~~mode ? mode : mode === true ? constants$1.Z_FINISH : constants$1.Z_NO_FLUSH;
 
   // Convert data if needed
   if (typeof data === 'string') {
     // Only binary strings can be decompressed on practice
-    strm.input = strings$3.binstring2buf(data);
+    strm.input = strings$1.binstring2buf(data);
   } else if (toString$1$1.call(data) === '[object ArrayBuffer]') {
     strm.input = new Uint8Array(data);
   } else {
@@ -37224,57 +34228,57 @@ Inflate$1.prototype.push = function (data, mode) {
 
   do {
     if (strm.avail_out === 0) {
-      strm.output = new common$2.Buf8(chunkSize);
+      strm.output = new common$1.Buf8(chunkSize);
       strm.next_out = 0;
       strm.avail_out = chunkSize;
     }
 
-    status = inflate_1$2$1.inflate(strm, constants$2.Z_NO_FLUSH); /* no bad return value */
+    status = inflate_1$2.inflate(strm, constants$1.Z_NO_FLUSH); /* no bad return value */
 
-    if (status === constants$2.Z_NEED_DICT && dictionary) {
+    if (status === constants$1.Z_NEED_DICT && dictionary) {
       // Convert data if needed
       if (typeof dictionary === 'string') {
-        dict = strings$3.string2buf(dictionary);
+        dict = strings$1.string2buf(dictionary);
       } else if (toString$1$1.call(dictionary) === '[object ArrayBuffer]') {
         dict = new Uint8Array(dictionary);
       } else {
         dict = dictionary;
       }
 
-      status = inflate_1$2$1.inflateSetDictionary(this.strm, dict);
+      status = inflate_1$2.inflateSetDictionary(this.strm, dict);
     }
 
-    if (status === constants$2.Z_BUF_ERROR && allowBufError === true) {
-      status = constants$2.Z_OK;
+    if (status === constants$1.Z_BUF_ERROR && allowBufError === true) {
+      status = constants$1.Z_OK;
       allowBufError = false;
     }
 
-    if (status !== constants$2.Z_STREAM_END && status !== constants$2.Z_OK) {
+    if (status !== constants$1.Z_STREAM_END && status !== constants$1.Z_OK) {
       this.onEnd(status);
       this.ended = true;
       return false;
     }
 
     if (strm.next_out) {
-      if (strm.avail_out === 0 || status === constants$2.Z_STREAM_END || strm.avail_in === 0 && (_mode === constants$2.Z_FINISH || _mode === constants$2.Z_SYNC_FLUSH)) {
+      if (strm.avail_out === 0 || status === constants$1.Z_STREAM_END || strm.avail_in === 0 && (_mode === constants$1.Z_FINISH || _mode === constants$1.Z_SYNC_FLUSH)) {
 
         if (this.options.to === 'string') {
 
-          next_out_utf8 = strings$3.utf8border(strm.output, strm.next_out);
+          next_out_utf8 = strings$1.utf8border(strm.output, strm.next_out);
 
           tail = strm.next_out - next_out_utf8;
-          utf8str = strings$3.buf2string(strm.output, next_out_utf8);
+          utf8str = strings$1.buf2string(strm.output, next_out_utf8);
 
           // move tail
           strm.next_out = tail;
           strm.avail_out = chunkSize - tail;
           if (tail) {
-            common$2.arraySet(strm.output, strm.output, next_out_utf8, tail, 0);
+            common$1.arraySet(strm.output, strm.output, next_out_utf8, tail, 0);
           }
 
           this.onData(utf8str);
         } else {
-          this.onData(common$2.shrinkBuf(strm.output, strm.next_out));
+          this.onData(common$1.shrinkBuf(strm.output, strm.next_out));
         }
       }
     }
@@ -37289,23 +34293,23 @@ Inflate$1.prototype.push = function (data, mode) {
     if (strm.avail_in === 0 && strm.avail_out === 0) {
       allowBufError = true;
     }
-  } while ((strm.avail_in > 0 || strm.avail_out === 0) && status !== constants$2.Z_STREAM_END);
+  } while ((strm.avail_in > 0 || strm.avail_out === 0) && status !== constants$1.Z_STREAM_END);
 
-  if (status === constants$2.Z_STREAM_END) {
-    _mode = constants$2.Z_FINISH;
+  if (status === constants$1.Z_STREAM_END) {
+    _mode = constants$1.Z_FINISH;
   }
 
   // Finalize on the last chunk.
-  if (_mode === constants$2.Z_FINISH) {
-    status = inflate_1$2$1.inflateEnd(this.strm);
+  if (_mode === constants$1.Z_FINISH) {
+    status = inflate_1$2.inflateEnd(this.strm);
     this.onEnd(status);
     this.ended = true;
-    return status === constants$2.Z_OK;
+    return status === constants$1.Z_OK;
   }
 
   // callback interim results if Z_SYNC_FLUSH.
-  if (_mode === constants$2.Z_SYNC_FLUSH) {
-    this.onEnd(constants$2.Z_OK);
+  if (_mode === constants$1.Z_SYNC_FLUSH) {
+    this.onEnd(constants$1.Z_OK);
     strm.avail_out = 0;
     return true;
   }
@@ -37338,13 +34342,13 @@ Inflate$1.prototype.onData = function (chunk) {
  **/
 Inflate$1.prototype.onEnd = function (status) {
   // On success - join
-  if (status === constants$2.Z_OK) {
+  if (status === constants$1.Z_OK) {
     if (this.options.to === 'string') {
       // Glue & convert here, until we teach pako to send
       // utf8 aligned strings to onData
       this.result = this.chunks.join('');
     } else {
-      this.result = common$2.flattenChunks(this.chunks);
+      this.result = common$1.flattenChunks(this.chunks);
     }
   }
   this.chunks = [];
@@ -37398,7 +34402,7 @@ function inflate$2(input, options) {
 
   // That will never happens, if you don't cheat with options :)
   if (inflator.err) {
-    throw inflator.msg || messages$2[inflator.err];
+    throw inflator.msg || messages$1[inflator.err];
   }
 
   return inflator.result;
@@ -37432,23 +34436,20 @@ var inflate_2$2 = inflate$2;
 var inflateRaw_1$1 = inflateRaw$1;
 var ungzip$1 = inflate$2;
 
-var inflate_1$4 = {
+var inflate_1$3 = {
   Inflate: Inflate_1$1,
   inflate: inflate_2$2,
   inflateRaw: inflateRaw_1$1,
   ungzip: ungzip$1
 };
 
-// Top level file is just a mixin of submodules & constants
-'use strict';
+var assign$1 = common$1.assign;
 
-var assign$1 = common$2.assign;
+var pako$1 = {};
 
-var pako$2 = {};
+assign$1(pako$1, deflate_1$3, inflate_1$3, constants$1);
 
-assign$1(pako$2, deflate_1$4, inflate_1$4, constants$2);
-
-var pako_1 = pako$2;
+var pako_1$1 = pako$1;
 
 function createCommonjsModule$1$1(fn, module) {
   return module = { exports: {} }, fn(module, module.exports), module.exports;
@@ -37779,119 +34780,6 @@ var traverse_1$1 = createCommonjsModule$1$1(function (module) {
     return key in obj;
   };
 });
-
-var asyncGenerator$2 = function () {
-  function AwaitValue(value) {
-    this.value = value;
-  }
-
-  function AsyncGenerator(gen) {
-    var front, back;
-
-    function send(key, arg) {
-      return new Promise(function (resolve, reject) {
-        var request = {
-          key: key,
-          arg: arg,
-          resolve: resolve,
-          reject: reject,
-          next: null
-        };
-
-        if (back) {
-          back = back.next = request;
-        } else {
-          front = back = request;
-          resume(key, arg);
-        }
-      });
-    }
-
-    function resume(key, arg) {
-      try {
-        var result = gen[key](arg);
-        var value = result.value;
-
-        if (value instanceof AwaitValue) {
-          Promise.resolve(value.value).then(function (arg) {
-            resume("next", arg);
-          }, function (arg) {
-            resume("throw", arg);
-          });
-        } else {
-          settle(result.done ? "return" : "normal", result.value);
-        }
-      } catch (err) {
-        settle("throw", err);
-      }
-    }
-
-    function settle(type, value) {
-      switch (type) {
-        case "return":
-          front.resolve({
-            value: value,
-            done: true
-          });
-          break;
-
-        case "throw":
-          front.reject(value);
-          break;
-
-        default:
-          front.resolve({
-            value: value,
-            done: false
-          });
-          break;
-      }
-
-      front = front.next;
-
-      if (front) {
-        resume(front.key, front.arg);
-      } else {
-        back = null;
-      }
-    }
-
-    this._invoke = send;
-
-    if (typeof gen.return !== "function") {
-      this.return = undefined;
-    }
-  }
-
-  if (typeof Symbol === "function" && Symbol.asyncIterator) {
-    AsyncGenerator.prototype[Symbol.asyncIterator] = function () {
-      return this;
-    };
-  }
-
-  AsyncGenerator.prototype.next = function (arg) {
-    return this._invoke("next", arg);
-  };
-
-  AsyncGenerator.prototype.throw = function (arg) {
-    return this._invoke("throw", arg);
-  };
-
-  AsyncGenerator.prototype.return = function (arg) {
-    return this._invoke("return", arg);
-  };
-
-  return {
-    wrap: function wrap(fn) {
-      return function () {
-        return new AsyncGenerator(fn.apply(this, arguments));
-      };
-    },
-    await: function _await(value) {
-      return new AwaitValue(value);
-    }
-  };
-}();
 
 var classCallCheck$2 = function classCallCheck$$1(instance, Constructor) {
   if (!(instance instanceof Constructor)) {
@@ -38431,119 +35319,6 @@ var CodecUtils$1 = function () {
   return CodecUtils;
 }(); /* END of class CodecUtils */
 
-var asyncGenerator$1$1 = function () {
-  function AwaitValue(value) {
-    this.value = value;
-  }
-
-  function AsyncGenerator(gen) {
-    var front, back;
-
-    function send(key, arg) {
-      return new Promise(function (resolve, reject) {
-        var request = {
-          key: key,
-          arg: arg,
-          resolve: resolve,
-          reject: reject,
-          next: null
-        };
-
-        if (back) {
-          back = back.next = request;
-        } else {
-          front = back = request;
-          resume(key, arg);
-        }
-      });
-    }
-
-    function resume(key, arg) {
-      try {
-        var result = gen[key](arg);
-        var value = result.value;
-
-        if (value instanceof AwaitValue) {
-          Promise.resolve(value.value).then(function (arg) {
-            resume("next", arg);
-          }, function (arg) {
-            resume("throw", arg);
-          });
-        } else {
-          settle(result.done ? "return" : "normal", result.value);
-        }
-      } catch (err) {
-        settle("throw", err);
-      }
-    }
-
-    function settle(type, value) {
-      switch (type) {
-        case "return":
-          front.resolve({
-            value: value,
-            done: true
-          });
-          break;
-
-        case "throw":
-          front.reject(value);
-          break;
-
-        default:
-          front.resolve({
-            value: value,
-            done: false
-          });
-          break;
-      }
-
-      front = front.next;
-
-      if (front) {
-        resume(front.key, front.arg);
-      } else {
-        back = null;
-      }
-    }
-
-    this._invoke = send;
-
-    if (typeof gen.return !== "function") {
-      this.return = undefined;
-    }
-  }
-
-  if (typeof Symbol === "function" && Symbol.asyncIterator) {
-    AsyncGenerator.prototype[Symbol.asyncIterator] = function () {
-      return this;
-    };
-  }
-
-  AsyncGenerator.prototype.next = function (arg) {
-    return this._invoke("next", arg);
-  };
-
-  AsyncGenerator.prototype.throw = function (arg) {
-    return this._invoke("throw", arg);
-  };
-
-  AsyncGenerator.prototype.return = function (arg) {
-    return this._invoke("return", arg);
-  };
-
-  return {
-    wrap: function wrap(fn) {
-      return function () {
-        return new AsyncGenerator(fn.apply(this, arguments));
-      };
-    },
-    await: function _await(value) {
-      return new AwaitValue(value);
-    }
-  };
-}();
-
 var classCallCheck$1$1 = function classCallCheck$1(instance, Constructor) {
   if (!(instance instanceof Constructor)) {
     throw new TypeError("Cannot call a class as a function");
@@ -38680,7 +35455,7 @@ var PixBlockEncoder = function () {
             byteStreamInfoSubset.compressedByteLength = null;
 
             if (this._compress) {
-              encodedData = pako_1.deflate(encodedData.buffer);
+              encodedData = pako_1$1.deflate(encodedData.buffer);
               byteStreamInfoSubset.compressedByteLength = encodedData.byteLength;
             }
 
@@ -38708,7 +35483,7 @@ var PixBlockEncoder = function () {
               }
 
               if (this._compress) {
-                var compressedDataSubset = pako_1.deflate(currentDataStream.buffer);
+                var compressedDataSubset = pako_1$1.deflate(currentDataStream.buffer);
                 byteStreamInfoSubset.compressedByteLength = compressedDataSubset.byteLength;
                 compressedData.push(compressedDataSubset);
               }
@@ -38735,7 +35510,7 @@ var PixBlockEncoder = function () {
             byteStreamInfoSubset.byteLength = encodedData.byteLength;
 
             if (this._compress) {
-              encodedData = pako_1.deflate(encodedData);
+              encodedData = pako_1$1.deflate(encodedData);
               byteStreamInfoSubset.compressedByteLength = encodedData.byteLength;
             }
 
@@ -38985,7 +35760,7 @@ var PixBlockDecoder = function () {
           var compressedByteStream = new Uint8Array(input, readingByteOffset, compressedByteLength);
 
           // inflate the dataStream
-          var inflatedByteStream = pako_1.inflate(compressedByteStream);
+          var inflatedByteStream = pako_1$1.inflate(compressedByteStream);
 
           var dataStream = null;
           /*
@@ -39280,7 +36055,7 @@ var process$1 = {
   uptime: uptime$1
 };
 
-var md5$2 = createCommonjsModule$2(function (module) {
+var md5$1 = createCommonjsModule$2(function (module) {
   /**
    * [js-md5]{@link https://github.com/emn178/js-md5}
    *
@@ -39291,7 +36066,6 @@ var md5$2 = createCommonjsModule$2(function (module) {
    * @license MIT
    */
   (function () {
-    'use strict';
 
     var ERROR = 'input is invalid type';
     var WINDOW = (typeof window === 'undefined' ? 'undefined' : _typeof(window)) === 'object';
@@ -40096,7 +36870,7 @@ var PixBinEncoder = function () {
           type: input.constructor.name,
           description: "description" in input._metadata ? input._metadata.description : null,
           byteLength: encodedBlock.byteLength,
-          checksum: md5$2(encodedBlock)
+          checksum: md5$1(encodedBlock)
         };
 
         pixblocksInfo.push(pixBinIndexEntry);
@@ -40153,7 +36927,7 @@ var PixBinEncoder = function () {
 * - [examples/pixpFileToImage2D.html](../examples/pixpFileToImage2D.html)
 */
 
-var PixBinDecoder$1 = function () {
+var PixBinDecoder = function () {
   function PixBinDecoder() {
     classCallCheck$1$1(this, PixBinDecoder);
 
@@ -40407,7 +37181,7 @@ var PixBinDecoder$1 = function () {
       var blockInfo = this._binMeta.pixblocksInfo[n];
       var pixBlockBuff = this._input.slice(offset, offset + blockInfo.byteLength);
 
-      if (this._verifyChecksum && md5$2(pixBlockBuff) !== blockInfo.checksum) {
+      if (this._verifyChecksum && md5$1(pixBlockBuff) !== blockInfo.checksum) {
         console.warn("The block #" + n + " is corrupted.");
         return null;
       }
@@ -40451,7 +37225,7 @@ var PixBinDecoder$1 = function () {
 * - [examples/decodePixBin.html](../examples/decodePixBin.html)
 */
 
-var PixBinDecoder$$1 = function (_Decoder) {
+var PixBinDecoder$1 = function (_Decoder) {
   inherits(PixBinDecoder$$1, _Decoder);
 
   function PixBinDecoder$$1() {
@@ -40474,7 +37248,7 @@ var PixBinDecoder$$1 = function (_Decoder) {
       }
 
       var input = this._getInput();
-      var pbDecoder = new PixBinDecoder$1();
+      var pbDecoder = new PixBinDecoder();
       pbDecoder.enableBlockVerification(this.getMetadata("blockVerification"));
       pbDecoder.setInput(input);
 
@@ -40639,7 +37413,7 @@ var GenericDecoderInterface = function (_Decoder) {
       // with pixBin and see if there is a modality we want -- and only the modality
       // we want (e.g. Image3DAlt )
       var that = this;
-      var pbDecoder = new PixBinDecoder$$1();
+      var pbDecoder = new PixBinDecoder$1();
 
       // we get the typenames of the _decoders set for this genric decoder and build
       // the whitelist of format for the PixBinDecoder
@@ -41524,7 +38298,7 @@ var Minc2Decoder = function (_Decoder) {
 
             if (link.inflate) {
               sp = new Uint8Array(abuf, offset, length);
-              dp = index$1.inflate(sp);
+              dp = pako_1.inflate(sp);
               switch (link.type) {
                 case this._type_enum.INT8:
                   dp = new Int8Array(dp.buffer);
@@ -42065,7 +38839,7 @@ var Minc2Decoder = function (_Decoder) {
           /* deflate */
           throw new Error("Unimplemented HDF5 filter " + fiv);
         } else {
-          if ((typeof index$1 === 'undefined' ? 'undefined' : _typeof(index$1)) !== 'object') {
+          if ((typeof pako_1 === 'undefined' ? 'undefined' : _typeof(pako_1)) !== 'object') {
             throw new Error('Need pako to inflate data.');
           }
           link.inflate = true;
@@ -42267,6 +39041,10 @@ var Minc2Decoder = function (_Decoder) {
 
       if (this.getMetadata("debug")) {
         console.log("FHDB V:" + ver + " R:" + row + " O:" + block_offset + " A:" + address);
+      }
+      var header_length = 5 + this._superblk.offsz + cb;
+      if ((fh.flags & 2) !== 0) {
+        header_length += 4;
       }
       var block_length;
       if (row <= 1) {
@@ -43896,10 +40674,6 @@ var NiftiDecoder = function (_Decoder) {
 }(Decoder); /* END class NiftiDecoder */
 
 var utilities = createCommonjsModule(function (module) {
-    /*jslint browser: true, node: true */
-    /*global require, module */
-
-    "use strict";
 
     /*** Imports ***/
 
@@ -44033,10 +40807,6 @@ var utilities = createCommonjsModule(function (module) {
 });
 
 var nifti1 = createCommonjsModule(function (module) {
-    /*jslint browser: true, node: true */
-    /*global */
-
-    "use strict";
 
     /*** Imports ***/
 
@@ -44864,10 +41634,6 @@ var nifti1 = createCommonjsModule(function (module) {
 });
 
 var nifti2 = createCommonjsModule(function (module) {
-    /*jslint browser: true, node: true */
-    /*global */
-
-    "use strict";
 
     /*** Imports ***/
 
@@ -45195,10 +41961,6 @@ var nifti2 = createCommonjsModule(function (module) {
 });
 
 var nifti_1 = createCommonjsModule(function (module) {
-    /*jslint browser: true, node: true */
-    /*global require, module */
-
-    "use strict";
 
     /*** Imports ***/
 
@@ -45212,7 +41974,7 @@ var nifti_1 = createCommonjsModule(function (module) {
     nifti.NIFTI2 = nifti.NIFTI2 || (typeof commonjsRequire !== 'undefined' ? nifti2 : null);
     nifti.Utils = nifti.Utils || (typeof commonjsRequire !== 'undefined' ? utilities : null);
 
-    var pako = pako || (typeof commonjsRequire !== 'undefined' ? index$1 : null);
+    var pako = pako || (typeof commonjsRequire !== 'undefined' ? pako_1 : null);
 
     /*** Static Methods ***/
 
@@ -45861,7 +42623,6 @@ var NiftiDecoderAlt = function (_Decoder) {
 * Lab       MCIN - Montreal Neurological Institute
 */
 
-//import JSZip from "jszip";
 /**
 * A PixpEncoder instance takes an Image2D or Image3D as input with `addInput(...)`
 * and encode it so that it can be saved as a *.pixp file.
@@ -45921,7 +42682,7 @@ var PixpEncoder = function (_Filter) {
 
       var pixpString = JSON.stringify(arrayAndMeta);
 
-      var deflator = new index$1.Deflate({
+      var deflator = new pako_1.Deflate({
         level: 6,
         //to: 'string',
         gzip: true,
@@ -46001,7 +42762,7 @@ var PixpDecoder = function (_Decoder) {
       //var pixpString2 = pako.inflate(input /*, { to: 'string' }*/);
       //var pixpObject = JSON.parse( pixpString2 );
 
-      var inflator = new index$1.Inflate({
+      var inflator = new pako_1.Inflate({
         level: 6,
         to: 'string'
       });
@@ -46392,8 +43153,6 @@ var MghDecoder = function (_Decoder) {
 * Link      https://github.com/Pixpipe/pixpipejs
 * Lab       MCIN - Montreal Neurological Institute
 */
-
-// decoders
 //import { PixBinDecoder } from './PixBinDecoder.js';
 
 
@@ -46466,12 +43225,14 @@ var Image3DMetadataConverter = function () {
 
       //var spacenameLUT = {x: "i", y: "j", z: "k", t: "t"};
       var voxelSpaceNames = ["k", "j", "i", "t"];
+
       for (var i = 0; i < oldMeta.order.length; i++) {
         var oldDim = oldMeta[oldMeta.order[i]];
         var dimension = {};
         dimension.length = oldDim.space_length;
         dimension.nameWorldSpace = oldMeta.order[i][0];
         dimension.nameVoxelSpace = ''; //voxelSpaceNames[i]; //spacenameLUT[ dimension.nameWorldSpace ];
+
         dimension.worldUnitSize = Math.abs(oldDim.step);
         dimension.step = oldDim.step;
         dimension.worldStep = oldDim.step;
@@ -46594,6 +43355,8 @@ var Image3DMetadataConverter = function () {
       y: x * cx[1] * stepx + y * cy[1] * stepy + z * cz[1] * stepz + o.y,
       z: x * cx[2] * stepx + y * cy[2] * stepy + z * cz[2] * stepz + o.z
       */
+
+      var v2w = [cx[0] * stepx, cx[1] * stepx, cx[2] * stepx, 0, cy[0] * stepy, cy[1] * stepy, cy[2] * stepy, 0, cz[0] * stepz, cz[1] * stepz, cz[2] * stepz, 0, o.x, o.y, o.z, 1];
 
       oldMetaObj.w2v = w2v;
 
@@ -47583,7 +44346,7 @@ var Minc2DecoderAlt = function (_Decoder) {
 
             if (link.inflate) {
               sp = new Uint8Array(abuf, offset, length);
-              dp = index$1.inflate(sp);
+              dp = pako_1.inflate(sp);
               switch (link.type) {
                 case this._type_enum.INT8:
                   dp = new Int8Array(dp.buffer);
@@ -48124,7 +44887,7 @@ var Minc2DecoderAlt = function (_Decoder) {
           /* deflate */
           throw new Error("Unimplemented HDF5 filter " + fiv);
         } else {
-          if ((typeof index$1 === 'undefined' ? 'undefined' : _typeof(index$1)) !== 'object') {
+          if ((typeof pako_1 === 'undefined' ? 'undefined' : _typeof(pako_1)) !== 'object') {
             throw new Error('Need pako to inflate data.');
           }
           link.inflate = true;
@@ -48326,6 +45089,10 @@ var Minc2DecoderAlt = function (_Decoder) {
 
       if (this.getMetadata("debug")) {
         console.log("FHDB V:" + ver + " R:" + row + " O:" + block_offset + " A:" + address);
+      }
+      var header_length = 5 + this._superblk.offsz + cb;
+      if ((fh.flags & 2) !== 0) {
+        header_length += 4;
       }
       var block_length;
       if (row <= 1) {
@@ -49724,8 +46491,9 @@ var MghDecoderAlt = function (_Decoder) {
         // of FreeSurfer's mri_info tool.
         //
         for (i = 0; i < 3; i++) {
+          var s1 = "";
           for (j = 0; j < 4; j++) {
-            
+            s1 += "xyzc"[j] + "_" + "ras"[i] + " " + dircos[j][i] + " ";
           }
         }
       }
@@ -49934,7 +46702,6 @@ var MghDecoderAlt = function (_Decoder) {
         return a.stride < b.stride;
       });
 
-      // return the dimsniosn object given its world name ('x', 'y' or 'z')
       function getWidthDimension(directionDim) {
         return directionDim === "x" ? "y" : directionDim === "y" ? "x" : directionDim === "z" ? "x" : null;
       }
@@ -49980,7 +46747,6 @@ var MghDecoderAlt = function (_Decoder) {
 * Lab       MCIN - Montreal Neurological Institute
 */
 
-// decoders
 /**
 * This class implements `GenericDecoderInterface` that already contains the
 * successive decoding logic. For this reason this filter does not need to have the
@@ -50377,7 +47143,7 @@ function parseElementStartPart(source, start, el, currentNSMap, entityReplacer, 
 						//case S_ATTR:void();break;
 						//case S_ATTR_NOQUOT_VALUE:void();break;
 						case S_ATTR_SPACE:
-							
+							var tagName = el.tagName;
 							if (currentNSMap[''] !== 'http://www.w3.org/1999/xhtml' || !attrName.match(/^(?:disabled|checked|selected)$/i)) {
 								errorHandler.warning('attribute "' + attrName + '" missed value!! "' + attrName + '" instead2!!');
 							}
@@ -50575,6 +47341,7 @@ function parseInstruction(source, start, domBuilder) {
 	if (end) {
 		var match = source.substring(start, end).match(/^<\?(\S*)\s*([\s\S]*?)\s*$/);
 		if (match) {
+			var len = match[0].length;
 			domBuilder.processingInstruction(match[1], match[2]);
 			return end + 2;
 		} else {
@@ -50636,8 +47403,7 @@ function _set_proto_(thiz, parent) {
 }
 if (!(_set_proto_({}, _set_proto_.prototype) instanceof _set_proto_)) {
 	_set_proto_ = function _set_proto_(thiz, parent) {
-		function p() {}
-		p.prototype = parent;
+		function p() {}		p.prototype = parent;
 		p = new p();
 		for (parent in thiz) {
 			p[parent] = thiz[parent];
@@ -50688,8 +47454,6 @@ function _extends$1(Class, Super) {
 	}
 	if (!(pt instanceof Super)) {
 		var t = function t() {};
-
-		
 		t.prototype = Super.prototype;
 		t = new t();
 		copy$8(pt, t);
@@ -50750,16 +47514,14 @@ function DOMException(code, message) {
 	error.code = code;
 	if (message) this.message = this.message + ": " + message;
 	return error;
-}
-DOMException.prototype = Error.prototype;
+}DOMException.prototype = Error.prototype;
 copy$8(ExceptionCode, DOMException);
 /**
  * @see http://www.w3.org/TR/2000/REC-DOM-Level-2-Core-20001113/core.html#ID-536297177
  * The NodeList interface provides the abstraction of an ordered collection of nodes, without defining or constraining how this collection is implemented. NodeList objects in the DOM are live.
  * The items in the NodeList are accessible via an integral index, starting from 0.
  */
-function NodeList() {}
-NodeList.prototype = {
+function NodeList() {}NodeList.prototype = {
 	/**
   * The number of nodes in the list. The range of valid child node indices is 0 to length-1 inclusive.
   * @standard level1
@@ -50811,7 +47573,6 @@ _extends$1(LiveNodeList, NodeList);
  * used for attributes or DocumentType entities 
  */
 function NamedNodeMap() {}
-
 function _findNodeIndex(list, node) {
 	var i = list.length;
 	while (i--) {
@@ -50930,7 +47691,6 @@ function DOMImplementation( /* Object */features) {
 		}
 	}
 }
-
 DOMImplementation.prototype = {
 	hasFeature: function hasFeature( /* string */feature, /* string */version) {
 		var versions = this._features[feature.toLowerCase()];
@@ -50979,7 +47739,6 @@ DOMImplementation.prototype = {
  */
 
 function Node() {}
-
 Node.prototype = {
 	firstChild: null,
 	lastChild: null,
@@ -51374,8 +48133,7 @@ _extends$1(Document, Node);
 
 function Element() {
 	this._nsMap = {};
-}
-Element.prototype = {
+}Element.prototype = {
 	nodeType: ELEMENT_NODE,
 	hasAttribute: function hasAttribute(name) {
 		return this.getAttributeNode(name) != null;
@@ -51464,12 +48222,10 @@ Document.prototype.getElementsByTagName = Element.prototype.getElementsByTagName
 Document.prototype.getElementsByTagNameNS = Element.prototype.getElementsByTagNameNS;
 
 _extends$1(Element, Node);
-function Attr() {}
-Attr.prototype.nodeType = ATTRIBUTE_NODE;
+function Attr() {}Attr.prototype.nodeType = ATTRIBUTE_NODE;
 _extends$1(Attr, Node);
 
-function CharacterData() {}
-CharacterData.prototype = {
+function CharacterData() {}CharacterData.prototype = {
 	data: '',
 	substringData: function substringData(offset, count) {
 		return this.data.substring(offset, offset + count);
@@ -51497,8 +48253,7 @@ CharacterData.prototype = {
 	}
 };
 _extends$1(CharacterData, Node);
-function Text() {}
-Text.prototype = {
+function Text() {}Text.prototype = {
 	nodeName: "#text",
 	nodeType: TEXT_NODE,
 	splitText: function splitText(offset) {
@@ -51515,38 +48270,31 @@ Text.prototype = {
 	}
 };
 _extends$1(Text, CharacterData);
-function Comment() {}
-Comment.prototype = {
+function Comment() {}Comment.prototype = {
 	nodeName: "#comment",
 	nodeType: COMMENT_NODE
 };
 _extends$1(Comment, CharacterData);
 
-function CDATASection() {}
-CDATASection.prototype = {
+function CDATASection() {}CDATASection.prototype = {
 	nodeName: "#cdata-section",
 	nodeType: CDATA_SECTION_NODE
 };
 _extends$1(CDATASection, CharacterData);
 
-function DocumentType() {}
-DocumentType.prototype.nodeType = DOCUMENT_TYPE_NODE;
+function DocumentType() {}DocumentType.prototype.nodeType = DOCUMENT_TYPE_NODE;
 _extends$1(DocumentType, Node);
 
-function Notation() {}
-Notation.prototype.nodeType = NOTATION_NODE;
+function Notation() {}Notation.prototype.nodeType = NOTATION_NODE;
 _extends$1(Notation, Node);
 
-function Entity() {}
-Entity.prototype.nodeType = ENTITY_NODE;
+function Entity() {}Entity.prototype.nodeType = ENTITY_NODE;
 _extends$1(Entity, Node);
 
-function EntityReference() {}
-EntityReference.prototype.nodeType = ENTITY_REFERENCE_NODE;
+function EntityReference() {}EntityReference.prototype.nodeType = ENTITY_REFERENCE_NODE;
 _extends$1(EntityReference, Node);
 
-function DocumentFragment() {}
-DocumentFragment.prototype.nodeName = "#document-fragment";
+function DocumentFragment() {}DocumentFragment.prototype.nodeName = "#document-fragment";
 DocumentFragment.prototype.nodeType = DOCUMENT_FRAGMENT_NODE;
 _extends$1(DocumentFragment, Node);
 
@@ -51622,7 +48370,7 @@ function serializeToString(node, buf, isHTML, nodeFilter, visibleNamespaces) {
 	switch (node.nodeType) {
 		case ELEMENT_NODE:
 			if (!visibleNamespaces) visibleNamespaces = [];
-			
+			var startVisibleNamespaces = visibleNamespaces.length;
 			var attrs = node.attributes;
 			var len = attrs.length;
 			var child = node.firstChild;
@@ -51802,7 +48550,7 @@ function _cloneNode(doc, node, deep) {
 			for (var i = 0; i < len; i++) {
 				node2.setAttributeNode(_cloneNode(doc, attrs.item(i), true));
 			}
-			break;;
+			break;
 		case ATTRIBUTE_NODE:
 			deep = true;
 	}
@@ -51994,6 +48742,7 @@ var domParser = createCommonjsModule(function (module, exports) {
 		},
 		endElement: function endElement(namespaceURI, localName, qName) {
 			var current = this.currentElement;
+			var tagName = current.tagName;
 			this.currentElement = current.parentNode;
 		},
 		startPrefixMapping: function startPrefixMapping(prefix, uri) {},
@@ -52141,10 +48890,11 @@ var domParser = createCommonjsModule(function (module, exports) {
 	exports.DOMParser = DOMParser;
 	//}
 });
+var domParser_1 = domParser.DOMImplementation;
+var domParser_2 = domParser.XMLSerializer;
+var domParser_3 = domParser.DOMParser;
 
-"use strict";
-
-var fieldTagNames$1 = {
+var fieldTagNames = {
   // TIFF Baseline
   0x013B: 'Artist',
   0x0102: 'BitsPerSample',
@@ -52266,11 +49016,11 @@ var fieldTagNames$1 = {
 
 var key;
 var fieldTags = {};
-for (key in fieldTagNames$1) {
-  fieldTags[fieldTagNames$1[key]] = parseInt(key);
+for (key in fieldTagNames) {
+  fieldTags[fieldTagNames[key]] = parseInt(key);
 }
 
-var arrayFields$1 = [fieldTags.BitsPerSample, fieldTags.ExtraSamples, fieldTags.SampleFormat, fieldTags.StripByteCounts, fieldTags.StripOffsets, fieldTags.StripRowCounts, fieldTags.TileByteCounts, fieldTags.TileOffsets];
+var arrayFields = [fieldTags.BitsPerSample, fieldTags.ExtraSamples, fieldTags.SampleFormat, fieldTags.StripByteCounts, fieldTags.StripOffsets, fieldTags.StripRowCounts, fieldTags.TileByteCounts, fieldTags.TileOffsets];
 
 var fieldTypeNames = {
   0x0001: 'BYTE',
@@ -52291,9 +49041,9 @@ var fieldTypeNames = {
   0x0012: 'IFD8'
 };
 
-var fieldTypes$1 = {};
+var fieldTypes = {};
 for (key in fieldTypeNames) {
-  fieldTypes$1[fieldTypeNames[key]] = parseInt(key);
+  fieldTypes[fieldTypeNames[key]] = parseInt(key);
 }
 
 var photometricInterpretations = {
@@ -52309,7 +49059,7 @@ var photometricInterpretations = {
   ICCLab: 9
 };
 
-var geoKeyNames$1 = {
+var geoKeyNames = {
   1024: 'GTModelTypeGeoKey',
   1025: 'GTRasterTypeGeoKey',
   1026: 'GTCitationGeoKey',
@@ -52360,8 +49110,8 @@ var geoKeyNames$1 = {
 };
 
 var geoKeys = {};
-for (key in geoKeyNames$1) {
-  geoKeys[geoKeyNames$1[key]] = parseInt(key);
+for (key in geoKeyNames) {
+  geoKeys[geoKeyNames[key]] = parseInt(key);
 }
 
 var parseXml;
@@ -52387,17 +49137,15 @@ if (typeof window === "undefined") {
 
 var globals = {
   fieldTags: fieldTags,
-  fieldTagNames: fieldTagNames$1,
-  arrayFields: arrayFields$1,
-  fieldTypes: fieldTypes$1,
+  fieldTagNames: fieldTagNames,
+  arrayFields: arrayFields,
+  fieldTypes: fieldTypes,
   fieldTypeNames: fieldTypeNames,
   photometricInterpretations: photometricInterpretations,
   geoKeys: geoKeys,
-  geoKeyNames: geoKeyNames$1,
+  geoKeyNames: geoKeyNames,
   parseXml: parseXml
 };
-
-"use strict";
 
 function fromWhiteIsZero(raster, max, width, height) {
   var rgbRaster = new Uint8Array(width * height * 3);
@@ -52520,8 +49268,6 @@ var rgb = {
   fromCIELab: fromCIELab
 };
 
-"use strict";
-
 function AbstractDecoder() {}
 
 AbstractDecoder.prototype = {
@@ -52533,8 +49279,6 @@ AbstractDecoder.prototype = {
 
 var abstractdecoder = AbstractDecoder;
 
-"use strict";
-
 function RawDecoder() {}
 
 RawDecoder.prototype = Object.create(abstractdecoder.prototype);
@@ -52544,8 +49288,6 @@ RawDecoder.prototype.decodeBlock = function (buffer) {
 };
 
 var raw = RawDecoder;
-
-"use strict";
 
 //var lzwCompress = require("lzwcompress");
 
@@ -52792,9 +49534,7 @@ LZWDecoder.prototype.decodeBlock = function (buffer) {
 
 var lzw = LZWDecoder;
 
-"use strict";
-
-var pakoInflate = inflate_1.inflate;
+var pakoInflate = inflate_1$1.inflate;
 
 function DeflateDecoder() {}
 
@@ -52804,9 +49544,7 @@ DeflateDecoder.prototype.decodeBlock = function (buffer) {
   return pakoInflate(new Uint8Array(buffer)).buffer;
 };
 
-var deflate$4 = DeflateDecoder;
-
-"use strict";
+var deflate$3 = DeflateDecoder;
 
 function PackbitsDecoder() {}
 
@@ -52837,8 +49575,6 @@ PackbitsDecoder.prototype.decodeBlock = function (buffer) {
 };
 
 var packbits = PackbitsDecoder;
-
-"use strict";
 
 var sum = function sum(array, start, end) {
   var s = 0;
@@ -52922,7 +49658,7 @@ function GeoTIFFImage(fileDirectory, geoKeys, dataView, littleEndian, cache) {
       throw new Error("JPEG compression not supported.");
     case 8:
       // Deflate
-      this.decoder = new deflate$4();
+      this.decoder = new deflate$3();
       break;
     //case 32946: // deflate ??
     //  throw new Error("Deflate compression not supported.");
@@ -53124,6 +49860,8 @@ GeoTIFFImage.prototype = {
     var numTilesPerRow = Math.ceil(this.getWidth() / tileWidth);
 
     var windowWidth = imageWindow[2] - imageWindow[0];
+    var windowHeight = imageWindow[3] - imageWindow[1];
+
     var bytesPerPixel = this.getBytesPerPixel();
     var imageWidth = this.getWidth();
 
@@ -53227,6 +49965,8 @@ GeoTIFFImage.prototype = {
       var numTilesPerRow = Math.ceil(this.getWidth() / tileWidth);
 
       var windowWidth = imageWindow[2] - imageWindow[0];
+      var windowHeight = imageWindow[3] - imageWindow[1];
+
       var bytesPerPixel = this.getBytesPerPixel();
       var imageWidth = this.getWidth();
 
@@ -53649,8 +50389,6 @@ GeoTIFFImage.prototype = {
 
 var geotiffimage = GeoTIFFImage;
 
-"use strict";
-
 var _createClass = function () {
   function defineProperties(target, props) {
     for (var i = 0; i < props.length; i++) {
@@ -53750,12 +50488,10 @@ var DataView64 = function () {
 
 var dataview64 = DataView64;
 
-"use strict";
-
-var fieldTypes = globals.fieldTypes;
-var fieldTagNames = globals.fieldTagNames;
-var arrayFields = globals.arrayFields;
-var geoKeyNames = globals.geoKeyNames;
+var fieldTypes$1 = globals.fieldTypes,
+    fieldTagNames$1 = globals.fieldTagNames,
+    arrayFields$1 = globals.arrayFields,
+    geoKeyNames$1 = globals.geoKeyNames;
 
 /**
  * The abstraction for a whole GeoTIFF file.
@@ -53804,14 +50540,14 @@ GeoTIFF.prototype = {
 
   getFieldTypeLength: function getFieldTypeLength(fieldType) {
     switch (fieldType) {
-      case fieldTypes.BYTE:case fieldTypes.ASCII:case fieldTypes.SBYTE:case fieldTypes.UNDEFINED:
+      case fieldTypes$1.BYTE:case fieldTypes$1.ASCII:case fieldTypes$1.SBYTE:case fieldTypes$1.UNDEFINED:
         return 1;
-      case fieldTypes.SHORT:case fieldTypes.SSHORT:
+      case fieldTypes$1.SHORT:case fieldTypes$1.SSHORT:
         return 2;
-      case fieldTypes.LONG:case fieldTypes.SLONG:case fieldTypes.FLOAT:
+      case fieldTypes$1.LONG:case fieldTypes$1.SLONG:case fieldTypes$1.FLOAT:
         return 4;
-      case fieldTypes.RATIONAL:case fieldTypes.SRATIONAL:case fieldTypes.DOUBLE:
-      case fieldTypes.LONG8:case fieldTypes.SLONG8:case fieldTypes.IFD8:
+      case fieldTypes$1.RATIONAL:case fieldTypes$1.SRATIONAL:case fieldTypes$1.DOUBLE:
+      case fieldTypes$1.LONG8:case fieldTypes$1.SLONG8:case fieldTypes$1.IFD8:
         return 8;
       default:
         throw new RangeError("Invalid field type: " + fieldType);
@@ -53825,40 +50561,40 @@ GeoTIFF.prototype = {
     var i;
 
     switch (fieldType) {
-      case fieldTypes.BYTE:case fieldTypes.ASCII:case fieldTypes.UNDEFINED:
+      case fieldTypes$1.BYTE:case fieldTypes$1.ASCII:case fieldTypes$1.UNDEFINED:
         values = new Uint8Array(count);readMethod = this.dataView.getUint8;
         break;
-      case fieldTypes.SBYTE:
+      case fieldTypes$1.SBYTE:
         values = new Int8Array(count);readMethod = this.dataView.getInt8;
         break;
-      case fieldTypes.SHORT:
+      case fieldTypes$1.SHORT:
         values = new Uint16Array(count);readMethod = this.dataView.getUint16;
         break;
-      case fieldTypes.SSHORT:
+      case fieldTypes$1.SSHORT:
         values = new Int16Array(count);readMethod = this.dataView.getInt16;
         break;
-      case fieldTypes.LONG:
+      case fieldTypes$1.LONG:
         values = new Uint32Array(count);readMethod = this.dataView.getUint32;
         break;
-      case fieldTypes.SLONG:
+      case fieldTypes$1.SLONG:
         values = new Int32Array(count);readMethod = this.dataView.getInt32;
         break;
-      case fieldTypes.LONG8:case fieldTypes.IFD8:
+      case fieldTypes$1.LONG8:case fieldTypes$1.IFD8:
         values = new Array(count);readMethod = this.dataView.getUint64;
         break;
-      case fieldTypes.SLONG8:
+      case fieldTypes$1.SLONG8:
         values = new Array(count);readMethod = this.dataView.getInt64;
         break;
-      case fieldTypes.RATIONAL:
+      case fieldTypes$1.RATIONAL:
         values = new Uint32Array(count * 2);readMethod = this.dataView.getUint32;
         break;
-      case fieldTypes.SRATIONAL:
+      case fieldTypes$1.SRATIONAL:
         values = new Int32Array(count * 2);readMethod = this.dataView.getInt32;
         break;
-      case fieldTypes.FLOAT:
+      case fieldTypes$1.FLOAT:
         values = new Float32Array(count);readMethod = this.dataView.getFloat32;
         break;
-      case fieldTypes.DOUBLE:
+      case fieldTypes$1.DOUBLE:
         values = new Float64Array(count);readMethod = this.dataView.getFloat64;
         break;
       default:
@@ -53866,7 +50602,7 @@ GeoTIFF.prototype = {
     }
 
     // normal fields
-    if (!(fieldType === fieldTypes.RATIONAL || fieldType === fieldTypes.SRATIONAL)) {
+    if (!(fieldType === fieldTypes$1.RATIONAL || fieldType === fieldTypes$1.SRATIONAL)) {
       for (i = 0; i < count; ++i) {
         values[i] = readMethod.call(this.dataView, offset + i * fieldTypeLength, this.littleEndian);
       }
@@ -53879,7 +50615,7 @@ GeoTIFF.prototype = {
         }
       }
 
-    if (fieldType === fieldTypes.ASCII) {
+    if (fieldType === fieldTypes$1.ASCII) {
       return String.fromCharCode.apply(null, values);
     }
     return values;
@@ -53896,7 +50632,7 @@ GeoTIFF.prototype = {
       fieldValues = this.getValues(fieldType, typeCount, actualOffset);
     }
 
-    if (typeCount === 1 && arrayFields.indexOf(fieldTag) === -1 && !(fieldType === fieldTypes.RATIONAL || fieldType === fieldTypes.SRATIONAL)) {
+    if (typeCount === 1 && arrayFields$1.indexOf(fieldTag) === -1 && !(fieldType === fieldTypes$1.RATIONAL || fieldType === fieldTypes$1.SRATIONAL)) {
       return fieldValues[0];
     }
 
@@ -53911,8 +50647,8 @@ GeoTIFF.prototype = {
 
     var geoKeyDirectory = {};
     for (var i = 4; i < rawGeoKeyDirectory[3] * 4; i += 4) {
-      var key = geoKeyNames[rawGeoKeyDirectory[i]],
-          location = rawGeoKeyDirectory[i + 1] ? fieldTagNames[rawGeoKeyDirectory[i + 1]] : null,
+      var key = geoKeyNames$1[rawGeoKeyDirectory[i]],
+          location = rawGeoKeyDirectory[i + 1] ? fieldTagNames$1[rawGeoKeyDirectory[i + 1]] : null,
           count = rawGeoKeyDirectory[i + 2],
           offset = rawGeoKeyDirectory[i + 3];
 
@@ -53948,7 +50684,7 @@ GeoTIFF.prototype = {
         var fieldType = this.dataView.getUint16(i + 2, this.littleEndian);
         var typeCount = this.bigTiff ? this.dataView.getUint64(i + 4, this.littleEndian) : this.dataView.getUint32(i + 4, this.littleEndian);
 
-        fileDirectory[fieldTagNames[fieldTag]] = this.getFieldValues(fieldTag, fieldType, typeCount, i + (this.bigTiff ? 12 : 8));
+        fileDirectory[fieldTagNames$1[fieldTag]] = this.getFieldValues(fieldTag, fieldType, typeCount, i + (this.bigTiff ? 12 : 8));
       }
       fileDirectories.push([fileDirectory, this.parseGeoKeyDirectory(fileDirectory)]);
 
@@ -53982,10 +50718,9 @@ GeoTIFF.prototype = {
   }
 };
 
-var geotiff$1 = GeoTIFF;
+var geotiff = GeoTIFF;
 
 var main = createCommonjsModule(function (module) {
-  "use strict";
 
   /**
    * Main parsing function for GeoTIFF files.
@@ -54008,7 +50743,7 @@ var main = createCommonjsModule(function (module) {
     } else {
       throw new Error("Invalid input data given.");
     }
-    return new geotiff$1(rawData, options);
+    return new geotiff(rawData, options);
   };
 
   {
@@ -54018,6 +50753,7 @@ var main = createCommonjsModule(function (module) {
     window["GeoTIFF"] = { parse: parse };
   }
 });
+var main_1 = main.parse;
 
 /*
 * Author   Jonathan Lurie - http://me.jonathanlurie.fr
@@ -55134,6 +51870,7 @@ var PixBinEncoder$1 = function (_Filter) {
   createClass(PixBinEncoder$$1, [{
     key: "_run",
     value: function _run() {
+
       var encoder = new PixBinEncoder();
 
       // specifying some options
@@ -55174,1926 +51911,6 @@ var PixBinEncoder$1 = function (_Filter) {
   return PixBinEncoder$$1;
 }(Filter); /* END of class PixBinEncoder */
 
-var lookup$1 = [];
-var revLookup$1 = [];
-var Arr$1 = typeof Uint8Array !== 'undefined' ? Uint8Array : Array;
-var inited$1 = false;
-function init$1() {
-  inited$1 = true;
-  var code = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
-  for (var i = 0, len = code.length; i < len; ++i) {
-    lookup$1[i] = code[i];
-    revLookup$1[code.charCodeAt(i)] = i;
-  }
-
-  revLookup$1['-'.charCodeAt(0)] = 62;
-  revLookup$1['_'.charCodeAt(0)] = 63;
-}
-
-function toByteArray$1(b64) {
-  if (!inited$1) {
-    init$1();
-  }
-  var i, j, l, tmp, placeHolders, arr;
-  var len = b64.length;
-
-  if (len % 4 > 0) {
-    throw new Error('Invalid string. Length must be a multiple of 4');
-  }
-
-  // the number of equal signs (place holders)
-  // if there are two placeholders, than the two characters before it
-  // represent one byte
-  // if there is only one, then the three characters before it represent 2 bytes
-  // this is just a cheap hack to not do indexOf twice
-  placeHolders = b64[len - 2] === '=' ? 2 : b64[len - 1] === '=' ? 1 : 0;
-
-  // base64 is 4/3 + up to two characters of the original data
-  arr = new Arr$1(len * 3 / 4 - placeHolders);
-
-  // if there are placeholders, only get up to the last complete 4 chars
-  l = placeHolders > 0 ? len - 4 : len;
-
-  var L = 0;
-
-  for (i = 0, j = 0; i < l; i += 4, j += 3) {
-    tmp = revLookup$1[b64.charCodeAt(i)] << 18 | revLookup$1[b64.charCodeAt(i + 1)] << 12 | revLookup$1[b64.charCodeAt(i + 2)] << 6 | revLookup$1[b64.charCodeAt(i + 3)];
-    arr[L++] = tmp >> 16 & 0xFF;
-    arr[L++] = tmp >> 8 & 0xFF;
-    arr[L++] = tmp & 0xFF;
-  }
-
-  if (placeHolders === 2) {
-    tmp = revLookup$1[b64.charCodeAt(i)] << 2 | revLookup$1[b64.charCodeAt(i + 1)] >> 4;
-    arr[L++] = tmp & 0xFF;
-  } else if (placeHolders === 1) {
-    tmp = revLookup$1[b64.charCodeAt(i)] << 10 | revLookup$1[b64.charCodeAt(i + 1)] << 4 | revLookup$1[b64.charCodeAt(i + 2)] >> 2;
-    arr[L++] = tmp >> 8 & 0xFF;
-    arr[L++] = tmp & 0xFF;
-  }
-
-  return arr;
-}
-
-function tripletToBase64$1(num) {
-  return lookup$1[num >> 18 & 0x3F] + lookup$1[num >> 12 & 0x3F] + lookup$1[num >> 6 & 0x3F] + lookup$1[num & 0x3F];
-}
-
-function encodeChunk$1(uint8, start, end) {
-  var tmp;
-  var output = [];
-  for (var i = start; i < end; i += 3) {
-    tmp = (uint8[i] << 16) + (uint8[i + 1] << 8) + uint8[i + 2];
-    output.push(tripletToBase64$1(tmp));
-  }
-  return output.join('');
-}
-
-function fromByteArray$1(uint8) {
-  if (!inited$1) {
-    init$1();
-  }
-  var tmp;
-  var len = uint8.length;
-  var extraBytes = len % 3; // if we have 1 byte left, pad 2 bytes
-  var output = '';
-  var parts = [];
-  var maxChunkLength = 16383; // must be multiple of 3
-
-  // go through the array every three bytes, we'll deal with trailing stuff later
-  for (var i = 0, len2 = len - extraBytes; i < len2; i += maxChunkLength) {
-    parts.push(encodeChunk$1(uint8, i, i + maxChunkLength > len2 ? len2 : i + maxChunkLength));
-  }
-
-  // pad the end with zeros, but make sure to not forget the extra bytes
-  if (extraBytes === 1) {
-    tmp = uint8[len - 1];
-    output += lookup$1[tmp >> 2];
-    output += lookup$1[tmp << 4 & 0x3F];
-    output += '==';
-  } else if (extraBytes === 2) {
-    tmp = (uint8[len - 2] << 8) + uint8[len - 1];
-    output += lookup$1[tmp >> 10];
-    output += lookup$1[tmp >> 4 & 0x3F];
-    output += lookup$1[tmp << 2 & 0x3F];
-    output += '=';
-  }
-
-  parts.push(output);
-
-  return parts.join('');
-}
-
-function read$1(buffer, offset, isLE, mLen, nBytes) {
-  var e, m;
-  var eLen = nBytes * 8 - mLen - 1;
-  var eMax = (1 << eLen) - 1;
-  var eBias = eMax >> 1;
-  var nBits = -7;
-  var i = isLE ? nBytes - 1 : 0;
-  var d = isLE ? -1 : 1;
-  var s = buffer[offset + i];
-
-  i += d;
-
-  e = s & (1 << -nBits) - 1;
-  s >>= -nBits;
-  nBits += eLen;
-  for (; nBits > 0; e = e * 256 + buffer[offset + i], i += d, nBits -= 8) {}
-
-  m = e & (1 << -nBits) - 1;
-  e >>= -nBits;
-  nBits += mLen;
-  for (; nBits > 0; m = m * 256 + buffer[offset + i], i += d, nBits -= 8) {}
-
-  if (e === 0) {
-    e = 1 - eBias;
-  } else if (e === eMax) {
-    return m ? NaN : (s ? -1 : 1) * Infinity;
-  } else {
-    m = m + Math.pow(2, mLen);
-    e = e - eBias;
-  }
-  return (s ? -1 : 1) * m * Math.pow(2, e - mLen);
-}
-
-function write$1(buffer, value, offset, isLE, mLen, nBytes) {
-  var e, m, c;
-  var eLen = nBytes * 8 - mLen - 1;
-  var eMax = (1 << eLen) - 1;
-  var eBias = eMax >> 1;
-  var rt = mLen === 23 ? Math.pow(2, -24) - Math.pow(2, -77) : 0;
-  var i = isLE ? 0 : nBytes - 1;
-  var d = isLE ? 1 : -1;
-  var s = value < 0 || value === 0 && 1 / value < 0 ? 1 : 0;
-
-  value = Math.abs(value);
-
-  if (isNaN(value) || value === Infinity) {
-    m = isNaN(value) ? 1 : 0;
-    e = eMax;
-  } else {
-    e = Math.floor(Math.log(value) / Math.LN2);
-    if (value * (c = Math.pow(2, -e)) < 1) {
-      e--;
-      c *= 2;
-    }
-    if (e + eBias >= 1) {
-      value += rt / c;
-    } else {
-      value += rt * Math.pow(2, 1 - eBias);
-    }
-    if (value * c >= 2) {
-      e++;
-      c /= 2;
-    }
-
-    if (e + eBias >= eMax) {
-      m = 0;
-      e = eMax;
-    } else if (e + eBias >= 1) {
-      m = (value * c - 1) * Math.pow(2, mLen);
-      e = e + eBias;
-    } else {
-      m = value * Math.pow(2, eBias - 1) * Math.pow(2, mLen);
-      e = 0;
-    }
-  }
-
-  for (; mLen >= 8; buffer[offset + i] = m & 0xff, i += d, m /= 256, mLen -= 8) {}
-
-  e = e << mLen | m;
-  eLen += mLen;
-  for (; eLen > 0; buffer[offset + i] = e & 0xff, i += d, e /= 256, eLen -= 8) {}
-
-  buffer[offset + i - d] |= s * 128;
-}
-
-var toString$4 = {}.toString;
-
-var isArray$1 = Array.isArray || function (arr) {
-  return toString$4.call(arr) == '[object Array]';
-};
-
-/*!
- * The buffer module from node.js, for the browser.
- *
- * @author   Feross Aboukhadijeh <feross@feross.org> <http://feross.org>
- * @license  MIT
- */
-/* eslint-disable no-proto */
-
-var INSPECT_MAX_BYTES$1 = 50;
-
-/**
- * If `Buffer.TYPED_ARRAY_SUPPORT`:
- *   === true    Use Uint8Array implementation (fastest)
- *   === false   Use Object implementation (most compatible, even IE6)
- *
- * Browsers that support typed arrays are IE 10+, Firefox 4+, Chrome 7+, Safari 5.1+,
- * Opera 11.6+, iOS 4.2+.
- *
- * Due to various browser bugs, sometimes the Object implementation will be used even
- * when the browser supports typed arrays.
- *
- * Note:
- *
- *   - Firefox 4-29 lacks support for adding new properties to `Uint8Array` instances,
- *     See: https://bugzilla.mozilla.org/show_bug.cgi?id=695438.
- *
- *   - Chrome 9-10 is missing the `TypedArray.prototype.subarray` function.
- *
- *   - IE10 has a broken `TypedArray.prototype.subarray` function which returns arrays of
- *     incorrect length in some situations.
-
- * We detect these buggy browsers and set `Buffer.TYPED_ARRAY_SUPPORT` to `false` so they
- * get the Object implementation, which is slower but behaves correctly.
- */
-Buffer$1.TYPED_ARRAY_SUPPORT = global$1.TYPED_ARRAY_SUPPORT !== undefined ? global$1.TYPED_ARRAY_SUPPORT : true;
-
-/*
- * Export kMaxLength after typed array support is determined.
- */
-var _kMaxLength$1 = kMaxLength$1();
-function kMaxLength$1() {
-  return Buffer$1.TYPED_ARRAY_SUPPORT ? 0x7fffffff : 0x3fffffff;
-}
-
-function createBuffer$1(that, length) {
-  if (kMaxLength$1() < length) {
-    throw new RangeError('Invalid typed array length');
-  }
-  if (Buffer$1.TYPED_ARRAY_SUPPORT) {
-    // Return an augmented `Uint8Array` instance, for best performance
-    that = new Uint8Array(length);
-    that.__proto__ = Buffer$1.prototype;
-  } else {
-    // Fallback: Return an object instance of the Buffer class
-    if (that === null) {
-      that = new Buffer$1(length);
-    }
-    that.length = length;
-  }
-
-  return that;
-}
-
-/**
- * The Buffer constructor returns instances of `Uint8Array` that have their
- * prototype changed to `Buffer.prototype`. Furthermore, `Buffer` is a subclass of
- * `Uint8Array`, so the returned instances will have all the node `Buffer` methods
- * and the `Uint8Array` methods. Square bracket notation works as expected -- it
- * returns a single octet.
- *
- * The `Uint8Array` prototype remains unmodified.
- */
-
-function Buffer$1(arg, encodingOrOffset, length) {
-  if (!Buffer$1.TYPED_ARRAY_SUPPORT && !(this instanceof Buffer$1)) {
-    return new Buffer$1(arg, encodingOrOffset, length);
-  }
-
-  // Common case.
-  if (typeof arg === 'number') {
-    if (typeof encodingOrOffset === 'string') {
-      throw new Error('If encoding is specified then the first argument must be a string');
-    }
-    return allocUnsafe$1(this, arg);
-  }
-  return from$1(this, arg, encodingOrOffset, length);
-}
-
-Buffer$1.poolSize = 8192; // not used by this implementation
-
-// TODO: Legacy, not needed anymore. Remove in next major version.
-Buffer$1._augment = function (arr) {
-  arr.__proto__ = Buffer$1.prototype;
-  return arr;
-};
-
-function from$1(that, value, encodingOrOffset, length) {
-  if (typeof value === 'number') {
-    throw new TypeError('"value" argument must not be a number');
-  }
-
-  if (typeof ArrayBuffer !== 'undefined' && value instanceof ArrayBuffer) {
-    return fromArrayBuffer$1(that, value, encodingOrOffset, length);
-  }
-
-  if (typeof value === 'string') {
-    return fromString$1(that, value, encodingOrOffset);
-  }
-
-  return fromObject$1(that, value);
-}
-
-/**
- * Functionally equivalent to Buffer(arg, encoding) but throws a TypeError
- * if value is a number.
- * Buffer.from(str[, encoding])
- * Buffer.from(array)
- * Buffer.from(buffer)
- * Buffer.from(arrayBuffer[, byteOffset[, length]])
- **/
-Buffer$1.from = function (value, encodingOrOffset, length) {
-  return from$1(null, value, encodingOrOffset, length);
-};
-
-if (Buffer$1.TYPED_ARRAY_SUPPORT) {
-  Buffer$1.prototype.__proto__ = Uint8Array.prototype;
-  Buffer$1.__proto__ = Uint8Array;
-  
-}
-
-function assertSize$1(size) {
-  if (typeof size !== 'number') {
-    throw new TypeError('"size" argument must be a number');
-  } else if (size < 0) {
-    throw new RangeError('"size" argument must not be negative');
-  }
-}
-
-function alloc$1(that, size, fill, encoding) {
-  assertSize$1(size);
-  if (size <= 0) {
-    return createBuffer$1(that, size);
-  }
-  if (fill !== undefined) {
-    // Only pay attention to encoding if it's a string. This
-    // prevents accidentally sending in a number that would
-    // be interpretted as a start offset.
-    return typeof encoding === 'string' ? createBuffer$1(that, size).fill(fill, encoding) : createBuffer$1(that, size).fill(fill);
-  }
-  return createBuffer$1(that, size);
-}
-
-/**
- * Creates a new filled Buffer instance.
- * alloc(size[, fill[, encoding]])
- **/
-Buffer$1.alloc = function (size, fill, encoding) {
-  return alloc$1(null, size, fill, encoding);
-};
-
-function allocUnsafe$1(that, size) {
-  assertSize$1(size);
-  that = createBuffer$1(that, size < 0 ? 0 : checked$1(size) | 0);
-  if (!Buffer$1.TYPED_ARRAY_SUPPORT) {
-    for (var i = 0; i < size; ++i) {
-      that[i] = 0;
-    }
-  }
-  return that;
-}
-
-/**
- * Equivalent to Buffer(num), by default creates a non-zero-filled Buffer instance.
- * */
-Buffer$1.allocUnsafe = function (size) {
-  return allocUnsafe$1(null, size);
-};
-/**
- * Equivalent to SlowBuffer(num), by default creates a non-zero-filled Buffer instance.
- */
-Buffer$1.allocUnsafeSlow = function (size) {
-  return allocUnsafe$1(null, size);
-};
-
-function fromString$1(that, string, encoding) {
-  if (typeof encoding !== 'string' || encoding === '') {
-    encoding = 'utf8';
-  }
-
-  if (!Buffer$1.isEncoding(encoding)) {
-    throw new TypeError('"encoding" must be a valid string encoding');
-  }
-
-  var length = byteLength$1(string, encoding) | 0;
-  that = createBuffer$1(that, length);
-
-  var actual = that.write(string, encoding);
-
-  if (actual !== length) {
-    // Writing a hex string, for example, that contains invalid characters will
-    // cause everything after the first invalid character to be ignored. (e.g.
-    // 'abxxcd' will be treated as 'ab')
-    that = that.slice(0, actual);
-  }
-
-  return that;
-}
-
-function fromArrayLike$1(that, array) {
-  var length = array.length < 0 ? 0 : checked$1(array.length) | 0;
-  that = createBuffer$1(that, length);
-  for (var i = 0; i < length; i += 1) {
-    that[i] = array[i] & 255;
-  }
-  return that;
-}
-
-function fromArrayBuffer$1(that, array, byteOffset, length) {
-  array.byteLength; // this throws if `array` is not a valid ArrayBuffer
-
-  if (byteOffset < 0 || array.byteLength < byteOffset) {
-    throw new RangeError('\'offset\' is out of bounds');
-  }
-
-  if (array.byteLength < byteOffset + (length || 0)) {
-    throw new RangeError('\'length\' is out of bounds');
-  }
-
-  if (byteOffset === undefined && length === undefined) {
-    array = new Uint8Array(array);
-  } else if (length === undefined) {
-    array = new Uint8Array(array, byteOffset);
-  } else {
-    array = new Uint8Array(array, byteOffset, length);
-  }
-
-  if (Buffer$1.TYPED_ARRAY_SUPPORT) {
-    // Return an augmented `Uint8Array` instance, for best performance
-    that = array;
-    that.__proto__ = Buffer$1.prototype;
-  } else {
-    // Fallback: Return an object instance of the Buffer class
-    that = fromArrayLike$1(that, array);
-  }
-  return that;
-}
-
-function fromObject$1(that, obj) {
-  if (internalIsBuffer$1(obj)) {
-    var len = checked$1(obj.length) | 0;
-    that = createBuffer$1(that, len);
-
-    if (that.length === 0) {
-      return that;
-    }
-
-    obj.copy(that, 0, 0, len);
-    return that;
-  }
-
-  if (obj) {
-    if (typeof ArrayBuffer !== 'undefined' && obj.buffer instanceof ArrayBuffer || 'length' in obj) {
-      if (typeof obj.length !== 'number' || isnan$1(obj.length)) {
-        return createBuffer$1(that, 0);
-      }
-      return fromArrayLike$1(that, obj);
-    }
-
-    if (obj.type === 'Buffer' && isArray$1(obj.data)) {
-      return fromArrayLike$1(that, obj.data);
-    }
-  }
-
-  throw new TypeError('First argument must be a string, Buffer, ArrayBuffer, Array, or array-like object.');
-}
-
-function checked$1(length) {
-  // Note: cannot use `length < kMaxLength()` here because that fails when
-  // length is NaN (which is otherwise coerced to zero.)
-  if (length >= kMaxLength$1()) {
-    throw new RangeError('Attempt to allocate Buffer larger than maximum ' + 'size: 0x' + kMaxLength$1().toString(16) + ' bytes');
-  }
-  return length | 0;
-}
-
-
-Buffer$1.isBuffer = isBuffer$1;
-function internalIsBuffer$1(b) {
-  return !!(b != null && b._isBuffer);
-}
-
-Buffer$1.compare = function compare(a, b) {
-  if (!internalIsBuffer$1(a) || !internalIsBuffer$1(b)) {
-    throw new TypeError('Arguments must be Buffers');
-  }
-
-  if (a === b) return 0;
-
-  var x = a.length;
-  var y = b.length;
-
-  for (var i = 0, len = Math.min(x, y); i < len; ++i) {
-    if (a[i] !== b[i]) {
-      x = a[i];
-      y = b[i];
-      break;
-    }
-  }
-
-  if (x < y) return -1;
-  if (y < x) return 1;
-  return 0;
-};
-
-Buffer$1.isEncoding = function isEncoding(encoding) {
-  switch (String(encoding).toLowerCase()) {
-    case 'hex':
-    case 'utf8':
-    case 'utf-8':
-    case 'ascii':
-    case 'latin1':
-    case 'binary':
-    case 'base64':
-    case 'ucs2':
-    case 'ucs-2':
-    case 'utf16le':
-    case 'utf-16le':
-      return true;
-    default:
-      return false;
-  }
-};
-
-Buffer$1.concat = function concat(list, length) {
-  if (!isArray$1(list)) {
-    throw new TypeError('"list" argument must be an Array of Buffers');
-  }
-
-  if (list.length === 0) {
-    return Buffer$1.alloc(0);
-  }
-
-  var i;
-  if (length === undefined) {
-    length = 0;
-    for (i = 0; i < list.length; ++i) {
-      length += list[i].length;
-    }
-  }
-
-  var buffer = Buffer$1.allocUnsafe(length);
-  var pos = 0;
-  for (i = 0; i < list.length; ++i) {
-    var buf = list[i];
-    if (!internalIsBuffer$1(buf)) {
-      throw new TypeError('"list" argument must be an Array of Buffers');
-    }
-    buf.copy(buffer, pos);
-    pos += buf.length;
-  }
-  return buffer;
-};
-
-function byteLength$1(string, encoding) {
-  if (internalIsBuffer$1(string)) {
-    return string.length;
-  }
-  if (typeof ArrayBuffer !== 'undefined' && typeof ArrayBuffer.isView === 'function' && (ArrayBuffer.isView(string) || string instanceof ArrayBuffer)) {
-    return string.byteLength;
-  }
-  if (typeof string !== 'string') {
-    string = '' + string;
-  }
-
-  var len = string.length;
-  if (len === 0) return 0;
-
-  // Use a for loop to avoid recursion
-  var loweredCase = false;
-  for (;;) {
-    switch (encoding) {
-      case 'ascii':
-      case 'latin1':
-      case 'binary':
-        return len;
-      case 'utf8':
-      case 'utf-8':
-      case undefined:
-        return utf8ToBytes$1(string).length;
-      case 'ucs2':
-      case 'ucs-2':
-      case 'utf16le':
-      case 'utf-16le':
-        return len * 2;
-      case 'hex':
-        return len >>> 1;
-      case 'base64':
-        return base64ToBytes$1(string).length;
-      default:
-        if (loweredCase) return utf8ToBytes$1(string).length; // assume utf8
-        encoding = ('' + encoding).toLowerCase();
-        loweredCase = true;
-    }
-  }
-}
-Buffer$1.byteLength = byteLength$1;
-
-function slowToString$1(encoding, start, end) {
-  var loweredCase = false;
-
-  // No need to verify that "this.length <= MAX_UINT32" since it's a read-only
-  // property of a typed array.
-
-  // This behaves neither like String nor Uint8Array in that we set start/end
-  // to their upper/lower bounds if the value passed is out of range.
-  // undefined is handled specially as per ECMA-262 6th Edition,
-  // Section 13.3.3.7 Runtime Semantics: KeyedBindingInitialization.
-  if (start === undefined || start < 0) {
-    start = 0;
-  }
-  // Return early if start > this.length. Done here to prevent potential uint32
-  // coercion fail below.
-  if (start > this.length) {
-    return '';
-  }
-
-  if (end === undefined || end > this.length) {
-    end = this.length;
-  }
-
-  if (end <= 0) {
-    return '';
-  }
-
-  // Force coersion to uint32. This will also coerce falsey/NaN values to 0.
-  end >>>= 0;
-  start >>>= 0;
-
-  if (end <= start) {
-    return '';
-  }
-
-  if (!encoding) encoding = 'utf8';
-
-  while (true) {
-    switch (encoding) {
-      case 'hex':
-        return hexSlice$1(this, start, end);
-
-      case 'utf8':
-      case 'utf-8':
-        return utf8Slice$1(this, start, end);
-
-      case 'ascii':
-        return asciiSlice$1(this, start, end);
-
-      case 'latin1':
-      case 'binary':
-        return latin1Slice$1(this, start, end);
-
-      case 'base64':
-        return base64Slice$1(this, start, end);
-
-      case 'ucs2':
-      case 'ucs-2':
-      case 'utf16le':
-      case 'utf-16le':
-        return utf16leSlice$1(this, start, end);
-
-      default:
-        if (loweredCase) throw new TypeError('Unknown encoding: ' + encoding);
-        encoding = (encoding + '').toLowerCase();
-        loweredCase = true;
-    }
-  }
-}
-
-// The property is used by `Buffer.isBuffer` and `is-buffer` (in Safari 5-7) to detect
-// Buffer instances.
-Buffer$1.prototype._isBuffer = true;
-
-function swap$1(b, n, m) {
-  var i = b[n];
-  b[n] = b[m];
-  b[m] = i;
-}
-
-Buffer$1.prototype.swap16 = function swap16() {
-  var len = this.length;
-  if (len % 2 !== 0) {
-    throw new RangeError('Buffer size must be a multiple of 16-bits');
-  }
-  for (var i = 0; i < len; i += 2) {
-    swap$1(this, i, i + 1);
-  }
-  return this;
-};
-
-Buffer$1.prototype.swap32 = function swap32() {
-  var len = this.length;
-  if (len % 4 !== 0) {
-    throw new RangeError('Buffer size must be a multiple of 32-bits');
-  }
-  for (var i = 0; i < len; i += 4) {
-    swap$1(this, i, i + 3);
-    swap$1(this, i + 1, i + 2);
-  }
-  return this;
-};
-
-Buffer$1.prototype.swap64 = function swap64() {
-  var len = this.length;
-  if (len % 8 !== 0) {
-    throw new RangeError('Buffer size must be a multiple of 64-bits');
-  }
-  for (var i = 0; i < len; i += 8) {
-    swap$1(this, i, i + 7);
-    swap$1(this, i + 1, i + 6);
-    swap$1(this, i + 2, i + 5);
-    swap$1(this, i + 3, i + 4);
-  }
-  return this;
-};
-
-Buffer$1.prototype.toString = function toString() {
-  var length = this.length | 0;
-  if (length === 0) return '';
-  if (arguments.length === 0) return utf8Slice$1(this, 0, length);
-  return slowToString$1.apply(this, arguments);
-};
-
-Buffer$1.prototype.equals = function equals(b) {
-  if (!internalIsBuffer$1(b)) throw new TypeError('Argument must be a Buffer');
-  if (this === b) return true;
-  return Buffer$1.compare(this, b) === 0;
-};
-
-Buffer$1.prototype.inspect = function inspect() {
-  var str = '';
-  var max = INSPECT_MAX_BYTES$1;
-  if (this.length > 0) {
-    str = this.toString('hex', 0, max).match(/.{2}/g).join(' ');
-    if (this.length > max) str += ' ... ';
-  }
-  return '<Buffer ' + str + '>';
-};
-
-Buffer$1.prototype.compare = function compare(target, start, end, thisStart, thisEnd) {
-  if (!internalIsBuffer$1(target)) {
-    throw new TypeError('Argument must be a Buffer');
-  }
-
-  if (start === undefined) {
-    start = 0;
-  }
-  if (end === undefined) {
-    end = target ? target.length : 0;
-  }
-  if (thisStart === undefined) {
-    thisStart = 0;
-  }
-  if (thisEnd === undefined) {
-    thisEnd = this.length;
-  }
-
-  if (start < 0 || end > target.length || thisStart < 0 || thisEnd > this.length) {
-    throw new RangeError('out of range index');
-  }
-
-  if (thisStart >= thisEnd && start >= end) {
-    return 0;
-  }
-  if (thisStart >= thisEnd) {
-    return -1;
-  }
-  if (start >= end) {
-    return 1;
-  }
-
-  start >>>= 0;
-  end >>>= 0;
-  thisStart >>>= 0;
-  thisEnd >>>= 0;
-
-  if (this === target) return 0;
-
-  var x = thisEnd - thisStart;
-  var y = end - start;
-  var len = Math.min(x, y);
-
-  var thisCopy = this.slice(thisStart, thisEnd);
-  var targetCopy = target.slice(start, end);
-
-  for (var i = 0; i < len; ++i) {
-    if (thisCopy[i] !== targetCopy[i]) {
-      x = thisCopy[i];
-      y = targetCopy[i];
-      break;
-    }
-  }
-
-  if (x < y) return -1;
-  if (y < x) return 1;
-  return 0;
-};
-
-// Finds either the first index of `val` in `buffer` at offset >= `byteOffset`,
-// OR the last index of `val` in `buffer` at offset <= `byteOffset`.
-//
-// Arguments:
-// - buffer - a Buffer to search
-// - val - a string, Buffer, or number
-// - byteOffset - an index into `buffer`; will be clamped to an int32
-// - encoding - an optional encoding, relevant is val is a string
-// - dir - true for indexOf, false for lastIndexOf
-function bidirectionalIndexOf$1(buffer, val, byteOffset, encoding, dir) {
-  // Empty buffer means no match
-  if (buffer.length === 0) return -1;
-
-  // Normalize byteOffset
-  if (typeof byteOffset === 'string') {
-    encoding = byteOffset;
-    byteOffset = 0;
-  } else if (byteOffset > 0x7fffffff) {
-    byteOffset = 0x7fffffff;
-  } else if (byteOffset < -0x80000000) {
-    byteOffset = -0x80000000;
-  }
-  byteOffset = +byteOffset; // Coerce to Number.
-  if (isNaN(byteOffset)) {
-    // byteOffset: it it's undefined, null, NaN, "foo", etc, search whole buffer
-    byteOffset = dir ? 0 : buffer.length - 1;
-  }
-
-  // Normalize byteOffset: negative offsets start from the end of the buffer
-  if (byteOffset < 0) byteOffset = buffer.length + byteOffset;
-  if (byteOffset >= buffer.length) {
-    if (dir) return -1;else byteOffset = buffer.length - 1;
-  } else if (byteOffset < 0) {
-    if (dir) byteOffset = 0;else return -1;
-  }
-
-  // Normalize val
-  if (typeof val === 'string') {
-    val = Buffer$1.from(val, encoding);
-  }
-
-  // Finally, search either indexOf (if dir is true) or lastIndexOf
-  if (internalIsBuffer$1(val)) {
-    // Special case: looking for empty string/buffer always fails
-    if (val.length === 0) {
-      return -1;
-    }
-    return arrayIndexOf$1(buffer, val, byteOffset, encoding, dir);
-  } else if (typeof val === 'number') {
-    val = val & 0xFF; // Search for a byte value [0-255]
-    if (Buffer$1.TYPED_ARRAY_SUPPORT && typeof Uint8Array.prototype.indexOf === 'function') {
-      if (dir) {
-        return Uint8Array.prototype.indexOf.call(buffer, val, byteOffset);
-      } else {
-        return Uint8Array.prototype.lastIndexOf.call(buffer, val, byteOffset);
-      }
-    }
-    return arrayIndexOf$1(buffer, [val], byteOffset, encoding, dir);
-  }
-
-  throw new TypeError('val must be string, number or Buffer');
-}
-
-function arrayIndexOf$1(arr, val, byteOffset, encoding, dir) {
-  var indexSize = 1;
-  var arrLength = arr.length;
-  var valLength = val.length;
-
-  if (encoding !== undefined) {
-    encoding = String(encoding).toLowerCase();
-    if (encoding === 'ucs2' || encoding === 'ucs-2' || encoding === 'utf16le' || encoding === 'utf-16le') {
-      if (arr.length < 2 || val.length < 2) {
-        return -1;
-      }
-      indexSize = 2;
-      arrLength /= 2;
-      valLength /= 2;
-      byteOffset /= 2;
-    }
-  }
-
-  function read(buf, i) {
-    if (indexSize === 1) {
-      return buf[i];
-    } else {
-      return buf.readUInt16BE(i * indexSize);
-    }
-  }
-
-  var i;
-  if (dir) {
-    var foundIndex = -1;
-    for (i = byteOffset; i < arrLength; i++) {
-      if (read(arr, i) === read(val, foundIndex === -1 ? 0 : i - foundIndex)) {
-        if (foundIndex === -1) foundIndex = i;
-        if (i - foundIndex + 1 === valLength) return foundIndex * indexSize;
-      } else {
-        if (foundIndex !== -1) i -= i - foundIndex;
-        foundIndex = -1;
-      }
-    }
-  } else {
-    if (byteOffset + valLength > arrLength) byteOffset = arrLength - valLength;
-    for (i = byteOffset; i >= 0; i--) {
-      var found = true;
-      for (var j = 0; j < valLength; j++) {
-        if (read(arr, i + j) !== read(val, j)) {
-          found = false;
-          break;
-        }
-      }
-      if (found) return i;
-    }
-  }
-
-  return -1;
-}
-
-Buffer$1.prototype.includes = function includes(val, byteOffset, encoding) {
-  return this.indexOf(val, byteOffset, encoding) !== -1;
-};
-
-Buffer$1.prototype.indexOf = function indexOf(val, byteOffset, encoding) {
-  return bidirectionalIndexOf$1(this, val, byteOffset, encoding, true);
-};
-
-Buffer$1.prototype.lastIndexOf = function lastIndexOf(val, byteOffset, encoding) {
-  return bidirectionalIndexOf$1(this, val, byteOffset, encoding, false);
-};
-
-function hexWrite$1(buf, string, offset, length) {
-  offset = Number(offset) || 0;
-  var remaining = buf.length - offset;
-  if (!length) {
-    length = remaining;
-  } else {
-    length = Number(length);
-    if (length > remaining) {
-      length = remaining;
-    }
-  }
-
-  // must be an even number of digits
-  var strLen = string.length;
-  if (strLen % 2 !== 0) throw new TypeError('Invalid hex string');
-
-  if (length > strLen / 2) {
-    length = strLen / 2;
-  }
-  for (var i = 0; i < length; ++i) {
-    var parsed = parseInt(string.substr(i * 2, 2), 16);
-    if (isNaN(parsed)) return i;
-    buf[offset + i] = parsed;
-  }
-  return i;
-}
-
-function utf8Write$1(buf, string, offset, length) {
-  return blitBuffer$1(utf8ToBytes$1(string, buf.length - offset), buf, offset, length);
-}
-
-function asciiWrite$1(buf, string, offset, length) {
-  return blitBuffer$1(asciiToBytes$1(string), buf, offset, length);
-}
-
-function latin1Write$1(buf, string, offset, length) {
-  return asciiWrite$1(buf, string, offset, length);
-}
-
-function base64Write$1(buf, string, offset, length) {
-  return blitBuffer$1(base64ToBytes$1(string), buf, offset, length);
-}
-
-function ucs2Write$1(buf, string, offset, length) {
-  return blitBuffer$1(utf16leToBytes$1(string, buf.length - offset), buf, offset, length);
-}
-
-Buffer$1.prototype.write = function write(string, offset, length, encoding) {
-  // Buffer#write(string)
-  if (offset === undefined) {
-    encoding = 'utf8';
-    length = this.length;
-    offset = 0;
-    // Buffer#write(string, encoding)
-  } else if (length === undefined && typeof offset === 'string') {
-    encoding = offset;
-    length = this.length;
-    offset = 0;
-    // Buffer#write(string, offset[, length][, encoding])
-  } else if (isFinite(offset)) {
-    offset = offset | 0;
-    if (isFinite(length)) {
-      length = length | 0;
-      if (encoding === undefined) encoding = 'utf8';
-    } else {
-      encoding = length;
-      length = undefined;
-    }
-    // legacy write(string, encoding, offset, length) - remove in v0.13
-  } else {
-    throw new Error('Buffer.write(string, encoding, offset[, length]) is no longer supported');
-  }
-
-  var remaining = this.length - offset;
-  if (length === undefined || length > remaining) length = remaining;
-
-  if (string.length > 0 && (length < 0 || offset < 0) || offset > this.length) {
-    throw new RangeError('Attempt to write outside buffer bounds');
-  }
-
-  if (!encoding) encoding = 'utf8';
-
-  var loweredCase = false;
-  for (;;) {
-    switch (encoding) {
-      case 'hex':
-        return hexWrite$1(this, string, offset, length);
-
-      case 'utf8':
-      case 'utf-8':
-        return utf8Write$1(this, string, offset, length);
-
-      case 'ascii':
-        return asciiWrite$1(this, string, offset, length);
-
-      case 'latin1':
-      case 'binary':
-        return latin1Write$1(this, string, offset, length);
-
-      case 'base64':
-        // Warning: maxLength not taken into account in base64Write
-        return base64Write$1(this, string, offset, length);
-
-      case 'ucs2':
-      case 'ucs-2':
-      case 'utf16le':
-      case 'utf-16le':
-        return ucs2Write$1(this, string, offset, length);
-
-      default:
-        if (loweredCase) throw new TypeError('Unknown encoding: ' + encoding);
-        encoding = ('' + encoding).toLowerCase();
-        loweredCase = true;
-    }
-  }
-};
-
-Buffer$1.prototype.toJSON = function toJSON() {
-  return {
-    type: 'Buffer',
-    data: Array.prototype.slice.call(this._arr || this, 0)
-  };
-};
-
-function base64Slice$1(buf, start, end) {
-  if (start === 0 && end === buf.length) {
-    return fromByteArray$1(buf);
-  } else {
-    return fromByteArray$1(buf.slice(start, end));
-  }
-}
-
-function utf8Slice$1(buf, start, end) {
-  end = Math.min(buf.length, end);
-  var res = [];
-
-  var i = start;
-  while (i < end) {
-    var firstByte = buf[i];
-    var codePoint = null;
-    var bytesPerSequence = firstByte > 0xEF ? 4 : firstByte > 0xDF ? 3 : firstByte > 0xBF ? 2 : 1;
-
-    if (i + bytesPerSequence <= end) {
-      var secondByte, thirdByte, fourthByte, tempCodePoint;
-
-      switch (bytesPerSequence) {
-        case 1:
-          if (firstByte < 0x80) {
-            codePoint = firstByte;
-          }
-          break;
-        case 2:
-          secondByte = buf[i + 1];
-          if ((secondByte & 0xC0) === 0x80) {
-            tempCodePoint = (firstByte & 0x1F) << 0x6 | secondByte & 0x3F;
-            if (tempCodePoint > 0x7F) {
-              codePoint = tempCodePoint;
-            }
-          }
-          break;
-        case 3:
-          secondByte = buf[i + 1];
-          thirdByte = buf[i + 2];
-          if ((secondByte & 0xC0) === 0x80 && (thirdByte & 0xC0) === 0x80) {
-            tempCodePoint = (firstByte & 0xF) << 0xC | (secondByte & 0x3F) << 0x6 | thirdByte & 0x3F;
-            if (tempCodePoint > 0x7FF && (tempCodePoint < 0xD800 || tempCodePoint > 0xDFFF)) {
-              codePoint = tempCodePoint;
-            }
-          }
-          break;
-        case 4:
-          secondByte = buf[i + 1];
-          thirdByte = buf[i + 2];
-          fourthByte = buf[i + 3];
-          if ((secondByte & 0xC0) === 0x80 && (thirdByte & 0xC0) === 0x80 && (fourthByte & 0xC0) === 0x80) {
-            tempCodePoint = (firstByte & 0xF) << 0x12 | (secondByte & 0x3F) << 0xC | (thirdByte & 0x3F) << 0x6 | fourthByte & 0x3F;
-            if (tempCodePoint > 0xFFFF && tempCodePoint < 0x110000) {
-              codePoint = tempCodePoint;
-            }
-          }
-      }
-    }
-
-    if (codePoint === null) {
-      // we did not generate a valid codePoint so insert a
-      // replacement char (U+FFFD) and advance only 1 byte
-      codePoint = 0xFFFD;
-      bytesPerSequence = 1;
-    } else if (codePoint > 0xFFFF) {
-      // encode to utf16 (surrogate pair dance)
-      codePoint -= 0x10000;
-      res.push(codePoint >>> 10 & 0x3FF | 0xD800);
-      codePoint = 0xDC00 | codePoint & 0x3FF;
-    }
-
-    res.push(codePoint);
-    i += bytesPerSequence;
-  }
-
-  return decodeCodePointsArray$1(res);
-}
-
-// Based on http://stackoverflow.com/a/22747272/680742, the browser with
-// the lowest limit is Chrome, with 0x10000 args.
-// We go 1 magnitude less, for safety
-var MAX_ARGUMENTS_LENGTH$1 = 0x1000;
-
-function decodeCodePointsArray$1(codePoints) {
-  var len = codePoints.length;
-  if (len <= MAX_ARGUMENTS_LENGTH$1) {
-    return String.fromCharCode.apply(String, codePoints); // avoid extra slice()
-  }
-
-  // Decode in chunks to avoid "call stack size exceeded".
-  var res = '';
-  var i = 0;
-  while (i < len) {
-    res += String.fromCharCode.apply(String, codePoints.slice(i, i += MAX_ARGUMENTS_LENGTH$1));
-  }
-  return res;
-}
-
-function asciiSlice$1(buf, start, end) {
-  var ret = '';
-  end = Math.min(buf.length, end);
-
-  for (var i = start; i < end; ++i) {
-    ret += String.fromCharCode(buf[i] & 0x7F);
-  }
-  return ret;
-}
-
-function latin1Slice$1(buf, start, end) {
-  var ret = '';
-  end = Math.min(buf.length, end);
-
-  for (var i = start; i < end; ++i) {
-    ret += String.fromCharCode(buf[i]);
-  }
-  return ret;
-}
-
-function hexSlice$1(buf, start, end) {
-  var len = buf.length;
-
-  if (!start || start < 0) start = 0;
-  if (!end || end < 0 || end > len) end = len;
-
-  var out = '';
-  for (var i = start; i < end; ++i) {
-    out += toHex$1(buf[i]);
-  }
-  return out;
-}
-
-function utf16leSlice$1(buf, start, end) {
-  var bytes = buf.slice(start, end);
-  var res = '';
-  for (var i = 0; i < bytes.length; i += 2) {
-    res += String.fromCharCode(bytes[i] + bytes[i + 1] * 256);
-  }
-  return res;
-}
-
-Buffer$1.prototype.slice = function slice(start, end) {
-  var len = this.length;
-  start = ~~start;
-  end = end === undefined ? len : ~~end;
-
-  if (start < 0) {
-    start += len;
-    if (start < 0) start = 0;
-  } else if (start > len) {
-    start = len;
-  }
-
-  if (end < 0) {
-    end += len;
-    if (end < 0) end = 0;
-  } else if (end > len) {
-    end = len;
-  }
-
-  if (end < start) end = start;
-
-  var newBuf;
-  if (Buffer$1.TYPED_ARRAY_SUPPORT) {
-    newBuf = this.subarray(start, end);
-    newBuf.__proto__ = Buffer$1.prototype;
-  } else {
-    var sliceLen = end - start;
-    newBuf = new Buffer$1(sliceLen, undefined);
-    for (var i = 0; i < sliceLen; ++i) {
-      newBuf[i] = this[i + start];
-    }
-  }
-
-  return newBuf;
-};
-
-/*
- * Need to make sure that buffer isn't trying to write out of bounds.
- */
-function checkOffset$1(offset, ext, length) {
-  if (offset % 1 !== 0 || offset < 0) throw new RangeError('offset is not uint');
-  if (offset + ext > length) throw new RangeError('Trying to access beyond buffer length');
-}
-
-Buffer$1.prototype.readUIntLE = function readUIntLE(offset, byteLength, noAssert) {
-  offset = offset | 0;
-  byteLength = byteLength | 0;
-  if (!noAssert) checkOffset$1(offset, byteLength, this.length);
-
-  var val = this[offset];
-  var mul = 1;
-  var i = 0;
-  while (++i < byteLength && (mul *= 0x100)) {
-    val += this[offset + i] * mul;
-  }
-
-  return val;
-};
-
-Buffer$1.prototype.readUIntBE = function readUIntBE(offset, byteLength, noAssert) {
-  offset = offset | 0;
-  byteLength = byteLength | 0;
-  if (!noAssert) {
-    checkOffset$1(offset, byteLength, this.length);
-  }
-
-  var val = this[offset + --byteLength];
-  var mul = 1;
-  while (byteLength > 0 && (mul *= 0x100)) {
-    val += this[offset + --byteLength] * mul;
-  }
-
-  return val;
-};
-
-Buffer$1.prototype.readUInt8 = function readUInt8(offset, noAssert) {
-  if (!noAssert) checkOffset$1(offset, 1, this.length);
-  return this[offset];
-};
-
-Buffer$1.prototype.readUInt16LE = function readUInt16LE(offset, noAssert) {
-  if (!noAssert) checkOffset$1(offset, 2, this.length);
-  return this[offset] | this[offset + 1] << 8;
-};
-
-Buffer$1.prototype.readUInt16BE = function readUInt16BE(offset, noAssert) {
-  if (!noAssert) checkOffset$1(offset, 2, this.length);
-  return this[offset] << 8 | this[offset + 1];
-};
-
-Buffer$1.prototype.readUInt32LE = function readUInt32LE(offset, noAssert) {
-  if (!noAssert) checkOffset$1(offset, 4, this.length);
-
-  return (this[offset] | this[offset + 1] << 8 | this[offset + 2] << 16) + this[offset + 3] * 0x1000000;
-};
-
-Buffer$1.prototype.readUInt32BE = function readUInt32BE(offset, noAssert) {
-  if (!noAssert) checkOffset$1(offset, 4, this.length);
-
-  return this[offset] * 0x1000000 + (this[offset + 1] << 16 | this[offset + 2] << 8 | this[offset + 3]);
-};
-
-Buffer$1.prototype.readIntLE = function readIntLE(offset, byteLength, noAssert) {
-  offset = offset | 0;
-  byteLength = byteLength | 0;
-  if (!noAssert) checkOffset$1(offset, byteLength, this.length);
-
-  var val = this[offset];
-  var mul = 1;
-  var i = 0;
-  while (++i < byteLength && (mul *= 0x100)) {
-    val += this[offset + i] * mul;
-  }
-  mul *= 0x80;
-
-  if (val >= mul) val -= Math.pow(2, 8 * byteLength);
-
-  return val;
-};
-
-Buffer$1.prototype.readIntBE = function readIntBE(offset, byteLength, noAssert) {
-  offset = offset | 0;
-  byteLength = byteLength | 0;
-  if (!noAssert) checkOffset$1(offset, byteLength, this.length);
-
-  var i = byteLength;
-  var mul = 1;
-  var val = this[offset + --i];
-  while (i > 0 && (mul *= 0x100)) {
-    val += this[offset + --i] * mul;
-  }
-  mul *= 0x80;
-
-  if (val >= mul) val -= Math.pow(2, 8 * byteLength);
-
-  return val;
-};
-
-Buffer$1.prototype.readInt8 = function readInt8(offset, noAssert) {
-  if (!noAssert) checkOffset$1(offset, 1, this.length);
-  if (!(this[offset] & 0x80)) return this[offset];
-  return (0xff - this[offset] + 1) * -1;
-};
-
-Buffer$1.prototype.readInt16LE = function readInt16LE(offset, noAssert) {
-  if (!noAssert) checkOffset$1(offset, 2, this.length);
-  var val = this[offset] | this[offset + 1] << 8;
-  return val & 0x8000 ? val | 0xFFFF0000 : val;
-};
-
-Buffer$1.prototype.readInt16BE = function readInt16BE(offset, noAssert) {
-  if (!noAssert) checkOffset$1(offset, 2, this.length);
-  var val = this[offset + 1] | this[offset] << 8;
-  return val & 0x8000 ? val | 0xFFFF0000 : val;
-};
-
-Buffer$1.prototype.readInt32LE = function readInt32LE(offset, noAssert) {
-  if (!noAssert) checkOffset$1(offset, 4, this.length);
-
-  return this[offset] | this[offset + 1] << 8 | this[offset + 2] << 16 | this[offset + 3] << 24;
-};
-
-Buffer$1.prototype.readInt32BE = function readInt32BE(offset, noAssert) {
-  if (!noAssert) checkOffset$1(offset, 4, this.length);
-
-  return this[offset] << 24 | this[offset + 1] << 16 | this[offset + 2] << 8 | this[offset + 3];
-};
-
-Buffer$1.prototype.readFloatLE = function readFloatLE(offset, noAssert) {
-  if (!noAssert) checkOffset$1(offset, 4, this.length);
-  return read$1(this, offset, true, 23, 4);
-};
-
-Buffer$1.prototype.readFloatBE = function readFloatBE(offset, noAssert) {
-  if (!noAssert) checkOffset$1(offset, 4, this.length);
-  return read$1(this, offset, false, 23, 4);
-};
-
-Buffer$1.prototype.readDoubleLE = function readDoubleLE(offset, noAssert) {
-  if (!noAssert) checkOffset$1(offset, 8, this.length);
-  return read$1(this, offset, true, 52, 8);
-};
-
-Buffer$1.prototype.readDoubleBE = function readDoubleBE(offset, noAssert) {
-  if (!noAssert) checkOffset$1(offset, 8, this.length);
-  return read$1(this, offset, false, 52, 8);
-};
-
-function checkInt$1(buf, value, offset, ext, max, min) {
-  if (!internalIsBuffer$1(buf)) throw new TypeError('"buffer" argument must be a Buffer instance');
-  if (value > max || value < min) throw new RangeError('"value" argument is out of bounds');
-  if (offset + ext > buf.length) throw new RangeError('Index out of range');
-}
-
-Buffer$1.prototype.writeUIntLE = function writeUIntLE(value, offset, byteLength, noAssert) {
-  value = +value;
-  offset = offset | 0;
-  byteLength = byteLength | 0;
-  if (!noAssert) {
-    var maxBytes = Math.pow(2, 8 * byteLength) - 1;
-    checkInt$1(this, value, offset, byteLength, maxBytes, 0);
-  }
-
-  var mul = 1;
-  var i = 0;
-  this[offset] = value & 0xFF;
-  while (++i < byteLength && (mul *= 0x100)) {
-    this[offset + i] = value / mul & 0xFF;
-  }
-
-  return offset + byteLength;
-};
-
-Buffer$1.prototype.writeUIntBE = function writeUIntBE(value, offset, byteLength, noAssert) {
-  value = +value;
-  offset = offset | 0;
-  byteLength = byteLength | 0;
-  if (!noAssert) {
-    var maxBytes = Math.pow(2, 8 * byteLength) - 1;
-    checkInt$1(this, value, offset, byteLength, maxBytes, 0);
-  }
-
-  var i = byteLength - 1;
-  var mul = 1;
-  this[offset + i] = value & 0xFF;
-  while (--i >= 0 && (mul *= 0x100)) {
-    this[offset + i] = value / mul & 0xFF;
-  }
-
-  return offset + byteLength;
-};
-
-Buffer$1.prototype.writeUInt8 = function writeUInt8(value, offset, noAssert) {
-  value = +value;
-  offset = offset | 0;
-  if (!noAssert) checkInt$1(this, value, offset, 1, 0xff, 0);
-  if (!Buffer$1.TYPED_ARRAY_SUPPORT) value = Math.floor(value);
-  this[offset] = value & 0xff;
-  return offset + 1;
-};
-
-function objectWriteUInt16$1(buf, value, offset, littleEndian) {
-  if (value < 0) value = 0xffff + value + 1;
-  for (var i = 0, j = Math.min(buf.length - offset, 2); i < j; ++i) {
-    buf[offset + i] = (value & 0xff << 8 * (littleEndian ? i : 1 - i)) >>> (littleEndian ? i : 1 - i) * 8;
-  }
-}
-
-Buffer$1.prototype.writeUInt16LE = function writeUInt16LE(value, offset, noAssert) {
-  value = +value;
-  offset = offset | 0;
-  if (!noAssert) checkInt$1(this, value, offset, 2, 0xffff, 0);
-  if (Buffer$1.TYPED_ARRAY_SUPPORT) {
-    this[offset] = value & 0xff;
-    this[offset + 1] = value >>> 8;
-  } else {
-    objectWriteUInt16$1(this, value, offset, true);
-  }
-  return offset + 2;
-};
-
-Buffer$1.prototype.writeUInt16BE = function writeUInt16BE(value, offset, noAssert) {
-  value = +value;
-  offset = offset | 0;
-  if (!noAssert) checkInt$1(this, value, offset, 2, 0xffff, 0);
-  if (Buffer$1.TYPED_ARRAY_SUPPORT) {
-    this[offset] = value >>> 8;
-    this[offset + 1] = value & 0xff;
-  } else {
-    objectWriteUInt16$1(this, value, offset, false);
-  }
-  return offset + 2;
-};
-
-function objectWriteUInt32$1(buf, value, offset, littleEndian) {
-  if (value < 0) value = 0xffffffff + value + 1;
-  for (var i = 0, j = Math.min(buf.length - offset, 4); i < j; ++i) {
-    buf[offset + i] = value >>> (littleEndian ? i : 3 - i) * 8 & 0xff;
-  }
-}
-
-Buffer$1.prototype.writeUInt32LE = function writeUInt32LE(value, offset, noAssert) {
-  value = +value;
-  offset = offset | 0;
-  if (!noAssert) checkInt$1(this, value, offset, 4, 0xffffffff, 0);
-  if (Buffer$1.TYPED_ARRAY_SUPPORT) {
-    this[offset + 3] = value >>> 24;
-    this[offset + 2] = value >>> 16;
-    this[offset + 1] = value >>> 8;
-    this[offset] = value & 0xff;
-  } else {
-    objectWriteUInt32$1(this, value, offset, true);
-  }
-  return offset + 4;
-};
-
-Buffer$1.prototype.writeUInt32BE = function writeUInt32BE(value, offset, noAssert) {
-  value = +value;
-  offset = offset | 0;
-  if (!noAssert) checkInt$1(this, value, offset, 4, 0xffffffff, 0);
-  if (Buffer$1.TYPED_ARRAY_SUPPORT) {
-    this[offset] = value >>> 24;
-    this[offset + 1] = value >>> 16;
-    this[offset + 2] = value >>> 8;
-    this[offset + 3] = value & 0xff;
-  } else {
-    objectWriteUInt32$1(this, value, offset, false);
-  }
-  return offset + 4;
-};
-
-Buffer$1.prototype.writeIntLE = function writeIntLE(value, offset, byteLength, noAssert) {
-  value = +value;
-  offset = offset | 0;
-  if (!noAssert) {
-    var limit = Math.pow(2, 8 * byteLength - 1);
-
-    checkInt$1(this, value, offset, byteLength, limit - 1, -limit);
-  }
-
-  var i = 0;
-  var mul = 1;
-  var sub = 0;
-  this[offset] = value & 0xFF;
-  while (++i < byteLength && (mul *= 0x100)) {
-    if (value < 0 && sub === 0 && this[offset + i - 1] !== 0) {
-      sub = 1;
-    }
-    this[offset + i] = (value / mul >> 0) - sub & 0xFF;
-  }
-
-  return offset + byteLength;
-};
-
-Buffer$1.prototype.writeIntBE = function writeIntBE(value, offset, byteLength, noAssert) {
-  value = +value;
-  offset = offset | 0;
-  if (!noAssert) {
-    var limit = Math.pow(2, 8 * byteLength - 1);
-
-    checkInt$1(this, value, offset, byteLength, limit - 1, -limit);
-  }
-
-  var i = byteLength - 1;
-  var mul = 1;
-  var sub = 0;
-  this[offset + i] = value & 0xFF;
-  while (--i >= 0 && (mul *= 0x100)) {
-    if (value < 0 && sub === 0 && this[offset + i + 1] !== 0) {
-      sub = 1;
-    }
-    this[offset + i] = (value / mul >> 0) - sub & 0xFF;
-  }
-
-  return offset + byteLength;
-};
-
-Buffer$1.prototype.writeInt8 = function writeInt8(value, offset, noAssert) {
-  value = +value;
-  offset = offset | 0;
-  if (!noAssert) checkInt$1(this, value, offset, 1, 0x7f, -0x80);
-  if (!Buffer$1.TYPED_ARRAY_SUPPORT) value = Math.floor(value);
-  if (value < 0) value = 0xff + value + 1;
-  this[offset] = value & 0xff;
-  return offset + 1;
-};
-
-Buffer$1.prototype.writeInt16LE = function writeInt16LE(value, offset, noAssert) {
-  value = +value;
-  offset = offset | 0;
-  if (!noAssert) checkInt$1(this, value, offset, 2, 0x7fff, -0x8000);
-  if (Buffer$1.TYPED_ARRAY_SUPPORT) {
-    this[offset] = value & 0xff;
-    this[offset + 1] = value >>> 8;
-  } else {
-    objectWriteUInt16$1(this, value, offset, true);
-  }
-  return offset + 2;
-};
-
-Buffer$1.prototype.writeInt16BE = function writeInt16BE(value, offset, noAssert) {
-  value = +value;
-  offset = offset | 0;
-  if (!noAssert) checkInt$1(this, value, offset, 2, 0x7fff, -0x8000);
-  if (Buffer$1.TYPED_ARRAY_SUPPORT) {
-    this[offset] = value >>> 8;
-    this[offset + 1] = value & 0xff;
-  } else {
-    objectWriteUInt16$1(this, value, offset, false);
-  }
-  return offset + 2;
-};
-
-Buffer$1.prototype.writeInt32LE = function writeInt32LE(value, offset, noAssert) {
-  value = +value;
-  offset = offset | 0;
-  if (!noAssert) checkInt$1(this, value, offset, 4, 0x7fffffff, -0x80000000);
-  if (Buffer$1.TYPED_ARRAY_SUPPORT) {
-    this[offset] = value & 0xff;
-    this[offset + 1] = value >>> 8;
-    this[offset + 2] = value >>> 16;
-    this[offset + 3] = value >>> 24;
-  } else {
-    objectWriteUInt32$1(this, value, offset, true);
-  }
-  return offset + 4;
-};
-
-Buffer$1.prototype.writeInt32BE = function writeInt32BE(value, offset, noAssert) {
-  value = +value;
-  offset = offset | 0;
-  if (!noAssert) checkInt$1(this, value, offset, 4, 0x7fffffff, -0x80000000);
-  if (value < 0) value = 0xffffffff + value + 1;
-  if (Buffer$1.TYPED_ARRAY_SUPPORT) {
-    this[offset] = value >>> 24;
-    this[offset + 1] = value >>> 16;
-    this[offset + 2] = value >>> 8;
-    this[offset + 3] = value & 0xff;
-  } else {
-    objectWriteUInt32$1(this, value, offset, false);
-  }
-  return offset + 4;
-};
-
-function checkIEEE754$1(buf, value, offset, ext, max, min) {
-  if (offset + ext > buf.length) throw new RangeError('Index out of range');
-  if (offset < 0) throw new RangeError('Index out of range');
-}
-
-function writeFloat$1(buf, value, offset, littleEndian, noAssert) {
-  if (!noAssert) {
-    checkIEEE754$1(buf, value, offset, 4, 3.4028234663852886e+38, -3.4028234663852886e+38);
-  }
-  write$1(buf, value, offset, littleEndian, 23, 4);
-  return offset + 4;
-}
-
-Buffer$1.prototype.writeFloatLE = function writeFloatLE(value, offset, noAssert) {
-  return writeFloat$1(this, value, offset, true, noAssert);
-};
-
-Buffer$1.prototype.writeFloatBE = function writeFloatBE(value, offset, noAssert) {
-  return writeFloat$1(this, value, offset, false, noAssert);
-};
-
-function writeDouble$1(buf, value, offset, littleEndian, noAssert) {
-  if (!noAssert) {
-    checkIEEE754$1(buf, value, offset, 8, 1.7976931348623157E+308, -1.7976931348623157E+308);
-  }
-  write$1(buf, value, offset, littleEndian, 52, 8);
-  return offset + 8;
-}
-
-Buffer$1.prototype.writeDoubleLE = function writeDoubleLE(value, offset, noAssert) {
-  return writeDouble$1(this, value, offset, true, noAssert);
-};
-
-Buffer$1.prototype.writeDoubleBE = function writeDoubleBE(value, offset, noAssert) {
-  return writeDouble$1(this, value, offset, false, noAssert);
-};
-
-// copy(targetBuffer, targetStart=0, sourceStart=0, sourceEnd=buffer.length)
-Buffer$1.prototype.copy = function copy(target, targetStart, start, end) {
-  if (!start) start = 0;
-  if (!end && end !== 0) end = this.length;
-  if (targetStart >= target.length) targetStart = target.length;
-  if (!targetStart) targetStart = 0;
-  if (end > 0 && end < start) end = start;
-
-  // Copy 0 bytes; we're done
-  if (end === start) return 0;
-  if (target.length === 0 || this.length === 0) return 0;
-
-  // Fatal error conditions
-  if (targetStart < 0) {
-    throw new RangeError('targetStart out of bounds');
-  }
-  if (start < 0 || start >= this.length) throw new RangeError('sourceStart out of bounds');
-  if (end < 0) throw new RangeError('sourceEnd out of bounds');
-
-  // Are we oob?
-  if (end > this.length) end = this.length;
-  if (target.length - targetStart < end - start) {
-    end = target.length - targetStart + start;
-  }
-
-  var len = end - start;
-  var i;
-
-  if (this === target && start < targetStart && targetStart < end) {
-    // descending copy from end
-    for (i = len - 1; i >= 0; --i) {
-      target[i + targetStart] = this[i + start];
-    }
-  } else if (len < 1000 || !Buffer$1.TYPED_ARRAY_SUPPORT) {
-    // ascending copy from start
-    for (i = 0; i < len; ++i) {
-      target[i + targetStart] = this[i + start];
-    }
-  } else {
-    Uint8Array.prototype.set.call(target, this.subarray(start, start + len), targetStart);
-  }
-
-  return len;
-};
-
-// Usage:
-//    buffer.fill(number[, offset[, end]])
-//    buffer.fill(buffer[, offset[, end]])
-//    buffer.fill(string[, offset[, end]][, encoding])
-Buffer$1.prototype.fill = function fill(val, start, end, encoding) {
-  // Handle string cases:
-  if (typeof val === 'string') {
-    if (typeof start === 'string') {
-      encoding = start;
-      start = 0;
-      end = this.length;
-    } else if (typeof end === 'string') {
-      encoding = end;
-      end = this.length;
-    }
-    if (val.length === 1) {
-      var code = val.charCodeAt(0);
-      if (code < 256) {
-        val = code;
-      }
-    }
-    if (encoding !== undefined && typeof encoding !== 'string') {
-      throw new TypeError('encoding must be a string');
-    }
-    if (typeof encoding === 'string' && !Buffer$1.isEncoding(encoding)) {
-      throw new TypeError('Unknown encoding: ' + encoding);
-    }
-  } else if (typeof val === 'number') {
-    val = val & 255;
-  }
-
-  // Invalid ranges are not set to a default, so can range check early.
-  if (start < 0 || this.length < start || this.length < end) {
-    throw new RangeError('Out of range index');
-  }
-
-  if (end <= start) {
-    return this;
-  }
-
-  start = start >>> 0;
-  end = end === undefined ? this.length : end >>> 0;
-
-  if (!val) val = 0;
-
-  var i;
-  if (typeof val === 'number') {
-    for (i = start; i < end; ++i) {
-      this[i] = val;
-    }
-  } else {
-    var bytes = internalIsBuffer$1(val) ? val : utf8ToBytes$1(new Buffer$1(val, encoding).toString());
-    var len = bytes.length;
-    for (i = 0; i < end - start; ++i) {
-      this[i + start] = bytes[i % len];
-    }
-  }
-
-  return this;
-};
-
-// HELPER FUNCTIONS
-// ================
-
-var INVALID_BASE64_RE$1 = /[^+\/0-9A-Za-z-_]/g;
-
-function base64clean$1(str) {
-  // Node strips out invalid characters like \n and \t from the string, base64-js does not
-  str = stringtrim$1(str).replace(INVALID_BASE64_RE$1, '');
-  // Node converts strings with length < 2 to ''
-  if (str.length < 2) return '';
-  // Node allows for non-padded base64 strings (missing trailing ===), base64-js does not
-  while (str.length % 4 !== 0) {
-    str = str + '=';
-  }
-  return str;
-}
-
-function stringtrim$1(str) {
-  if (str.trim) return str.trim();
-  return str.replace(/^\s+|\s+$/g, '');
-}
-
-function toHex$1(n) {
-  if (n < 16) return '0' + n.toString(16);
-  return n.toString(16);
-}
-
-function utf8ToBytes$1(string, units) {
-  units = units || Infinity;
-  var codePoint;
-  var length = string.length;
-  var leadSurrogate = null;
-  var bytes = [];
-
-  for (var i = 0; i < length; ++i) {
-    codePoint = string.charCodeAt(i);
-
-    // is surrogate component
-    if (codePoint > 0xD7FF && codePoint < 0xE000) {
-      // last char was a lead
-      if (!leadSurrogate) {
-        // no lead yet
-        if (codePoint > 0xDBFF) {
-          // unexpected trail
-          if ((units -= 3) > -1) bytes.push(0xEF, 0xBF, 0xBD);
-          continue;
-        } else if (i + 1 === length) {
-          // unpaired lead
-          if ((units -= 3) > -1) bytes.push(0xEF, 0xBF, 0xBD);
-          continue;
-        }
-
-        // valid lead
-        leadSurrogate = codePoint;
-
-        continue;
-      }
-
-      // 2 leads in a row
-      if (codePoint < 0xDC00) {
-        if ((units -= 3) > -1) bytes.push(0xEF, 0xBF, 0xBD);
-        leadSurrogate = codePoint;
-        continue;
-      }
-
-      // valid surrogate pair
-      codePoint = (leadSurrogate - 0xD800 << 10 | codePoint - 0xDC00) + 0x10000;
-    } else if (leadSurrogate) {
-      // valid bmp char, but last char was a lead
-      if ((units -= 3) > -1) bytes.push(0xEF, 0xBF, 0xBD);
-    }
-
-    leadSurrogate = null;
-
-    // encode utf8
-    if (codePoint < 0x80) {
-      if ((units -= 1) < 0) break;
-      bytes.push(codePoint);
-    } else if (codePoint < 0x800) {
-      if ((units -= 2) < 0) break;
-      bytes.push(codePoint >> 0x6 | 0xC0, codePoint & 0x3F | 0x80);
-    } else if (codePoint < 0x10000) {
-      if ((units -= 3) < 0) break;
-      bytes.push(codePoint >> 0xC | 0xE0, codePoint >> 0x6 & 0x3F | 0x80, codePoint & 0x3F | 0x80);
-    } else if (codePoint < 0x110000) {
-      if ((units -= 4) < 0) break;
-      bytes.push(codePoint >> 0x12 | 0xF0, codePoint >> 0xC & 0x3F | 0x80, codePoint >> 0x6 & 0x3F | 0x80, codePoint & 0x3F | 0x80);
-    } else {
-      throw new Error('Invalid code point');
-    }
-  }
-
-  return bytes;
-}
-
-function asciiToBytes$1(str) {
-  var byteArray = [];
-  for (var i = 0; i < str.length; ++i) {
-    // Node's code seems to be doing this and not & 0x7F..
-    byteArray.push(str.charCodeAt(i) & 0xFF);
-  }
-  return byteArray;
-}
-
-function utf16leToBytes$1(str, units) {
-  var c, hi, lo;
-  var byteArray = [];
-  for (var i = 0; i < str.length; ++i) {
-    if ((units -= 2) < 0) break;
-
-    c = str.charCodeAt(i);
-    hi = c >> 8;
-    lo = c % 256;
-    byteArray.push(lo);
-    byteArray.push(hi);
-  }
-
-  return byteArray;
-}
-
-function base64ToBytes$1(str) {
-  return toByteArray$1(base64clean$1(str));
-}
-
-function blitBuffer$1(src, dst, offset, length) {
-  for (var i = 0; i < length; ++i) {
-    if (i + offset >= dst.length || i >= src.length) break;
-    dst[i + offset] = src[i];
-  }
-  return i;
-}
-
-function isnan$1(val) {
-  return val !== val; // eslint-disable-line no-self-compare
-}
-
-// the following is from is-buffer, also by Feross Aboukhadijeh and with same lisence
-// The _isBuffer check is for Safari 5-7 support, because it's missing
-// Object.prototype.constructor. Remove this eventually
-function isBuffer$1(obj) {
-  return obj != null && (!!obj._isBuffer || isFastBuffer$1(obj) || isSlowBuffer$1(obj));
-}
-
-function isFastBuffer$1(obj) {
-  return !!obj.constructor && typeof obj.constructor.isBuffer === 'function' && obj.constructor.isBuffer(obj);
-}
-
-// For Node v0.10 support. Remove this eventually.
-function isSlowBuffer$1(obj) {
-  return typeof obj.readFloatLE === 'function' && typeof obj.slice === 'function' && isFastBuffer$1(obj.slice(0, 0));
-}
-
 /*
   Copyright (c) 2008, Adobe Systems Incorporated
   All rights reserved.
@@ -57132,7 +51949,7 @@ Basic GUI blocking jpeg encoder
 */
 
 var btoa = btoa || function (buf) {
-	return new Buffer$1(buf).toString('base64');
+	return new Buffer(buf).toString('base64');
 };
 
 function JPEGEncoder(quality) {
@@ -57551,8 +52368,7 @@ function JPEGEncoder(quality) {
 		}
 		//Encode ACs
 		var end0pos = 63; // was const... which is crazy
-		for (; end0pos > 0 && DU[end0pos] == 0; end0pos--) {}
-		//end0pos = first element in reverse order !=0
+		for (; end0pos > 0 && DU[end0pos] == 0; end0pos--) {}		//end0pos = first element in reverse order !=0
 		if (end0pos == 0) {
 			writeBits(EOB);
 			return DC;
@@ -57622,6 +52438,7 @@ function JPEGEncoder(quality) {
 		var height = image.height;
 
 		var quadWidth = width * 4;
+
 		var x,
 		    y = 0;
 		var r, g, b;
@@ -57686,7 +52503,7 @@ function JPEGEncoder(quality) {
 		writeWord(0xFFD9); //EOI
 
 		//return new Uint8Array(byteout);
-		return new Buffer$1(byteout);
+		return new Buffer(byteout);
 
 		var jpegDataUri = 'data:image/jpeg;base64,' + btoa(byteout.join(''));
 
@@ -57737,8 +52554,7 @@ function JPEGEncoder(quality) {
 	}
 
 	init();
-}
-var encoder = encode;
+}var encoder = encode;
 
 function encode(imgData, qu) {
 	if (typeof qu === 'undefined') qu = 50;
@@ -57778,7 +52594,6 @@ function encode(imgData, qu) {
 //   (partners.adobe.com/public/developer/en/ps/sdk/5116.DCT_Filter.pdf)
 
 var JpegImage = function jpegImage() {
-  "use strict";
 
   var dctZigZag = new Int32Array([0, 1, 8, 16, 9, 2, 3, 10, 17, 24, 32, 25, 18, 11, 4, 5, 12, 19, 26, 33, 40, 48, 41, 34, 27, 20, 13, 6, 7, 14, 21, 28, 35, 42, 49, 56, 57, 50, 43, 36, 29, 22, 15, 23, 30, 37, 44, 51, 58, 59, 52, 45, 38, 31, 39, 46, 53, 60, 61, 54, 47, 55, 62, 63]);
 
@@ -57831,8 +52646,14 @@ var JpegImage = function jpegImage() {
   }
 
   function decodeScan(data, offset, frame, components, resetInterval, spectralStart, spectralEnd, successivePrev, successive) {
+    var precision = frame.precision;
+    var samplesPerLine = frame.samplesPerLine;
+    var scanLines = frame.scanLines;
     var mcusPerLine = frame.mcusPerLine;
     var progressive = frame.progressive;
+    var maxH = frame.maxH,
+        maxV = frame.maxV;
+
     var startOffset = offset,
         bitsData = 0,
         bitsCount = 0;
@@ -58268,7 +53089,8 @@ var JpegImage = function jpegImage() {
       xhr.send(null);
     },
     parse: function parse(data) {
-      var offset = 0;
+      var offset = 0,
+          length = data.length;
       function readUint16() {
         var value = data[offset] << 8 | data[offset + 1];
         offset += 2;
@@ -58424,7 +53246,6 @@ var JpegImage = function jpegImage() {
             frame.componentsOrder = [];
             var componentsCount = data[offset++],
                 componentId;
-            
             for (i = 0; i < componentsCount; i++) {
               componentId = data[offset];
               var h = data[offset + 1] >> 4;
@@ -58712,7 +53533,7 @@ function decode(jpegData, useTArray) {
   var image = {
     width: decoder.width,
     height: decoder.height,
-    data: useTArray ? new Uint8Array(decoder.width * decoder.height * 4) : new Buffer$1(decoder.width * decoder.height * 4)
+    data: useTArray ? new Uint8Array(decoder.width * decoder.height * 4) : new Buffer(decoder.width * decoder.height * 4)
   };
 
   decoder.copyToImageData(image);
@@ -58720,7 +53541,7 @@ function decode(jpegData, useTArray) {
   return image;
 }
 
-var index$2 = {
+var jpegJs = {
   encode: encoder,
   decode: decoder
 };
@@ -58766,7 +53587,7 @@ var JpegDecoder = function (_Decoder) {
       }
 
       try {
-        var jpegData = index$2.decode(inputBuffer);
+        var jpegData = jpegJs.decode(inputBuffer);
         var ncpp = jpegData.data.length / (jpegData.width * jpegData.height);
         var outputImage = new Image2D();
         var pixelData = new Uint8Array(jpegData.data.buffer);
@@ -58783,7 +53604,7 @@ var JpegDecoder = function (_Decoder) {
 }(Decoder); /* JpegDecoder */
 
 var UPNG = createCommonjsModule(function (module) {
-	(function () {
+(function () {
 		var UPNG = {};
 
 		// Make available for import by `require()`
@@ -58793,7 +53614,7 @@ var UPNG = createCommonjsModule(function (module) {
 
 		var pako;
 		if (typeof commonjsRequire == "function") {
-			pako = index$1;
+			pako = pako_1;
 		} else {
 			pako = window.pako;
 		}
@@ -59327,7 +54148,7 @@ var UPNG = createCommonjsModule(function (module) {
 						    off$$1 = offset;
 						nz = bin.nextZero(data, off$$1);
 						var keyw = bin.readASCII(data, off$$1, nz - off$$1);off$$1 = nz + 1;
-						off$$1 += 2;
+off$$1 += 2;
 						nz = bin.nextZero(data, off$$1);
 						var ltag = bin.readASCII(data, off$$1, nz - off$$1);off$$1 = nz + 1;
 						nz = bin.nextZero(data, off$$1);
@@ -59573,7 +54394,6 @@ var UPNG = createCommonjsModule(function (module) {
 * Lab      MCIN - Montreal Neurological Institute
 */
 
-//import pngjs from 'pngjs'; // ependency issues
 /**
 * An instance of PngDecoder will decode a PNG image in native Javascript and
 * output an Image2D. This is of course slower than using `io/FileImageReader.js`
@@ -59655,8 +54475,6 @@ var PngDecoder = function (_Decoder) {
 * Link      https://github.com/Pixpipe/pixpipejs
 * Lab       MCIN - Montreal Neurological Institute
 */
-
-// decoders
 //import { PixBinDecoder } from './PixBinDecoder.js';
 
 
@@ -59696,119 +54514,6 @@ var Image2DGenericDecoder = function (_GenericDecoderInterf) {
 
   return Image2DGenericDecoder;
 }(GenericDecoderInterface); /* END of class Image2DGenericDecoder */
-
-var asyncGenerator$3 = function () {
-  function AwaitValue(value) {
-    this.value = value;
-  }
-
-  function AsyncGenerator(gen) {
-    var front, back;
-
-    function send(key, arg) {
-      return new Promise(function (resolve, reject) {
-        var request = {
-          key: key,
-          arg: arg,
-          resolve: resolve,
-          reject: reject,
-          next: null
-        };
-
-        if (back) {
-          back = back.next = request;
-        } else {
-          front = back = request;
-          resume(key, arg);
-        }
-      });
-    }
-
-    function resume(key, arg) {
-      try {
-        var result = gen[key](arg);
-        var value = result.value;
-
-        if (value instanceof AwaitValue) {
-          Promise.resolve(value.value).then(function (arg) {
-            resume("next", arg);
-          }, function (arg) {
-            resume("throw", arg);
-          });
-        } else {
-          settle(result.done ? "return" : "normal", result.value);
-        }
-      } catch (err) {
-        settle("throw", err);
-      }
-    }
-
-    function settle(type, value) {
-      switch (type) {
-        case "return":
-          front.resolve({
-            value: value,
-            done: true
-          });
-          break;
-
-        case "throw":
-          front.reject(value);
-          break;
-
-        default:
-          front.resolve({
-            value: value,
-            done: false
-          });
-          break;
-      }
-
-      front = front.next;
-
-      if (front) {
-        resume(front.key, front.arg);
-      } else {
-        back = null;
-      }
-    }
-
-    this._invoke = send;
-
-    if (typeof gen.return !== "function") {
-      this.return = undefined;
-    }
-  }
-
-  if (typeof Symbol === "function" && Symbol.asyncIterator) {
-    AsyncGenerator.prototype[Symbol.asyncIterator] = function () {
-      return this;
-    };
-  }
-
-  AsyncGenerator.prototype.next = function (arg) {
-    return this._invoke("next", arg);
-  };
-
-  AsyncGenerator.prototype.throw = function (arg) {
-    return this._invoke("throw", arg);
-  };
-
-  AsyncGenerator.prototype.return = function (arg) {
-    return this._invoke("return", arg);
-  };
-
-  return {
-    wrap: function wrap(fn) {
-      return function () {
-        return new AsyncGenerator(fn.apply(this, arguments));
-      };
-    },
-    await: function _await(value) {
-      return new AwaitValue(value);
-    }
-  };
-}();
 
 var classCallCheck$3 = function classCallCheck(instance, Constructor) {
   if (!(instance instanceof Constructor)) {
@@ -60393,6 +55098,7 @@ var MniObjDecoder = function (_Decoder) {
     key: '_run',
     value: function _run() {
       var input = this._getInput();
+
       if (!input) {
         console.warn("Invalid input for MniObjDecoder");
         return;
@@ -60772,119 +55478,6 @@ var traverse_1$2 = createCommonjsModule$3(function (module) {
     return key in obj;
   };
 });
-
-var asyncGenerator$4 = function () {
-  function AwaitValue(value) {
-    this.value = value;
-  }
-
-  function AsyncGenerator(gen) {
-    var front, back;
-
-    function send(key, arg) {
-      return new Promise(function (resolve, reject) {
-        var request = {
-          key: key,
-          arg: arg,
-          resolve: resolve,
-          reject: reject,
-          next: null
-        };
-
-        if (back) {
-          back = back.next = request;
-        } else {
-          front = back = request;
-          resume(key, arg);
-        }
-      });
-    }
-
-    function resume(key, arg) {
-      try {
-        var result = gen[key](arg);
-        var value = result.value;
-
-        if (value instanceof AwaitValue) {
-          Promise.resolve(value.value).then(function (arg) {
-            resume("next", arg);
-          }, function (arg) {
-            resume("throw", arg);
-          });
-        } else {
-          settle(result.done ? "return" : "normal", result.value);
-        }
-      } catch (err) {
-        settle("throw", err);
-      }
-    }
-
-    function settle(type, value) {
-      switch (type) {
-        case "return":
-          front.resolve({
-            value: value,
-            done: true
-          });
-          break;
-
-        case "throw":
-          front.reject(value);
-          break;
-
-        default:
-          front.resolve({
-            value: value,
-            done: false
-          });
-          break;
-      }
-
-      front = front.next;
-
-      if (front) {
-        resume(front.key, front.arg);
-      } else {
-        back = null;
-      }
-    }
-
-    this._invoke = send;
-
-    if (typeof gen.return !== "function") {
-      this.return = undefined;
-    }
-  }
-
-  if (typeof Symbol === "function" && Symbol.asyncIterator) {
-    AsyncGenerator.prototype[Symbol.asyncIterator] = function () {
-      return this;
-    };
-  }
-
-  AsyncGenerator.prototype.next = function (arg) {
-    return this._invoke("next", arg);
-  };
-
-  AsyncGenerator.prototype.throw = function (arg) {
-    return this._invoke("throw", arg);
-  };
-
-  AsyncGenerator.prototype.return = function (arg) {
-    return this._invoke("return", arg);
-  };
-
-  return {
-    wrap: function wrap(fn) {
-      return function () {
-        return new AsyncGenerator(fn.apply(this, arguments));
-      };
-    },
-    await: function _await(value) {
-      return new AwaitValue(value);
-    }
-  };
-}();
 
 var classCallCheck$4 = function classCallCheck$$1(instance, Constructor) {
   if (!(instance instanceof Constructor)) {
@@ -61424,119 +56017,6 @@ var CodecUtils$2 = function () {
   return CodecUtils;
 }(); /* END of class CodecUtils */
 
-var asyncGenerator$1$2 = function () {
-  function AwaitValue(value) {
-    this.value = value;
-  }
-
-  function AsyncGenerator(gen) {
-    var front, back;
-
-    function send(key, arg) {
-      return new Promise(function (resolve, reject) {
-        var request = {
-          key: key,
-          arg: arg,
-          resolve: resolve,
-          reject: reject,
-          next: null
-        };
-
-        if (back) {
-          back = back.next = request;
-        } else {
-          front = back = request;
-          resume(key, arg);
-        }
-      });
-    }
-
-    function resume(key, arg) {
-      try {
-        var result = gen[key](arg);
-        var value = result.value;
-
-        if (value instanceof AwaitValue) {
-          Promise.resolve(value.value).then(function (arg) {
-            resume("next", arg);
-          }, function (arg) {
-            resume("throw", arg);
-          });
-        } else {
-          settle(result.done ? "return" : "normal", result.value);
-        }
-      } catch (err) {
-        settle("throw", err);
-      }
-    }
-
-    function settle(type, value) {
-      switch (type) {
-        case "return":
-          front.resolve({
-            value: value,
-            done: true
-          });
-          break;
-
-        case "throw":
-          front.reject(value);
-          break;
-
-        default:
-          front.resolve({
-            value: value,
-            done: false
-          });
-          break;
-      }
-
-      front = front.next;
-
-      if (front) {
-        resume(front.key, front.arg);
-      } else {
-        back = null;
-      }
-    }
-
-    this._invoke = send;
-
-    if (typeof gen.return !== "function") {
-      this.return = undefined;
-    }
-  }
-
-  if (typeof Symbol === "function" && Symbol.asyncIterator) {
-    AsyncGenerator.prototype[Symbol.asyncIterator] = function () {
-      return this;
-    };
-  }
-
-  AsyncGenerator.prototype.next = function (arg) {
-    return this._invoke("next", arg);
-  };
-
-  AsyncGenerator.prototype.throw = function (arg) {
-    return this._invoke("throw", arg);
-  };
-
-  AsyncGenerator.prototype.return = function (arg) {
-    return this._invoke("return", arg);
-  };
-
-  return {
-    wrap: function wrap(fn) {
-      return function () {
-        return new AsyncGenerator(fn.apply(this, arguments));
-      };
-    },
-    await: function _await(value) {
-      return new AwaitValue(value);
-    }
-  };
-}();
-
 var classCallCheck$1$2 = function classCallCheck$1(instance, Constructor) {
   if (!(instance instanceof Constructor)) {
     throw new TypeError("Cannot call a class as a function");
@@ -61976,7 +56456,7 @@ var Edf = function () {
 * If the output is `null`, then the parser was not able to decode the file.
 */
 
-var EdfDecoder$1 = function () {
+var EdfDecoder = function () {
 
   /**
    * Create a EdfDecoder.
@@ -62225,7 +56705,7 @@ var EdfDecoder$1 = function () {
 *
 */
 
-var EdfDecoder$$1 = function (_Decoder) {
+var EdfDecoder$1 = function (_Decoder) {
   inherits(EdfDecoder$$1, _Decoder);
 
   function EdfDecoder$$1() {
@@ -62251,7 +56731,7 @@ var EdfDecoder$$1 = function (_Decoder) {
         return;
       }
 
-      var edfDecoder = new EdfDecoder$1();
+      var edfDecoder = new EdfDecoder();
 
       edfDecoder.setInput(inputBuffer);
       edfDecoder.decode();
@@ -62301,7 +56781,6 @@ var EdfDecoder$$1 = function (_Decoder) {
 * Lab       MCIN - Montreal Neurological Institute
 */
 
-// decoders
 /**
 * This class implements `GenericDecoderInterface` that already contains the
 * successive decoding logic. For this reason this filter does not need to have the
@@ -62347,7 +56826,6 @@ var Mesh3DGenericDecoder = function (_GenericDecoderInterf) {
 * Lab       MCIN - Montreal Neurological Institute
 */
 
-// decoders
 /**
 * This class implements `GenericDecoderInterface` that already contains the
 * successive decoding logic. For this reason this filter does not need to have the
@@ -62378,7 +56856,7 @@ var Signal1DGenericDecoder = function (_GenericDecoderInterf) {
 
     _this.setMetadata("enablePixBin", true);
 
-    _this._decoders = [EdfDecoder$$1];
+    _this._decoders = [EdfDecoder$1];
     return _this;
   }
 
@@ -62423,8 +56901,6 @@ var AllFormatsGenericDecoder = function (_GenericDecoderInterf) {
   return AllFormatsGenericDecoder;
 }(GenericDecoderInterface);
 
-"use strict";
-
 function iota(n) {
   var result = new Array(n);
   for (var i = 0; i < n; ++i) {
@@ -62444,17 +56920,17 @@ var iota_1 = iota;
 
 // The _isBuffer check is for Safari 5-7 support, because it's missing
 // Object.prototype.constructor. Remove this eventually
-var index$3 = function index(obj) {
-  return obj != null && (isBuffer$2(obj) || isSlowBuffer$2(obj) || !!obj._isBuffer);
+var isBuffer_1 = function isBuffer_1(obj) {
+  return obj != null && (isBuffer$1(obj) || isSlowBuffer$1(obj) || !!obj._isBuffer);
 };
 
-function isBuffer$2(obj) {
+function isBuffer$1(obj) {
   return !!obj.constructor && typeof obj.constructor.isBuffer === 'function' && obj.constructor.isBuffer(obj);
 }
 
 // For Node v0.10 support. Remove this eventually.
-function isSlowBuffer$2(obj) {
-  return typeof obj.readFloatLE === 'function' && typeof obj.slice === 'function' && isBuffer$2(obj.slice(0, 0));
+function isSlowBuffer$1(obj) {
+  return typeof obj.readFloatLE === 'function' && typeof obj.slice === 'function' && isBuffer$1(obj.slice(0, 0));
 }
 
 var hasTypedArrays = typeof Float64Array !== "undefined";
@@ -62691,7 +57167,7 @@ b" + i + "*=d\
 }
 
 function arrayDType(data) {
-  if (index$3(data)) {
+  if (isBuffer_1(data)) {
     return "buffer";
   }
   if (hasTypedArrays) {
@@ -62735,7 +57211,8 @@ var CACHED_CONSTRUCTORS = {
   "uint8_clamped": [],
   "buffer": [],
   "generic": []
-};function wrappedNDArrayCtor(data, shape, stride, offset) {
+};
+function wrappedNDArrayCtor(data, shape, stride, offset) {
   if (data === undefined) {
     var ctor = CACHED_CONSTRUCTORS.array[0];
     return ctor([]);
@@ -62771,8 +57248,6 @@ var CACHED_CONSTRUCTORS = {
 }
 
 var ndarray = wrappedNDArrayCtor;
-
-"use strict";
 
 function dtypeToType(dtype) {
   switch (dtype) {
@@ -62932,8 +57407,7 @@ var ComponentMergeImage2DFilter = function (_Filter) {
       if (!validateInputs(inputImages)) {
         console.warn('A filter of type ComponentMergeImage2DFilter requires inputs to be the same dimensions and array type');
         return;
-      }
-      var width = inputImages[0].getMetadata('width');
+      }      var width = inputImages[0].getMetadata('width');
       var height = inputImages[0].getMetadata('height');
       var ncpps = inputImages.map(function (i) {
         return i.getMetadata('ncpp');
@@ -62963,8 +57437,6 @@ var ComponentMergeImage2DFilter = function (_Filter) {
   }]);
   return ComponentMergeImage2DFilter;
 }(Filter);
-
-"use strict";
 
 function unique_pred(list, compare) {
   var ptr = 1,
@@ -63023,8 +57495,6 @@ function unique(list, compare, sorted) {
 }
 
 var uniq = unique;
-
-"use strict";
 
 // This function generates very simple loops analogous to how you typically traverse arrays (the outermost loop corresponds to the slowest changing index, the innermost loop to the fastest changing index)
 // TODO: If two arrays have the same strides (and offsets) there is potential for decreasing the number of "pointers" and related variables. The drawback is that the type signature would become more specific and that there would thus be less potential for caching, but it might still be worth it, especially when dealing with large numbers of arguments.
@@ -63396,8 +57866,6 @@ function generateCWiseOp(proc, typesig) {
 }
 var compile = generateCWiseOp;
 
-"use strict";
-
 // The function below is called when constructing a cwise function object, and does the following:
 // A function object is constructed which accepts as argument a compilation function and returns another function.
 // It is this other function that is eventually returned by createThunk, and this function is the one that actually
@@ -63480,8 +57948,6 @@ function createThunk(proc) {
 }
 
 var thunk = createThunk;
-
-"use strict";
 
 function Procedure() {
   this.argTypes = [];
@@ -63590,7 +58056,6 @@ function compileCwise(user_args) {
 var compiler = compileCwise;
 
 var ndarrayOps = createCommonjsModule(function (module, exports) {
-  "use strict";
 
   var EmptyProc = {
     body: "",
@@ -63997,6 +58462,22 @@ var ndarrayOps = createCommonjsModule(function (module, exports) {
     funcName: "equals"
   });
 });
+var ndarrayOps_1 = ndarrayOps.any;
+var ndarrayOps_2 = ndarrayOps.all;
+var ndarrayOps_3 = ndarrayOps.sum;
+var ndarrayOps_4 = ndarrayOps.prod;
+var ndarrayOps_5 = ndarrayOps.norm2squared;
+var ndarrayOps_6 = ndarrayOps.norm2;
+var ndarrayOps_7 = ndarrayOps.norminf;
+var ndarrayOps_8 = ndarrayOps.norm1;
+var ndarrayOps_9 = ndarrayOps.sup;
+var ndarrayOps_10 = ndarrayOps.inf;
+var ndarrayOps_11 = ndarrayOps.argmin;
+var ndarrayOps_12 = ndarrayOps.argmax;
+var ndarrayOps_13 = ndarrayOps.random;
+var ndarrayOps_14 = ndarrayOps.assign;
+var ndarrayOps_15 = ndarrayOps.assigns;
+var ndarrayOps_16 = ndarrayOps.equals;
 
 /**
  * Bit twiddling hacks for JavaScript.
@@ -64006,8 +58487,6 @@ var ndarrayOps = createCommonjsModule(function (module, exports) {
  * Ported from Stanford bit twiddling hack library:
  *    http://graphics.stanford.edu/~seander/bithacks.html
  */
-
-"use strict";"use restrict";
 
 //Number of bits in an integer
 
@@ -64223,8 +58702,6 @@ var twiddle = {
   nextCombination: nextCombination
 };
 
-"use strict";
-
 function dupe_array(count, value, i) {
   var c = count[i] | 0;
   if (c <= 0) {
@@ -64275,7 +58752,6 @@ function dupe(count, value) {
 var dup = dupe;
 
 var pool = createCommonjsModule(function (module, exports) {
-  'use strict';
 
   //Legacy pool support
 
@@ -64311,7 +58787,7 @@ var pool = createCommonjsModule(function (module, exports) {
       BUFFER = POOL.BUFFER;
 
   exports.free = function free(array) {
-    if (isBuffer$1(array)) {
+    if (isBuffer(array)) {
       BUFFER[twiddle.log2(array.length)].push(array);
     } else {
       if (Object.prototype.toString.call(array) !== '[object ArrayBuffer]') {
@@ -64457,7 +58933,7 @@ var pool = createCommonjsModule(function (module, exports) {
     if (cache.length > 0) {
       return cache.pop();
     }
-    return new Buffer$1(n);
+    return new Buffer(n);
   }
   exports.mallocBuffer = mallocBuffer;
 
@@ -64477,8 +58953,39 @@ var pool = createCommonjsModule(function (module, exports) {
     }
   };
 });
+var pool_1 = pool.free;
+var pool_2 = pool.freeUint8;
+var pool_3 = pool.freeUint16;
+var pool_4 = pool.freeUint32;
+var pool_5 = pool.freeInt8;
+var pool_6 = pool.freeInt16;
+var pool_7 = pool.freeInt32;
+var pool_8 = pool.freeFloat32;
+var pool_9 = pool.freeFloat;
+var pool_10 = pool.freeFloat64;
+var pool_11 = pool.freeDouble;
+var pool_12 = pool.freeUint8Clamped;
+var pool_13 = pool.freeDataView;
+var pool_14 = pool.freeArrayBuffer;
+var pool_15 = pool.freeBuffer;
+var pool_16 = pool.malloc;
+var pool_17 = pool.mallocArrayBuffer;
+var pool_18 = pool.mallocUint8;
+var pool_19 = pool.mallocUint16;
+var pool_20 = pool.mallocUint32;
+var pool_21 = pool.mallocInt8;
+var pool_22 = pool.mallocInt16;
+var pool_23 = pool.mallocInt32;
+var pool_24 = pool.mallocFloat32;
+var pool_25 = pool.mallocFloat;
+var pool_26 = pool.mallocFloat64;
+var pool_27 = pool.mallocDouble;
+var pool_28 = pool.mallocUint8Clamped;
+var pool_29 = pool.mallocDataView;
+var pool_30 = pool.mallocBuffer;
+var pool_31 = pool.clearCache;
 
-function fft$1(dir, nrows, ncols, buffer, x_ptr, y_ptr, scratch_ptr) {
+function fft(dir, nrows, ncols, buffer, x_ptr, y_ptr, scratch_ptr) {
   dir |= 0;
   nrows |= 0;
   ncols |= 0;
@@ -64490,7 +58997,7 @@ function fft$1(dir, nrows, ncols, buffer, x_ptr, y_ptr, scratch_ptr) {
     fftBluestein(dir, nrows, ncols, buffer, x_ptr, y_ptr, scratch_ptr);
   }
 }
-var fftMatrix = fft$1;
+var fftMatrix = fft;
 
 function scratchMemory(n) {
   if (twiddle.isPow2(n)) {
@@ -64508,7 +59015,7 @@ function fftRadix2(dir, nrows, ncols, buffer, x_ptr, y_ptr) {
   x_ptr |= 0;
   y_ptr |= 0;
   var nn, m, i, i1, j, k, i2, l, l1, l2;
-  var c1, c2, t, t1, t2, u1, u2, z, row, a, b, c, d, k1, k2, k3;
+  var c1, c2, t, t1, t2, u1, u2, row, a, b, c, d, k1, k2, k3;
 
   // Calculate the number of points
   nn = ncols;
@@ -64699,10 +59206,7 @@ function fftBluestein(dir, nrows, ncols, buffer, x_ptr, y_ptr, scratch_ptr) {
     y_ptr += ncols;
   }
 }
-
 fftMatrix.scratchMemory = scratchMemory_1;
-
-'use strict';
 
 function ndfft(dir, x, y) {
   var shape = x.shape,
@@ -64780,7 +59284,7 @@ function ndfft(dir, x, y) {
   pool.free(buffer);
 }
 
-var fft = ndfft;
+var fft$1 = ndfft;
 
 /*
  * Author   Armin Taheri - https://github.com/ArminTaheri
@@ -64788,6 +59292,7 @@ var fft = ndfft;
  * Link     https://github.com/Pixpipe/pixpipejs
  * Lab      MCIN - Montreal Neurological Institute
  */
+
 var DIRECTIONS = {
   'FORWARD': 1,
   'INVERSE': -1
@@ -64830,7 +59335,7 @@ var BaseFourierSignalFilter = function (_Filter) {
       var real = ndarray(realSignal.clone().getData(), [length]);
       var img = ndarray(imgSignal.clone().getData(), [length]);
 
-      fft(DIRECTIONS[this.direction], real, img);
+      fft$1(DIRECTIONS[this.direction], real, img);
       this._output[0] = new Signal1D();
       this._output[0].setData(real.data);
       this._output[1] = new Signal1D();
@@ -64919,7 +59424,7 @@ var BaseFourierImageFilter = function (_Filter) {
       var img = ndarray(inputImageimg.getDataAsFloat32Array(), [width, height]);
       this.setMetadata('direction', this.direction);
 
-      fft(DIRECTIONS$1[this.direction], real, img);
+      fft$1(DIRECTIONS$1[this.direction], real, img);
       this._output[0] = new Image2D();
       this._output[0].setData(real.data, width, height, 1);
       this._output[0].setMetadata('ncpp', 1);
@@ -65173,7 +59678,6 @@ var bundle = createCommonjsModule(function (module, exports) {
   (function (global, factory) {
     module.exports = factory();
   })(commonjsGlobal, function () {
-    'use strict';
 
     /*!
      Based on ndef.parser, by Raphael Graf(r@undefined.ch)
@@ -66629,6 +61133,7 @@ var SpatialConvolutionFilter = function (_ImageToImageFilter) {
       var outputData = outputImg.getData();
 
       // filter
+      var filterSize = filter.length;
       var filterHeight = filter.length;
       var filterWidth = filter[0].length;
       var filterHalfWidth = Math.floor(filterWidth / 2);
@@ -67986,7 +62491,6 @@ var delaunay = createCommonjsModule(function (module) {
   var Delaunay;
 
   (function () {
-    "use strict";
 
     var EPSILON = 1.0 / 1048576.0;
 
@@ -68116,15 +62620,13 @@ var delaunay = createCommonjsModule(function (module) {
         if (key) for (i = n; i--;) {
           vertices[i] = vertices[i][key];
         } /* Make an array of indices into the vertex array, sorted by the
-           * vertices' x-position. Force stable sorting by comparing indices if
-           * the x-positions are equal. */
+           * vertices' x-position. */
         indices = new Array(n);
 
         for (i = n; i--;) {
           indices[i] = i;
         }indices.sort(function (i, j) {
-          var diff = vertices[j][0] - vertices[i][0];
-          return diff !== 0 ? diff : i - j;
+          return vertices[j][0] - vertices[i][0];
         });
 
         /* Next, find the vertices of the supertriangle (which contains all other
@@ -68463,7 +62965,6 @@ var simplify = createCommonjsModule(function (module) {
     */
 
     (function () {
-        'use strict';
 
         // to suit your point format, run search/replace for '.x' and '.y';
         // for 3D version, see 3d branch (configurability would draw significant performance overhead)
@@ -68781,119 +63282,6 @@ var PatchImageFilter = function (_ImageToImageFilter) {
   return PatchImageFilter;
 }(ImageToImageFilter); /* END of class PatchImageFilter */
 
-var asyncGenerator$5 = function () {
-  function AwaitValue(value) {
-    this.value = value;
-  }
-
-  function AsyncGenerator(gen) {
-    var front, back;
-
-    function send(key, arg) {
-      return new Promise(function (resolve, reject) {
-        var request = {
-          key: key,
-          arg: arg,
-          resolve: resolve,
-          reject: reject,
-          next: null
-        };
-
-        if (back) {
-          back = back.next = request;
-        } else {
-          front = back = request;
-          resume(key, arg);
-        }
-      });
-    }
-
-    function resume(key, arg) {
-      try {
-        var result = gen[key](arg);
-        var value = result.value;
-
-        if (value instanceof AwaitValue) {
-          Promise.resolve(value.value).then(function (arg) {
-            resume("next", arg);
-          }, function (arg) {
-            resume("throw", arg);
-          });
-        } else {
-          settle(result.done ? "return" : "normal", result.value);
-        }
-      } catch (err) {
-        settle("throw", err);
-      }
-    }
-
-    function settle(type, value) {
-      switch (type) {
-        case "return":
-          front.resolve({
-            value: value,
-            done: true
-          });
-          break;
-
-        case "throw":
-          front.reject(value);
-          break;
-
-        default:
-          front.resolve({
-            value: value,
-            done: false
-          });
-          break;
-      }
-
-      front = front.next;
-
-      if (front) {
-        resume(front.key, front.arg);
-      } else {
-        back = null;
-      }
-    }
-
-    this._invoke = send;
-
-    if (typeof gen.return !== "function") {
-      this.return = undefined;
-    }
-  }
-
-  if (typeof Symbol === "function" && Symbol.asyncIterator) {
-    AsyncGenerator.prototype[Symbol.asyncIterator] = function () {
-      return this;
-    };
-  }
-
-  AsyncGenerator.prototype.next = function (arg) {
-    return this._invoke("next", arg);
-  };
-
-  AsyncGenerator.prototype.throw = function (arg) {
-    return this._invoke("throw", arg);
-  };
-
-  AsyncGenerator.prototype.return = function (arg) {
-    return this._invoke("return", arg);
-  };
-
-  return {
-    wrap: function wrap(fn) {
-      return function () {
-        return new AsyncGenerator(fn.apply(this, arguments));
-      };
-    },
-    await: function _await(value) {
-      return new AwaitValue(value);
-    }
-  };
-}();
-
 var classCallCheck$5 = function classCallCheck(instance, Constructor) {
   if (!(instance instanceof Constructor)) {
     throw new TypeError("Cannot call a class as a function");
@@ -68925,7 +63313,7 @@ var createClass$5 = function () {
 * Lab       MCIN - http://mcin.ca/ - Montreal Neurological Institute
 */
 
-var DifferenceEquationSignal1D$1 = function () {
+var DifferenceEquationSignal1D = function () {
   function DifferenceEquationSignal1D() {
     classCallCheck$5(this, DifferenceEquationSignal1D);
 
@@ -69087,7 +63475,7 @@ var DifferenceEquationSignal1D$1 = function () {
 *
 */
 
-var DifferenceEquationSignal1D$$1 = function (_Filter) {
+var DifferenceEquationSignal1D$1 = function (_Filter) {
   inherits(DifferenceEquationSignal1D$$1, _Filter);
 
   function DifferenceEquationSignal1D$$1() {
@@ -69125,7 +63513,7 @@ var DifferenceEquationSignal1D$$1 = function (_Filter) {
         return;
       }
 
-      var filter = new DifferenceEquationSignal1D$1();
+      var filter = new DifferenceEquationSignal1D();
 
       if (backwardSecondPass) filter.enableBackwardSecondPass();
 
@@ -69403,7 +63791,6 @@ var LowPassFreqSignal1D = function (_Filter) {
 * Lab       MCIN - Montreal Neurological Institute
 */
 
-//import { InverseFourierSignalFilter } from "./InverseFourierSignalFilter.js";
 /**
 *
 */
@@ -69817,7 +64204,6 @@ var Mesh3DToVolumetricHullFilter = function (_Filter) {
 }(Filter); /* END of class Mesh3DToVolumetricHullFilter */
 
 var natninter_cjs = createCommonjsModule(function (module, exports) {
-    'use strict';
 
     Object.defineProperty(exports, '__esModule', { value: true });
 
@@ -72743,11 +67129,10 @@ var natninter_cjs = createCommonjsModule(function (module, exports) {
 var natninter_cjs$1 = unwrapExports(natninter_cjs);
 var natninter_cjs_1 = natninter_cjs.Interpolator;
 
-
-var natninter = Object.freeze({
-	default: natninter_cjs$1,
-	__moduleExports: natninter_cjs,
-	Interpolator: natninter_cjs_1
+var natninter = /*#__PURE__*/Object.freeze({
+  default: natninter_cjs$1,
+  __moduleExports: natninter_cjs,
+  Interpolator: natninter_cjs_1
 });
 
 /*
@@ -74029,6 +68414,8 @@ var Image3DToMosaicFilterAlt = function (_Filter) {
       var outputCounter = 0;
       var sliceCounter = 0;
       var sliceIndexCurrentOutput = 0;
+
+      // for each time sample
       for (var t = startTime; t < endTime; t++) {
         // for each slice
         for (var sliceIndex = 0; sliceIndex < numberOfSlices; sliceIndex++) {
@@ -74070,11 +68457,6 @@ var Image3DToMosaicFilterAlt = function (_Filter) {
   return Image3DToMosaicFilterAlt;
 }(Filter); /* END of class Image3DToMosaicFilterAlt */
 
-'use strict';
-
-// defines the type of array to be used by glMatrix. Default would be Float32Array
-// but typed arrays cause issue when serialized, this is why we'd rather use regular Array.
-
 setMatrixArrayType(Array);
 
 exports.CoreTypes = CoreTypes;
@@ -74108,13 +68490,13 @@ exports.MghDecoder = MghDecoder;
 exports.MghDecoderAlt = MghDecoderAlt;
 exports.EegModDecoder = EegModDecoder;
 exports.PixBinEncoder = PixBinEncoder$1;
-exports.PixBinDecoder = PixBinDecoder$$1;
+exports.PixBinDecoder = PixBinDecoder$1;
 exports.JpegDecoder = JpegDecoder;
 exports.PngDecoder = PngDecoder;
 exports.Image2DGenericDecoder = Image2DGenericDecoder;
 exports.Minc2DecoderAlt = Minc2DecoderAlt;
 exports.MniObjDecoder = MniObjDecoder;
-exports.EdfDecoder = EdfDecoder$$1;
+exports.EdfDecoder = EdfDecoder$1;
 exports.Mesh3DGenericDecoder = Mesh3DGenericDecoder;
 exports.AllFormatsGenericDecoder = AllFormatsGenericDecoder;
 exports.Signal1DGenericDecoder = Signal1DGenericDecoder;
@@ -74144,7 +68526,7 @@ exports.TriangulationSparseInterpolationImageFilter = TriangulationSparseInterpo
 exports.CropImageFilter = CropImageFilter;
 exports.SimplifyLineStringFilter = SimplifyLineStringFilter;
 exports.PatchImageFilter = PatchImageFilter;
-exports.DifferenceEquationSignal1D = DifferenceEquationSignal1D$$1;
+exports.DifferenceEquationSignal1D = DifferenceEquationSignal1D$1;
 exports.LowPassFreqSignal1D = LowPassFreqSignal1D;
 exports.LowPassSignal1D = LowPassSignal1D;
 exports.HighPassSignal1D = HighPassSignal1D;

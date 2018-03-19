@@ -14,10 +14,11 @@ export default [
     input: config.entry,
     output: {
       file: config.moduleBuildDir + '/' + config.moduleName + '.' + config.moduleFormat + '.js',
-      format: config.moduleFormat
+      format: config.moduleFormat,
+      name: config.moduleName,
+      sourcemap: true,
     },
-    name: config.moduleName,
-    sourcemap: true,
+
     plugins: [
       nodeResolve({
         preferBuiltins: false
@@ -36,10 +37,11 @@ export default [
     input: config.entry,
     output: {
       file: config.moduleBuildDir + '/' + config.moduleName + '.js',
+      sourcemap: true,
+      name: config.moduleName,
       format: 'umd'
     },
-    name: config.moduleName,
-    sourcemap: true,
+
     plugins: [
       nodeResolve({
         preferBuiltins: false
