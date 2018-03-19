@@ -1,0 +1,77 @@
+<html>
+<head>
+  <title>Apply Colormap</title>
+
+  <script src="../dist/pixpipe.js"></script>
+
+  <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700,900" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+
+</head>
+<body>
+  <h1><a href="https://github.com/Pixpipe/pixpipejs"><span style="color: #ff91d7">Pixpipe</span><span style="color: #FFFFFF">js</span></a></h1>
+  <p>
+  This does the following :
+  <ul>
+    <li>creating a set of random (sparse) points with random values</li>
+    <li>Interpolate them using <code>pixpipe.NaturalNeighborSparseInterpolationImageFilter</code></li>
+    <li>Running a <code>pixpipe.ApplyColormapFilter</code> on the nni result</li>
+    <li>displaying the output image with a <code>pixpipe.CanvasImageWriter</code></li>
+  </ul>
+
+  </p>
+
+  <div id="myDiv"></div>
+
+  <script>
+
+  var outWidth = 256;
+  var outHeight = 256;
+
+  var naturalSparseF = new pixpipe.NaturalNeighborSparseInterpolationImageFilter()
+
+  naturalSparseF.setMetadata( "outputSize", {width: outWidth, height: outHeight})
+  // create random points, with random values
+
+
+  var seeds = [
+    {x: 32 , y: 32, value: 125},
+    {x: 224 , y: 224, value: 0},
+    {x: 32 , y: 224, value: 0},
+    {x: 224 , y: 32, value: 50},
+
+    {x: 128 , y: 128, value: 255},
+    {x: 110 , y: 230, value: 255},
+    {x: 133 , y: 240, value: 255},
+  ]
+
+
+  naturalSparseF.addInput( seeds , "seeds" );
+  naturalSparseF.update();
+
+  // create an image
+  var bwImage = naturalSparseF.getOutput();
+
+  var applyCm = new pixpipe.ApplyColormapFilter();
+  applyCm.setMetadata("style", "magma");
+  //applyCm.setMetadata("clusters", 20 );
+  //applyCm.setMetadata("flip", true);
+
+  applyCm.setMetadata("min", 100);
+  applyCm.setMetadata("max", 1000);
+
+  applyCm.addInput( bwImage );
+  applyCm.update();
+
+  // create a filter to write the image into a canvas
+  var imageToCanvasFilter = new pixpipe.CanvasImageWriter( );
+  imageToCanvasFilter.setMetadata( "parentDivID", "myDiv" );
+  imageToCanvasFilter.addInput( applyCm.getOutput() );
+  imageToCanvasFilter.update();
+
+
+
+  </script>
+
+</body>
+</html>

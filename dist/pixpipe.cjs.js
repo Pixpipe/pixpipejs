@@ -3863,7 +3863,9 @@ function commonjsRequire () {
 	throw new Error('Dynamic requires are not currently supported by rollup-plugin-commonjs');
 }
 
-
+function unwrapExports (x) {
+	return x && x.__esModule ? x['default'] : x;
+}
 
 function createCommonjsModule(fn, module) {
 	return module = { exports: {} }, fn(module, module.exports), module.exports;
@@ -67818,7 +67820,7 @@ var NearestNeighborSparseInterpolationImageFilter = function (_Filter) {
 */
 
 /**
-* An instance of IDWSparseInterpolationImageFilter performs a 2D interpolation from 
+* An instance of IDWSparseInterpolationImageFilter performs a 2D interpolation from
 * a sparse dataset using the method of Inverse Distance Weighting.
 * The original dataset is specified using the method `.addInput( points )`, where
 * `points` is an `Array` of `{x: Number, y: Number, value: Number}`.
@@ -67830,13 +67832,24 @@ var NearestNeighborSparseInterpolationImageFilter = function (_Filter) {
 * of `1` or `3`. With higher values, the output will look like a cells pattern.
 * The strength can be defined using the method `.setMetadata( "strength", Number )`
 *
+* The metadata "k" specifies the number of closest neighbors seed to consider for each
+* pixel of the output. If larger than the number of seeds, it will be automatically
+* clamped to the number of seeds. Set "k" with `.setMetadata( "k", Number )`
+*
+* To make the interpolation faster when done several times with seed points of
+* the same position but different values, a distance map is built at the begining.
+* The map that is firstly built will be reuse unless the metadata 'forceBuildMap'
+* is set to 'true'. If true, the map will be rebuilt at every run. It can take a
+* while so make sure you rebuild the map only if you need (= seed changed position,
+* output image changed size). Use the method `.setMetadata( "forceBuildMap", Boolean )`
+*
 * Note 1: points can be outside the boundaries of the original image
 * Note 2: interpolated values are floating point
 *
 * Note that only single-component images are outputed from this filter.
 * Ressources:
 * https://www.e-education.psu.edu/geog486/node/1877
-* 
+*
 * **Usage**
 * - [examples/nearestSparseInterpolation.html](../examples/nearestSparseInterpolation.html)
 */
@@ -67850,14 +67863,17 @@ var IDWSparseInterpolationImageFilter = function (_Filter) {
     var _this = possibleConstructorReturn(this, (IDWSparseInterpolationImageFilter.__proto__ || Object.getPrototypeOf(IDWSparseInterpolationImageFilter)).call(this));
 
     _this.setMetadata("strength", 2);
-    _this.setMetadata("outputSize", { width: 0, height: 0 });
+    _this.setMetadata("k", 5);
+    _this.setMetadata("forceBuildMap", false);
+    _this.setMetadata("outputSize", { width: 256, height: 256 });
+
+    _this._map = null;
     return _this;
   }
 
   createClass(IDWSparseInterpolationImageFilter, [{
     key: '_run',
     value: function _run() {
-
       var points = null;
 
       // getting the input
@@ -67876,15 +67892,20 @@ var IDWSparseInterpolationImageFilter = function (_Filter) {
         return;
       }
 
+      // build the distance map
+      if (this.getMetadata("forceBuildMap") || !this._map) {
+        this._buildMap();
+      }
+
       // creating the output image
       var out = new pixpipe.Image2D({ width: outputSize.width, height: outputSize.height, color: [0] });
       var strength = this.getMetadata("strength");
+      var k = Math.min(this.getMetadata("k"), points.length);
+
+      console.time("make");
+      // for each pixel of the image...
       for (var i = 0; i < outputSize.width; i++) {
         for (var j = 0; j < outputSize.height; j++) {
-
-          if (i == 90 && j == 90) {
-            console.log("here");
-          }
 
           var numerator = 0;
           var denominator = 0;
@@ -67893,19 +67914,24 @@ var IDWSparseInterpolationImageFilter = function (_Filter) {
           var pointValue = null;
           var isOnPoint = false;
 
+          var index1D = i + j * outputSize.width;
+          var localMap = this._map[index1D];
+
           // for each point of the original set...
-          for (var p = 0; p < points.length; p++) {
+          for (var p = 0; p < k; p++) {
             // compute euclidian distance from [i, j] to p(x, y)
-            var d = Math.sqrt(Math.pow(points[p].x - i, 2) + Math.pow(points[p].y - j, 2));
+            var d = localMap[p].distance;
+            var index = localMap[p].index;
 
             if (d == 0) {
               isOnPoint = true;
-              pointValue = points[p].value;
+              pointValue = points[index].value;
               break;
             }
 
-            numerator += points[p].value / Math.pow(d, strength);
-            denominator += 1 / Math.pow(d, strength);
+            var w = 1 / Math.pow(d, strength);
+            numerator += points[index].value * w;
+            denominator += w;
           }
 
           var pixelValue = isOnPoint ? pointValue : numerator / denominator;
@@ -67913,8 +67939,44 @@ var IDWSparseInterpolationImageFilter = function (_Filter) {
           out.setPixel({ x: i, y: j }, [pixelValue]);
         }
       }
-
       this._output[0] = out;
+    }
+
+    /**
+    * [PRIVATE]
+    * Build the distance map. The point is to build it once and reuse it multiple times
+    * as long as the position of the seeds and the sixe of the output don't change.
+    */
+
+  }, {
+    key: '_buildMap',
+    value: function _buildMap() {
+      var outputSize = this.getMetadata("outputSize");
+      var points = this._input[0];
+      var k = Math.min(this.getMetadata("k"), points.length);
+
+      this._map = new Array(outputSize.width * outputSize.height);
+
+      // for each pixel of the image
+      for (var i = 0; i < outputSize.width; i++) {
+        for (var j = 0; j < outputSize.height; j++) {
+
+          var index1D = i + j * outputSize.width;
+          var localMap = new Array(p);
+
+          for (var p = 0; p < points.length; p++) {
+            // compute euclidian distance from [i, j] to p(x, y)
+            var d = Math.sqrt(Math.pow(points[p].x - i, 2) + Math.pow(points[p].y - j, 2));
+            localMap[p] = { index: p, distance: d };
+          }
+
+          localMap.sort(function (a, b) {
+            return a.distance < b.distance ? -1 : 1;
+          });
+          localMap = localMap.slice(0, k);
+          this._map[index1D] = localMap;
+        }
+      }
     }
   }]);
   return IDWSparseInterpolationImageFilter;
@@ -69754,6 +69816,3689 @@ var Mesh3DToVolumetricHullFilter = function (_Filter) {
   return Mesh3DToVolumetricHullFilter;
 }(Filter); /* END of class Mesh3DToVolumetricHullFilter */
 
+var natninter_cjs = createCommonjsModule(function (module, exports) {
+    'use strict';
+
+    Object.defineProperty(exports, '__esModule', { value: true });
+
+    function createCommonjsModule$$1(fn, module) {
+        return module = { exports: {} }, fn(module, module.exports), module.exports;
+    }
+
+    var rhillVoronoiCore = createCommonjsModule$$1(function (module) {
+        /*!
+        Copyright (C) 2010-2013 Raymond Hill: https://github.com/gorhill/Javascript-Voronoi
+        MIT License: See https://github.com/gorhill/Javascript-Voronoi/LICENSE.md
+        */
+        /*
+        Author: Raymond Hill (rhill@raymondhill.net)
+        Contributor: Jesse Morgan (morgajel@gmail.com)
+        File: rhill-voronoi-core.js
+        Version: 0.98
+        Date: January 21, 2013
+        Description: This is my personal Javascript implementation of
+        Steven Fortune's algorithm to compute Voronoi diagrams.
+        
+        License: See https://github.com/gorhill/Javascript-Voronoi/LICENSE.md
+        Credits: See https://github.com/gorhill/Javascript-Voronoi/CREDITS.md
+        History: See https://github.com/gorhill/Javascript-Voronoi/CHANGELOG.md
+        
+        ## Usage:
+        
+          var sites = [{x:300,y:300}, {x:100,y:100}, {x:200,y:500}, {x:250,y:450}, {x:600,y:150}];
+          // xl, xr means x left, x right
+          // yt, yb means y top, y bottom
+          var bbox = {xl:0, xr:800, yt:0, yb:600};
+          var voronoi = new Voronoi();
+          // pass an object which exhibits xl, xr, yt, yb properties. The bounding
+          // box will be used to connect unbound edges, and to close open cells
+          result = voronoi.compute(sites, bbox);
+          // render, further analyze, etc.
+        
+        Return value:
+          An object with the following properties:
+        
+          result.vertices = an array of unordered, unique Voronoi.Vertex objects making
+            up the Voronoi diagram.
+          result.edges = an array of unordered, unique Voronoi.Edge objects making up
+            the Voronoi diagram.
+          result.cells = an array of Voronoi.Cell object making up the Voronoi diagram.
+            A Cell object might have an empty array of halfedges, meaning no Voronoi
+            cell could be computed for a particular cell.
+          result.execTime = the time it took to compute the Voronoi diagram, in
+            milliseconds.
+        
+        Voronoi.Vertex object:
+          x: The x position of the vertex.
+          y: The y position of the vertex.
+        
+        Voronoi.Edge object:
+          lSite: the Voronoi site object at the left of this Voronoi.Edge object.
+          rSite: the Voronoi site object at the right of this Voronoi.Edge object (can
+            be null).
+          va: an object with an 'x' and a 'y' property defining the start point
+            (relative to the Voronoi site on the left) of this Voronoi.Edge object.
+          vb: an object with an 'x' and a 'y' property defining the end point
+            (relative to Voronoi site on the left) of this Voronoi.Edge object.
+        
+          For edges which are used to close open cells (using the supplied bounding
+          box), the rSite property will be null.
+        
+        Voronoi.Cell object:
+          site: the Voronoi site object associated with the Voronoi cell.
+          halfedges: an array of Voronoi.Halfedge objects, ordered counterclockwise,
+            defining the polygon for this Voronoi cell.
+        
+        Voronoi.Halfedge object:
+          site: the Voronoi site object owning this Voronoi.Halfedge object.
+          edge: a reference to the unique Voronoi.Edge object underlying this
+            Voronoi.Halfedge object.
+          getStartpoint(): a method returning an object with an 'x' and a 'y' property
+            for the start point of this halfedge. Keep in mind halfedges are always
+            countercockwise.
+          getEndpoint(): a method returning an object with an 'x' and a 'y' property
+            for the end point of this halfedge. Keep in mind halfedges are always
+            countercockwise.
+        
+        TODO: Identify opportunities for performance improvement.
+        
+        TODO: Let the user close the Voronoi cells, do not do it automatically. Not only let
+              him close the cells, but also allow him to close more than once using a different
+              bounding box for the same Voronoi diagram.
+        */
+
+        /*global Math */
+
+        // ---------------------------------------------------------------------------
+
+        function Voronoi() {
+            this.vertices = null;
+            this.edges = null;
+            this.cells = null;
+            this.toRecycle = null;
+            this.beachsectionJunkyard = [];
+            this.circleEventJunkyard = [];
+            this.vertexJunkyard = [];
+            this.edgeJunkyard = [];
+            this.cellJunkyard = [];
+        }
+
+        // ---------------------------------------------------------------------------
+
+        Voronoi.prototype.reset = function () {
+            if (!this.beachline) {
+                this.beachline = new this.RBTree();
+            }
+            // Move leftover beachsections to the beachsection junkyard.
+            if (this.beachline.root) {
+                var beachsection = this.beachline.getFirst(this.beachline.root);
+                while (beachsection) {
+                    this.beachsectionJunkyard.push(beachsection); // mark for reuse
+                    beachsection = beachsection.rbNext;
+                }
+            }
+            this.beachline.root = null;
+            if (!this.circleEvents) {
+                this.circleEvents = new this.RBTree();
+            }
+            this.circleEvents.root = this.firstCircleEvent = null;
+            this.vertices = [];
+            this.edges = [];
+            this.cells = [];
+        };
+
+        Voronoi.prototype.sqrt = Math.sqrt;
+        Voronoi.prototype.abs = Math.abs;
+        Voronoi.prototype.ε = Voronoi.ε = 1e-9;
+        Voronoi.prototype.invε = Voronoi.invε = 1.0 / Voronoi.ε;
+        Voronoi.prototype.equalWithEpsilon = function (a, b) {
+            return this.abs(a - b) < 1e-9;
+        };
+        Voronoi.prototype.greaterThanWithEpsilon = function (a, b) {
+            return a - b > 1e-9;
+        };
+        Voronoi.prototype.greaterThanOrEqualWithEpsilon = function (a, b) {
+            return b - a < 1e-9;
+        };
+        Voronoi.prototype.lessThanWithEpsilon = function (a, b) {
+            return b - a > 1e-9;
+        };
+        Voronoi.prototype.lessThanOrEqualWithEpsilon = function (a, b) {
+            return a - b < 1e-9;
+        };
+
+        // ---------------------------------------------------------------------------
+        // Red-Black tree code (based on C version of "rbtree" by Franck Bui-Huu
+        // https://github.com/fbuihuu/libtree/blob/master/rb.c
+
+        Voronoi.prototype.RBTree = function () {
+            this.root = null;
+        };
+
+        Voronoi.prototype.RBTree.prototype.rbInsertSuccessor = function (node, successor) {
+            var parent;
+            if (node) {
+                // >>> rhill 2011-05-27: Performance: cache previous/next nodes
+                successor.rbPrevious = node;
+                successor.rbNext = node.rbNext;
+                if (node.rbNext) {
+                    node.rbNext.rbPrevious = successor;
+                }
+                node.rbNext = successor;
+                // <<<
+                if (node.rbRight) {
+                    // in-place expansion of node.rbRight.getFirst();
+                    node = node.rbRight;
+                    while (node.rbLeft) {
+                        node = node.rbLeft;
+                    }
+                    node.rbLeft = successor;
+                } else {
+                    node.rbRight = successor;
+                }
+                parent = node;
+            }
+            // rhill 2011-06-07: if node is null, successor must be inserted
+            // to the left-most part of the tree
+            else if (this.root) {
+                    node = this.getFirst(this.root);
+                    // >>> Performance: cache previous/next nodes
+                    successor.rbPrevious = null;
+                    successor.rbNext = node;
+                    node.rbPrevious = successor;
+                    // <<<
+                    node.rbLeft = successor;
+                    parent = node;
+                } else {
+                    // >>> Performance: cache previous/next nodes
+                    successor.rbPrevious = successor.rbNext = null;
+                    // <<<
+                    this.root = successor;
+                    parent = null;
+                }
+            successor.rbLeft = successor.rbRight = null;
+            successor.rbParent = parent;
+            successor.rbRed = true;
+            // Fixup the modified tree by recoloring nodes and performing
+            // rotations (2 at most) hence the red-black tree properties are
+            // preserved.
+            var grandpa, uncle;
+            node = successor;
+            while (parent && parent.rbRed) {
+                grandpa = parent.rbParent;
+                if (parent === grandpa.rbLeft) {
+                    uncle = grandpa.rbRight;
+                    if (uncle && uncle.rbRed) {
+                        parent.rbRed = uncle.rbRed = false;
+                        grandpa.rbRed = true;
+                        node = grandpa;
+                    } else {
+                        if (node === parent.rbRight) {
+                            this.rbRotateLeft(parent);
+                            node = parent;
+                            parent = node.rbParent;
+                        }
+                        parent.rbRed = false;
+                        grandpa.rbRed = true;
+                        this.rbRotateRight(grandpa);
+                    }
+                } else {
+                    uncle = grandpa.rbLeft;
+                    if (uncle && uncle.rbRed) {
+                        parent.rbRed = uncle.rbRed = false;
+                        grandpa.rbRed = true;
+                        node = grandpa;
+                    } else {
+                        if (node === parent.rbLeft) {
+                            this.rbRotateRight(parent);
+                            node = parent;
+                            parent = node.rbParent;
+                        }
+                        parent.rbRed = false;
+                        grandpa.rbRed = true;
+                        this.rbRotateLeft(grandpa);
+                    }
+                }
+                parent = node.rbParent;
+            }
+            this.root.rbRed = false;
+        };
+
+        Voronoi.prototype.RBTree.prototype.rbRemoveNode = function (node) {
+            // >>> rhill 2011-05-27: Performance: cache previous/next nodes
+            if (node.rbNext) {
+                node.rbNext.rbPrevious = node.rbPrevious;
+            }
+            if (node.rbPrevious) {
+                node.rbPrevious.rbNext = node.rbNext;
+            }
+            node.rbNext = node.rbPrevious = null;
+            // <<<
+            var parent = node.rbParent,
+                left = node.rbLeft,
+                right = node.rbRight,
+                next;
+            if (!left) {
+                next = right;
+            } else if (!right) {
+                next = left;
+            } else {
+                next = this.getFirst(right);
+            }
+            if (parent) {
+                if (parent.rbLeft === node) {
+                    parent.rbLeft = next;
+                } else {
+                    parent.rbRight = next;
+                }
+            } else {
+                this.root = next;
+            }
+            // enforce red-black rules
+            var isRed;
+            if (left && right) {
+                isRed = next.rbRed;
+                next.rbRed = node.rbRed;
+                next.rbLeft = left;
+                left.rbParent = next;
+                if (next !== right) {
+                    parent = next.rbParent;
+                    next.rbParent = node.rbParent;
+                    node = next.rbRight;
+                    parent.rbLeft = node;
+                    next.rbRight = right;
+                    right.rbParent = next;
+                } else {
+                    next.rbParent = parent;
+                    parent = next;
+                    node = next.rbRight;
+                }
+            } else {
+                isRed = node.rbRed;
+                node = next;
+            }
+            // 'node' is now the sole successor's child and 'parent' its
+            // new parent (since the successor can have been moved)
+            if (node) {
+                node.rbParent = parent;
+            }
+            // the 'easy' cases
+            if (isRed) {
+                return;
+            }
+            if (node && node.rbRed) {
+                node.rbRed = false;
+                return;
+            }
+            // the other cases
+            var sibling;
+            do {
+                if (node === this.root) {
+                    break;
+                }
+                if (node === parent.rbLeft) {
+                    sibling = parent.rbRight;
+                    if (sibling.rbRed) {
+                        sibling.rbRed = false;
+                        parent.rbRed = true;
+                        this.rbRotateLeft(parent);
+                        sibling = parent.rbRight;
+                    }
+                    if (sibling.rbLeft && sibling.rbLeft.rbRed || sibling.rbRight && sibling.rbRight.rbRed) {
+                        if (!sibling.rbRight || !sibling.rbRight.rbRed) {
+                            sibling.rbLeft.rbRed = false;
+                            sibling.rbRed = true;
+                            this.rbRotateRight(sibling);
+                            sibling = parent.rbRight;
+                        }
+                        sibling.rbRed = parent.rbRed;
+                        parent.rbRed = sibling.rbRight.rbRed = false;
+                        this.rbRotateLeft(parent);
+                        node = this.root;
+                        break;
+                    }
+                } else {
+                    sibling = parent.rbLeft;
+                    if (sibling.rbRed) {
+                        sibling.rbRed = false;
+                        parent.rbRed = true;
+                        this.rbRotateRight(parent);
+                        sibling = parent.rbLeft;
+                    }
+                    if (sibling.rbLeft && sibling.rbLeft.rbRed || sibling.rbRight && sibling.rbRight.rbRed) {
+                        if (!sibling.rbLeft || !sibling.rbLeft.rbRed) {
+                            sibling.rbRight.rbRed = false;
+                            sibling.rbRed = true;
+                            this.rbRotateLeft(sibling);
+                            sibling = parent.rbLeft;
+                        }
+                        sibling.rbRed = parent.rbRed;
+                        parent.rbRed = sibling.rbLeft.rbRed = false;
+                        this.rbRotateRight(parent);
+                        node = this.root;
+                        break;
+                    }
+                }
+                sibling.rbRed = true;
+                node = parent;
+                parent = parent.rbParent;
+            } while (!node.rbRed);
+            if (node) {
+                node.rbRed = false;
+            }
+        };
+
+        Voronoi.prototype.RBTree.prototype.rbRotateLeft = function (node) {
+            var p = node,
+                q = node.rbRight,
+                // can't be null
+            parent = p.rbParent;
+            if (parent) {
+                if (parent.rbLeft === p) {
+                    parent.rbLeft = q;
+                } else {
+                    parent.rbRight = q;
+                }
+            } else {
+                this.root = q;
+            }
+            q.rbParent = parent;
+            p.rbParent = q;
+            p.rbRight = q.rbLeft;
+            if (p.rbRight) {
+                p.rbRight.rbParent = p;
+            }
+            q.rbLeft = p;
+        };
+
+        Voronoi.prototype.RBTree.prototype.rbRotateRight = function (node) {
+            var p = node,
+                q = node.rbLeft,
+                // can't be null
+            parent = p.rbParent;
+            if (parent) {
+                if (parent.rbLeft === p) {
+                    parent.rbLeft = q;
+                } else {
+                    parent.rbRight = q;
+                }
+            } else {
+                this.root = q;
+            }
+            q.rbParent = parent;
+            p.rbParent = q;
+            p.rbLeft = q.rbRight;
+            if (p.rbLeft) {
+                p.rbLeft.rbParent = p;
+            }
+            q.rbRight = p;
+        };
+
+        Voronoi.prototype.RBTree.prototype.getFirst = function (node) {
+            while (node.rbLeft) {
+                node = node.rbLeft;
+            }
+            return node;
+        };
+
+        Voronoi.prototype.RBTree.prototype.getLast = function (node) {
+            while (node.rbRight) {
+                node = node.rbRight;
+            }
+            return node;
+        };
+
+        // ---------------------------------------------------------------------------
+        // Diagram methods
+
+        Voronoi.prototype.Diagram = function (site) {
+            this.site = site;
+        };
+
+        // ---------------------------------------------------------------------------
+        // Cell methods
+
+        Voronoi.prototype.Cell = function (site) {
+            this.site = site;
+            this.halfedges = [];
+            this.closeMe = false;
+        };
+
+        Voronoi.prototype.Cell.prototype.init = function (site) {
+            this.site = site;
+            this.halfedges = [];
+            this.closeMe = false;
+            return this;
+        };
+
+        Voronoi.prototype.createCell = function (site) {
+            var cell = this.cellJunkyard.pop();
+            if (cell) {
+                return cell.init(site);
+            }
+            return new this.Cell(site);
+        };
+
+        Voronoi.prototype.Cell.prototype.prepareHalfedges = function () {
+            var halfedges = this.halfedges,
+                iHalfedge = halfedges.length,
+                edge;
+            // get rid of unused halfedges
+            // rhill 2011-05-27: Keep it simple, no point here in trying
+            // to be fancy: dangling edges are a typically a minority.
+            while (iHalfedge--) {
+                edge = halfedges[iHalfedge].edge;
+                if (!edge.vb || !edge.va) {
+                    halfedges.splice(iHalfedge, 1);
+                }
+            }
+
+            // rhill 2011-05-26: I tried to use a binary search at insertion
+            // time to keep the array sorted on-the-fly (in Cell.addHalfedge()).
+            // There was no real benefits in doing so, performance on
+            // Firefox 3.6 was improved marginally, while performance on
+            // Opera 11 was penalized marginally.
+            halfedges.sort(function (a, b) {
+                return b.angle - a.angle;
+            });
+            return halfedges.length;
+        };
+
+        // Return a list of the neighbor Ids
+        Voronoi.prototype.Cell.prototype.getNeighborIds = function () {
+            var neighbors = [],
+                iHalfedge = this.halfedges.length,
+                edge;
+            while (iHalfedge--) {
+                edge = this.halfedges[iHalfedge].edge;
+                if (edge.lSite !== null && edge.lSite.voronoiId != this.site.voronoiId) {
+                    neighbors.push(edge.lSite.voronoiId);
+                } else if (edge.rSite !== null && edge.rSite.voronoiId != this.site.voronoiId) {
+                    neighbors.push(edge.rSite.voronoiId);
+                }
+            }
+            return neighbors;
+        };
+
+        // Compute bounding box
+        //
+        Voronoi.prototype.Cell.prototype.getBbox = function () {
+            var halfedges = this.halfedges,
+                iHalfedge = halfedges.length,
+                xmin = Infinity,
+                ymin = Infinity,
+                xmax = -Infinity,
+                ymax = -Infinity,
+                v,
+                vx,
+                vy;
+            while (iHalfedge--) {
+                v = halfedges[iHalfedge].getStartpoint();
+                vx = v.x;
+                vy = v.y;
+                if (vx < xmin) {
+                    xmin = vx;
+                }
+                if (vy < ymin) {
+                    ymin = vy;
+                }
+                if (vx > xmax) {
+                    xmax = vx;
+                }
+                if (vy > ymax) {
+                    ymax = vy;
+                }
+                // we dont need to take into account end point,
+                // since each end point matches a start point
+            }
+            return {
+                x: xmin,
+                y: ymin,
+                width: xmax - xmin,
+                height: ymax - ymin
+            };
+        };
+
+        // Return whether a point is inside, on, or outside the cell:
+        //   -1: point is outside the perimeter of the cell
+        //    0: point is on the perimeter of the cell
+        //    1: point is inside the perimeter of the cell
+        //
+        Voronoi.prototype.Cell.prototype.pointIntersection = function (x, y) {
+            // Check if point in polygon. Since all polygons of a Voronoi
+            // diagram are convex, then:
+            // http://paulbourke.net/geometry/polygonmesh/
+            // Solution 3 (2D):
+            //   "If the polygon is convex then one can consider the polygon
+            //   "as a 'path' from the first vertex. A point is on the interior
+            //   "of this polygons if it is always on the same side of all the
+            //   "line segments making up the path. ...
+            //   "(y - y0) (x1 - x0) - (x - x0) (y1 - y0)
+            //   "if it is less than 0 then P is to the right of the line segment,
+            //   "if greater than 0 it is to the left, if equal to 0 then it lies
+            //   "on the line segment"
+            var halfedges = this.halfedges,
+                iHalfedge = halfedges.length,
+                halfedge,
+                p0,
+                p1,
+                r;
+            while (iHalfedge--) {
+                halfedge = halfedges[iHalfedge];
+                p0 = halfedge.getStartpoint();
+                p1 = halfedge.getEndpoint();
+                r = (y - p0.y) * (p1.x - p0.x) - (x - p0.x) * (p1.y - p0.y);
+                if (!r) {
+                    return 0;
+                }
+                if (r > 0) {
+                    return -1;
+                }
+            }
+            return 1;
+        };
+
+        // ---------------------------------------------------------------------------
+        // Edge methods
+        //
+
+        Voronoi.prototype.Vertex = function (x, y) {
+            this.x = x;
+            this.y = y;
+        };
+
+        Voronoi.prototype.Edge = function (lSite, rSite) {
+            this.lSite = lSite;
+            this.rSite = rSite;
+            this.va = this.vb = null;
+        };
+
+        Voronoi.prototype.Halfedge = function (edge, lSite, rSite) {
+            this.site = lSite;
+            this.edge = edge;
+            // 'angle' is a value to be used for properly sorting the
+            // halfsegments counterclockwise. By convention, we will
+            // use the angle of the line defined by the 'site to the left'
+            // to the 'site to the right'.
+            // However, border edges have no 'site to the right': thus we
+            // use the angle of line perpendicular to the halfsegment (the
+            // edge should have both end points defined in such case.)
+            if (rSite) {
+                this.angle = Math.atan2(rSite.y - lSite.y, rSite.x - lSite.x);
+            } else {
+                var va = edge.va,
+                    vb = edge.vb;
+                // rhill 2011-05-31: used to call getStartpoint()/getEndpoint(),
+                // but for performance purpose, these are expanded in place here.
+                this.angle = edge.lSite === lSite ? Math.atan2(vb.x - va.x, va.y - vb.y) : Math.atan2(va.x - vb.x, vb.y - va.y);
+            }
+        };
+
+        Voronoi.prototype.createHalfedge = function (edge, lSite, rSite) {
+            return new this.Halfedge(edge, lSite, rSite);
+        };
+
+        Voronoi.prototype.Halfedge.prototype.getStartpoint = function () {
+            return this.edge.lSite === this.site ? this.edge.va : this.edge.vb;
+        };
+
+        Voronoi.prototype.Halfedge.prototype.getEndpoint = function () {
+            return this.edge.lSite === this.site ? this.edge.vb : this.edge.va;
+        };
+
+        // this create and add a vertex to the internal collection
+
+        Voronoi.prototype.createVertex = function (x, y) {
+            var v = this.vertexJunkyard.pop();
+            if (!v) {
+                v = new this.Vertex(x, y);
+            } else {
+                v.x = x;
+                v.y = y;
+            }
+            this.vertices.push(v);
+            return v;
+        };
+
+        // this create and add an edge to internal collection, and also create
+        // two halfedges which are added to each site's counterclockwise array
+        // of halfedges.
+
+        Voronoi.prototype.createEdge = function (lSite, rSite, va, vb) {
+            var edge = this.edgeJunkyard.pop();
+            if (!edge) {
+                edge = new this.Edge(lSite, rSite);
+            } else {
+                edge.lSite = lSite;
+                edge.rSite = rSite;
+                edge.va = edge.vb = null;
+            }
+
+            this.edges.push(edge);
+            if (va) {
+                this.setEdgeStartpoint(edge, lSite, rSite, va);
+            }
+            if (vb) {
+                this.setEdgeEndpoint(edge, lSite, rSite, vb);
+            }
+            this.cells[lSite.voronoiId].halfedges.push(this.createHalfedge(edge, lSite, rSite));
+            this.cells[rSite.voronoiId].halfedges.push(this.createHalfedge(edge, rSite, lSite));
+            return edge;
+        };
+
+        Voronoi.prototype.createBorderEdge = function (lSite, va, vb) {
+            var edge = this.edgeJunkyard.pop();
+            if (!edge) {
+                edge = new this.Edge(lSite, null);
+            } else {
+                edge.lSite = lSite;
+                edge.rSite = null;
+            }
+            edge.va = va;
+            edge.vb = vb;
+            this.edges.push(edge);
+            return edge;
+        };
+
+        Voronoi.prototype.setEdgeStartpoint = function (edge, lSite, rSite, vertex) {
+            if (!edge.va && !edge.vb) {
+                edge.va = vertex;
+                edge.lSite = lSite;
+                edge.rSite = rSite;
+            } else if (edge.lSite === rSite) {
+                edge.vb = vertex;
+            } else {
+                edge.va = vertex;
+            }
+        };
+
+        Voronoi.prototype.setEdgeEndpoint = function (edge, lSite, rSite, vertex) {
+            this.setEdgeStartpoint(edge, rSite, lSite, vertex);
+        };
+
+        // ---------------------------------------------------------------------------
+        // Beachline methods
+
+        // rhill 2011-06-07: For some reasons, performance suffers significantly
+        // when instanciating a literal object instead of an empty ctor
+        Voronoi.prototype.Beachsection = function () {};
+
+        // rhill 2011-06-02: A lot of Beachsection instanciations
+        // occur during the computation of the Voronoi diagram,
+        // somewhere between the number of sites and twice the
+        // number of sites, while the number of Beachsections on the
+        // beachline at any given time is comparatively low. For this
+        // reason, we reuse already created Beachsections, in order
+        // to avoid new memory allocation. This resulted in a measurable
+        // performance gain.
+
+        Voronoi.prototype.createBeachsection = function (site) {
+            var beachsection = this.beachsectionJunkyard.pop();
+            if (!beachsection) {
+                beachsection = new this.Beachsection();
+            }
+            beachsection.site = site;
+            return beachsection;
+        };
+
+        // calculate the left break point of a particular beach section,
+        // given a particular sweep line
+        Voronoi.prototype.leftBreakPoint = function (arc, directrix) {
+            // http://en.wikipedia.org/wiki/Parabola
+            // http://en.wikipedia.org/wiki/Quadratic_equation
+            // h1 = x1,
+            // k1 = (y1+directrix)/2,
+            // h2 = x2,
+            // k2 = (y2+directrix)/2,
+            // p1 = k1-directrix,
+            // a1 = 1/(4*p1),
+            // b1 = -h1/(2*p1),
+            // c1 = h1*h1/(4*p1)+k1,
+            // p2 = k2-directrix,
+            // a2 = 1/(4*p2),
+            // b2 = -h2/(2*p2),
+            // c2 = h2*h2/(4*p2)+k2,
+            // x = (-(b2-b1) + Math.sqrt((b2-b1)*(b2-b1) - 4*(a2-a1)*(c2-c1))) / (2*(a2-a1))
+            // When x1 become the x-origin:
+            // h1 = 0,
+            // k1 = (y1+directrix)/2,
+            // h2 = x2-x1,
+            // k2 = (y2+directrix)/2,
+            // p1 = k1-directrix,
+            // a1 = 1/(4*p1),
+            // b1 = 0,
+            // c1 = k1,
+            // p2 = k2-directrix,
+            // a2 = 1/(4*p2),
+            // b2 = -h2/(2*p2),
+            // c2 = h2*h2/(4*p2)+k2,
+            // x = (-b2 + Math.sqrt(b2*b2 - 4*(a2-a1)*(c2-k1))) / (2*(a2-a1)) + x1
+
+            // change code below at your own risk: care has been taken to
+            // reduce errors due to computers' finite arithmetic precision.
+            // Maybe can still be improved, will see if any more of this
+            // kind of errors pop up again.
+            var site = arc.site,
+                rfocx = site.x,
+                rfocy = site.y,
+                pby2 = rfocy - directrix;
+            // parabola in degenerate case where focus is on directrix
+            if (!pby2) {
+                return rfocx;
+            }
+            var lArc = arc.rbPrevious;
+            if (!lArc) {
+                return -Infinity;
+            }
+            site = lArc.site;
+            var lfocx = site.x,
+                lfocy = site.y,
+                plby2 = lfocy - directrix;
+            // parabola in degenerate case where focus is on directrix
+            if (!plby2) {
+                return lfocx;
+            }
+            var hl = lfocx - rfocx,
+                aby2 = 1 / pby2 - 1 / plby2,
+                b = hl / plby2;
+            if (aby2) {
+                return (-b + this.sqrt(b * b - 2 * aby2 * (hl * hl / (-2 * plby2) - lfocy + plby2 / 2 + rfocy - pby2 / 2))) / aby2 + rfocx;
+            }
+            // both parabolas have same distance to directrix, thus break point is midway
+            return (rfocx + lfocx) / 2;
+        };
+
+        // calculate the right break point of a particular beach section,
+        // given a particular directrix
+        Voronoi.prototype.rightBreakPoint = function (arc, directrix) {
+            var rArc = arc.rbNext;
+            if (rArc) {
+                return this.leftBreakPoint(rArc, directrix);
+            }
+            var site = arc.site;
+            return site.y === directrix ? site.x : Infinity;
+        };
+
+        Voronoi.prototype.detachBeachsection = function (beachsection) {
+            this.detachCircleEvent(beachsection); // detach potentially attached circle event
+            this.beachline.rbRemoveNode(beachsection); // remove from RB-tree
+            this.beachsectionJunkyard.push(beachsection); // mark for reuse
+        };
+
+        Voronoi.prototype.removeBeachsection = function (beachsection) {
+            var circle = beachsection.circleEvent,
+                x = circle.x,
+                y = circle.ycenter,
+                vertex = this.createVertex(x, y),
+                previous = beachsection.rbPrevious,
+                next = beachsection.rbNext,
+                disappearingTransitions = [beachsection],
+                abs_fn = Math.abs;
+
+            // remove collapsed beachsection from beachline
+            this.detachBeachsection(beachsection);
+
+            // there could be more than one empty arc at the deletion point, this
+            // happens when more than two edges are linked by the same vertex,
+            // so we will collect all those edges by looking up both sides of
+            // the deletion point.
+            // by the way, there is *always* a predecessor/successor to any collapsed
+            // beach section, it's just impossible to have a collapsing first/last
+            // beach sections on the beachline, since they obviously are unconstrained
+            // on their left/right side.
+
+            // look left
+            var lArc = previous;
+            while (lArc.circleEvent && abs_fn(x - lArc.circleEvent.x) < 1e-9 && abs_fn(y - lArc.circleEvent.ycenter) < 1e-9) {
+                previous = lArc.rbPrevious;
+                disappearingTransitions.unshift(lArc);
+                this.detachBeachsection(lArc); // mark for reuse
+                lArc = previous;
+            }
+            // even though it is not disappearing, I will also add the beach section
+            // immediately to the left of the left-most collapsed beach section, for
+            // convenience, since we need to refer to it later as this beach section
+            // is the 'left' site of an edge for which a start point is set.
+            disappearingTransitions.unshift(lArc);
+            this.detachCircleEvent(lArc);
+
+            // look right
+            var rArc = next;
+            while (rArc.circleEvent && abs_fn(x - rArc.circleEvent.x) < 1e-9 && abs_fn(y - rArc.circleEvent.ycenter) < 1e-9) {
+                next = rArc.rbNext;
+                disappearingTransitions.push(rArc);
+                this.detachBeachsection(rArc); // mark for reuse
+                rArc = next;
+            }
+            // we also have to add the beach section immediately to the right of the
+            // right-most collapsed beach section, since there is also a disappearing
+            // transition representing an edge's start point on its left.
+            disappearingTransitions.push(rArc);
+            this.detachCircleEvent(rArc);
+
+            // walk through all the disappearing transitions between beach sections and
+            // set the start point of their (implied) edge.
+            var nArcs = disappearingTransitions.length,
+                iArc;
+            for (iArc = 1; iArc < nArcs; iArc++) {
+                rArc = disappearingTransitions[iArc];
+                lArc = disappearingTransitions[iArc - 1];
+                this.setEdgeStartpoint(rArc.edge, lArc.site, rArc.site, vertex);
+            }
+
+            // create a new edge as we have now a new transition between
+            // two beach sections which were previously not adjacent.
+            // since this edge appears as a new vertex is defined, the vertex
+            // actually define an end point of the edge (relative to the site
+            // on the left)
+            lArc = disappearingTransitions[0];
+            rArc = disappearingTransitions[nArcs - 1];
+            rArc.edge = this.createEdge(lArc.site, rArc.site, undefined, vertex);
+
+            // create circle events if any for beach sections left in the beachline
+            // adjacent to collapsed sections
+            this.attachCircleEvent(lArc);
+            this.attachCircleEvent(rArc);
+        };
+
+        Voronoi.prototype.addBeachsection = function (site) {
+            var x = site.x,
+                directrix = site.y;
+
+            // find the left and right beach sections which will surround the newly
+            // created beach section.
+            // rhill 2011-06-01: This loop is one of the most often executed,
+            // hence we expand in-place the comparison-against-epsilon calls.
+            var lArc,
+                rArc,
+                dxl,
+                dxr,
+                node = this.beachline.root;
+
+            while (node) {
+                dxl = this.leftBreakPoint(node, directrix) - x;
+                // x lessThanWithEpsilon xl => falls somewhere before the left edge of the beachsection
+                if (dxl > 1e-9) {
+                    // this case should never happen
+                    // if (!node.rbLeft) {
+                    //    rArc = node.rbLeft;
+                    //    break;
+                    //    }
+                    node = node.rbLeft;
+                } else {
+                    dxr = x - this.rightBreakPoint(node, directrix);
+                    // x greaterThanWithEpsilon xr => falls somewhere after the right edge of the beachsection
+                    if (dxr > 1e-9) {
+                        if (!node.rbRight) {
+                            lArc = node;
+                            break;
+                        }
+                        node = node.rbRight;
+                    } else {
+                        // x equalWithEpsilon xl => falls exactly on the left edge of the beachsection
+                        if (dxl > -1e-9) {
+                            lArc = node.rbPrevious;
+                            rArc = node;
+                        }
+                        // x equalWithEpsilon xr => falls exactly on the right edge of the beachsection
+                        else if (dxr > -1e-9) {
+                                lArc = node;
+                                rArc = node.rbNext;
+                            }
+                            // falls exactly somewhere in the middle of the beachsection
+                            else {
+                                    lArc = rArc = node;
+                                }
+                        break;
+                    }
+                }
+            }
+            // at this point, keep in mind that lArc and/or rArc could be
+            // undefined or null.
+
+            // create a new beach section object for the site and add it to RB-tree
+            var newArc = this.createBeachsection(site);
+            this.beachline.rbInsertSuccessor(lArc, newArc);
+
+            // cases:
+            //
+
+            // [null,null]
+            // least likely case: new beach section is the first beach section on the
+            // beachline.
+            // This case means:
+            //   no new transition appears
+            //   no collapsing beach section
+            //   new beachsection become root of the RB-tree
+            if (!lArc && !rArc) {
+                return;
+            }
+
+            // [lArc,rArc] where lArc == rArc
+            // most likely case: new beach section split an existing beach
+            // section.
+            // This case means:
+            //   one new transition appears
+            //   the left and right beach section might be collapsing as a result
+            //   two new nodes added to the RB-tree
+            if (lArc === rArc) {
+                // invalidate circle event of split beach section
+                this.detachCircleEvent(lArc);
+
+                // split the beach section into two separate beach sections
+                rArc = this.createBeachsection(lArc.site);
+                this.beachline.rbInsertSuccessor(newArc, rArc);
+
+                // since we have a new transition between two beach sections,
+                // a new edge is born
+                newArc.edge = rArc.edge = this.createEdge(lArc.site, newArc.site);
+
+                // check whether the left and right beach sections are collapsing
+                // and if so create circle events, to be notified when the point of
+                // collapse is reached.
+                this.attachCircleEvent(lArc);
+                this.attachCircleEvent(rArc);
+                return;
+            }
+
+            // [lArc,null]
+            // even less likely case: new beach section is the *last* beach section
+            // on the beachline -- this can happen *only* if *all* the previous beach
+            // sections currently on the beachline share the same y value as
+            // the new beach section.
+            // This case means:
+            //   one new transition appears
+            //   no collapsing beach section as a result
+            //   new beach section become right-most node of the RB-tree
+            if (lArc && !rArc) {
+                newArc.edge = this.createEdge(lArc.site, newArc.site);
+                return;
+            }
+
+            // [null,rArc]
+            // impossible case: because sites are strictly processed from top to bottom,
+            // and left to right, which guarantees that there will always be a beach section
+            // on the left -- except of course when there are no beach section at all on
+            // the beach line, which case was handled above.
+            // rhill 2011-06-02: No point testing in non-debug version
+            //if (!lArc && rArc) {
+            //    throw "Voronoi.addBeachsection(): What is this I don't even";
+            //    }
+
+            // [lArc,rArc] where lArc != rArc
+            // somewhat less likely case: new beach section falls *exactly* in between two
+            // existing beach sections
+            // This case means:
+            //   one transition disappears
+            //   two new transitions appear
+            //   the left and right beach section might be collapsing as a result
+            //   only one new node added to the RB-tree
+            if (lArc !== rArc) {
+                // invalidate circle events of left and right sites
+                this.detachCircleEvent(lArc);
+                this.detachCircleEvent(rArc);
+
+                // an existing transition disappears, meaning a vertex is defined at
+                // the disappearance point.
+                // since the disappearance is caused by the new beachsection, the
+                // vertex is at the center of the circumscribed circle of the left,
+                // new and right beachsections.
+                // http://mathforum.org/library/drmath/view/55002.html
+                // Except that I bring the origin at A to simplify
+                // calculation
+                var lSite = lArc.site,
+                    ax = lSite.x,
+                    ay = lSite.y,
+                    bx = site.x - ax,
+                    by = site.y - ay,
+                    rSite = rArc.site,
+                    cx = rSite.x - ax,
+                    cy = rSite.y - ay,
+                    d = 2 * (bx * cy - by * cx),
+                    hb = bx * bx + by * by,
+                    hc = cx * cx + cy * cy,
+                    vertex = this.createVertex((cy * hb - by * hc) / d + ax, (bx * hc - cx * hb) / d + ay);
+
+                // one transition disappear
+                this.setEdgeStartpoint(rArc.edge, lSite, rSite, vertex);
+
+                // two new transitions appear at the new vertex location
+                newArc.edge = this.createEdge(lSite, site, undefined, vertex);
+                rArc.edge = this.createEdge(site, rSite, undefined, vertex);
+
+                // check whether the left and right beach sections are collapsing
+                // and if so create circle events, to handle the point of collapse.
+                this.attachCircleEvent(lArc);
+                this.attachCircleEvent(rArc);
+                return;
+            }
+        };
+
+        // ---------------------------------------------------------------------------
+        // Circle event methods
+
+        // rhill 2011-06-07: For some reasons, performance suffers significantly
+        // when instanciating a literal object instead of an empty ctor
+        Voronoi.prototype.CircleEvent = function () {
+            // rhill 2013-10-12: it helps to state exactly what we are at ctor time.
+            this.arc = null;
+            this.rbLeft = null;
+            this.rbNext = null;
+            this.rbParent = null;
+            this.rbPrevious = null;
+            this.rbRed = false;
+            this.rbRight = null;
+            this.site = null;
+            this.x = this.y = this.ycenter = 0;
+        };
+
+        Voronoi.prototype.attachCircleEvent = function (arc) {
+            var lArc = arc.rbPrevious,
+                rArc = arc.rbNext;
+            if (!lArc || !rArc) {
+                return;
+            } // does that ever happen?
+            var lSite = lArc.site,
+                cSite = arc.site,
+                rSite = rArc.site;
+
+            // If site of left beachsection is same as site of
+            // right beachsection, there can't be convergence
+            if (lSite === rSite) {
+                return;
+            }
+
+            // Find the circumscribed circle for the three sites associated
+            // with the beachsection triplet.
+            // rhill 2011-05-26: It is more efficient to calculate in-place
+            // rather than getting the resulting circumscribed circle from an
+            // object returned by calling Voronoi.circumcircle()
+            // http://mathforum.org/library/drmath/view/55002.html
+            // Except that I bring the origin at cSite to simplify calculations.
+            // The bottom-most part of the circumcircle is our Fortune 'circle
+            // event', and its center is a vertex potentially part of the final
+            // Voronoi diagram.
+            var bx = cSite.x,
+                by = cSite.y,
+                ax = lSite.x - bx,
+                ay = lSite.y - by,
+                cx = rSite.x - bx,
+                cy = rSite.y - by;
+
+            // If points l->c->r are clockwise, then center beach section does not
+            // collapse, hence it can't end up as a vertex (we reuse 'd' here, which
+            // sign is reverse of the orientation, hence we reverse the test.
+            // http://en.wikipedia.org/wiki/Curve_orientation#Orientation_of_a_simple_polygon
+            // rhill 2011-05-21: Nasty finite precision error which caused circumcircle() to
+            // return infinites: 1e-12 seems to fix the problem.
+            var d = 2 * (ax * cy - ay * cx);
+            if (d >= -2e-12) {
+                return;
+            }
+
+            var ha = ax * ax + ay * ay,
+                hc = cx * cx + cy * cy,
+                x = (cy * ha - ay * hc) / d,
+                y = (ax * hc - cx * ha) / d,
+                ycenter = y + by;
+
+            // Important: ybottom should always be under or at sweep, so no need
+            // to waste CPU cycles by checking
+
+            // recycle circle event object if possible
+            var circleEvent = this.circleEventJunkyard.pop();
+            if (!circleEvent) {
+                circleEvent = new this.CircleEvent();
+            }
+            circleEvent.arc = arc;
+            circleEvent.site = cSite;
+            circleEvent.x = x + bx;
+            circleEvent.y = ycenter + this.sqrt(x * x + y * y); // y bottom
+            circleEvent.ycenter = ycenter;
+            arc.circleEvent = circleEvent;
+
+            // find insertion point in RB-tree: circle events are ordered from
+            // smallest to largest
+            var predecessor = null,
+                node = this.circleEvents.root;
+            while (node) {
+                if (circleEvent.y < node.y || circleEvent.y === node.y && circleEvent.x <= node.x) {
+                    if (node.rbLeft) {
+                        node = node.rbLeft;
+                    } else {
+                        predecessor = node.rbPrevious;
+                        break;
+                    }
+                } else {
+                    if (node.rbRight) {
+                        node = node.rbRight;
+                    } else {
+                        predecessor = node;
+                        break;
+                    }
+                }
+            }
+            this.circleEvents.rbInsertSuccessor(predecessor, circleEvent);
+            if (!predecessor) {
+                this.firstCircleEvent = circleEvent;
+            }
+        };
+
+        Voronoi.prototype.detachCircleEvent = function (arc) {
+            var circleEvent = arc.circleEvent;
+            if (circleEvent) {
+                if (!circleEvent.rbPrevious) {
+                    this.firstCircleEvent = circleEvent.rbNext;
+                }
+                this.circleEvents.rbRemoveNode(circleEvent); // remove from RB-tree
+                this.circleEventJunkyard.push(circleEvent);
+                arc.circleEvent = null;
+            }
+        };
+
+        // ---------------------------------------------------------------------------
+        // Diagram completion methods
+
+        // connect dangling edges (not if a cursory test tells us
+        // it is not going to be visible.
+        // return value:
+        //   false: the dangling endpoint couldn't be connected
+        //   true: the dangling endpoint could be connected
+        Voronoi.prototype.connectEdge = function (edge, bbox) {
+            // skip if end point already connected
+            var vb = edge.vb;
+            if (!!vb) {
+                return true;
+            }
+
+            // make local copy for performance purpose
+            var va = edge.va,
+                xl = bbox.xl,
+                xr = bbox.xr,
+                yt = bbox.yt,
+                yb = bbox.yb,
+                lSite = edge.lSite,
+                rSite = edge.rSite,
+                lx = lSite.x,
+                ly = lSite.y,
+                rx = rSite.x,
+                ry = rSite.y,
+                fx = (lx + rx) / 2,
+                fy = (ly + ry) / 2,
+                fm,
+                fb;
+
+            // if we reach here, this means cells which use this edge will need
+            // to be closed, whether because the edge was removed, or because it
+            // was connected to the bounding box.
+            this.cells[lSite.voronoiId].closeMe = true;
+            this.cells[rSite.voronoiId].closeMe = true;
+
+            // get the line equation of the bisector if line is not vertical
+            if (ry !== ly) {
+                fm = (lx - rx) / (ry - ly);
+                fb = fy - fm * fx;
+            }
+
+            // remember, direction of line (relative to left site):
+            // upward: left.x < right.x
+            // downward: left.x > right.x
+            // horizontal: left.x == right.x
+            // upward: left.x < right.x
+            // rightward: left.y < right.y
+            // leftward: left.y > right.y
+            // vertical: left.y == right.y
+
+            // depending on the direction, find the best side of the
+            // bounding box to use to determine a reasonable start point
+
+            // rhill 2013-12-02:
+            // While at it, since we have the values which define the line,
+            // clip the end of va if it is outside the bbox.
+            // https://github.com/gorhill/Javascript-Voronoi/issues/15
+            // TODO: Do all the clipping here rather than rely on Liang-Barsky
+            // which does not do well sometimes due to loss of arithmetic
+            // precision. The code here doesn't degrade if one of the vertex is
+            // at a huge distance.
+
+            // special case: vertical line
+            if (fm === undefined) {
+                // doesn't intersect with viewport
+                if (fx < xl || fx >= xr) {
+                    return false;
+                }
+                // downward
+                if (lx > rx) {
+                    if (!va || va.y < yt) {
+                        va = this.createVertex(fx, yt);
+                    } else if (va.y >= yb) {
+                        return false;
+                    }
+                    vb = this.createVertex(fx, yb);
+                }
+                // upward
+                else {
+                        if (!va || va.y > yb) {
+                            va = this.createVertex(fx, yb);
+                        } else if (va.y < yt) {
+                            return false;
+                        }
+                        vb = this.createVertex(fx, yt);
+                    }
+            }
+            // closer to vertical than horizontal, connect start point to the
+            // top or bottom side of the bounding box
+            else if (fm < -1 || fm > 1) {
+                    // downward
+                    if (lx > rx) {
+                        if (!va || va.y < yt) {
+                            va = this.createVertex((yt - fb) / fm, yt);
+                        } else if (va.y >= yb) {
+                            return false;
+                        }
+                        vb = this.createVertex((yb - fb) / fm, yb);
+                    }
+                    // upward
+                    else {
+                            if (!va || va.y > yb) {
+                                va = this.createVertex((yb - fb) / fm, yb);
+                            } else if (va.y < yt) {
+                                return false;
+                            }
+                            vb = this.createVertex((yt - fb) / fm, yt);
+                        }
+                }
+                // closer to horizontal than vertical, connect start point to the
+                // left or right side of the bounding box
+                else {
+                        // rightward
+                        if (ly < ry) {
+                            if (!va || va.x < xl) {
+                                va = this.createVertex(xl, fm * xl + fb);
+                            } else if (va.x >= xr) {
+                                return false;
+                            }
+                            vb = this.createVertex(xr, fm * xr + fb);
+                        }
+                        // leftward
+                        else {
+                                if (!va || va.x > xr) {
+                                    va = this.createVertex(xr, fm * xr + fb);
+                                } else if (va.x < xl) {
+                                    return false;
+                                }
+                                vb = this.createVertex(xl, fm * xl + fb);
+                            }
+                    }
+            edge.va = va;
+            edge.vb = vb;
+
+            return true;
+        };
+
+        // line-clipping code taken from:
+        //   Liang-Barsky function by Daniel White
+        //   http://www.skytopia.com/project/articles/compsci/clipping.html
+        // Thanks!
+        // A bit modified to minimize code paths
+        Voronoi.prototype.clipEdge = function (edge, bbox) {
+            var ax = edge.va.x,
+                ay = edge.va.y,
+                bx = edge.vb.x,
+                by = edge.vb.y,
+                t0 = 0,
+                t1 = 1,
+                dx = bx - ax,
+                dy = by - ay;
+            // left
+            var q = ax - bbox.xl;
+            if (dx === 0 && q < 0) {
+                return false;
+            }
+            var r = -q / dx;
+            if (dx < 0) {
+                if (r < t0) {
+                    return false;
+                }
+                if (r < t1) {
+                    t1 = r;
+                }
+            } else if (dx > 0) {
+                if (r > t1) {
+                    return false;
+                }
+                if (r > t0) {
+                    t0 = r;
+                }
+            }
+            // right
+            q = bbox.xr - ax;
+            if (dx === 0 && q < 0) {
+                return false;
+            }
+            r = q / dx;
+            if (dx < 0) {
+                if (r > t1) {
+                    return false;
+                }
+                if (r > t0) {
+                    t0 = r;
+                }
+            } else if (dx > 0) {
+                if (r < t0) {
+                    return false;
+                }
+                if (r < t1) {
+                    t1 = r;
+                }
+            }
+            // top
+            q = ay - bbox.yt;
+            if (dy === 0 && q < 0) {
+                return false;
+            }
+            r = -q / dy;
+            if (dy < 0) {
+                if (r < t0) {
+                    return false;
+                }
+                if (r < t1) {
+                    t1 = r;
+                }
+            } else if (dy > 0) {
+                if (r > t1) {
+                    return false;
+                }
+                if (r > t0) {
+                    t0 = r;
+                }
+            }
+            // bottom        
+            q = bbox.yb - ay;
+            if (dy === 0 && q < 0) {
+                return false;
+            }
+            r = q / dy;
+            if (dy < 0) {
+                if (r > t1) {
+                    return false;
+                }
+                if (r > t0) {
+                    t0 = r;
+                }
+            } else if (dy > 0) {
+                if (r < t0) {
+                    return false;
+                }
+                if (r < t1) {
+                    t1 = r;
+                }
+            }
+
+            // if we reach this point, Voronoi edge is within bbox
+
+            // if t0 > 0, va needs to change
+            // rhill 2011-06-03: we need to create a new vertex rather
+            // than modifying the existing one, since the existing
+            // one is likely shared with at least another edge
+            if (t0 > 0) {
+                edge.va = this.createVertex(ax + t0 * dx, ay + t0 * dy);
+            }
+
+            // if t1 < 1, vb needs to change
+            // rhill 2011-06-03: we need to create a new vertex rather
+            // than modifying the existing one, since the existing
+            // one is likely shared with at least another edge
+            if (t1 < 1) {
+                edge.vb = this.createVertex(ax + t1 * dx, ay + t1 * dy);
+            }
+
+            // va and/or vb were clipped, thus we will need to close
+            // cells which use this edge.
+            if (t0 > 0 || t1 < 1) {
+                this.cells[edge.lSite.voronoiId].closeMe = true;
+                this.cells[edge.rSite.voronoiId].closeMe = true;
+            }
+
+            return true;
+        };
+
+        // Connect/cut edges at bounding box
+        Voronoi.prototype.clipEdges = function (bbox) {
+            // connect all dangling edges to bounding box
+            // or get rid of them if it can't be done
+            var edges = this.edges,
+                iEdge = edges.length,
+                edge,
+                abs_fn = Math.abs;
+
+            // iterate backward so we can splice safely
+            while (iEdge--) {
+                edge = edges[iEdge];
+                // edge is removed if:
+                //   it is wholly outside the bounding box
+                //   it is looking more like a point than a line
+                if (!this.connectEdge(edge, bbox) || !this.clipEdge(edge, bbox) || abs_fn(edge.va.x - edge.vb.x) < 1e-9 && abs_fn(edge.va.y - edge.vb.y) < 1e-9) {
+                    edge.va = edge.vb = null;
+                    edges.splice(iEdge, 1);
+                }
+            }
+        };
+
+        // Close the cells.
+        // The cells are bound by the supplied bounding box.
+        // Each cell refers to its associated site, and a list
+        // of halfedges ordered counterclockwise.
+        Voronoi.prototype.closeCells = function (bbox) {
+            var xl = bbox.xl,
+                xr = bbox.xr,
+                yt = bbox.yt,
+                yb = bbox.yb,
+                cells = this.cells,
+                iCell = cells.length,
+                cell,
+                iLeft,
+                halfedges,
+                nHalfedges,
+                edge,
+                va,
+                vb,
+                vz,
+                lastBorderSegment,
+                abs_fn = Math.abs;
+
+            while (iCell--) {
+                cell = cells[iCell];
+                // prune, order halfedges counterclockwise, then add missing ones
+                // required to close cells
+                if (!cell.prepareHalfedges()) {
+                    continue;
+                }
+                if (!cell.closeMe) {
+                    continue;
+                }
+                // find first 'unclosed' point.
+                // an 'unclosed' point will be the end point of a halfedge which
+                // does not match the start point of the following halfedge
+                halfedges = cell.halfedges;
+                nHalfedges = halfedges.length;
+                // special case: only one site, in which case, the viewport is the cell
+                // ...
+
+                // all other cases
+                iLeft = 0;
+                while (iLeft < nHalfedges) {
+                    va = halfedges[iLeft].getEndpoint();
+                    vz = halfedges[(iLeft + 1) % nHalfedges].getStartpoint();
+                    // if end point is not equal to start point, we need to add the missing
+                    // halfedge(s) up to vz
+                    if (abs_fn(va.x - vz.x) >= 1e-9 || abs_fn(va.y - vz.y) >= 1e-9) {
+
+                        // rhill 2013-12-02:
+                        // "Holes" in the halfedges are not necessarily always adjacent.
+                        // https://github.com/gorhill/Javascript-Voronoi/issues/16
+
+                        // find entry point:
+                        switch (true) {
+
+                            // walk downward along left side
+                            case this.equalWithEpsilon(va.x, xl) && this.lessThanWithEpsilon(va.y, yb):
+                                lastBorderSegment = this.equalWithEpsilon(vz.x, xl);
+                                vb = this.createVertex(xl, lastBorderSegment ? vz.y : yb);
+                                edge = this.createBorderEdge(cell.site, va, vb);
+                                iLeft++;
+                                halfedges.splice(iLeft, 0, this.createHalfedge(edge, cell.site, null));
+                                nHalfedges++;
+                                if (lastBorderSegment) {
+                                    break;
+                                }
+                                va = vb;
+                            // fall through
+
+                            // walk rightward along bottom side
+                            case this.equalWithEpsilon(va.y, yb) && this.lessThanWithEpsilon(va.x, xr):
+                                lastBorderSegment = this.equalWithEpsilon(vz.y, yb);
+                                vb = this.createVertex(lastBorderSegment ? vz.x : xr, yb);
+                                edge = this.createBorderEdge(cell.site, va, vb);
+                                iLeft++;
+                                halfedges.splice(iLeft, 0, this.createHalfedge(edge, cell.site, null));
+                                nHalfedges++;
+                                if (lastBorderSegment) {
+                                    break;
+                                }
+                                va = vb;
+                            // fall through
+
+                            // walk upward along right side
+                            case this.equalWithEpsilon(va.x, xr) && this.greaterThanWithEpsilon(va.y, yt):
+                                lastBorderSegment = this.equalWithEpsilon(vz.x, xr);
+                                vb = this.createVertex(xr, lastBorderSegment ? vz.y : yt);
+                                edge = this.createBorderEdge(cell.site, va, vb);
+                                iLeft++;
+                                halfedges.splice(iLeft, 0, this.createHalfedge(edge, cell.site, null));
+                                nHalfedges++;
+                                if (lastBorderSegment) {
+                                    break;
+                                }
+                                va = vb;
+                            // fall through
+
+                            // walk leftward along top side
+                            case this.equalWithEpsilon(va.y, yt) && this.greaterThanWithEpsilon(va.x, xl):
+                                lastBorderSegment = this.equalWithEpsilon(vz.y, yt);
+                                vb = this.createVertex(lastBorderSegment ? vz.x : xl, yt);
+                                edge = this.createBorderEdge(cell.site, va, vb);
+                                iLeft++;
+                                halfedges.splice(iLeft, 0, this.createHalfedge(edge, cell.site, null));
+                                nHalfedges++;
+                                if (lastBorderSegment) {
+                                    break;
+                                }
+                                va = vb;
+                                // fall through
+
+                                // walk downward along left side
+                                lastBorderSegment = this.equalWithEpsilon(vz.x, xl);
+                                vb = this.createVertex(xl, lastBorderSegment ? vz.y : yb);
+                                edge = this.createBorderEdge(cell.site, va, vb);
+                                iLeft++;
+                                halfedges.splice(iLeft, 0, this.createHalfedge(edge, cell.site, null));
+                                nHalfedges++;
+                                if (lastBorderSegment) {
+                                    break;
+                                }
+                                va = vb;
+                                // fall through
+
+                                // walk rightward along bottom side
+                                lastBorderSegment = this.equalWithEpsilon(vz.y, yb);
+                                vb = this.createVertex(lastBorderSegment ? vz.x : xr, yb);
+                                edge = this.createBorderEdge(cell.site, va, vb);
+                                iLeft++;
+                                halfedges.splice(iLeft, 0, this.createHalfedge(edge, cell.site, null));
+                                nHalfedges++;
+                                if (lastBorderSegment) {
+                                    break;
+                                }
+                                va = vb;
+                                // fall through
+
+                                // walk upward along right side
+                                lastBorderSegment = this.equalWithEpsilon(vz.x, xr);
+                                vb = this.createVertex(xr, lastBorderSegment ? vz.y : yt);
+                                edge = this.createBorderEdge(cell.site, va, vb);
+                                iLeft++;
+                                halfedges.splice(iLeft, 0, this.createHalfedge(edge, cell.site, null));
+                                nHalfedges++;
+                                if (lastBorderSegment) {
+                                    break;
+                                }
+                            // fall through
+
+                            default:
+                                throw "Voronoi.closeCells() > this makes no sense!";
+                        }
+                    }
+                    iLeft++;
+                }
+                cell.closeMe = false;
+            }
+        };
+
+        // ---------------------------------------------------------------------------
+        // Debugging helper
+        /*
+        Voronoi.prototype.dumpBeachline = function(y) {
+            console.log('Voronoi.dumpBeachline(%f) > Beachsections, from left to right:', y);
+            if ( !this.beachline ) {
+                console.log('  None');
+                }
+            else {
+                var bs = this.beachline.getFirst(this.beachline.root);
+                while ( bs ) {
+                    console.log('  site %d: xl: %f, xr: %f', bs.site.voronoiId, this.leftBreakPoint(bs, y), this.rightBreakPoint(bs, y));
+                    bs = bs.rbNext;
+                    }
+                }
+            };
+        */
+
+        // ---------------------------------------------------------------------------
+        // Helper: Quantize sites
+
+        // rhill 2013-10-12:
+        // This is to solve https://github.com/gorhill/Javascript-Voronoi/issues/15
+        // Since not all users will end up using the kind of coord values which would
+        // cause the issue to arise, I chose to let the user decide whether or not
+        // he should sanitize his coord values through this helper. This way, for
+        // those users who uses coord values which are known to be fine, no overhead is
+        // added.
+
+        Voronoi.prototype.quantizeSites = function (sites) {
+            var ε = this.ε,
+                n = sites.length,
+                site;
+            while (n--) {
+                site = sites[n];
+                site.x = Math.floor(site.x / ε) * ε;
+                site.y = Math.floor(site.y / ε) * ε;
+            }
+        };
+
+        // ---------------------------------------------------------------------------
+        // Helper: Recycle diagram: all vertex, edge and cell objects are
+        // "surrendered" to the Voronoi object for reuse.
+        // TODO: rhill-voronoi-core v2: more performance to be gained
+        // when I change the semantic of what is returned.
+
+        Voronoi.prototype.recycle = function (diagram) {
+            if (diagram) {
+                if (diagram instanceof this.Diagram) {
+                    this.toRecycle = diagram;
+                } else {
+                    throw 'Voronoi.recycleDiagram() > Need a Diagram object.';
+                }
+            }
+        };
+
+        // ---------------------------------------------------------------------------
+        // Top-level Fortune loop
+
+        // rhill 2011-05-19:
+        //   Voronoi sites are kept client-side now, to allow
+        //   user to freely modify content. At compute time,
+        //   *references* to sites are copied locally.
+
+        Voronoi.prototype.compute = function (sites, bbox) {
+            // to measure execution time
+            var startTime = new Date();
+
+            // init internal state
+            this.reset();
+
+            // any diagram data available for recycling?
+            // I do that here so that this is included in execution time
+            if (this.toRecycle) {
+                this.vertexJunkyard = this.vertexJunkyard.concat(this.toRecycle.vertices);
+                this.edgeJunkyard = this.edgeJunkyard.concat(this.toRecycle.edges);
+                this.cellJunkyard = this.cellJunkyard.concat(this.toRecycle.cells);
+                this.toRecycle = null;
+            }
+
+            // Initialize site event queue
+            var siteEvents = sites.slice(0);
+            siteEvents.sort(function (a, b) {
+                var r = b.y - a.y;
+                if (r) {
+                    return r;
+                }
+                return b.x - a.x;
+            });
+
+            // process queue
+            var site = siteEvents.pop(),
+                siteid = 0,
+                xsitex,
+                // to avoid duplicate sites
+            xsitey,
+                cells = this.cells,
+                circle;
+
+            // main loop
+            for (;;) {
+                // we need to figure whether we handle a site or circle event
+                // for this we find out if there is a site event and it is
+                // 'earlier' than the circle event
+                circle = this.firstCircleEvent;
+
+                // add beach section
+                if (site && (!circle || site.y < circle.y || site.y === circle.y && site.x < circle.x)) {
+                    // only if site is not a duplicate
+                    if (site.x !== xsitex || site.y !== xsitey) {
+                        // first create cell for new site
+                        cells[siteid] = this.createCell(site);
+                        site.voronoiId = siteid++;
+                        // then create a beachsection for that site
+                        this.addBeachsection(site);
+                        // remember last site coords to detect duplicate
+                        xsitey = site.y;
+                        xsitex = site.x;
+                    }
+                    site = siteEvents.pop();
+                }
+
+                // remove beach section
+                else if (circle) {
+                        this.removeBeachsection(circle.arc);
+                    }
+
+                    // all done, quit
+                    else {
+                            break;
+                        }
+            }
+
+            // wrapping-up:
+            //   connect dangling edges to bounding box
+            //   cut edges as per bounding box
+            //   discard edges completely outside bounding box
+            //   discard edges which are point-like
+            this.clipEdges(bbox);
+
+            //   add missing edges in order to close opened cells
+            this.closeCells(bbox);
+
+            // to measure execution time
+            var stopTime = new Date();
+
+            // prepare return values
+            var diagram = new this.Diagram();
+            diagram.cells = this.cells;
+            diagram.edges = this.edges;
+            diagram.vertices = this.vertices;
+            diagram.execTime = stopTime.getTime() - startTime.getTime();
+
+            // clean up
+            this.reset();
+
+            return diagram;
+        };
+
+        module.exports = Voronoi;
+    });
+
+    var areaPolygon = function areaPolygon(points, signed) {
+        var l = points.length;
+        var det = 0;
+        var isSigned = signed || false;
+
+        points = points.map(normalize);
+        if (points[0] != points[points.length - 1]) points = points.concat(points[0]);
+
+        for (var i = 0; i < l; i++) {
+            det += points[i].x * points[i + 1].y - points[i].y * points[i + 1].x;
+        }if (isSigned) return det / 2;else return Math.abs(det) / 2;
+    };
+
+    function normalize(point) {
+        if (Array.isArray(point)) return {
+            x: point[0],
+            y: point[1]
+        };else return point;
+    }
+
+    var pointInPolygon = function pointInPolygon(point, vs) {
+        // ray-casting algorithm based on
+        // http://www.ecse.rpi.edu/Homepages/wrf/Research/Short_Notes/pnpoly.html
+
+        var x = point[0],
+            y = point[1];
+
+        var inside = false;
+        for (var i = 0, j = vs.length - 1; i < vs.length; j = i++) {
+            var xi = vs[i][0],
+                yi = vs[i][1];
+            var xj = vs[j][0],
+                yj = vs[j][1];
+
+            var intersect = yi > y != yj > y && x < (xj - xi) * (y - yi) / (yj - yi) + xi;
+            if (intersect) inside = !inside;
+        }
+
+        return inside;
+    };
+
+    var classCallCheck = function classCallCheck(instance, Constructor) {
+        if (!(instance instanceof Constructor)) {
+            throw new TypeError("Cannot call a class as a function");
+        }
+    };
+
+    var createClass = function () {
+        function defineProperties(target, props) {
+            for (var i = 0; i < props.length; i++) {
+                var descriptor = props[i];
+                descriptor.enumerable = descriptor.enumerable || false;
+                descriptor.configurable = true;
+                if ("value" in descriptor) descriptor.writable = true;
+                Object.defineProperty(target, descriptor.key, descriptor);
+            }
+        }
+
+        return function (Constructor, protoProps, staticProps) {
+            if (protoProps) defineProperties(Constructor.prototype, protoProps);
+            if (staticProps) defineProperties(Constructor, staticProps);
+            return Constructor;
+        };
+    }();
+
+    /**
+     * VectorTools is not instanciable and provide some static functions for
+     * computing things about vectors.
+     */
+    var VectorTools = function () {
+        function VectorTools() {
+            classCallCheck(this, VectorTools);
+        }
+
+        createClass(VectorTools, null, [{
+            key: "crossProduct",
+
+            /**
+             * performs a cross product between v1 and v2.
+             * @param  {Array} v1 - a vector [x, y, z]. To use with 2D vectors, just use [x, y, 0]
+             * @param  {Array} v2 - a vector [x, y, z]. To use with 2D vectors, just use [x, y, 0]
+             * @param  {Boolean} normalize - will force normalization of the output vector if true (default: false)
+             * @return {Array} a vector [x, y, z], result of the cross product
+             */
+            value: function crossProduct(v1, v2) {
+                var normalize = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : false;
+
+                var normalVector = [v1[1] * v2[2] - v1[2] * v2[1], (v1[0] * v2[2] - v1[2] * v2[0]) * -1, v1[0] * v2[1] - v1[1] * v2[0]];
+
+                if (normalize) normalVector = VectorTools.normalize(normalVector);
+
+                return normalVector;
+            }
+
+            /**
+             * Perform the dot product of two vectors. They need to be of the same dimension
+             * but they can be 2D, 3D or aother.
+             * Note: If v1 and v2 are normalize, the dot product is also the cosine
+             * @param  {Array} v1  - a vector [x, y] or [x, y, z]
+             * @param  {Array} v2 - a vector [x, y] or [x, y, z]
+             * @return {Number} the dot product
+             */
+
+        }, {
+            key: "dotProduct",
+            value: function dotProduct(v1, v2) {
+                if (v1.length != v2.length) {
+                    console.log("ERROR: v1 and v2 must be the same size to compute a dot product");
+                    return null;
+                }
+
+                var sum = 0;
+
+                for (var i = 0; i < v1.length; i++) {
+                    sum += v1[i] * v2[i];
+                }
+
+                return sum;
+            }
+
+            /**
+             * Normalizes a 3D vector
+             * @param  {Array} v - 3D vector to normalize
+             * @return {Array} the normalized 3D vector
+             */
+
+        }, {
+            key: "normalize",
+            value: function normalize(v) {
+                var n = VectorTools.getNorm(v);
+                var normalizedV = [v[0] / n, v[1] / n, v[2] / n];
+                return normalizedV;
+            }
+
+            /**
+             * return the norm (length) of a vector [x, y, z]
+             * @param  {Array} v - 3D vector to get the norm of
+             * @return {Number} the norm
+             */
+
+        }, {
+            key: "getNorm",
+            value: function getNorm(v) {
+                return Math.sqrt(v[0] * v[0] + v[1] * v[1] + v[2] * v[2]);
+            }
+
+            /*
+               Args:
+                v: array - [x, y, z]
+                m: array[array] -
+                    [[a, b, c],
+                     [d, e, f],
+                     [g, h, i]]
+               Return rotated vector:
+                [ax + by + cz,
+                 dx + ey + fz,
+                 gx + hy + iz]
+            */
+
+            /**
+             * rotate the vector v using the rotation matrix m.
+             * @param  {Array} v - 3D vector
+             * @param  {Array} m  - matrix [[a, b, c], [d, e, f], [g, h, i]]
+             * @return {Array} the rotated vector [ax + by + cz, dx + ey + fz, gx + hy + iz]
+             */
+
+        }, {
+            key: "rotate",
+            value: function rotate(v, m) {
+                var vRot = [v[0] * m[0][0] + v[1] * m[0][1] + v[2] * m[0][2], v[0] * m[1][0] + v[1] * m[1][1] + v[2] * m[1][2], v[0] * m[2][0] + v[1] * m[2][1] + v[2] * m[2][2]];
+
+                return vRot;
+            }
+
+            /**
+             * Compute the angle p1p2p3 in radians.
+             * Does not give the sign, just absolute angle!
+             * @param  {Array} p1 - a 3D point [x, y, z]
+             * @param  {Array} p2 - a 3D point [x, y, z]
+             * @param  {Array} p3 - a 3D point [x, y, z]
+             * @return {Number}    [description]
+             */
+
+        }, {
+            key: "getAnglePoints",
+            value: function getAnglePoints(p1, p2, p3) {
+
+                //  the configuration is like that:
+                //
+                //  p1-----p2
+                //        /
+                //       /
+                //      p3
+
+                var v_p2p1 = [p1[0] - p2[0], p1[1] - p2[1], p1[2] - p2[2]];
+
+                var v_p2p3 = [p3[0] - p2[0], p3[1] - p2[1], p3[2] - p2[2]];
+
+                // normalizing those vectors
+                v_p2p1 = VectorTools.normalize(v_p2p1);
+                v_p2p3 = VectorTools.normalize(v_p2p3);
+
+                var cosine = VectorTools.dotProduct(v_p2p1, v_p2p3);
+                var angleRad = Math.acos(cosine);
+
+                return angleRad;
+            }
+
+            /**
+            * Checks if the 2D vector u crosses the 2D vector v. The vector u goes from point u1
+            * to point u2 and vector v goes from point v1 to point v2.
+            * Based on Gavin from SO http://bit.ly/2oNn741 reimplemented in JS
+            * @param  {Array} u1 - first point of the u vector as [x, y]
+            * @param  {Array} u2 - second point of the u vector as [x, y]
+            * @param  {Array} v1 - first point of the v vector as [x, y]
+            * @param  {Array} v2 - second point of the v vector as [x, y]
+            * @return {Array|null} crossing point as [x, y] or null if vector don't cross.
+            */
+
+        }, {
+            key: "vector2DCrossing",
+            value: function vector2DCrossing(u1, u2, v1, v2) {
+                var meet = null;
+                var s1x = u2[0] - u1[0];
+                var s1y = u2[1] - u1[1];
+                var s2x = v2[0] - v1[0];
+                var s2y = v2[1] - v1[1];
+
+                var s = (-s1y * (u1[0] - v1[0]) + s1x * (u1[1] - v1[1])) / (-s2x * s1y + s1x * s2y);
+                var t = (s2x * (u1[1] - v1[1]) - s2y * (u1[0] - v1[0])) / (-s2x * s1y + s1x * s2y);
+
+                if (s >= 0 && s <= 1 && t >= 0 && t <= 1) {
+                    meet = [u1[0] + t * s1x, u1[1] + t * s1y];
+                }
+
+                return meet;
+            }
+
+            /**
+            * Get the distance between the 2D point p and a 2D segment u (defined by its points u1 and u2)
+            * Stolen from SO http://bit.ly/2oQG3yX
+            * @param  {Array} p  - a point as [x, y]
+            * @param  {Array} u1 - first point of the u vector as [x, y]
+            * @param  {Array} u2 - second point of the u vector as [x, y]
+            * @return {Number} the distance
+            */
+
+        }, {
+            key: "pointToSegmentDistance",
+            value: function pointToSegmentDistance(p, u1, u2) {
+                var A = p[0] - u1[0];
+                var B = p[1] - u1[1];
+                var C = u2[0] - u1[0];
+                var D = u2[1] - u1[1];
+
+                var dot = A * C + B * D;
+                var lenSq = C * C + D * D;
+                var param = -1;
+                if (lenSq != 0) //in case of 0 length line
+                    param = dot / lenSq;
+
+                var xx, yy;
+
+                if (param < 0) {
+                    xx = u1[0];
+                    yy = u1[1];
+                } else if (param > 1) {
+                    xx = u2[0];
+                    yy = u2[1];
+                } else {
+                    xx = u1[0] + param * C;
+                    yy = u1[1] + param * D;
+                }
+
+                var dx = p[0] - xx;
+                var dy = p[1] - yy;
+                return Math.sqrt(dx * dx + dy * dy);
+            }
+        }]);
+        return VectorTools;
+    }();
+
+    /**
+     * ConvexPolygon is a simple approach of a polygon, it's actually a simple approcah
+     * of what is a convex polygon and is mainly made to be used in the context of
+     * a polygon representing a cell of a Voronoi diagram.
+     * Here, a polygon is a list of 2D points that represent a convex polygon, with the
+     * list of point being no closed (= the last point is not a repetition of the first).
+     * The list of points describing a polygon can not be modified later.
+     */
+
+    var ConvexPolygon = function () {
+
+        /**
+         * Contructor.
+         * @param {Array} points - can be an array of [x, y] (both being of type Number)
+         * or it can be an array of {x: Number, y: Number}. Depending on what is the source
+         * of points, both exist.
+         * Note: there is no integrity checking that the given list of point represent
+         * an actually convex polygon.
+         */
+        function ConvexPolygon(points) {
+            classCallCheck(this, ConvexPolygon);
+
+            this._isValid = false;
+            this._hull = null;
+            this._area = null;
+
+            if (Array.isArray(points) && points.length > 2) {
+                var polygonPoints = null;
+                // we are dealing with a [ {x, y}, {x, y}, ... ] polygon
+                if ("x" in points[0] && "y" in points[0]) {
+                    polygonPoints = points.map(function (p) {
+                        return [p.x, p.y];
+                    });
+
+                    // we are dealing with a [ [x, y], [x, y], ... ]
+                } else if (Array.isArray(points[0])) {
+                    polygonPoints = points.map(function (p) {
+                        return [p[0], p[1]];
+                    });
+                }
+
+                if (polygonPoints) {
+                    polygonPoints = ConvexPolygon.removeDuplicateVertices(polygonPoints);
+                    this._hull = ConvexPolygon.orderPolygonPoints(polygonPoints);
+                }
+
+                this._isValid = !!this._hull;
+            }
+        }
+
+        /**
+         * Get if the polygon is valid
+         * @return {Boolean} [description]
+         */
+
+        createClass(ConvexPolygon, [{
+            key: 'isValid',
+            value: function isValid() {
+                return this._isValid;
+            }
+
+            /**
+             * [STATIC]
+             * Removes the duplicates of a hull so that a polygon hull does not have twice
+             * the same [x, y] points;
+             * @param {Array} polygonPoints - an array of [x, y]
+             * @return {Array} an array of [x, y], with duplicates removed
+             */
+
+        }, {
+            key: 'getArea',
+
+            /**
+             * Get the area of a this polygon. If never computed, computes it and stores it
+             * @return {Number} the area
+             */
+            value: function getArea() {
+                if (!this._area) {
+                    this._area = areaPolygon(this._hull);
+                }
+                return this._area;
+            }
+
+            /**
+            * This is reliable ONLY in the context of Voronoi cells! This is NOT a generally
+            * valid way to find the intersection polygon between 2 convex polygons!
+            * For this context only, we believe it's much faster tho.
+            * @param {Polygon} anotherPolygon - another polygon the get the intersection with.
+            */
+
+        }, {
+            key: 'getCellReplacementIntersection',
+            value: function getCellReplacementIntersection(anotherPolygon) {
+                var h1 = this.getHull();
+                var h2 = anotherPolygon.getHull();
+                var eps = 0.0001;
+
+                var intersecVectices = [];
+                var nbVerticesP1 = h1.length;
+                var nbVerticesP2 = h2.length;
+
+                // for each vertex of h1 ...
+                for (var i = 0; i < nbVerticesP1; i++) {
+                    var u1 = h1[i];
+                    var u2 = h1[(i + 1) % nbVerticesP1];
+
+                    // case 1: all the vertices of h1 that are inside h2 have to be part of the list
+                    var inside = pointInPolygon(h1[i], h2);
+                    if (inside) intersecVectices.push(h1[i]);
+
+                    // for each vertex of h2 ...
+                    for (var j = 0; j < nbVerticesP2; j++) {
+                        // case 1 bis: all the vertices of h2 that are inside h1 have to be part of the list.
+                        // no need to run that every i loop
+                        if (i === 0) {
+                            var inside = pointInPolygon(h2[j], h1);
+                            if (inside) intersecVectices.push(h2[j]);
+                        }
+
+                        var v1 = h2[j];
+                        var v2 = h2[(j + 1) % nbVerticesP2];
+
+                        // case 2: get the intersection points between the edges of this poly and
+                        // the edges of anotherPolygon.
+                        var intersectPoint = VectorTools.vector2DCrossing(u1, u2, v1, v2);
+                        if (intersectPoint) {
+                            intersecVectices.push(intersectPoint);
+                        }
+
+                        // case 3: a vertex of a polygon is ON/ALONG an edge of the other polygon
+                        // note: this case can seem like "ho, that's an unfortunate minor case" but in the context
+                        // of voronoi cell replacement, this happens A LOT!
+
+                        // distance between the point v1 (that belongs to h2) and the edge u1u2 (that belongs to h1)
+                        var dv1u = VectorTools.pointToSegmentDistance(v1, u1, u2);
+                        if (dv1u < eps) {
+                            intersecVectices.push(v1);
+                        }
+
+                        // distance between the point u1 (that belongs to h1) and the edge v1v2 (that belongs to h2)
+                        var du1v = VectorTools.pointToSegmentDistance(u1, v1, v2);
+                        if (du1v < eps) {
+                            intersecVectices.push(u1);
+                        }
+                    }
+                }
+
+                var interPolygon = new ConvexPolygon(intersecVectices);
+                return interPolygon;
+            }
+
+            /**
+             * Get the Array of vertices. This is a reference and the point should not be
+             * modified!
+             * @return {Array} the points of the hull
+             */
+
+        }, {
+            key: 'getHull',
+            value: function getHull() {
+                return this._hull;
+            }
+
+            /**
+            * Compare with another polygon and tells if it's the same.
+            * Predicate: polygons are convex + the first point of the list starts at noon and
+            * the following are going clock-wise.
+            * @param {ConvexPolygon} otherPolygon - another polygon
+            * @return {Boolean} true is the same, false if not
+            */
+
+        }, {
+            key: 'isSame',
+            value: function isSame(otherPolygon) {
+                var eps = 0.0001;
+                var otherHull = otherPolygon.getHull();
+
+                if (this._hull.length !== otherHull.length) return false;
+
+                for (var i = 0; i < otherHull.length; i++) {
+                    if (Math.abs(otherHull[i][0] - this._hull[i][0]) > eps || Math.abs(otherHull[i][1] - this._hull[i][1]) > eps) return false;
+                }
+
+                return true;
+            }
+        }], [{
+            key: 'removeDuplicateVertices',
+            value: function removeDuplicateVertices(polygonPoints) {
+                var newPolyPoints = [polygonPoints[0]];
+                var eps = 0.0001;
+
+                for (var i = 1; i < polygonPoints.length; i++) {
+                    var alreadyIn = false;
+                    for (var j = 0; j < newPolyPoints.length; j++) {
+                        var xDiff = Math.abs(polygonPoints[i][0] - newPolyPoints[j][0]);
+                        var yDiff = Math.abs(polygonPoints[i][1] - newPolyPoints[j][1]);
+                        //var zDiff = Math.abs(polygonPoints[i][2] - newPolyPoints[j][2]);
+
+                        if (xDiff < eps && yDiff < eps /*&& (zDiff < eps)*/) {
+                                alreadyIn = true;
+                                break;
+                            }
+                    }
+                    if (!alreadyIn) {
+                        newPolyPoints.push(polygonPoints[i]);
+                    }
+                }
+                return newPolyPoints;
+            }
+
+            /**
+             * Get the center coordinate of a polygon by averaging all the pointd of the hull
+             * @param {Array} polygonPoints - an array of [x, y]
+             * @return {Array} the center as [x, y]
+             */
+
+        }, {
+            key: 'getPolygonCenter',
+            value: function getPolygonCenter(polygonPoints) {
+                var nbVertice = polygonPoints.length;
+
+                // find the center of the polygon
+                var xAvg = 0;
+                var yAvg = 0;
+                var zAvg = 0;
+
+                for (var v = 0; v < nbVertice; v++) {
+                    xAvg += polygonPoints[v][0];
+                    yAvg += polygonPoints[v][1];
+                    zAvg += polygonPoints[v][2];
+                }
+
+                xAvg /= nbVertice;
+                yAvg /= nbVertice;
+                zAvg /= nbVertice;
+                var center = [xAvg, yAvg, zAvg];
+
+                return center;
+            }
+
+            /**
+             * A list of polygon points representing a convex hull are not always listed in
+             * a clock-wise of ccw order, by default, we cannot count on it. This methods
+             * reorder the vertices of the in a clock-wise fashion, starting by the one that
+             * at noon or immediately after.
+             * Note: this is necessary to compute the area and to compare two polygons.
+             * @param {Array} polygonPoints - an array of [x, y]
+             * @return {Array} an array of [x, y]
+             */
+
+        }, {
+            key: 'orderPolygonPoints',
+            value: function orderPolygonPoints(polygonPoints) {
+                var nbVertice = polygonPoints.length;
+                var center = ConvexPolygon.getPolygonCenter(polygonPoints);
+
+                // for each, we have .vertice (a [x, y, z] array) and .angle (rad angle to planePolygonWithAngles[0])
+                var planePolygonWithAngles = new Array(nbVertice);
+                var verticalRay = [0, 1, 0];
+
+                for (var v = 0; v < nbVertice; v++) {
+                    var currentRay = [center[0] - polygonPoints[v][0], center[1] - polygonPoints[v][1], 0];
+
+                    var currentRayNormalized = VectorTools.normalize(currentRay);
+                    var cos = VectorTools.dotProduct(verticalRay, currentRayNormalized);
+                    var angle = Math.acos(cos);
+                    var currentPolygonNormal = VectorTools.crossProduct(verticalRay, currentRayNormalized);
+                    var planeNormal = [0, 0, 1];
+                    var angleSign = VectorTools.dotProduct(currentPolygonNormal, planeNormal) > 0 ? 1 : -1;
+                    angle *= angleSign;
+
+                    // having only positive angles is a trick for ordering the vertices of a polygon
+                    // always the same way: first vertex of the list is at noon or the one just after
+                    // noon in a clock-wise direction. Then, all the other vertices are follwing in CW.
+                    // Then, it's easy to figure if 2 polygons are the same.
+                    if (angle < 0) {
+                        angle = Math.PI + (Math.PI + angle);
+                    }
+
+                    planePolygonWithAngles[v] = { vertex: polygonPoints[v], angle: angle };
+                }
+
+                // sort vertices based on their angle to [0]
+                planePolygonWithAngles.sort(function (a, b) {
+                    return a.angle - b.angle;
+                });
+
+                // make a array of vertex only (ordered)
+                var orderedVertice = [];
+                for (var v = 0; v < nbVertice; v++) {
+                    orderedVertice.push(planePolygonWithAngles[v].vertex);
+                }
+
+                return orderedVertice;
+            }
+        }]);
+        return ConvexPolygon;
+    }();
+
+    /**
+    * A Cell instance defines a polygon from a Voronoi diagram and its seed.
+    *
+    */
+
+    var Cell = function () {
+
+        /**
+        * Constructor, from a list of points and a seed.
+        * There is no integrity checking to make sure the seed is actually within the polygon.
+        * The polygon, since it's supposed to come from a Voronoi cell, is expected to be convex.
+        * @param {Array} contourPoints - Array of points
+        */
+        function Cell(contourPoints, seed) {
+            classCallCheck(this, Cell);
+
+            this._hash = Cell.genarateHash(seed.x, seed.y);
+            this._polygon = new ConvexPolygon(contourPoints);
+            this._seed = seed;
+            this._isValid = this._polygon.isValid() && !!this._hash;
+        }
+
+        /**
+        * Return if this cell is valid
+        * @return {Boolean} true if valid, false if not
+        */
+
+        createClass(Cell, [{
+            key: "isValid",
+            value: function isValid() {
+                return this._isValid;
+            }
+
+            /**
+            * Get the hash of this cell
+            * @return {String}
+            */
+
+        }, {
+            key: "getHash",
+            value: function getHash() {
+                return this._hash;
+            }
+
+            /**
+            * Get the seed of the cell.
+            * @return {Object} should be of form {x: Number, y: Number, seedIndex: Number}
+            */
+
+        }, {
+            key: "getSeed",
+            value: function getSeed() {
+                return this._seed;
+            }
+
+            /**
+            * Get the polygon of this cell
+            * @return {ConvexPolygon}
+            */
+
+        }, {
+            key: "getPolygon",
+            value: function getPolygon() {
+                return this._polygon;
+            }
+
+            /**
+            * [STATIC]
+            * Get a unique hash from 2 floats. I am pretty sure these super simple stringified
+            * coordinate hashes are not the most robust, though the point is mainly to be as
+            * fast as possible.
+            * @param {Number} n1 - a number, most likely the x of a coord
+            * @param {Number} n2 - a number, most likely the y of a coord
+            * @param {String} a (probably unique enough) hash
+            */
+
+        }, {
+            key: "getArea",
+
+            /**
+            * Get the area of the cell (calls the polygon method)
+            * @return {Number} the area
+            */
+            value: function getArea() {
+                return this._polygon.getArea();
+            }
+
+            /**
+            * Get the polygon resulting from the intersection of a voronoi cell with another
+            * cell (this second cell comes from another voronoi diagramm where a seed has been added).
+            * NOTE: This does NOT implement a standard polygon intersection algorithm, its use
+            * is stricly for the use case of voronoi cells being replaced, making it quite faster
+            * but not suitable for other cases.
+            * @param {Cell} anotherCell - another cell to intersect with
+            * @return {ConvexPolygon} the polygon resulting from the intersection
+            */
+
+        }, {
+            key: "intersectWithCell",
+            value: function intersectWithCell(anotherCell) {
+                return this._polygon.getCellReplacementIntersection(anotherCell.getPolygon());
+            }
+
+            /**
+            * Compare if this cell has the same polygon as another cell.
+            * Read the doc of ConvexPolygon.getPolygon() for more info.
+            * @param {Cell} anotherCell - another cell to compare the polygon with.
+            * @return {Boolean} true if the same polygon, false if not
+            */
+
+        }, {
+            key: "hasSamePolygon",
+            value: function hasSamePolygon(otherCell) {
+                return this._polygon.isSame(otherCell.getPolygon());
+            }
+        }], [{
+            key: "genarateHash",
+            value: function genarateHash(n1, n2) {
+                //var hash = (i1 < base ? "0" : '') + i1.toString(16) +
+                //           (i2 < base ? "0" : '') + i2.toString(16)
+
+                //
+                var hash = n1.toString() + "_" + n2.toString();
+                return hash;
+            }
+        }]);
+        return Cell;
+    }();
+
+    /**
+    * A CellCollection stores Cell objects. It is the interface between the Voronoi diagram
+    * and the Cells/Polygons.
+    */
+
+    var CellCollection = function () {
+
+        /**
+        * The constructor does not take any param.
+        */
+        function CellCollection() {
+            classCallCheck(this, CellCollection);
+
+            this._cells = {};
+            this._cellArray = [];
+            this._addedSeedHash = null;
+        }
+
+        /**
+        * Builds the collection of cell using a voronoi diagram object from the Javascript-Voronoi
+        * library by Gorhill ( http://bit.ly/2FoapPI )
+        */
+
+        createClass(CellCollection, [{
+            key: 'buildFromVoronoiDiagram',
+            value: function buildFromVoronoiDiagram(vd) {
+                var vCells = vd.cells;
+
+                // for each cell
+                for (var i = 0; i < vCells.length; i++) {
+                    var cellhes = vCells[i].halfedges;
+                    var points = [];
+
+                    for (var j = 0; j < cellhes.length; j++) {
+                        points.push(cellhes[j].edge.va);
+                        points.push(cellhes[j].edge.vb);
+                    }
+
+                    // build a cell
+                    var cell = new Cell(points, vCells[i].site);
+                    if (cell.isValid()) {
+                        this._cells[cell.getHash()] = cell;
+                        this._cellArray.push(cell);
+                    }
+                }
+            }
+
+            /**
+            * Get the list of hashes (ID) of cells in the collection
+            * @return {Array} all the hashes
+            */
+
+        }, {
+            key: 'getCellHashes',
+            value: function getCellHashes() {
+                return Object.keys(this._cells);
+            }
+
+            /**
+            * Get the cell of _this_ collection that has this hash
+            * @param {String} hash - the unique hash of the cell
+            * @return {Cell} a Cell instance of null if hash not found
+            */
+
+        }, {
+            key: 'getCell',
+            value: function getCell(hash) {
+                if (hash in this._cells) return this._cells[hash];else return null;
+            }
+
+            /**
+            * Store the hash of a given position of a seed, meaning, store a reference to a cell.
+            * This seed is the one added to the 'another' diagram, when we introduce a pixel as a seed.
+            * For instance, the seed-only cell collection does not have a reference to a seed.
+            * @param {Number} x - the x position of the seed to reference
+            * @param {Number} y - the y position of the seed to reference
+            */
+
+        }, {
+            key: 'referenceSeed',
+            value: function referenceSeed(x, y) {
+                this._addedSeedHash = Cell.genarateHash(x, y);
+            }
+
+            /**
+            * Get the cell that was referenced by referenceSeed()
+            * @return {Cell}
+            */
+
+        }, {
+            key: 'getReferencedSeedCell',
+            value: function getReferencedSeedCell() {
+                return this._cells[this._addedSeedHash];
+            }
+
+            /**
+            * When comparing a seed-only CellCollection with a seed-and-one-pixel CellCollection
+            * with getStolenAreaInfo(), we get a list of original cell index (from the seed-only collection)
+            * as well as the area ratio that comes from them to build the pixel-based cell
+            * @param {CellCollection} anotherCellCollection - a cell collection with the original seeds + 1 pixel as a seed
+            * @return {Array} list of {seedIndex: Number, weight: Number}
+            */
+
+        }, {
+            key: 'getStolenAreaInfo',
+            value: function getStolenAreaInfo(anotherCellCollection) {
+                var addedCell = anotherCellCollection.getReferencedSeedCell();
+                var addedCellArea = addedCell.getArea();
+                var modifiedCells = [];
+
+                for (var hash in this._cells) {
+                    if (hash === addedCell.getHash()) continue;
+
+                    var originalCell = this._cells[hash];
+                    var newCell = anotherCellCollection.getCell(hash);
+                    var isSame = originalCell.hasSamePolygon(newCell);
+
+                    if (!isSame) {
+                        var stolenRatio = 0;
+                        var stolenPoly = addedCell.intersectWithCell(originalCell);
+
+                        if (stolenPoly.isValid()) {
+                            var stolenArea = stolenPoly.getArea();
+                            stolenRatio = stolenArea / addedCell.getArea();
+                        }
+
+                        stolenRatio = Math.round(stolenRatio * 10000) / 10000;
+
+                        //modifiedCells.push( {cell: originalCell, stolenRatio: stolenRatio} );
+                        modifiedCells.push({ seedIndex: originalCell.getSeed().seedIndex, weight: stolenRatio });
+                    }
+                }
+
+                return modifiedCells;
+            }
+        }]);
+        return CellCollection;
+    }();
+
+    /**
+    * The Interpolator is the API provider of natninter.
+    */
+
+    var Interpolator = function () {
+
+        /**
+        * No param constructor
+        */
+        function Interpolator() {
+            classCallCheck(this, Interpolator);
+
+            this._seeds = [];
+            this._output = { width: 256, height: 256 };
+            this._samplingMap = [];
+            this._recomputeMap = true;
+
+            // voronoi diagram of seeds only
+            this._seedCellCollection = null;
+
+            this._onProgressCallback = null;
+        }
+
+        /**
+         * Define a callback for the progress of making the map and the progress of making the output image
+         * It will be called with 2 args: the progress in percentage (Number), and a description string
+         * @param  {Function} cb - callback function
+         */
+
+        createClass(Interpolator, [{
+            key: 'onProgress',
+            value: function onProgress(cb) {
+                if (cb && typeof cb === "function") {
+                    this._onProgressCallback = cb;
+                }
+            }
+
+            /**
+            * Removes all the seeds
+            */
+
+        }, {
+            key: 'cleanSeeds',
+            value: function cleanSeeds() {
+                this._seeds = [];
+                this._recomputeMap = true;
+            }
+
+            /**
+            * Add a seed to the interpolator. Note that the seed is not copied, only its reference is.
+            * This is convenient for updating the value of the seed from the outside and ecompute
+            * the interpolation without having to recompute the whole weight map.
+            * @param {Object} seed - of form {x: Number, y: Number, value: Number}
+            */
+
+        }, {
+            key: 'addSeed',
+            value: function addSeed(seed) {
+                if ("x" in seed && "y" in seed && "value" in seed) {
+                    this._seeds.push(seed);
+                    this._recomputeMap = true;
+                }
+            }
+
+            /**
+            * Add an array of seed
+            * @param {Array} seedArr - array of seeds, where each seed is of form {x: Number, y: Number, value: Number}
+            */
+
+        }, {
+            key: 'addSeeds',
+            value: function addSeeds(seedArr) {
+                for (var i = 0; i < seedArr.length; i++) {
+                    this.addSeed(seedArr[i]);
+                }
+            }
+
+            /**
+             * Get the number of seeds, mainly to add a validation steop after adding them.
+             * @return {Number} The number of seed
+             */
+
+        }, {
+            key: 'getNumberOfSeeds',
+            value: function getNumberOfSeeds() {
+                return this._seeds.length;
+            }
+
+            /**
+            * Define the size of the output image
+            * @param {Number} width - width of the output image
+            * @param {Number} height - height of the output image
+            */
+
+        }, {
+            key: 'setOutputSize',
+            value: function setOutputSize(width, height) {
+                if (width > 0 && height > 0) {
+                    this._output.width = width;
+                    this._output.height = height;
+                }
+            }
+
+            /**
+            * Check if all the seeds are inside the output area defined with `setOutputSize()`
+            * @return {Boolean} true if all are inside, false if at leas one is out
+            */
+
+        }, {
+            key: 'hasAllSeedsInside',
+            value: function hasAllSeedsInside() {
+                var size = this._output;
+                return this._seeds.every(function (s) {
+                    return s.x >= 0 && s.y >= 0 && s.x < size.width && s.y < size.width;
+                });
+            }
+
+            /**
+            * Compute the sampling map. Automatically called by the update method when the
+            * map was never computed or when a seed have been added since.
+            * Though this method is not private and can be called to force recomputing the map.
+            * Note: if you have already computed a map for the exact same seed positions and output size,
+            * you can avoid recomputing it and use `getMap` and `setMap`.
+            * @return {Boolean} true if the process went well, false if error generating the map
+            */
+
+        }, {
+            key: 'generateMap',
+            value: function generateMap() {
+                if (!this.hasAllSeedsInside()) {
+                    console.log('ERR: some seeds are outside of the image. Use .setOutputSize() to change the output size or modify the seed.');
+                    return false;
+                }
+                this._generateSeedCells();
+
+                var w = this._output.width;
+                var h = this._output.height;
+                this._samplingMap = new Array(w * h);
+
+                // for each pixel of the output image
+                for (var i = 0; i < w; i++) {
+                    if (this._onProgressCallback) this._onProgressCallback(Math.round((i + 1) / w * 100), "sampling map");
+
+                    for (var j = 0; j < h; j++) {
+
+                        var seedIndex = this.isAtSeedPosition(i, j);
+                        var index1D = i + j * w;
+
+                        if (seedIndex === -1) {
+                            //this._samplingMap[ index1D ] = this._generatePixelCells(i, j);
+                            var pixelCellCollection = this._generatePixelCells(i, j);
+                            var stolenAreaData = this._seedCellCollection.getStolenAreaInfo(pixelCellCollection);
+                            this._samplingMap[index1D] = stolenAreaData;
+                        } else {
+                            this._samplingMap[index1D] = [{ seedIndex: seedIndex, weight: 1 }];
+                        }
+                    }
+                }
+
+                return true;
+            }
+
+            /**
+            * Get the sampling map object
+            */
+
+        }, {
+            key: 'getMap',
+            value: function getMap(m) {
+                return this._samplingMap;
+            }
+
+            /**
+            * When you don't want to recompute the sampling map with `computeMap()` and reuse
+            * the exact same seed position and output size (of course, seed values can change)
+            * @param {Array} map - an already existing sampling map
+            */
+
+        }, {
+            key: 'setMap',
+            value: function setMap(map) {
+                if (map.length === this._output.width * this._output.height) {
+                    this._samplingMap = map;
+                    return true;
+                } else {
+                    console.log("The sampling map must be an 1D array of size output.x*output.y");
+                    return false;
+                }
+            }
+
+            /**
+            * is the given position at the position of a seed?
+            * @param {Number} i - position along x axis
+            * @param {Number} j - position along y axis
+            * @return {Boolean} -1 if not, of the index of the seed if yes
+            */
+
+        }, {
+            key: 'isAtSeedPosition',
+            value: function isAtSeedPosition(i, j) {
+                return this._seeds.findIndex(function (elem) {
+                    return elem.x == i && elem.y == j;
+                });
+            }
+
+            /**
+            * [PRIVATE]
+            * Generate the voronoi diagram where sites are only seeds
+            */
+
+        }, {
+            key: '_generateSeedCells',
+            value: function _generateSeedCells() {
+                var bbox = { xl: 0, xr: this._output.width, yt: 0, yb: this._output.height };
+                var sites = this._seeds.map(function (s, i) {
+                    return { x: s.x, y: s.y, seedIndex: i };
+                });
+
+                var voronoi = new rhillVoronoiCore();
+                var seedVoronoiDiagram = voronoi.compute(sites, bbox);
+
+                this._seedCellCollection = new CellCollection();
+                this._seedCellCollection.buildFromVoronoiDiagram(seedVoronoiDiagram);
+            }
+        }, {
+            key: '_generatePixelCells',
+            value: function _generatePixelCells(i, j) {
+                var voronoi = new rhillVoronoiCore();
+                var bbox = { xl: 0, xr: this._output.width, yt: 0, yb: this._output.height };
+                var sites = this._seeds.map(function (s, i) {
+                    return { x: s.x, y: s.y, seedIndex: i };
+                });
+                sites.push({ x: i, y: j, seedIndex: -1 });
+                var pixelVoronoiDiagram = voronoi.compute(sites, bbox);
+
+                var pixelCellCollection = new CellCollection();
+                pixelCellCollection.buildFromVoronoiDiagram(pixelVoronoiDiagram);
+                pixelCellCollection.referenceSeed(i, j);
+
+                return pixelCellCollection;
+            }
+
+            /**
+            * Generate the output image as a floating points 1D array representing a 2D (1band)
+            * image.
+            * @return {Object} of form {_data: Float32Array, _metadata: {width: Number, height: Number}}
+            */
+
+        }, {
+            key: 'generateImage',
+            value: function generateImage() {
+                var l = this._output.width * this._output.height;
+                var outImg = new Float32Array(l);
+                var seeds = this._seeds;
+                var map = this._samplingMap;
+
+                for (var i = 0; i < l; i++) {
+                    if (this._onProgressCallback) this._onProgressCallback(Math.round((i + 1) / l * 100), "output image");
+
+                    var pixelMap = map[i];
+                    var sum = 0;
+
+                    for (var m = 0; m < pixelMap.length; m++) {
+                        sum += pixelMap[m].weight * seeds[pixelMap[m].seedIndex].value;
+                    }
+
+                    outImg[i] = sum;
+                }
+
+                return {
+                    _metadata: {
+                        width: this._output.width,
+                        height: this._output.height
+                    },
+                    _data: outImg
+                };
+            }
+        }]);
+        return Interpolator;
+    }();
+
+    exports.Interpolator = Interpolator;
+});
+
+var natninter_cjs$1 = unwrapExports(natninter_cjs);
+var natninter_cjs_1 = natninter_cjs.Interpolator;
+
+
+var natninter = Object.freeze({
+	default: natninter_cjs$1,
+	__moduleExports: natninter_cjs,
+	Interpolator: natninter_cjs_1
+});
+
+/*
+* Author    Jonathan Lurie - http://me.jonathanlurie.fr
+*
+* License   MIT
+* Link      https://github.com/Pixpipe/pixpipejs
+* Lab       MCIN - Montreal Neurological Institute
+*/
+
+/**
+ * Inputs are alternatively
+ * - "seeds" , an array of seeds
+ * - "samplingMap"
+ *
+ * As metadata:
+ * - "outputSize" as {width: Number, height: Number}
+ * - "samplingMapOnly" as a boolean. If true generated only the sampling map, if false, generate the sampling map and the output image
+ *
+ * As output:
+ * - "0" or not arg, the output image
+ * - "samplingMap", the sampling map. Only available if "samplingMap" is not already as input
+ *
+ * @extends Filter
+ */
+
+var NaturalNeighborSparseInterpolationImageFilter = function (_Filter) {
+  inherits(NaturalNeighborSparseInterpolationImageFilter, _Filter);
+
+  function NaturalNeighborSparseInterpolationImageFilter() {
+    classCallCheck(this, NaturalNeighborSparseInterpolationImageFilter);
+
+    var _this = possibleConstructorReturn(this, (NaturalNeighborSparseInterpolationImageFilter.__proto__ || Object.getPrototypeOf(NaturalNeighborSparseInterpolationImageFilter)).call(this));
+
+    _this.setMetadata("outputSize", { width: 0, height: 0 });
+    _this.setMetadata("samplingMapOnly", false);
+
+    console.log(natninter);
+    return _this;
+  }
+
+  createClass(NaturalNeighborSparseInterpolationImageFilter, [{
+    key: '_run',
+    value: function _run() {
+      var inputSeeds = this._getInput("seeds");
+      var inputSamplingMap = this._getInput("samplingMap");
+      var outputSize = this.getMetadata("outputSize");
+      var samplingMapOnly = this.getMetadata("samplingMapOnly");
+
+      if (!inputSeeds) {
+        console.log("The sparse nn interpolation needs seeds to process.");
+        return;
+      }
+
+      if (!(outputSize && outputSize.width > 0 && outputSize.height > 0)) {
+        console.log("The output size must be of form {width: Number, height: Number}, both being positive.");
+        return;
+      }
+
+      //
+
+      var nnInter = new natninter_cjs_1();
+      nnInter.setOutputSize(outputSize.width, outputSize.height);
+      nnInter.addSeeds(inputSeeds);
+
+      if (nnInter.getNumberOfSeeds() === 0) {
+        console.log("Seeds are probably of the wrong format, check documentation.");
+        return;
+      }
+
+      // here we have the alternative, or we already have a sampling map to use...
+      if (inputSamplingMap) {
+        var validSize = nnInter.setMap(inputSamplingMap);
+        if (!validSize) {
+          console.log("The provided sampling map is of the wrong size.");
+          return;
+        }
+
+        // ...of compute the sampling map
+      } else {
+        var mapOk = nnInter.generateMap();
+        if (!mapOk) {
+          console.log("The sampling map generation went wrong.");
+          return;
+        } else {
+          this._output["samplingMap"] = nnInter.getMap();
+        }
+      }
+
+      if (samplingMapOnly) return;
+
+      var imgArray = nnInter.generateImage();
+      var out = new Image2D();
+      out.setData(imgArray._data, outputSize.width, outputSize.height, 1);
+
+      var min = +Infinity;
+      var max = -Infinity;
+      for (var i = 0; i < inputSeeds.length; i++) {
+        min = Math.min(min, inputSeeds[i].value);
+        max = Math.max(max, inputSeeds[i].value);
+      }
+      out.setMetadata("min", min);
+      out.setMetadata("max", max);
+
+      this._output[0] = out;
+    }
+  }]);
+  return NaturalNeighborSparseInterpolationImageFilter;
+}(Filter); /* END of class NaturalNeighborSparseInterpolationImageFilter */
+
+/**
+* From https://github.com/bpostlethwaite/colormap
+*/
+
+var ColorScales = {
+	"jet": [{ "index": 0, "rgb": [0, 0, 131] }, { "index": 0.125, "rgb": [0, 60, 170] }, { "index": 0.375, "rgb": [5, 255, 255] }, { "index": 0.625, "rgb": [255, 255, 0] }, { "index": 0.875, "rgb": [250, 0, 0] }, { "index": 1, "rgb": [128, 0, 0] }],
+
+	"hsv": [{ "index": 0, "rgb": [255, 0, 0] }, { "index": 0.169, "rgb": [253, 255, 2] }, { "index": 0.173, "rgb": [247, 255, 2] }, { "index": 0.337, "rgb": [0, 252, 4] }, { "index": 0.341, "rgb": [0, 252, 10] }, { "index": 0.506, "rgb": [1, 249, 255] }, { "index": 0.671, "rgb": [2, 0, 253] }, { "index": 0.675, "rgb": [8, 0, 253] }, { "index": 0.839, "rgb": [255, 0, 251] }, { "index": 0.843, "rgb": [255, 0, 245] }, { "index": 1, "rgb": [255, 0, 6] }],
+
+	"hot": [{ "index": 0, "rgb": [0, 0, 0] }, { "index": 0.3, "rgb": [230, 0, 0] }, { "index": 0.6, "rgb": [255, 210, 0] }, { "index": 1, "rgb": [255, 255, 255] }],
+
+	"cool": [{ "index": 0, "rgb": [0, 255, 255] }, { "index": 1, "rgb": [255, 0, 255] }],
+
+	"spring": [{ "index": 0, "rgb": [255, 0, 255] }, { "index": 1, "rgb": [255, 255, 0] }],
+
+	"summer": [{ "index": 0, "rgb": [0, 128, 102] }, { "index": 1, "rgb": [255, 255, 102] }],
+
+	"autumn": [{ "index": 0, "rgb": [255, 0, 0] }, { "index": 1, "rgb": [255, 255, 0] }],
+
+	"winter": [{ "index": 0, "rgb": [0, 0, 255] }, { "index": 1, "rgb": [0, 255, 128] }],
+
+	"bone": [{ "index": 0, "rgb": [0, 0, 0] }, { "index": 0.376, "rgb": [84, 84, 116] }, { "index": 0.753, "rgb": [169, 200, 200] }, { "index": 1, "rgb": [255, 255, 255] }],
+
+	"copper": [{ "index": 0, "rgb": [0, 0, 0] }, { "index": 0.804, "rgb": [255, 160, 102] }, { "index": 1, "rgb": [255, 199, 127] }],
+
+	"greys": [{ "index": 0, "rgb": [0, 0, 0] }, { "index": 1, "rgb": [255, 255, 255] }],
+
+	"yignbu": [{ "index": 0, "rgb": [8, 29, 88] }, { "index": 0.125, "rgb": [37, 52, 148] }, { "index": 0.25, "rgb": [34, 94, 168] }, { "index": 0.375, "rgb": [29, 145, 192] }, { "index": 0.5, "rgb": [65, 182, 196] }, { "index": 0.625, "rgb": [127, 205, 187] }, { "index": 0.75, "rgb": [199, 233, 180] }, { "index": 0.875, "rgb": [237, 248, 217] }, { "index": 1, "rgb": [255, 255, 217] }],
+
+	"greens": [{ "index": 0, "rgb": [0, 68, 27] }, { "index": 0.125, "rgb": [0, 109, 44] }, { "index": 0.25, "rgb": [35, 139, 69] }, { "index": 0.375, "rgb": [65, 171, 93] }, { "index": 0.5, "rgb": [116, 196, 118] }, { "index": 0.625, "rgb": [161, 217, 155] }, { "index": 0.75, "rgb": [199, 233, 192] }, { "index": 0.875, "rgb": [229, 245, 224] }, { "index": 1, "rgb": [247, 252, 245] }],
+
+	"yiorrd": [{ "index": 0, "rgb": [128, 0, 38] }, { "index": 0.125, "rgb": [189, 0, 38] }, { "index": 0.25, "rgb": [227, 26, 28] }, { "index": 0.375, "rgb": [252, 78, 42] }, { "index": 0.5, "rgb": [253, 141, 60] }, { "index": 0.625, "rgb": [254, 178, 76] }, { "index": 0.75, "rgb": [254, 217, 118] }, { "index": 0.875, "rgb": [255, 237, 160] }, { "index": 1, "rgb": [255, 255, 204] }],
+
+	"bluered": [{ "index": 0, "rgb": [0, 0, 255] }, { "index": 1, "rgb": [255, 0, 0] }],
+
+	"rdbu": [{ "index": 0, "rgb": [5, 10, 172] }, { "index": 0.35, "rgb": [106, 137, 247] }, { "index": 0.5, "rgb": [190, 190, 190] }, { "index": 0.6, "rgb": [220, 170, 132] }, { "index": 0.7, "rgb": [230, 145, 90] }, { "index": 1, "rgb": [178, 10, 28] }],
+
+	"picnic": [{ "index": 0, "rgb": [0, 0, 255] }, { "index": 0.1, "rgb": [51, 153, 255] }, { "index": 0.2, "rgb": [102, 204, 255] }, { "index": 0.3, "rgb": [153, 204, 255] }, { "index": 0.4, "rgb": [204, 204, 255] }, { "index": 0.5, "rgb": [255, 255, 255] }, { "index": 0.6, "rgb": [255, 204, 255] }, { "index": 0.7, "rgb": [255, 153, 255] }, { "index": 0.8, "rgb": [255, 102, 204] }, { "index": 0.9, "rgb": [255, 102, 102] }, { "index": 1, "rgb": [255, 0, 0] }],
+
+	"rainbow": [{ "index": 0, "rgb": [150, 0, 90] }, { "index": 0.125, "rgb": [0, 0, 200] }, { "index": 0.25, "rgb": [0, 25, 255] }, { "index": 0.375, "rgb": [0, 152, 255] }, { "index": 0.5, "rgb": [44, 255, 150] }, { "index": 0.625, "rgb": [151, 255, 0] }, { "index": 0.75, "rgb": [255, 234, 0] }, { "index": 0.875, "rgb": [255, 111, 0] }, { "index": 1, "rgb": [255, 0, 0] }],
+
+	"portland": [{ "index": 0, "rgb": [12, 51, 131] }, { "index": 0.25, "rgb": [10, 136, 186] }, { "index": 0.5, "rgb": [242, 211, 56] }, { "index": 0.75, "rgb": [242, 143, 56] }, { "index": 1, "rgb": [217, 30, 30] }],
+
+	"blackbody": [{ "index": 0, "rgb": [0, 0, 0] }, { "index": 0.2, "rgb": [230, 0, 0] }, { "index": 0.4, "rgb": [230, 210, 0] }, { "index": 0.7, "rgb": [255, 255, 255] }, { "index": 1, "rgb": [160, 200, 255] }],
+
+	"earth": [{ "index": 0, "rgb": [0, 0, 130] }, { "index": 0.1, "rgb": [0, 180, 180] }, { "index": 0.2, "rgb": [40, 210, 40] }, { "index": 0.4, "rgb": [230, 230, 50] }, { "index": 0.6, "rgb": [120, 70, 20] }, { "index": 1, "rgb": [255, 255, 255] }],
+
+	"electric": [{ "index": 0, "rgb": [0, 0, 0] }, { "index": 0.15, "rgb": [30, 0, 100] }, { "index": 0.4, "rgb": [120, 0, 100] }, { "index": 0.6, "rgb": [160, 90, 0] }, { "index": 0.8, "rgb": [230, 200, 0] }, { "index": 1, "rgb": [255, 250, 220] }],
+
+	"viridis": [{ "index": 0, "rgb": [68, 1, 84] }, { "index": 0.13, "rgb": [71, 44, 122] }, { "index": 0.25, "rgb": [59, 81, 139] }, { "index": 0.38, "rgb": [44, 113, 142] }, { "index": 0.5, "rgb": [33, 144, 141] }, { "index": 0.63, "rgb": [39, 173, 129] }, { "index": 0.75, "rgb": [92, 200, 99] }, { "index": 0.88, "rgb": [170, 220, 50] }, { "index": 1, "rgb": [253, 231, 37] }],
+
+	"inferno": [{ "index": 0, "rgb": [0, 0, 4] }, { "index": 0.13, "rgb": [31, 12, 72] }, { "index": 0.25, "rgb": [85, 15, 109] }, { "index": 0.38, "rgb": [136, 34, 106] }, { "index": 0.5, "rgb": [186, 54, 85] }, { "index": 0.63, "rgb": [227, 89, 51] }, { "index": 0.75, "rgb": [249, 140, 10] }, { "index": 0.88, "rgb": [249, 201, 50] }, { "index": 1, "rgb": [252, 255, 164] }],
+
+	"magma": [{ "index": 0, "rgb": [0, 0, 4] }, { "index": 0.13, "rgb": [28, 16, 68] }, { "index": 0.25, "rgb": [79, 18, 123] }, { "index": 0.38, "rgb": [129, 37, 129] }, { "index": 0.5, "rgb": [181, 54, 122] }, { "index": 0.63, "rgb": [229, 80, 100] }, { "index": 0.75, "rgb": [251, 135, 97] }, { "index": 0.88, "rgb": [254, 194, 135] }, { "index": 1, "rgb": [252, 253, 191] }],
+
+	"plasma": [{ "index": 0, "rgb": [13, 8, 135] }, { "index": 0.13, "rgb": [75, 3, 161] }, { "index": 0.25, "rgb": [125, 3, 168] }, { "index": 0.38, "rgb": [168, 34, 150] }, { "index": 0.5, "rgb": [203, 70, 121] }, { "index": 0.63, "rgb": [229, 107, 93] }, { "index": 0.75, "rgb": [248, 148, 65] }, { "index": 0.88, "rgb": [253, 195, 40] }, { "index": 1, "rgb": [240, 249, 33] }],
+
+	"warm": [{ "index": 0, "rgb": [125, 0, 179] }, { "index": 0.13, "rgb": [172, 0, 187] }, { "index": 0.25, "rgb": [219, 0, 170] }, { "index": 0.38, "rgb": [255, 0, 130] }, { "index": 0.5, "rgb": [255, 63, 74] }, { "index": 0.63, "rgb": [255, 123, 0] }, { "index": 0.75, "rgb": [234, 176, 0] }, { "index": 0.88, "rgb": [190, 228, 0] }, { "index": 1, "rgb": [147, 255, 0] }],
+
+	"cool2": [{ "index": 0, "rgb": [125, 0, 179] }, { "index": 0.13, "rgb": [116, 0, 218] }, { "index": 0.25, "rgb": [98, 74, 237] }, { "index": 0.38, "rgb": [68, 146, 231] }, { "index": 0.5, "rgb": [0, 204, 197] }, { "index": 0.63, "rgb": [0, 247, 146] }, { "index": 0.75, "rgb": [0, 255, 88] }, { "index": 0.88, "rgb": [40, 255, 8] }, { "index": 1, "rgb": [147, 255, 0] }],
+
+	"rainbow-soft": [{ "index": 0, "rgb": [125, 0, 179] }, { "index": 0.1, "rgb": [199, 0, 180] }, { "index": 0.2, "rgb": [255, 0, 121] }, { "index": 0.3, "rgb": [255, 108, 0] }, { "index": 0.4, "rgb": [222, 194, 0] }, { "index": 0.5, "rgb": [150, 255, 0] }, { "index": 0.6, "rgb": [0, 255, 55] }, { "index": 0.7, "rgb": [0, 246, 150] }, { "index": 0.8, "rgb": [50, 167, 222] }, { "index": 0.9, "rgb": [103, 51, 235] }, { "index": 1, "rgb": [124, 0, 186] }],
+
+	"bathymetry": [{ "index": 0, "rgb": [40, 26, 44] }, { "index": 0.13, "rgb": [59, 49, 90] }, { "index": 0.25, "rgb": [64, 76, 139] }, { "index": 0.38, "rgb": [63, 110, 151] }, { "index": 0.5, "rgb": [72, 142, 158] }, { "index": 0.63, "rgb": [85, 174, 163] }, { "index": 0.75, "rgb": [120, 206, 163] }, { "index": 0.88, "rgb": [187, 230, 172] }, { "index": 1, "rgb": [253, 254, 204] }],
+
+	"cdom": [{ "index": 0, "rgb": [47, 15, 62] }, { "index": 0.13, "rgb": [87, 23, 86] }, { "index": 0.25, "rgb": [130, 28, 99] }, { "index": 0.38, "rgb": [171, 41, 96] }, { "index": 0.5, "rgb": [206, 67, 86] }, { "index": 0.63, "rgb": [230, 106, 84] }, { "index": 0.75, "rgb": [242, 149, 103] }, { "index": 0.88, "rgb": [249, 193, 135] }, { "index": 1, "rgb": [254, 237, 176] }],
+
+	"chlorophyll": [{ "index": 0, "rgb": [18, 36, 20] }, { "index": 0.13, "rgb": [25, 63, 41] }, { "index": 0.25, "rgb": [24, 91, 59] }, { "index": 0.38, "rgb": [13, 119, 72] }, { "index": 0.5, "rgb": [18, 148, 80] }, { "index": 0.63, "rgb": [80, 173, 89] }, { "index": 0.75, "rgb": [132, 196, 122] }, { "index": 0.88, "rgb": [175, 221, 162] }, { "index": 1, "rgb": [215, 249, 208] }],
+
+	"density": [{ "index": 0, "rgb": [54, 14, 36] }, { "index": 0.13, "rgb": [89, 23, 80] }, { "index": 0.25, "rgb": [110, 45, 132] }, { "index": 0.38, "rgb": [120, 77, 178] }, { "index": 0.5, "rgb": [120, 113, 213] }, { "index": 0.63, "rgb": [115, 151, 228] }, { "index": 0.75, "rgb": [134, 185, 227] }, { "index": 0.88, "rgb": [177, 214, 227] }, { "index": 1, "rgb": [230, 241, 241] }],
+
+	"freesurface-blue": [{ "index": 0, "rgb": [30, 4, 110] }, { "index": 0.13, "rgb": [47, 14, 176] }, { "index": 0.25, "rgb": [41, 45, 236] }, { "index": 0.38, "rgb": [25, 99, 212] }, { "index": 0.5, "rgb": [68, 131, 200] }, { "index": 0.63, "rgb": [114, 156, 197] }, { "index": 0.75, "rgb": [157, 181, 203] }, { "index": 0.88, "rgb": [200, 208, 216] }, { "index": 1, "rgb": [241, 237, 236] }],
+
+	"freesurface-red": [{ "index": 0, "rgb": [60, 9, 18] }, { "index": 0.13, "rgb": [100, 17, 27] }, { "index": 0.25, "rgb": [142, 20, 29] }, { "index": 0.38, "rgb": [177, 43, 27] }, { "index": 0.5, "rgb": [192, 87, 63] }, { "index": 0.63, "rgb": [205, 125, 105] }, { "index": 0.75, "rgb": [216, 162, 148] }, { "index": 0.88, "rgb": [227, 199, 193] }, { "index": 1, "rgb": [241, 237, 236] }],
+
+	"oxygen": [{ "index": 0, "rgb": [64, 5, 5] }, { "index": 0.13, "rgb": [106, 6, 15] }, { "index": 0.25, "rgb": [144, 26, 7] }, { "index": 0.38, "rgb": [168, 64, 3] }, { "index": 0.5, "rgb": [188, 100, 4] }, { "index": 0.63, "rgb": [206, 136, 11] }, { "index": 0.75, "rgb": [220, 174, 25] }, { "index": 0.88, "rgb": [231, 215, 44] }, { "index": 1, "rgb": [248, 254, 105] }],
+
+	"par": [{ "index": 0, "rgb": [51, 20, 24] }, { "index": 0.13, "rgb": [90, 32, 35] }, { "index": 0.25, "rgb": [129, 44, 34] }, { "index": 0.38, "rgb": [159, 68, 25] }, { "index": 0.5, "rgb": [182, 99, 19] }, { "index": 0.63, "rgb": [199, 134, 22] }, { "index": 0.75, "rgb": [212, 171, 35] }, { "index": 0.88, "rgb": [221, 210, 54] }, { "index": 1, "rgb": [225, 253, 75] }],
+
+	"phase": [{ "index": 0, "rgb": [145, 105, 18] }, { "index": 0.13, "rgb": [184, 71, 38] }, { "index": 0.25, "rgb": [186, 58, 115] }, { "index": 0.38, "rgb": [160, 71, 185] }, { "index": 0.5, "rgb": [110, 97, 218] }, { "index": 0.63, "rgb": [50, 123, 164] }, { "index": 0.75, "rgb": [31, 131, 110] }, { "index": 0.88, "rgb": [77, 129, 34] }, { "index": 1, "rgb": [145, 105, 18] }],
+
+	"salinity": [{ "index": 0, "rgb": [42, 24, 108] }, { "index": 0.13, "rgb": [33, 50, 162] }, { "index": 0.25, "rgb": [15, 90, 145] }, { "index": 0.38, "rgb": [40, 118, 137] }, { "index": 0.5, "rgb": [59, 146, 135] }, { "index": 0.63, "rgb": [79, 175, 126] }, { "index": 0.75, "rgb": [120, 203, 104] }, { "index": 0.88, "rgb": [193, 221, 100] }, { "index": 1, "rgb": [253, 239, 154] }],
+
+	"temperature": [{ "index": 0, "rgb": [4, 35, 51] }, { "index": 0.13, "rgb": [23, 51, 122] }, { "index": 0.25, "rgb": [85, 59, 157] }, { "index": 0.38, "rgb": [129, 79, 143] }, { "index": 0.5, "rgb": [175, 95, 130] }, { "index": 0.63, "rgb": [222, 112, 101] }, { "index": 0.75, "rgb": [249, 146, 66] }, { "index": 0.88, "rgb": [249, 196, 65] }, { "index": 1, "rgb": [232, 250, 91] }],
+
+	"turbidity": [{ "index": 0, "rgb": [34, 31, 27] }, { "index": 0.13, "rgb": [65, 50, 41] }, { "index": 0.25, "rgb": [98, 69, 52] }, { "index": 0.38, "rgb": [131, 89, 57] }, { "index": 0.5, "rgb": [161, 112, 59] }, { "index": 0.63, "rgb": [185, 140, 66] }, { "index": 0.75, "rgb": [202, 174, 88] }, { "index": 0.88, "rgb": [216, 209, 126] }, { "index": 1, "rgb": [233, 246, 171] }],
+
+	"velocity-blue": [{ "index": 0, "rgb": [17, 32, 64] }, { "index": 0.13, "rgb": [35, 52, 116] }, { "index": 0.25, "rgb": [29, 81, 156] }, { "index": 0.38, "rgb": [31, 113, 162] }, { "index": 0.5, "rgb": [50, 144, 169] }, { "index": 0.63, "rgb": [87, 173, 176] }, { "index": 0.75, "rgb": [149, 196, 189] }, { "index": 0.88, "rgb": [203, 221, 211] }, { "index": 1, "rgb": [254, 251, 230] }],
+
+	"velocity-green": [{ "index": 0, "rgb": [23, 35, 19] }, { "index": 0.13, "rgb": [24, 64, 38] }, { "index": 0.25, "rgb": [11, 95, 45] }, { "index": 0.38, "rgb": [39, 123, 35] }, { "index": 0.5, "rgb": [95, 146, 12] }, { "index": 0.63, "rgb": [152, 165, 18] }, { "index": 0.75, "rgb": [201, 186, 69] }, { "index": 0.88, "rgb": [233, 216, 137] }, { "index": 1, "rgb": [255, 253, 205] }],
+
+	"cubehelix": [{ "index": 0, "rgb": [0, 0, 0] }, { "index": 0.07, "rgb": [22, 5, 59] }, { "index": 0.13, "rgb": [60, 4, 105] }, { "index": 0.2, "rgb": [109, 1, 135] }, { "index": 0.27, "rgb": [161, 0, 147] }, { "index": 0.33, "rgb": [210, 2, 142] }, { "index": 0.4, "rgb": [251, 11, 123] }, { "index": 0.47, "rgb": [255, 29, 97] }, { "index": 0.53, "rgb": [255, 54, 69] }, { "index": 0.6, "rgb": [255, 85, 46] }, { "index": 0.67, "rgb": [255, 120, 34] }, { "index": 0.73, "rgb": [255, 157, 37] }, { "index": 0.8, "rgb": [241, 191, 57] }, { "index": 0.87, "rgb": [224, 220, 93] }, { "index": 0.93, "rgb": [218, 241, 142] }, { "index": 1, "rgb": [227, 253, 198] }]
+};
+
+/*
+* Author   Jonathan Lurie - http://me.jonathanlurie.fr
+* License  MIT
+* Link      https://github.com/Pixpipe/pixpipejs
+* Lab       MCIN - Montreal Neurological Institute
+*/
+
+/**
+* A Colormap instance is a range of color and can be used in two ways. The first,
+* is by getting a single color using `.getValueAt(p)` where `p` is a position in [0, 1] and, second,
+* by building en entire LUT with a given granularity and then getting back these values.
+* In case of intensive use (ie. applying fake colors), building a LUT is a faster option.
+* Once a LUT is built,  an image of this LUT can be created (horizontal or vertical, flipped or not).
+* The image will be flipped is the `flip` matadata is set to `true`;
+* This image, which is an Image2D is not supposed to be used as a LUT but just as a visual reference.
+*
+* **Usage**
+* - [examples/colormap.html](../examples/colormap.html)
+*
+*/
+
+var Colormap = function (_PixpipeObject) {
+  inherits(Colormap, _PixpipeObject);
+
+  /**
+  * Build a colormap with some options.
+  * @param {Object} options - here is the list of options:
+  *     style {String} - one of the available styles (see property names in ColorScales.js)
+  *     description {Object} - colormap description like in ColorScales.js. Can also be the equivalent JSON string.
+  *     lutSize {Number} - Number of samples to pregenerate a LUT
+  *     Note: "style" and "description" are mutually exclusive and "style" has the priority in case both are set.
+  */
+  function Colormap() {
+    var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+    classCallCheck(this, Colormap);
+
+    var _this = possibleConstructorReturn(this, (Colormap.__proto__ || Object.getPrototypeOf(Colormap)).call(this));
+
+    _this._type = Colormap.TYPE();
+    _this._colormapDescription = null;
+    _this._LUT = [];
+    _this.setMetadata("flip", false);
+
+    var style = _this._getOption(options, "style", null);
+
+    if (style) {
+      _this.setStyle(style);
+    } else {
+      var description = _this._getOption(options, "description", null);
+      _this.setDescription(description);
+    }
+
+    if (_this._colormapDescription) {
+      var lutSize = _this._getOption(options, "lutSize", null);
+      if (lutSize) {
+        _this.buildLut(lutSize);
+      }
+    }
+
+    return _this;
+  }
+
+  /**
+  * Hardcode the datatype
+  */
+
+
+  createClass(Colormap, [{
+    key: 'setStyle',
+
+
+    /**
+    * Define the style of the colormap
+    * @param {String} style - the colormap style. They are all listed with `Colormap.getAvailableStyles()`
+    */
+    value: function setStyle(style) {
+      if (style in ColorScales) {
+        if (this._validateDescription(ColorScales[style])) {
+          this._colormapDescription = JSON.parse(JSON.stringify(ColorScales[style]));
+        }
+      } else {
+        console.warn("The given colormap style des not exist.");
+      }
+    }
+
+    /**
+    * Set the description of the colormap. See ColorScales.js for the format
+    * @param {Object} d - description, can be the equivalent JSON string
+    */
+
+  }, {
+    key: 'setDescription',
+    value: function setDescription(d) {
+      // the description in argument can be a json string
+      var description = typeof d === "string" ? JSON.parse(d) : d;
+
+      if (description && this._validateDescription(description)) {
+        this._colormapDescription = description;
+      }
+    }
+
+    /**
+    * [PRIVATE]
+    * Validates a colormap description integrity.
+    * @return {Boolean} true is the description is valid, false if not
+    */
+
+  }, {
+    key: '_validateDescription',
+    value: function _validateDescription(d) {
+      if (!Array.isArray(d)) {
+        console.warn("The colormap description has to be an Array");
+        return false;
+      }
+
+      for (var i = 0; i < d.length; i++) {
+        // each color segment is an object containing a position as 'index'
+        // and an array of number as "rgb"
+
+        // each is a non-null object
+        if (d[i] !== null && _typeof(d[i]) === 'object') {
+          if ("index" in d[i] && "rgb" in d[i]) {
+            if (typeof d[i].index === 'number') {
+              if (d[i].index < 0 || d[i].index > 1) {
+                console.warn("Each colormap segment 'index' property should be in [0, 1]");
+                return false;
+              }
+            } else {
+              console.warn("Each colormap segment 'index' property should be a number.");
+              return false;
+            }
+
+            // the rgb property has to be an array
+            if (Array.isArray(d[i].rgb)) {
+              if (d[i].rgb.length == 3) {
+                for (var j = 0; j < d[i].rgb.length; j++) {
+                  if (d[i].rgb[j] < 0 || d[i].rgb[j] > 255) {
+                    console.warn("The colormap must have only values in [0, 255]");
+                    return false;
+                  }
+                }
+              } else {
+                console.warn("Each colormap segment 'rgb' should contain 3 values");
+                return false;
+              }
+            }
+          } else {
+            console.warn("Each colormap segment must have a 'index' property and a 'rgb' property.");
+            return false;
+          }
+        } else {
+          console.warn("Each colormap segment must be a non-null object");
+          return false;
+        }
+      }
+      return true;
+    }
+
+    /**
+    * Get the color at the colormap position
+    * @param {Number} position - position within the colormap in [0, 1]
+    * @return {Array} color array as [r, g, b] , values being in [0, 255]
+    */
+
+  }, {
+    key: 'getValueAt',
+    value: function getValueAt(position) {
+      if (!this._colormapDescription) {
+        console.warn("The colormap description is not defined.");
+        return null;
+      }
+
+      if (this._metadata.flip) position = 1 - position;
+
+      // case 1: before the first "index" position
+      if (position <= this._colormapDescription[0].index) {
+        return this._colormapDescription[0].rgb.slice();
+      }
+
+      // case 2: after the last "index" position
+      if (position >= this._colormapDescription[this._colormapDescription.length - 1].index) {
+        return this._colormapDescription[this._colormapDescription.length - 1].rgb.slice();
+      }
+
+      // case 3: between 2 values of the descrition (most likely to happen)
+      for (var i = 0; i < this._colormapDescription.length - 1; i++) {
+        if (position >= this._colormapDescription[i].index && position < this._colormapDescription[i + 1].index) {
+
+          var unitDistanceToFirst = (position - this._colormapDescription[i].index) / (this._colormapDescription[i + 1].index - this._colormapDescription[i].index);
+          var unitDistanceToSecond = 1 - unitDistanceToFirst;
+
+          var color = [Math.round(this._colormapDescription[i].rgb[0] * unitDistanceToSecond + this._colormapDescription[i + 1].rgb[0] * unitDistanceToFirst), // R
+          Math.round(this._colormapDescription[i].rgb[1] * unitDistanceToSecond + this._colormapDescription[i + 1].rgb[1] * unitDistanceToFirst), // G
+          Math.round(this._colormapDescription[i].rgb[2] * unitDistanceToSecond + this._colormapDescription[i + 1].rgb[2] * unitDistanceToFirst)];
+
+          return color;
+        }
+      }
+    }
+
+    /**
+     * Get an interpolated value of a colormap but using a certain amount of color clustering
+     * @param  {Number} position - normalized position on the color spectrum, from 0 to 1
+     * @param  {Number} clusters - Number of clusters
+     * @return {Array} A color [r, g, b]
+     */
+
+  }, {
+    key: 'getValueAtWithClusters',
+    value: function getValueAtWithClusters(position, clusters) {
+      var custeredPosition = (Math.floor(position * clusters) + 0.5) / clusters;
+      return this.getValueAt(custeredPosition);
+    }
+
+    /**
+    * Build a LUT from the colormap description
+    * @param {Number} size - number of samples in the LUT
+    */
+
+  }, {
+    key: 'buildLut',
+    value: function buildLut() {
+      var size = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : Math.pow(2, 16);
+
+      if (!this._colormapDescription) {
+        console.warn("The colormap description is not defined, the LUT cannot be created");
+        return null;
+      }
+
+      if (size < 0) {
+        console.warn("Size of the colormap can not be negative.");
+        return;
+      }
+
+      this._LUT = new Array(size);
+
+      for (var i = 0; i < size; i++) {
+        this._LUT[i] = this.getValueAt(i / size + 0.5 / size);
+      }
+    }
+
+    /**
+    * Get the color within the internal LUT
+    * @param {Number} index - the index in the LUT
+    * @return {Array} color array as [r, g, b] , values being in [0, 255]
+    */
+
+  }, {
+    key: 'getLutAt',
+    value: function getLutAt(index) {
+      if (index < 0 || index > this._LUT.length) return null;
+
+      return this._LUT[index];
+    }
+  }, {
+    key: 'getLutAtNormalized',
+    value: function getLutAtNormalized(position) {
+      var index = -1;
+
+      if (position < 0) {
+        index = 0;
+      } else if (position < this._LUT.length) {
+        index = Math.floor(position * (this._LUT.length - 1));
+      } else {
+        index = this._LUT.length - 1;
+      }
+
+      return this._LUT[index];
+    }
+
+    /**
+    * Creates a horizontal Image2D of the colormap. The height is 1px and
+    * the width is the size of the LUT currently in use.
+    * The image can be horizontally flipped when the "flip" metadata is true;
+    * @return {Image2D} the result image
+    */
+
+  }, {
+    key: 'createHorizontalLutImage',
+    value: function createHorizontalLutImage() {
+      if (!this._LUT) {
+        console.warn("The LUT must be built before creating a LUT image.");
+        return;
+      }
+
+      var LutSize = this._LUT.length;
+      var colorStrip = new Image2D({ width: LutSize, height: 1, color: [0, 0, 0] });
+
+      for (var i = 0; i < LutSize; i++) {
+        colorStrip.setPixel({ x: i, y: 0 }, this._LUT[i]);
+      }
+
+      return colorStrip;
+    }
+
+    /**
+    * Creates a vertical Image2D of the colormap. The height is 1px and
+    * the width is the size of the LUT currently in use.
+    * The image can be vertically flipped when the "flip" metadata is true;
+    * @return {Image2D} the result image
+    */
+
+  }, {
+    key: 'createVerticalLutImage',
+    value: function createVerticalLutImage() {
+      if (!this._LUT) {
+        console.warn("The LUT must be built before creating a LUT image.");
+        return;
+      }
+
+      var LutSize = this._LUT.length;
+      var colorStrip = new Image2D({ width: 1, height: LutSize, color: [0, 0, 0] });
+
+      for (var i = 0; i < LutSize; i++) {
+        colorStrip.setPixel({ x: 0, y: i }, this._LUT[i]);
+      }
+
+      return colorStrip;
+    }
+
+    /**
+    * Add a color to the color description. This color must be at a non-taken index
+    * @param {Number} index - index to place the color, must be in [0, 1]
+    * @param {Array} rgb - rgb array of the form [r, g, b], each value being in [0, 255]
+    * @return {Boolean} true if the color was succesfully added, false if not
+    */
+
+  }, {
+    key: 'addColor',
+    value: function addColor(index, rgb) {
+      // the colormap is possibly empty
+      if (!this._colormapDescription) {
+        this._colormapDescription = [];
+      }
+
+      if (index < 0 || index > 1) {
+        console.warn("The color cannot be added because its index is out of range [0, 1]");
+        return false;
+      }
+
+      // checking if a color is already present at the given index
+      var indexAlreadyPresent = this._colormapDescription.find(function (indexAndColor) {
+        return indexAndColor.index == index;
+      });
+
+      if (indexAlreadyPresent) {
+        console.warn("A color is already present at index " + index);
+        return false;
+      }
+
+      if (rgb && Array.isArray(rgb) && rgb.length == 3) {
+        for (var i = 0; i < rgb.length; i++) {
+          if (typeof rgb[i] !== 'number' || rgb[i] < 0 || rgb[i] > 255) {
+            console.warn("The rgb colors must be in [0, 255]");
+            return false;
+          }
+        }
+      } else {
+        console.warn("The color cannot be added because its rgb array is the wrong size.");
+        return false;
+      }
+
+      // data integrity is ok
+      this._colormapDescription.push({ "index": index, "rgb": rgb.slice() });
+      this._colormapDescription.sort(function (a, b) {
+        return a.index - b.index;
+      });
+
+      return true;
+    }
+
+    /**
+    * Remove the color at the given index
+    * @param {Number} index - the [0, 1] index of the color to remove
+    * @return {Boolean} true if successfully remove, false if not
+    */
+
+  }, {
+    key: 'removeColor',
+    value: function removeColor(index) {
+      if (!this._colormapDescription) {
+        console.warn("The colormap description is empty.");
+        return false;
+      }
+
+      var indexAlreadyIn = this._colormapDescription.findIndex(function (element) {
+        return element.index == index;
+      });
+
+      if (indexAlreadyIn == -1) {
+        console.warn("Such index does not exist.");
+        return false;
+      }
+
+      this._colormapDescription.splice(indexAlreadyIn, 1);
+      return true;
+    }
+
+    /**
+    * Get a json version of the colormap description
+    * @return {String} the json string
+    */
+
+  }, {
+    key: 'toJson',
+    value: function toJson() {
+      return JSON.stringify(this._colormapDescription);
+    }
+  }], [{
+    key: 'TYPE',
+    value: function TYPE() {
+      return "COLORMAP";
+    }
+
+    /**
+    * [STATIC]
+    * Get all the style id available
+    * @return {Array} all the styles
+    */
+
+  }, {
+    key: 'getAvailableStyles',
+    value: function getAvailableStyles() {
+      return Object.keys(ColorScales);
+    }
+  }]);
+  return Colormap;
+}(PixpipeObject); /* END of class Colormap */
+
+/*
+* Author   Jonathan Lurie - http://me.jonathanlurie.fr
+* License  MIT
+* Link      https://github.com/Pixpipe/pixpipejs
+* Lab       MCIN - Montreal Neurological Institute
+*/
+
+/**
+* An instance of ApplyColormapFilter applies a colormap on a chose channel (aka. component) of an Image2D.
+* Several optional `metadata` are available to tune the end result:
+* - `.setMetadata("style", xxx: String);` see the complete list at http://www.pixpipe.io/pixpipejs/examples/colormap.html . Default is "jet"
+* - `.setMetadata("flip", xxx; Bolean );` a fliped colormap reverses its style. Default: false
+* - `.setMetadata("min", xxx: Number );` and `.setMetadata("max", xxx: Number );` if specified, will replace the min and max of the input image. This can be used to enhance of lower the contrast
+* - `setMetadata("clusters", xxx: Number );` The number of color clusters. If not-null, this will turn a smooth gradient into a set of xxx iso levels of color. Default: null
+* - `.setMetadata("component", xxx: Number )` The component to use on the input image to perform the colormapping. Default: 0
+*
+* This filter requires an Image2D as input `0` and output a 3-components RGB Image2D of the same size as the input.
+*
+* **Usage**
+* - [examples/nniColormap.html](../examples/nniColormap.html)
+* - [examples/photoColorMap.html](../examples/photoColorMap.html)
+*
+*/
+
+var ApplyColormapFilter = function (_ImageToImageFilter) {
+  inherits(ApplyColormapFilter, _ImageToImageFilter);
+
+  function ApplyColormapFilter() {
+    classCallCheck(this, ApplyColormapFilter);
+
+    var _this = possibleConstructorReturn(this, (ApplyColormapFilter.__proto__ || Object.getPrototypeOf(ApplyColormapFilter)).call(this));
+
+    _this.addInputValidator(0, Image2D);
+
+    // the default colormap style is jet (rainbow)
+    _this.setMetadata("style", "jet");
+
+    // flip the colormap (no by default)
+    _this.setMetadata("flip", false);
+
+    // min and max should come from the min and max of the input image,
+    // thought they can be changed manually to adapt the colormap to a different range
+    _this.setMetadata("min", undefined);
+    _this.setMetadata("max", undefined);
+
+    // how many color cluster? For smooth gradient, keep it null
+    _this.setMetadata("clusters", null);
+
+    // In case of using an image with more than 1 component per pxel (ncpp>1)
+    // we must choose on which component is computer the colormap
+    // (default: the 0th, so the Red for a RGB image)
+    _this.setMetadata("component", 0);
+    return _this;
+  }
+
+  createClass(ApplyColormapFilter, [{
+    key: '_run',
+    value: function _run() {
+      if (!this.hasValidInput()) {
+        console.warn("A filter of type CropImageFilter requires 1 input of category '0' (Image2D)");
+        return;
+      }
+
+      var inputImage = this._getInput(0);
+      var inputWidth = inputImage.getWidth();
+      var inputHeight = inputImage.getHeight();
+      var ncpp = inputImage.getNcpp();
+      var component = this.getMetadata("component");
+
+      if (component >= ncpp) {
+        console.warn("The chosen component must be lower than the input ncpp");
+        return;
+      }
+
+      var min = this.getMetadata("min") || inputImage.getMin();
+      var max = this.getMetadata("max") || inputImage.getMax();
+      var clusters = this.getMetadata("clusters");
+
+      if (Math.abs(min - max) < 1e-6) {
+        console.warn("Min and max values are similar, no interpolation is possible.");
+        return;
+      }
+
+      var cm = new Colormap();
+      cm.setMetadata("flip", this.getMetadata("flip"));
+      cm.setStyle(this.getMetadata("style"));
+
+      var lookupFunction = cm.getValueAt.bind(cm);
+      if (clusters) {
+        lookupFunction = cm.getValueAtWithClusters.bind(cm);
+      }
+
+      var inputData = inputImage.getData();
+
+      var outputImage = new Image2D({
+        width: inputWidth,
+        height: inputHeight,
+        color: new Uint8Array([0, 0, 0])
+      });
+
+      cm.buildLut();
+
+      for (var i = 0; i < inputWidth; i++) {
+        for (var j = 0; j < inputHeight; j++) {
+          var inputColor = inputImage.getPixel({ x: i, y: j })[component];
+          var normalizedIntensity = (inputColor - min) / (max - min);
+          var color = lookupFunction(normalizedIntensity, clusters);
+
+          outputImage.setPixel({ x: i, y: j }, color);
+        }
+      }
+
+      this._output[0] = outputImage;
+    }
+  }]);
+  return ApplyColormapFilter;
+}(ImageToImageFilter); /* END of class ApplyColormapFilter */
+
 /*
 * Author   Jonathan Lurie - http://me.jonathanlurie.fr
 * License  MIT
@@ -69999,501 +73744,6 @@ var LineStringPrinterOnImage2DHelper = function (_ImageToImageFilter) {
   }]);
   return LineStringPrinterOnImage2DHelper;
 }(ImageToImageFilter); /* END of class LineStringPrinterOnImage2DHelper */
-
-/**
-* From https://github.com/bpostlethwaite/colormap
-*/
-
-var ColorScales = {
-	"jet": [{ "index": 0, "rgb": [0, 0, 131] }, { "index": 0.125, "rgb": [0, 60, 170] }, { "index": 0.375, "rgb": [5, 255, 255] }, { "index": 0.625, "rgb": [255, 255, 0] }, { "index": 0.875, "rgb": [250, 0, 0] }, { "index": 1, "rgb": [128, 0, 0] }],
-
-	"hsv": [{ "index": 0, "rgb": [255, 0, 0] }, { "index": 0.169, "rgb": [253, 255, 2] }, { "index": 0.173, "rgb": [247, 255, 2] }, { "index": 0.337, "rgb": [0, 252, 4] }, { "index": 0.341, "rgb": [0, 252, 10] }, { "index": 0.506, "rgb": [1, 249, 255] }, { "index": 0.671, "rgb": [2, 0, 253] }, { "index": 0.675, "rgb": [8, 0, 253] }, { "index": 0.839, "rgb": [255, 0, 251] }, { "index": 0.843, "rgb": [255, 0, 245] }, { "index": 1, "rgb": [255, 0, 6] }],
-
-	"hot": [{ "index": 0, "rgb": [0, 0, 0] }, { "index": 0.3, "rgb": [230, 0, 0] }, { "index": 0.6, "rgb": [255, 210, 0] }, { "index": 1, "rgb": [255, 255, 255] }],
-
-	"cool": [{ "index": 0, "rgb": [0, 255, 255] }, { "index": 1, "rgb": [255, 0, 255] }],
-
-	"spring": [{ "index": 0, "rgb": [255, 0, 255] }, { "index": 1, "rgb": [255, 255, 0] }],
-
-	"summer": [{ "index": 0, "rgb": [0, 128, 102] }, { "index": 1, "rgb": [255, 255, 102] }],
-
-	"autumn": [{ "index": 0, "rgb": [255, 0, 0] }, { "index": 1, "rgb": [255, 255, 0] }],
-
-	"winter": [{ "index": 0, "rgb": [0, 0, 255] }, { "index": 1, "rgb": [0, 255, 128] }],
-
-	"bone": [{ "index": 0, "rgb": [0, 0, 0] }, { "index": 0.376, "rgb": [84, 84, 116] }, { "index": 0.753, "rgb": [169, 200, 200] }, { "index": 1, "rgb": [255, 255, 255] }],
-
-	"copper": [{ "index": 0, "rgb": [0, 0, 0] }, { "index": 0.804, "rgb": [255, 160, 102] }, { "index": 1, "rgb": [255, 199, 127] }],
-
-	"greys": [{ "index": 0, "rgb": [0, 0, 0] }, { "index": 1, "rgb": [255, 255, 255] }],
-
-	"yignbu": [{ "index": 0, "rgb": [8, 29, 88] }, { "index": 0.125, "rgb": [37, 52, 148] }, { "index": 0.25, "rgb": [34, 94, 168] }, { "index": 0.375, "rgb": [29, 145, 192] }, { "index": 0.5, "rgb": [65, 182, 196] }, { "index": 0.625, "rgb": [127, 205, 187] }, { "index": 0.75, "rgb": [199, 233, 180] }, { "index": 0.875, "rgb": [237, 248, 217] }, { "index": 1, "rgb": [255, 255, 217] }],
-
-	"greens": [{ "index": 0, "rgb": [0, 68, 27] }, { "index": 0.125, "rgb": [0, 109, 44] }, { "index": 0.25, "rgb": [35, 139, 69] }, { "index": 0.375, "rgb": [65, 171, 93] }, { "index": 0.5, "rgb": [116, 196, 118] }, { "index": 0.625, "rgb": [161, 217, 155] }, { "index": 0.75, "rgb": [199, 233, 192] }, { "index": 0.875, "rgb": [229, 245, 224] }, { "index": 1, "rgb": [247, 252, 245] }],
-
-	"yiorrd": [{ "index": 0, "rgb": [128, 0, 38] }, { "index": 0.125, "rgb": [189, 0, 38] }, { "index": 0.25, "rgb": [227, 26, 28] }, { "index": 0.375, "rgb": [252, 78, 42] }, { "index": 0.5, "rgb": [253, 141, 60] }, { "index": 0.625, "rgb": [254, 178, 76] }, { "index": 0.75, "rgb": [254, 217, 118] }, { "index": 0.875, "rgb": [255, 237, 160] }, { "index": 1, "rgb": [255, 255, 204] }],
-
-	"bluered": [{ "index": 0, "rgb": [0, 0, 255] }, { "index": 1, "rgb": [255, 0, 0] }],
-
-	"rdbu": [{ "index": 0, "rgb": [5, 10, 172] }, { "index": 0.35, "rgb": [106, 137, 247] }, { "index": 0.5, "rgb": [190, 190, 190] }, { "index": 0.6, "rgb": [220, 170, 132] }, { "index": 0.7, "rgb": [230, 145, 90] }, { "index": 1, "rgb": [178, 10, 28] }],
-
-	"picnic": [{ "index": 0, "rgb": [0, 0, 255] }, { "index": 0.1, "rgb": [51, 153, 255] }, { "index": 0.2, "rgb": [102, 204, 255] }, { "index": 0.3, "rgb": [153, 204, 255] }, { "index": 0.4, "rgb": [204, 204, 255] }, { "index": 0.5, "rgb": [255, 255, 255] }, { "index": 0.6, "rgb": [255, 204, 255] }, { "index": 0.7, "rgb": [255, 153, 255] }, { "index": 0.8, "rgb": [255, 102, 204] }, { "index": 0.9, "rgb": [255, 102, 102] }, { "index": 1, "rgb": [255, 0, 0] }],
-
-	"rainbow": [{ "index": 0, "rgb": [150, 0, 90] }, { "index": 0.125, "rgb": [0, 0, 200] }, { "index": 0.25, "rgb": [0, 25, 255] }, { "index": 0.375, "rgb": [0, 152, 255] }, { "index": 0.5, "rgb": [44, 255, 150] }, { "index": 0.625, "rgb": [151, 255, 0] }, { "index": 0.75, "rgb": [255, 234, 0] }, { "index": 0.875, "rgb": [255, 111, 0] }, { "index": 1, "rgb": [255, 0, 0] }],
-
-	"portland": [{ "index": 0, "rgb": [12, 51, 131] }, { "index": 0.25, "rgb": [10, 136, 186] }, { "index": 0.5, "rgb": [242, 211, 56] }, { "index": 0.75, "rgb": [242, 143, 56] }, { "index": 1, "rgb": [217, 30, 30] }],
-
-	"blackbody": [{ "index": 0, "rgb": [0, 0, 0] }, { "index": 0.2, "rgb": [230, 0, 0] }, { "index": 0.4, "rgb": [230, 210, 0] }, { "index": 0.7, "rgb": [255, 255, 255] }, { "index": 1, "rgb": [160, 200, 255] }],
-
-	"earth": [{ "index": 0, "rgb": [0, 0, 130] }, { "index": 0.1, "rgb": [0, 180, 180] }, { "index": 0.2, "rgb": [40, 210, 40] }, { "index": 0.4, "rgb": [230, 230, 50] }, { "index": 0.6, "rgb": [120, 70, 20] }, { "index": 1, "rgb": [255, 255, 255] }],
-
-	"electric": [{ "index": 0, "rgb": [0, 0, 0] }, { "index": 0.15, "rgb": [30, 0, 100] }, { "index": 0.4, "rgb": [120, 0, 100] }, { "index": 0.6, "rgb": [160, 90, 0] }, { "index": 0.8, "rgb": [230, 200, 0] }, { "index": 1, "rgb": [255, 250, 220] }],
-
-	"viridis": [{ "index": 0, "rgb": [68, 1, 84] }, { "index": 0.13, "rgb": [71, 44, 122] }, { "index": 0.25, "rgb": [59, 81, 139] }, { "index": 0.38, "rgb": [44, 113, 142] }, { "index": 0.5, "rgb": [33, 144, 141] }, { "index": 0.63, "rgb": [39, 173, 129] }, { "index": 0.75, "rgb": [92, 200, 99] }, { "index": 0.88, "rgb": [170, 220, 50] }, { "index": 1, "rgb": [253, 231, 37] }],
-
-	"inferno": [{ "index": 0, "rgb": [0, 0, 4] }, { "index": 0.13, "rgb": [31, 12, 72] }, { "index": 0.25, "rgb": [85, 15, 109] }, { "index": 0.38, "rgb": [136, 34, 106] }, { "index": 0.5, "rgb": [186, 54, 85] }, { "index": 0.63, "rgb": [227, 89, 51] }, { "index": 0.75, "rgb": [249, 140, 10] }, { "index": 0.88, "rgb": [249, 201, 50] }, { "index": 1, "rgb": [252, 255, 164] }],
-
-	"magma": [{ "index": 0, "rgb": [0, 0, 4] }, { "index": 0.13, "rgb": [28, 16, 68] }, { "index": 0.25, "rgb": [79, 18, 123] }, { "index": 0.38, "rgb": [129, 37, 129] }, { "index": 0.5, "rgb": [181, 54, 122] }, { "index": 0.63, "rgb": [229, 80, 100] }, { "index": 0.75, "rgb": [251, 135, 97] }, { "index": 0.88, "rgb": [254, 194, 135] }, { "index": 1, "rgb": [252, 253, 191] }],
-
-	"plasma": [{ "index": 0, "rgb": [13, 8, 135] }, { "index": 0.13, "rgb": [75, 3, 161] }, { "index": 0.25, "rgb": [125, 3, 168] }, { "index": 0.38, "rgb": [168, 34, 150] }, { "index": 0.5, "rgb": [203, 70, 121] }, { "index": 0.63, "rgb": [229, 107, 93] }, { "index": 0.75, "rgb": [248, 148, 65] }, { "index": 0.88, "rgb": [253, 195, 40] }, { "index": 1, "rgb": [240, 249, 33] }],
-
-	"warm": [{ "index": 0, "rgb": [125, 0, 179] }, { "index": 0.13, "rgb": [172, 0, 187] }, { "index": 0.25, "rgb": [219, 0, 170] }, { "index": 0.38, "rgb": [255, 0, 130] }, { "index": 0.5, "rgb": [255, 63, 74] }, { "index": 0.63, "rgb": [255, 123, 0] }, { "index": 0.75, "rgb": [234, 176, 0] }, { "index": 0.88, "rgb": [190, 228, 0] }, { "index": 1, "rgb": [147, 255, 0] }],
-
-	"cool2": [{ "index": 0, "rgb": [125, 0, 179] }, { "index": 0.13, "rgb": [116, 0, 218] }, { "index": 0.25, "rgb": [98, 74, 237] }, { "index": 0.38, "rgb": [68, 146, 231] }, { "index": 0.5, "rgb": [0, 204, 197] }, { "index": 0.63, "rgb": [0, 247, 146] }, { "index": 0.75, "rgb": [0, 255, 88] }, { "index": 0.88, "rgb": [40, 255, 8] }, { "index": 1, "rgb": [147, 255, 0] }],
-
-	"rainbow-soft": [{ "index": 0, "rgb": [125, 0, 179] }, { "index": 0.1, "rgb": [199, 0, 180] }, { "index": 0.2, "rgb": [255, 0, 121] }, { "index": 0.3, "rgb": [255, 108, 0] }, { "index": 0.4, "rgb": [222, 194, 0] }, { "index": 0.5, "rgb": [150, 255, 0] }, { "index": 0.6, "rgb": [0, 255, 55] }, { "index": 0.7, "rgb": [0, 246, 150] }, { "index": 0.8, "rgb": [50, 167, 222] }, { "index": 0.9, "rgb": [103, 51, 235] }, { "index": 1, "rgb": [124, 0, 186] }],
-
-	"bathymetry": [{ "index": 0, "rgb": [40, 26, 44] }, { "index": 0.13, "rgb": [59, 49, 90] }, { "index": 0.25, "rgb": [64, 76, 139] }, { "index": 0.38, "rgb": [63, 110, 151] }, { "index": 0.5, "rgb": [72, 142, 158] }, { "index": 0.63, "rgb": [85, 174, 163] }, { "index": 0.75, "rgb": [120, 206, 163] }, { "index": 0.88, "rgb": [187, 230, 172] }, { "index": 1, "rgb": [253, 254, 204] }],
-
-	"cdom": [{ "index": 0, "rgb": [47, 15, 62] }, { "index": 0.13, "rgb": [87, 23, 86] }, { "index": 0.25, "rgb": [130, 28, 99] }, { "index": 0.38, "rgb": [171, 41, 96] }, { "index": 0.5, "rgb": [206, 67, 86] }, { "index": 0.63, "rgb": [230, 106, 84] }, { "index": 0.75, "rgb": [242, 149, 103] }, { "index": 0.88, "rgb": [249, 193, 135] }, { "index": 1, "rgb": [254, 237, 176] }],
-
-	"chlorophyll": [{ "index": 0, "rgb": [18, 36, 20] }, { "index": 0.13, "rgb": [25, 63, 41] }, { "index": 0.25, "rgb": [24, 91, 59] }, { "index": 0.38, "rgb": [13, 119, 72] }, { "index": 0.5, "rgb": [18, 148, 80] }, { "index": 0.63, "rgb": [80, 173, 89] }, { "index": 0.75, "rgb": [132, 196, 122] }, { "index": 0.88, "rgb": [175, 221, 162] }, { "index": 1, "rgb": [215, 249, 208] }],
-
-	"density": [{ "index": 0, "rgb": [54, 14, 36] }, { "index": 0.13, "rgb": [89, 23, 80] }, { "index": 0.25, "rgb": [110, 45, 132] }, { "index": 0.38, "rgb": [120, 77, 178] }, { "index": 0.5, "rgb": [120, 113, 213] }, { "index": 0.63, "rgb": [115, 151, 228] }, { "index": 0.75, "rgb": [134, 185, 227] }, { "index": 0.88, "rgb": [177, 214, 227] }, { "index": 1, "rgb": [230, 241, 241] }],
-
-	"freesurface-blue": [{ "index": 0, "rgb": [30, 4, 110] }, { "index": 0.13, "rgb": [47, 14, 176] }, { "index": 0.25, "rgb": [41, 45, 236] }, { "index": 0.38, "rgb": [25, 99, 212] }, { "index": 0.5, "rgb": [68, 131, 200] }, { "index": 0.63, "rgb": [114, 156, 197] }, { "index": 0.75, "rgb": [157, 181, 203] }, { "index": 0.88, "rgb": [200, 208, 216] }, { "index": 1, "rgb": [241, 237, 236] }],
-
-	"freesurface-red": [{ "index": 0, "rgb": [60, 9, 18] }, { "index": 0.13, "rgb": [100, 17, 27] }, { "index": 0.25, "rgb": [142, 20, 29] }, { "index": 0.38, "rgb": [177, 43, 27] }, { "index": 0.5, "rgb": [192, 87, 63] }, { "index": 0.63, "rgb": [205, 125, 105] }, { "index": 0.75, "rgb": [216, 162, 148] }, { "index": 0.88, "rgb": [227, 199, 193] }, { "index": 1, "rgb": [241, 237, 236] }],
-
-	"oxygen": [{ "index": 0, "rgb": [64, 5, 5] }, { "index": 0.13, "rgb": [106, 6, 15] }, { "index": 0.25, "rgb": [144, 26, 7] }, { "index": 0.38, "rgb": [168, 64, 3] }, { "index": 0.5, "rgb": [188, 100, 4] }, { "index": 0.63, "rgb": [206, 136, 11] }, { "index": 0.75, "rgb": [220, 174, 25] }, { "index": 0.88, "rgb": [231, 215, 44] }, { "index": 1, "rgb": [248, 254, 105] }],
-
-	"par": [{ "index": 0, "rgb": [51, 20, 24] }, { "index": 0.13, "rgb": [90, 32, 35] }, { "index": 0.25, "rgb": [129, 44, 34] }, { "index": 0.38, "rgb": [159, 68, 25] }, { "index": 0.5, "rgb": [182, 99, 19] }, { "index": 0.63, "rgb": [199, 134, 22] }, { "index": 0.75, "rgb": [212, 171, 35] }, { "index": 0.88, "rgb": [221, 210, 54] }, { "index": 1, "rgb": [225, 253, 75] }],
-
-	"phase": [{ "index": 0, "rgb": [145, 105, 18] }, { "index": 0.13, "rgb": [184, 71, 38] }, { "index": 0.25, "rgb": [186, 58, 115] }, { "index": 0.38, "rgb": [160, 71, 185] }, { "index": 0.5, "rgb": [110, 97, 218] }, { "index": 0.63, "rgb": [50, 123, 164] }, { "index": 0.75, "rgb": [31, 131, 110] }, { "index": 0.88, "rgb": [77, 129, 34] }, { "index": 1, "rgb": [145, 105, 18] }],
-
-	"salinity": [{ "index": 0, "rgb": [42, 24, 108] }, { "index": 0.13, "rgb": [33, 50, 162] }, { "index": 0.25, "rgb": [15, 90, 145] }, { "index": 0.38, "rgb": [40, 118, 137] }, { "index": 0.5, "rgb": [59, 146, 135] }, { "index": 0.63, "rgb": [79, 175, 126] }, { "index": 0.75, "rgb": [120, 203, 104] }, { "index": 0.88, "rgb": [193, 221, 100] }, { "index": 1, "rgb": [253, 239, 154] }],
-
-	"temperature": [{ "index": 0, "rgb": [4, 35, 51] }, { "index": 0.13, "rgb": [23, 51, 122] }, { "index": 0.25, "rgb": [85, 59, 157] }, { "index": 0.38, "rgb": [129, 79, 143] }, { "index": 0.5, "rgb": [175, 95, 130] }, { "index": 0.63, "rgb": [222, 112, 101] }, { "index": 0.75, "rgb": [249, 146, 66] }, { "index": 0.88, "rgb": [249, 196, 65] }, { "index": 1, "rgb": [232, 250, 91] }],
-
-	"turbidity": [{ "index": 0, "rgb": [34, 31, 27] }, { "index": 0.13, "rgb": [65, 50, 41] }, { "index": 0.25, "rgb": [98, 69, 52] }, { "index": 0.38, "rgb": [131, 89, 57] }, { "index": 0.5, "rgb": [161, 112, 59] }, { "index": 0.63, "rgb": [185, 140, 66] }, { "index": 0.75, "rgb": [202, 174, 88] }, { "index": 0.88, "rgb": [216, 209, 126] }, { "index": 1, "rgb": [233, 246, 171] }],
-
-	"velocity-blue": [{ "index": 0, "rgb": [17, 32, 64] }, { "index": 0.13, "rgb": [35, 52, 116] }, { "index": 0.25, "rgb": [29, 81, 156] }, { "index": 0.38, "rgb": [31, 113, 162] }, { "index": 0.5, "rgb": [50, 144, 169] }, { "index": 0.63, "rgb": [87, 173, 176] }, { "index": 0.75, "rgb": [149, 196, 189] }, { "index": 0.88, "rgb": [203, 221, 211] }, { "index": 1, "rgb": [254, 251, 230] }],
-
-	"velocity-green": [{ "index": 0, "rgb": [23, 35, 19] }, { "index": 0.13, "rgb": [24, 64, 38] }, { "index": 0.25, "rgb": [11, 95, 45] }, { "index": 0.38, "rgb": [39, 123, 35] }, { "index": 0.5, "rgb": [95, 146, 12] }, { "index": 0.63, "rgb": [152, 165, 18] }, { "index": 0.75, "rgb": [201, 186, 69] }, { "index": 0.88, "rgb": [233, 216, 137] }, { "index": 1, "rgb": [255, 253, 205] }],
-
-	"cubehelix": [{ "index": 0, "rgb": [0, 0, 0] }, { "index": 0.07, "rgb": [22, 5, 59] }, { "index": 0.13, "rgb": [60, 4, 105] }, { "index": 0.2, "rgb": [109, 1, 135] }, { "index": 0.27, "rgb": [161, 0, 147] }, { "index": 0.33, "rgb": [210, 2, 142] }, { "index": 0.4, "rgb": [251, 11, 123] }, { "index": 0.47, "rgb": [255, 29, 97] }, { "index": 0.53, "rgb": [255, 54, 69] }, { "index": 0.6, "rgb": [255, 85, 46] }, { "index": 0.67, "rgb": [255, 120, 34] }, { "index": 0.73, "rgb": [255, 157, 37] }, { "index": 0.8, "rgb": [241, 191, 57] }, { "index": 0.87, "rgb": [224, 220, 93] }, { "index": 0.93, "rgb": [218, 241, 142] }, { "index": 1, "rgb": [227, 253, 198] }]
-};
-
-/*
-* Author   Jonathan Lurie - http://me.jonathanlurie.fr
-* License  MIT
-* Link      https://github.com/Pixpipe/pixpipejs
-* Lab       MCIN - Montreal Neurological Institute
-*/
-
-/**
-* A Colormap instance is a range of color and can be used in two ways. The first,
-* is by getting a single color using `.getValueAt(p)` where `p` is a position in [0, 1] and, second,
-* by building en entire LUT with a given granularity and then getting back these values.
-* In case of intensive use (ie. applying fake colors), building a LUT is a faster option.
-* Once a LUT is built,  an image of this LUT can be created (horizontal or vertical, flipped or not).
-* The image will be flipped is the `flip` matadata is set to `true`;
-* This image, which is an Image2D is not supposed to be used as a LUT but just as a visual reference.
-*
-* **Usage**
-* - [examples/colormap.html](../examples/colormap.html)
-*
-*/
-
-var Colormap = function (_PixpipeObject) {
-  inherits(Colormap, _PixpipeObject);
-
-  /**
-  * Build a colormap with some options.
-  * @param {Object} options - here is the list of options:
-  *     style {String} - one of the available styles (see property names in ColorScales.js)
-  *     description {Object} - colormap description like in ColorScales.js. Can also be the equivalent JSON string.
-  *     lutSize {Number} - Number of samples to pregenerate a LUT
-  *     Note: "style" and "description" are mutually exclusive and "style" has the priority in case both are set.
-  */
-  function Colormap() {
-    var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-    classCallCheck(this, Colormap);
-
-    var _this = possibleConstructorReturn(this, (Colormap.__proto__ || Object.getPrototypeOf(Colormap)).call(this));
-
-    _this._type = Colormap.TYPE();
-    _this._colormapDescription = null;
-    _this._LUT = [];
-
-    _this.setMetadata("flip", false);
-
-    var style = _this._getOption(options, "style", null);
-
-    if (style) {
-      _this.setStyle(style);
-    } else {
-      var description = _this._getOption(options, "description", null);
-      _this.setDescription(description);
-    }
-
-    if (_this._colormapDescription) {
-      var lutSize = _this._getOption(options, "lutSize", null);
-      if (lutSize) {
-        _this.buildLut(lutSize);
-      }
-    }
-
-    return _this;
-  }
-
-  /**
-  * Hardcode the datatype
-  */
-
-
-  createClass(Colormap, [{
-    key: 'setStyle',
-
-
-    /**
-    * Define the style of the colormap
-    * @param {String} style - the colormap style. They are all listed with `Colormap.getAvailableStyles()`
-    */
-    value: function setStyle(style) {
-      if (style in ColorScales) {
-        if (this._validateDescription(ColorScales[style])) {
-          this._colormapDescription = JSON.parse(JSON.stringify(ColorScales[style]));
-        }
-      } else {
-        console.warn("The given colormap style des not exist.");
-      }
-    }
-
-    /**
-    * Set the description of the colormap. See ColorScales.js for the format
-    * @param {Object} d - description, can be the equivalent JSON string
-    */
-
-  }, {
-    key: 'setDescription',
-    value: function setDescription(d) {
-      // the description in argument can be a json string
-      var description = typeof d === "string" ? JSON.parse(d) : d;
-
-      if (description && this._validateDescription(description)) {
-        this._colormapDescription = description;
-      }
-    }
-
-    /**
-    * [PRIVATE]
-    * Validates a colormap description integrity.
-    * @return {Boolean} true is the description is valid, false if not
-    */
-
-  }, {
-    key: '_validateDescription',
-    value: function _validateDescription(d) {
-      if (!Array.isArray(d)) {
-        console.warn("The colormap description has to be an Array");
-        return false;
-      }
-
-      for (var i = 0; i < d.length; i++) {
-        // each color segment is an object containing a position as 'index'
-        // and an array of number as "rgb"
-
-        // each is a non-null object
-        if (d[i] !== null && _typeof(d[i]) === 'object') {
-          if ("index" in d[i] && "rgb" in d[i]) {
-            if (typeof d[i].index === 'number') {
-              if (d[i].index < 0 || d[i].index > 1) {
-                console.warn("Each colormap segment 'index' property should be in [0, 1]");
-                return false;
-              }
-            } else {
-              console.warn("Each colormap segment 'index' property should be a number.");
-              return false;
-            }
-
-            // the rgb property has to be an array
-            if (Array.isArray(d[i].rgb)) {
-              if (d[i].rgb.length == 3) {
-                for (var j = 0; j < d[i].rgb.length; j++) {
-                  if (d[i].rgb[j] < 0 || d[i].rgb[j] > 255) {
-                    console.warn("The colormap must have only values in [0, 255]");
-                    return false;
-                  }
-                }
-              } else {
-                console.warn("Each colormap segment 'rgb' should contain 3 values");
-                return false;
-              }
-            }
-          } else {
-            console.warn("Each colormap segment must have a 'index' property and a 'rgb' property.");
-            return false;
-          }
-        } else {
-          console.warn("Each colormap segment must be a non-null object");
-          return false;
-        }
-      }
-      return true;
-    }
-
-    /**
-    * Get the color at the colormap position
-    * @param {Number} position - position within the colormap in [0, 1]
-    * @return {Array} color array as [r, g, b] , values being in [0, 255]
-    */
-
-  }, {
-    key: 'getValueAt',
-    value: function getValueAt(position) {
-      if (!this._colormapDescription) {
-        console.warn("The colormap description is not defined.");
-        return null;
-      }
-
-      // case 1: before the first "index" position
-      if (position <= this._colormapDescription[0].index) {
-        return this._colormapDescription[0].rgb.slice();
-      }
-
-      // case 2: after the last "index" position
-      if (position >= this._colormapDescription[this._colormapDescription.length - 1].index) {
-        return this._colormapDescription[this._colormapDescription.length - 1].rgb.slice();
-      }
-
-      // case 3: between 2 values of the descrition (most likely to happen)
-      for (var i = 0; i < this._colormapDescription.length - 1; i++) {
-        if (position >= this._colormapDescription[i].index && position < this._colormapDescription[i + 1].index) {
-
-          var unitDistanceToFirst = (position - this._colormapDescription[i].index) / (this._colormapDescription[i + 1].index - this._colormapDescription[i].index);
-          var unitDistanceToSecond = 1 - unitDistanceToFirst;
-
-          var color = [Math.round(this._colormapDescription[i].rgb[0] * unitDistanceToSecond + this._colormapDescription[i + 1].rgb[0] * unitDistanceToFirst), // R
-          Math.round(this._colormapDescription[i].rgb[1] * unitDistanceToSecond + this._colormapDescription[i + 1].rgb[1] * unitDistanceToFirst), // G
-          Math.round(this._colormapDescription[i].rgb[2] * unitDistanceToSecond + this._colormapDescription[i + 1].rgb[2] * unitDistanceToFirst)];
-
-          return color;
-        }
-      }
-    }
-
-    /**
-    * Build a LUT from the colormap description
-    * @param {Number} size - number of samples in the LUT
-    */
-
-  }, {
-    key: 'buildLut',
-    value: function buildLut(size) {
-      if (!this._colormapDescription) {
-        console.warn("The colormap description is not defined, the LUT cannot be created");
-        return null;
-      }
-
-      if (size < 0) {
-        console.warn("Size of the colormap can not be negative.");
-        return;
-      }
-
-      this._LUT = new Array(size);
-
-      for (var i = 0; i < size; i++) {
-        this._LUT[i] = this.getValueAt(i / size + 0.5 / size);
-      }
-    }
-
-    /**
-    * Get the color within the internal LUT
-    * @param {Number} index - the index in the LUT
-    * @return {Array} color array as [r, g, b] , values being in [0, 255]
-    */
-
-  }, {
-    key: 'getLutAt',
-    value: function getLutAt(index) {
-      if (index < 0 || index > this._LUT.length) return null;
-
-      return this._LUT[index];
-    }
-
-    /**
-    * Creates a horizontal Image2D of the colormap. The height is 1px and
-    * the width is the size of the LUT currently in use.
-    * The image can be horizontally flipped when the "flip" metadata is true;
-    * @return {Image2D} the result image
-    */
-
-  }, {
-    key: 'createHorizontalLutImage',
-    value: function createHorizontalLutImage() {
-      if (!this._LUT) {
-        console.warn("The LUT must be built before creating a LUT image.");
-        return;
-      }
-
-      var flip = this.getMetadata("flip");
-      var LutSize = this._LUT.length;
-      var colorStrip = new Image2D({ width: LutSize, height: 1, color: [0, 0, 0] });
-
-      for (var i = 0; i < LutSize; i++) {
-        var positionInLut = flip ? LutSize - i - 1 : i;
-        colorStrip.setPixel({ x: i, y: 0 }, this._LUT[positionInLut]);
-      }
-
-      return colorStrip;
-    }
-
-    /**
-    * Creates a vertical Image2D of the colormap. The height is 1px and
-    * the width is the size of the LUT currently in use.
-    * The image can be vertically flipped when the "flip" metadata is true;
-    * @return {Image2D} the result image
-    */
-
-  }, {
-    key: 'createVerticalLutImage',
-    value: function createVerticalLutImage() {
-      if (!this._LUT) {
-        console.warn("The LUT must be built before creating a LUT image.");
-        return;
-      }
-
-      var flip = this.getMetadata("flip");
-      var LutSize = this._LUT.length;
-      var colorStrip = new Image2D({ width: 1, height: LutSize, color: [0, 0, 0] });
-
-      for (var i = 0; i < LutSize; i++) {
-        var positionInLut = flip ? LutSize - i - 1 : i;
-        colorStrip.setPixel({ x: 0, y: i }, this._LUT[positionInLut]);
-      }
-
-      return colorStrip;
-    }
-
-    /**
-    * Add a color to the color description. This color must be at a non-taken index
-    * @param {Number} index - index to place the color, must be in [0, 1]
-    * @param {Array} rgb - rgb array of the form [r, g, b], each value being in [0, 255]
-    * @return {Boolean} true if the color was succesfully added, false if not
-    */
-
-  }, {
-    key: 'addColor',
-    value: function addColor(index, rgb) {
-      // the colormap is possibly empty
-      if (!this._colormapDescription) {
-        this._colormapDescription = [];
-      }
-
-      if (index < 0 || index > 1) {
-        console.warn("The color cannot be added because its index is out of range [0, 1]");
-        return false;
-      }
-
-      // checking if a color is already present at the given index
-      var indexAlreadyPresent = this._colormapDescription.find(function (indexAndColor) {
-        return indexAndColor.index == index;
-      });
-
-      if (indexAlreadyPresent) {
-        console.warn("A color is already present at index " + index);
-        return false;
-      }
-
-      if (rgb && Array.isArray(rgb) && rgb.length == 3) {
-        for (var i = 0; i < rgb.length; i++) {
-          if (typeof rgb[i] !== 'number' || rgb[i] < 0 || rgb[i] > 255) {
-            console.warn("The rgb colors must be in [0, 255]");
-            return false;
-          }
-        }
-      } else {
-        console.warn("The color cannot be added because its rgb array is the wrong size.");
-        return false;
-      }
-
-      // data integrity is ok
-      this._colormapDescription.push({ "index": index, "rgb": rgb.slice() });
-      this._colormapDescription.sort(function (a, b) {
-        return a.index - b.index;
-      });
-
-      return true;
-    }
-
-    /**
-    * Remove the color at the given index
-    * @param {Number} index - the [0, 1] index of the color to remove
-    * @return {Boolean} true if successfully remove, false if not
-    */
-
-  }, {
-    key: 'removeColor',
-    value: function removeColor(index) {
-      if (!this._colormapDescription) {
-        console.warn("The colormap description is empty.");
-        return false;
-      }
-
-      var indexAlreadyIn = this._colormapDescription.findIndex(function (element) {
-        return element.index == index;
-      });
-
-      if (indexAlreadyIn == -1) {
-        console.warn("Such index does not exist.");
-        return false;
-      }
-
-      this._colormapDescription.splice(indexAlreadyIn, 1);
-      return true;
-    }
-
-    /**
-    * Get a json version of the colormap description
-    * @return {String} the json string
-    */
-
-  }, {
-    key: 'toJson',
-    value: function toJson() {
-      return JSON.stringify(this._colormapDescription);
-    }
-  }], [{
-    key: 'TYPE',
-    value: function TYPE() {
-      return "COLORMAP";
-    }
-
-    /**
-    * [STATIC]
-    * Get all the style id available
-    * @return {Array} all the styles
-    */
-
-  }, {
-    key: 'getAvailableStyles',
-    value: function getAvailableStyles() {
-      return Object.keys(ColorScales);
-    }
-  }]);
-  return Colormap;
-}(PixpipeObject); /* END of class Colormap */
 
 /*
 * Author   Jonathan Lurie - http://me.jonathanlurie.fr
@@ -70900,6 +74150,8 @@ exports.LowPassSignal1D = LowPassSignal1D;
 exports.HighPassSignal1D = HighPassSignal1D;
 exports.BandPassSignal1D = BandPassSignal1D;
 exports.Mesh3DToVolumetricHullFilter = Mesh3DToVolumetricHullFilter;
+exports.NaturalNeighborSparseInterpolationImageFilter = NaturalNeighborSparseInterpolationImageFilter;
+exports.ApplyColormapFilter = ApplyColormapFilter;
 exports.AngleToHueWheelHelper = AngleToHueWheelHelper;
 exports.LineStringPrinterOnImage2DHelper = LineStringPrinterOnImage2DHelper;
 exports.Colormap = Colormap;

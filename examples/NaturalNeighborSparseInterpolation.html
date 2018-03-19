@@ -27,9 +27,9 @@
   var outWidth = 256;
   var outHeight = 256;
 
-  var nearestSparseF = new pixpipe.NaturalNeighborSparseInterpolationImageFilter()
+  var naturalSparseF = new pixpipe.NaturalNeighborSparseInterpolationImageFilter()
 
-  nearestSparseF.setMetadata( "outputSize", {width: outWidth, height: outHeight})
+  naturalSparseF.setMetadata( "outputSize", {width: outWidth, height: outHeight})
   // create random points, with random values
 
   // on a 2D cartesian coordinate system
@@ -160,7 +160,7 @@
   }
 
   console.log( montage10_20_imgSize );
-  nearestSparseF.addInput( montage10_20_imgSize , "seeds" );
+  naturalSparseF.addInput( montage10_20_imgSize , "seeds" );
 
 
   /*
@@ -173,11 +173,11 @@
     }
   }
   console.log( randomPoints );
-  nearestSparseF.addInput( randomPoints )
+  naturalSparseF.addInput( randomPoints )
   */
 
   /*
-  nearestSparseF.addInput( [
+  naturalSparseF.addInput( [
     {x: 10 , y: 10, value: 10},
     {x: 190 , y: 190, value: 10},
     {x: 10 , y: 190, value: 100},
@@ -186,14 +186,14 @@
   */
 
   /*
-  nearestSparseF.addInput( [
+  naturalSparseF.addInput( [
     {x: 10 , y: 10, value: 10},
     {x: 190 , y: 190, value: 100},
   ] )
   */
 
   /*
-  nearestSparseF.addInput( [
+  naturalSparseF.addInput( [
     {x: 10 , y: 10, value: 125},
     {x: 190 , y: 190, value: 0},
     {x: 10 , y: 190, value: 0},
@@ -203,10 +203,10 @@
   ] )
   */
 
-  nearestSparseF.update();
+  naturalSparseF.update();
 
   // create an image
-  var myImage = nearestSparseF.getOutput();
+  var myImage = naturalSparseF.getOutput();
 
   console.log( myImage );
 

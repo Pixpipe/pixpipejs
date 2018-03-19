@@ -33,6 +33,7 @@
   },
   "homepage": "https://github.com/Pixpipe/pixpipejs#readme",
   "dependencies": {
+    "buffer64": "file:../../mess/buffer64",
     "bvh-tree": "github:pixpipe/bvh-tree",
     "codecutils": "github:pixpipe/codecutils",
     "delaunay-fast": "github:pixpipe/delaunay",
@@ -46,7 +47,7 @@
     "jpeg-js": "^0.3.3",
     "js-md5": "^0.4.2",
     "mniobjparser": "github:pixpipe/mniobjparser",
-    "natninter": "file:../../github/natninter",
+    "natninter": "^0.1.2",
     "ndarray": "^1.0.18",
     "ndarray-fft": "^1.0.3",
     "nifti-reader-js": "^0.5.4",

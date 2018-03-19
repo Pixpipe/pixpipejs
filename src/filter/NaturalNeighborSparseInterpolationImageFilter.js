@@ -6,8 +6,6 @@
 * Lab       MCIN - Montreal Neurological Institute
 */
 
-//import { Interpolator } from 'natninter';
-//import { Interpolator } from 'natninter'; // ok and then use Interpolator
 import * as natninter from 'natninter'; // ok and then use natninter.Interpolator
 import { Filter } from '../core/Filter.js';
 import { Image2D } from '../core/Image2D.js';
@@ -90,6 +88,15 @@ class NaturalNeighborSparseInterpolationImageFilter extends Filter {
     var imgArray = nnInter.generateImage();
     var out = new Image2D();
     out.setData( imgArray._data, outputSize.width, outputSize.height, 1 );
+
+    var min = +Infinity;
+    var max = -Infinity;
+    for(var i=0; i<inputSeeds.length; i++){
+      min = Math.min( min, inputSeeds[i].value );
+      max = Math.max( max, inputSeeds[i].value );
+    }
+    out.setMetadata( "min", min );
+    out.setMetadata( "max", max );
 
     this._output[0] = out;
   }
