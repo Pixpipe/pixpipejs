@@ -54,11 +54,11 @@
 
   var applyCm = new pixpipe.ApplyColormapFilter();
   applyCm.setMetadata("style", "magma");
-  //applyCm.setMetadata("clusters", 20 );
+  applyCm.setMetadata("clusters", 20 );
   //applyCm.setMetadata("flip", true);
 
-  applyCm.setMetadata("min", 100);
-  applyCm.setMetadata("max", 1000);
+  //applyCm.setMetadata("min", 100);
+  //applyCm.setMetadata("max", 1000);
 
   applyCm.addInput( bwImage );
   applyCm.update();
