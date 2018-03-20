@@ -9,11 +9,39 @@ import uglify from 'rollup-plugin-uglify';
 
 
 export default [
+
+  // the production bundle
   {
     input: pkg.entry,
     output: {
       file: pkg.umd,
-      sourcemap: true,
+      sourcemap: false,
+      name: pkg.name,
+      format: 'umd'
+    },
+
+    plugins: [
+      nodeResolve({
+        preferBuiltins: false
+      }),
+      commonjs(),
+      //bundleWorker(),
+      globals(),
+      builtins(),
+      babel({
+        babelrc: false,
+        presets: [ 'es2015-rollup' ]
+      })
+    ]
+  },
+
+
+  // the minified bundle
+  {
+    input: pkg.entry,
+    output: {
+      file: pkg.umdmin,
+      sourcemap: false,
       name: pkg.name,
       format: 'umd'
     },
@@ -34,4 +62,5 @@ export default [
       uglify()
     ]
   }
+
 ];

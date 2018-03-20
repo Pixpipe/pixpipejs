@@ -1,19 +1,18 @@
 {
   "name": "pixpipe",
   "version": "0.1.0",
-  "description": "A image processing pipeline in Javascript",
+  "description": "A image processing pipeline in pure Javascript for browsers and Node",
   "entry": "src/pixpipe.js",
   "main": "dist/pixpipe.js",
   "umd": "dist/pixpipe.js",
+  "umdmin": "dist/pixpipe.min.js",
   "cjs": "dist/pixpipe.cjs.js",
   "moduleBuildDir": "dist",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "rollup -c",
     "dev": "serve . & rollup -w -c rollup.config.dev.js",
-    "min": "java -jar closurecompiler/compiler.jar --language_out ECMASCRIPT5_STRICT --js dist/pixpipe.js --js_output_file dist/pixpipe.min.js_NO_HEADER && printf \"// Build date: $(date '+%Y-%m%-dT%H:%M:%S')\n\n\" > dist/pixpipe.min.js && cat header.txt >> dist/pixpipe.min.js && cat dist/pixpipe.min.js_NO_HEADER >> dist/pixpipe.min.js && rm dist/pixpipe.min.js_NO_HEADER",
-    "doc": "documentation --format html --name Pixpipejs --theme ./doc/themes/default -o ./doc/ --config ./doc/documentation.json src/pixpipe.js",
-    "all": "npm run build && npm run min && npm run doc"
+    "doc": "documentation --format html --name Pixpipejs --theme ./doc/themes/default -o ./doc/ --config ./doc/documentation.json src/pixpipe.js"
   },
   "repository": {
     "type": "git",
@@ -22,9 +21,14 @@
   "keywords": [
     "image",
     "processing",
+    "MRI",
+    "fMRI",
+    "EEG",
+    "signal",
+    "math",
+    "browser",
     "javascript",
-    "web",
-    "browser"
+    "web"
   ],
   "author": "Jonathan Lurie",
   "license": "MIT",
@@ -32,7 +36,7 @@
     "url": "https://github.com/Pixpipe/pixpipejs/issues"
   },
   "homepage": "https://github.com/Pixpipe/pixpipejs#readme",
-  "dependencies": {
+  "devDependencies": {
     "babel-plugin-external-helpers": "^6.22.0",
     "bvh-tree-plus": "^1.0.2",
     "codecutils": "^0.1.1",
@@ -57,9 +61,7 @@
     "qeegmodfile": "^0.1.3",
     "simplify-js": "^1.2.1",
     "upng-js": "^1.0.0",
-    "zeros": "^1.0.0"
-  },
-  "devDependencies": {
+    "zeros": "^1.0.0",
     "babel-core": "^6.26.0",
     "babel-preset-es2015-rollup": "^3.0.0",
     "documentation": "^6.1.0",

@@ -4,6 +4,31 @@
 
 The concept of *pipeline* implies that the output of a `Filter` can be used as an input for the next one, like in *ITK*. In Pixpipe.js, this is done by using the `Filter`'s methods `addInput()` and `getOuput()`. Some `Filter` may have several *input* or *output* of different kinds.
 
+# Install
+```bash
+npm install --save pixpipe
+```
+
+# Usage in prod
+The bundle in `dist/pixpipe.js` is a [umd](https://github.com/umdjs/umd) bundle, meaning it's ugly but it's compatible everywhere.
+
+In HTML file:
+```html
+<script src="pixpipe/dist/pixpipe.js"></script>
+<!-- or alternatively -->
+<script src="pixpipe/dist/pixpipe.min.js"></script>
+```
+
+In Node:
+```js
+const pixpipe = require("pixpipe");
+```
+
+In ES6 module:
+```js
+import pixpipe from 'pixpipe';
+```
+
 
 # Motivations
 To make image processing:
@@ -35,7 +60,9 @@ Here is the list of compatible formats:
 - NIfTI (to Image3D / MniVolume)
 - Minc2 (to Image3D / MniVolume)
 - MGH/MHZ (to Image3D / MniVolume)
-- Pixp (generic *Pixpipe* format for both Image2D and Image3D )
+- EDF - European Data Format (to Signal1D)
+- MOD EEG (to Signal1D)
+- PixBin (generic *Pixpipe* format for pretty much everything)
 
 # Sample data
 [HERE](https://github.com/Pixpipe/pixpipeData) is the repo where some sample data are stored (mainly to avoid this repos to be too fat).
