@@ -9,7 +9,7 @@
 
 import { Decoder } from '../core/Decoder.js';
 import { Signal1D } from '../core/Signal1D.js';
-import { EdfDecoder as EdfDecoderDep } from 'edfdecoder';
+import edfdecoder from 'edfdecoder';
 
 /**
 * An instance of EdfDecoder takes an ArrayBuffer as input. This ArrayBuffer must
@@ -45,7 +45,7 @@ class EdfDecoder extends Decoder {
       return;
     }
 
-    var edfDecoder = new EdfDecoderDep();
+    var edfDecoder = new edfdecoder.EdfDecoder();
 
     edfDecoder.setInput( inputBuffer );
     edfDecoder.decode();

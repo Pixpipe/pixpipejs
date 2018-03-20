@@ -5,7 +5,7 @@
 * Lab       MCIN - Montreal Neurological Institute
 */
 
-import BVH from 'bvh-tree';
+import BVH from 'bvh-tree-plus';
 import { CoreTypes } from './CoreTypes.js';
 import { PixpipeContainerMultiData } from './PixpipeContainerMultiData.js';
 

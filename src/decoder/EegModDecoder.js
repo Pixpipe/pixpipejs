@@ -1,5 +1,6 @@
 import { Decoder } from '../core/Decoder.js';
-import { QeegModFileParser } from 'qeegmodfile';
+//import { QeegModFileParser } from 'qeegmodfile';
+import qeegmodfile from 'qeegmodfile';
 
 
 class EegModDecoder extends Decoder {
@@ -22,7 +23,7 @@ class EegModDecoder extends Decoder {
       return;
     }
 
-    var modParser = new QeegModFileParser();
+    var modParser = new qeegmodfile.QeegModFileParser();
     modParser.setRawData( inputBuffer );
     var qeegData = modParser.parse();
 

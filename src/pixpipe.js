@@ -83,6 +83,8 @@ export { LowPassSignal1D } from './filter/LowPassSignal1D.js';
 export { HighPassSignal1D } from './filter/HighPassSignal1D.js';
 export { BandPassSignal1D } from './filter/BandPassSignal1D.js';
 export { Mesh3DToVolumetricHullFilter } from './filter/Mesh3DToVolumetricHullFilter.js';
+export { NaturalNeighborSparseInterpolationImageFilter }  from './filter/NaturalNeighborSparseInterpolationImageFilter';
+export { ApplyColormapFilter }  from './filter/ApplyColormapFilter';
 
 // helpers
 export { AngleToHueWheelHelper } from './helper/AngleToHueWheelHelper.js';

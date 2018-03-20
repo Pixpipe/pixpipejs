@@ -1,0 +1,224 @@
+<html>
+<head>
+  <title>NNI</title>
+
+  <script src="../dist/pixpipe.js"></script>
+
+  <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700,900" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+
+</head>
+<body>
+  <h1><a href="https://github.com/Pixpipe/pixpipejs"><span style="color: #ff91d7">Pixpipe</span><span style="color: #FFFFFF">js</span></a></h1>
+  <p>
+  This does the following :
+  <ul>
+    <li>creating a set of random (sparse) points with random values</li>
+    <li>Interpolate them using <code>pixpipe.NaturalNeighborSparseInterpolationImageFilter</code></li>
+    <li>displaying the output image with a <code>pixpipe.CanvasImageWriter</code></li>
+  </ul>
+
+  </p>
+
+  <div id="myDiv"></div>
+
+  <script>
+
+  var outWidth = 256;
+  var outHeight = 256;
+
+  var naturalSparseF = new pixpipe.NaturalNeighborSparseInterpolationImageFilter()
+
+  naturalSparseF.setMetadata( "outputSize", {width: outWidth, height: outHeight})
+  // create random points, with random values
+
+  // on a 2D cartesian coordinate system
+  var montage10_20 = [
+    {
+      name: "Fp1",
+      x: 0.375,
+      y: 0.125,
+      value: 120
+    },
+    {
+      name: "Fp2",
+      x: 0.625,
+      y: 0.125,
+      value: 30
+    },
+    {
+      name: "Fz",
+      x: 0.5,
+      y: 0.33,
+      value: 50
+    },
+    {
+      name: "Cz",
+      x: 0.5,
+      y: 0.5,
+      value: 200
+    },
+    {
+      name: "Pz",
+      x: 0.5,
+      y: 0.66,
+      value: 80
+    },
+    {
+      name: "F7",
+      x: 0.175,
+      y: 0.266,
+      value: 10
+    },
+    {
+      name: "F3",
+      x: 0.336,
+      y: 0.300,
+      value: 40
+    },
+    {
+      name: "F4",
+      x: 0.664,
+      y: 0.300,
+      value: 160
+    },
+    {
+      name: "F8",
+      x: 0.825,
+      y: 0.266,
+      value: 110
+    },
+    {
+      name: "T3",
+      x: 0.1,
+      y: 0.5,
+      value: 50
+    },
+    {
+      name: "C3",
+      x: 0.3,
+      y: 0.5,
+      value: 40
+    },
+    {
+      name: "C4",
+      x: 0.7,
+      y: 0.5,
+      value: 130
+    },
+    {
+      name: "T4",
+      x: 0.9,
+      y: 0.5,
+      value: 70
+    },
+    {
+      name: "T5",
+      x: 0.175,
+      y: 0.734,
+      value: 80
+    },
+    {
+      name: "P3",
+      x: 0.336,
+      y: 0.700,
+      value: 20
+    },
+    {
+      name: "O1",
+      x: 0.375,
+      y: 0.875,
+      value: 10
+    },
+    {
+      name: "P4",
+      x: 0.664,
+      y: 0.700,
+      value: 70
+    },
+    {
+      name: "T6",
+      x: 0.825,
+      y: 0.734,
+      value: 130
+    },
+    {
+      name: "O2",
+      x: 0.625,
+      y: 0.875,
+      value: 30
+    }
+  ]
+
+  var montage10_20_imgSize = new Array( montage10_20.length );
+  for(var i=0; i<montage10_20_imgSize.length; i++){
+    montage10_20_imgSize[i] = {
+      x: montage10_20[i].x * outWidth,
+      y: montage10_20[i].y * outHeight,
+      value: montage10_20[i].value,
+    }
+  }
+
+  console.log( montage10_20_imgSize );
+  naturalSparseF.addInput( montage10_20_imgSize , "seeds" );
+
+
+  /*
+  var randomPoints = new Array( 19 );
+  for(var i=0; i<randomPoints.length; i++){
+    randomPoints[i] = {
+      x: Math.ceil( Math.random() * outWidth ),
+      y: Math.ceil( Math.random() * outHeight ),
+      value: Math.ceil( 100 + Math.random() * 155 ),
+    }
+  }
+  console.log( randomPoints );
+  naturalSparseF.addInput( randomPoints )
+  */
+
+  /*
+  naturalSparseF.addInput( [
+    {x: 10 , y: 10, value: 10},
+    {x: 190 , y: 190, value: 10},
+    {x: 10 , y: 190, value: 100},
+    {x: 190 , y: 10, value: 100},
+  ] )
+  */
+
+  /*
+  naturalSparseF.addInput( [
+    {x: 10 , y: 10, value: 10},
+    {x: 190 , y: 190, value: 100},
+  ] )
+  */
+
+  /*
+  naturalSparseF.addInput( [
+    {x: 10 , y: 10, value: 125},
+    {x: 190 , y: 190, value: 0},
+    {x: 10 , y: 190, value: 0},
+    {x: 190 , y: 10, value: 50},
+
+    {x: 100 , y: 100, value: 250},
+  ] )
+  */
+
+  naturalSparseF.update();
+
+  // create an image
+  var myImage = naturalSparseF.getOutput();
+
+  console.log( myImage );
+
+  // create a filter to write the image into a canvas
+  var imageToCanvasFilter = new pixpipe.CanvasImageWriter( );
+  imageToCanvasFilter.setMetadata( "parentDivID", "myDiv" );
+  imageToCanvasFilter.addInput( myImage );
+  imageToCanvasFilter.update();
+
+
+
+  </script>
+
+</body>
+</html>

@@ -39,7 +39,6 @@ class Colormap extends PixpipeObject {
     this._type = Colormap.TYPE();
     this._colormapDescription = null;
     this._LUT = [];
-
     this.setMetadata("flip", false);
 
     var style = this._getOption(options, "style", null);
@@ -174,6 +173,9 @@ class Colormap extends PixpipeObject {
       return null;
     }
 
+    if( this._metadata.flip )
+      position = 1 - position;
+
     // case 1: before the first "index" position
     if(position <= this._colormapDescription[0].index){
       return this._colormapDescription[0].rgb.slice()
@@ -204,10 +206,22 @@ class Colormap extends PixpipeObject {
 
 
   /**
+   * Get an interpolated value of a colormap but using a certain amount of color clustering
+   * @param  {Number} position - normalized position on the color spectrum, from 0 to 1
+   * @param  {Number} clusters - Number of clusters
+   * @return {Array} A color [r, g, b]
+   */
+  getValueAtWithClusters( position, clusters ){
+    var custeredPosition = ( (Math.floor(position * clusters) + 0.5) / clusters );
+    return this.getValueAt( custeredPosition );
+  }
+
+
+  /**
   * Build a LUT from the colormap description
   * @param {Number} size - number of samples in the LUT
   */
-  buildLut( size ){
+  buildLut( size=Math.pow(2, 16) ){
     if( !this._colormapDescription ){
       console.warn("The colormap description is not defined, the LUT cannot be created");
       return null;
@@ -238,6 +252,21 @@ class Colormap extends PixpipeObject {
     return this._LUT[ index ];
   }
 
+  
+  getLutAtNormalized( position ){
+    var index = -1;
+
+    if( position < 0 ){
+      index = 0
+    }else if( position < this._LUT.length  ){
+      index = Math.floor( position * (this._LUT.length - 1) )
+    }else{
+      index = this._LUT.length - 1
+    }
+
+    return this._LUT[ index ];
+  }
+
 
   /**
   * Creates a horizontal Image2D of the colormap. The height is 1px and
@@ -250,14 +279,12 @@ class Colormap extends PixpipeObject {
       console.warn("The LUT must be built before creating a LUT image.");
       return;
     }
-    
-    var flip = this.getMetadata("flip");
+
     var LutSize = this._LUT.length;
     var colorStrip = new Image2D({width: LutSize, height: 1, color: [0, 0, 0]});
 
     for(var i=0; i<LutSize; i++){
-      var positionInLut = flip ? (LutSize - i - 1) : i;
-      colorStrip.setPixel( {x: i, y: 0},  this._LUT[ positionInLut ] );
+      colorStrip.setPixel( {x: i, y: 0},  this._LUT[ i ] );
     }
 
     return colorStrip;
@@ -276,13 +303,11 @@ class Colormap extends PixpipeObject {
       return;
     }
 
-    var flip = this.getMetadata("flip");
     var LutSize = this._LUT.length;
     var colorStrip = new Image2D({width: 1, height: LutSize, color: [0, 0, 0]});
 
     for(var i=0; i<LutSize; i++){
-      var positionInLut = flip ? (LutSize - i - 1) : i;
-      colorStrip.setPixel( {x: 0, y: i},  this._LUT[ positionInLut ] );
+      colorStrip.setPixel( {x: 0, y: i},  this._LUT[ i ] );
     }
 
     return colorStrip;

@@ -25,15 +25,16 @@
     <br>
     <br>
     <span id="fileInfo"></span>
-    <input id="downloadBt" type="submit" value="download" onclick="downloadFile()" style="display:none; margin-left:10px;">
-    
+
+    <a id="downloadLink" style="display:none; margin-left:10px;">download</a>
+
 	</div>
 
   <div id="myDiv"></div>
 
   <script>
   var encoder = null;
-  
+
   window.onload = function() {
 
     var fileInput = document.getElementById('fileInput');
@@ -51,17 +52,17 @@
     // here, this = url2ImgFilter
     file2ImgFilter.on("ready", function(){
       var image = this.getOutput();
-      
+
       // use the output of the UrlImageReader as the input for CanvasImageWriter
       imageToCanvasFilter.addInput( image );
       // actually copy the data from the Image2D into the inner HTML5 canvas
       imageToCanvasFilter.update();
-      
-      
+
+
       document.getElementById('fileInfo').innerHTML = "Converting " + filename + " ...";
-      
-      
-      
+
+
+
       // set the output filename
       encoder.setMetadata("filename", filename.split('.')[0] + '.pixb');
       encoder.addInput( image );
@@ -70,8 +71,8 @@
       encoder.update();
 
       document.getElementById('fileInfo').innerHTML = "Convertion done.";
-      document.getElementById('downloadBt').style.display = "inherit";
-        
+      downloadFile();
+
     });
 
     fileInput.addEventListener('change', function(e) {
@@ -83,13 +84,19 @@
       file2ImgFilter.update();
     });
 
-    
+
 
   }
-  
+
   // bound to the download button
   function downloadFile(){
-    encoder.download();
+    // ************** PREPARE DOWNLOAD LINK ************************************
+    document.getElementById('downloadLink').style.display = "inherit";
+    var link = document.getElementById("downloadLink");
+    var blob = new Blob([encoder.getOutput()], {type: "octet/stream"});
+    var url = window.URL.createObjectURL(blob);
+    link.href = url;
+    link.download = "testFile.pixb";
   }
   </script>
 

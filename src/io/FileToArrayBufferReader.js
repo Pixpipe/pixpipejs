@@ -8,7 +8,7 @@
 
 import md5 from 'js-md5';
 import pako from 'pako';
-import { CodecUtils } from 'codecutils';
+import codecutils from 'codecutils';
 import { Filter } from '../core/Filter.js';
 
 
@@ -80,7 +80,7 @@ class FileToArrayBufferReader extends Filter {
       // try to read as text, but it's not text.
       // Maybe it's a gz-compressed text file, so we have to read this file as a
       // binary and see if once compressed it has a valid text content
-      if(!CodecUtils.isValidString(result)){
+      if(!codecutils.CodecUtils.isValidString(result)){
         reader.onloadend = onLoadEndBinaryFile;
         reader.readAsArrayBuffer( that._getInput(category) );
         return;
@@ -130,7 +130,7 @@ class FileToArrayBufferReader extends Filter {
 
       // read the content as text (unicode, ASCII compatible)
       if( readAsText){
-        var strResult = CodecUtils.arrayBufferToUnicode(result);
+        var strResult = codecutils.CodecUtils.arrayBufferToUnicode(result);
         if( !strResult ){
           console.warn("The content of this file is not a valid text. It could be read as a binary file if the metadata 'readAsText' is set to false.");
           return;

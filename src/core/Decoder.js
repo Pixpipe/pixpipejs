@@ -1,4 +1,4 @@
-import { CodecUtils } from 'codecutils';
+import codecutils from 'codecutils';
 
 import { Filter } from "../core/Filter.js";
 
@@ -69,7 +69,7 @@ class Decoder extends Filter {
     // --> we try to convert to utf8 string
     if( !isBinary && (input instanceof ArrayBuffer ) ){
 
-      var stringInput = CodecUtils.arrayBufferToUnicode(input);
+      var stringInput = codecutils.CodecUtils.arrayBufferToUnicode(input);
       if(stringInput){
         return stringInput;
       }else{
