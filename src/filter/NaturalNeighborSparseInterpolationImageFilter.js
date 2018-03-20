@@ -6,7 +6,7 @@
 * Lab       MCIN - Montreal Neurological Institute
 */
 
-import * as natninter from 'natninter'; // ok and then use natninter.Interpolator
+import natninter from 'natninter';
 import { Filter } from '../core/Filter.js';
 import { Image2D } from '../core/Image2D.js';
 

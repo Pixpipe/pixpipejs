@@ -6,7 +6,7 @@
 * Lab       MCIN - Montreal Neurological Institute
 */
 
-import  { PixBinEncoder  as Encoder } from "pixbincodec"
+import pixbincodec from "pixbincodec"
 import { Filter } from '../core/Filter.js';
 
 
@@ -28,7 +28,7 @@ class PixBinEncoder extends Filter {
 
     // define if the encoder should compress the data, default: yes
     this.setMetadata("compress", true);
-    
+
     // to be transmitted to the encoder
     this.setMetadata("description", "no description");
     this.setMetadata("madeWith", "Pixpipejs");
@@ -47,20 +47,20 @@ class PixBinEncoder extends Filter {
 
   _run(){
     var that = this;
-    
-    var encoder = new Encoder();
-    
+
+    var encoder = new pixbincodec.PixBinEncoder();
+
     // specifying some options
     encoder.enableDataCompression( this.getMetadata("compress") );
-    encoder.setOption( 
+    encoder.setOption(
       "userObject",
       this.getMetadata("userObject")
     )
-    encoder.setOption( 
+    encoder.setOption(
       "description",
       this.getMetadata("description")
     )
-    encoder.setOption( 
+    encoder.setOption(
       "madeWith",
       this.getMetadata("madeWith")
     )
@@ -70,25 +70,10 @@ class PixBinEncoder extends Filter {
     });
 
     encoder.run();
-    
+
     this._output[ 0 ] = encoder.getOutput();
   }
 
-
-  /**
-  * Download the generated file
-  */
-  /*
-  download(){
-    var output = this.getOutput();
-
-    if(output){
-      FileSaver.saveAs( this.getOutput(), this.getMetadata("filename"));
-    }else{
-      console.warn("No output computed yet.");
-    }
-  }
-  */
 
 } /* END of class PixBinEncoder */
 

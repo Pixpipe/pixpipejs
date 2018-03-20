@@ -1,7 +1,7 @@
-var config = require('./package.json');
+var pkg = require('./package.json');
 
 /*
-    The dev version of the Rollup config does not transpile to ES5
+    The dev version of the Rollup pkg does not transpile to ES5
     and outputs a single umd package.
 */
 
@@ -14,13 +14,14 @@ import globals from 'rollup-plugin-node-globals';
 
 export default [
   {
-    input: config.entry,
+    input: pkg.entry,
     output: {
-      file: config.moduleBuildDir + '/' + config.moduleName + '.js',
+      file: pkg.umd,
+      name: pkg.name,
+      sourcemap: true,
       format: 'umd'
     },
-    name: config.moduleName,
-    sourcemap: true,
+
     plugins: [
       nodeResolve({
         preferBuiltins: false
@@ -31,4 +32,5 @@ export default [
       builtins()
     ]
   }
+
 ];

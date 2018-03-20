@@ -6,8 +6,8 @@
 * Lab       MCIN - Montreal Neurological Institute
 */
 
-import { CodecUtils } from 'codecutils';
-import {PixBinDecoder as PBDecoder} from 'pixbincodec'
+import codecutils from 'codecutils';
+import pixbincodec from 'pixbincodec'
 import { Decoder } from '../core/Decoder.js';
 import { CoreTypes } from '../core/CoreTypes.js';
 
@@ -41,7 +41,7 @@ class PixBinDecoder extends Decoder {
     }
 
     var input = this._getInput();
-    var pbDecoder = new PBDecoder();
+    var pbDecoder = new pixbincodec.PixBinDecoder();
     pbDecoder.enableBlockVerification( this.getMetadata("blockVerification") );
     pbDecoder.setInput( input );
 
@@ -81,7 +81,7 @@ class PixBinDecoder extends Decoder {
       }
       // Fallback on a non -pixpipe type
       else{
-        var globalObject = CodecUtils.getGlobalObject();
+        var globalObject = codecutils.CodecUtils.getGlobalObject();
         if( blockType in globalObject ){
           output = new globalObject[ blockType ]();
           output._metadata = block._metadata;

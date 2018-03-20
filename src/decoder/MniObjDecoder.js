@@ -5,8 +5,8 @@
 * Lab       MCIN - Montreal Neurological Institute
 */
 
+import mniobjparser from 'mniobjparser';
 import { Decoder } from "../core/Decoder.js";
-import { MniObjParser } from 'mniobjparser';
 import { Mesh3D } from '../core/Mesh3D.js';
 
 
@@ -56,7 +56,7 @@ class MniObjDecoder extends Decoder {
       return;
     }
 
-    var parser = new MniObjParser();
+    var parser = new mniobjparser.MniObjParser();
     parser.parse( input )
 
     // Check if the parsing went ok:

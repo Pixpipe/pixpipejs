@@ -26,8 +26,8 @@
     <br>
     <br>
     <span id="fileInfo"></span>
-    <input id="downloadBt" type="submit" value="download" onclick="downloadFile()" style="display:none; margin-left:10px;">
-    
+    <a id="downloadLink" style="display:none; margin-left:10px;">download</a>
+
 	</div>
 
   <div id="output"></div>
@@ -61,11 +61,11 @@
       var ext = splitFilename.pop();
       if(ext == "gz")
         splitFilename.pop();
-        
+
       var filename = splitFilename.join(".") + ".pixb";
-      
+
       document.getElementById('fileInfo').innerHTML = "Converting " + filename + " ...";
-      
+
       // set the output filename
       encoder.setMetadata("filename", filename); // optional, default: untitled.pixp
       encoder.addInput( mniVolume);
@@ -74,7 +74,7 @@
       encoder.update();
 
       document.getElementById('fileInfo').innerHTML = "Convertion done.";
-      document.getElementById('downloadBt').style.display = "inherit";
+      downloadFile();
 
 
     }else{
@@ -101,12 +101,18 @@
     file2Buff.update();
 	});
 
-  
+
   // bound to the download button
   function downloadFile(){
-    encoder.download();
+    // ************** PREPARE DOWNLOAD LINK ************************************
+    document.getElementById('downloadLink').style.display = "inherit";
+    var link = document.getElementById("downloadLink");
+    var blob = new Blob([encoder.getOutput()], {type: "octet/stream"});
+    var url = window.URL.createObjectURL(blob);
+    link.href = url;
+    link.download = "testFile.pixb";
   }
-  
+
   </script>
 
 </body>
