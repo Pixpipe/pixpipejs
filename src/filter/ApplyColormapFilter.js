@@ -99,6 +99,7 @@ class ApplyColormapFilter extends ImageToImageFilter {
     for( var i=0; i<inputWidth; i++){
       for( var j=0; j<inputHeight; j++){
         var inputColor = inputImage.getPixel({ x: i, y: j})[component];
+        
         var normalizedIntensity = ( inputColor - min ) / ( max - min );
         var color = lookupFunction( normalizedIntensity, clusters )
 

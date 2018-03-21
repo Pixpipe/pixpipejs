@@ -23,17 +23,17 @@
   <div id="myDiv"></div>
 
   <script>
-  
+
   var outWidth = 1000;
   var outHeight = 500;
 
   var nearestSparseF = new pixpipe.NearestNeighborSparseInterpolationImageFilter()
 
   nearestSparseF.setMetadata( "outputSize", {width: outWidth, height: outHeight})
-  
+
   // create random points, with random values
   var randomPoints = new Array( 30 );
-  
+
   for(var i=0; i<randomPoints.length; i++){
     randomPoints[i] = {
       x: Math.ceil( Math.random() * outWidth ),
@@ -41,9 +41,9 @@
       value: Math.ceil( Math.random() * 255 ),
     }
   }
-  
-  nearestSparseF.addInput( randomPoints )
-  
+
+  nearestSparseF.addInput( randomPoints, "seeds" )
+
   nearestSparseF.update();
 
   // create an image
