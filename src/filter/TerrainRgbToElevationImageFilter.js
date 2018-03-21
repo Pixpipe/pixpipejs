@@ -54,10 +54,18 @@ class TerrainRgbToElevationImageFilter extends ImageToImageFilter {
     // add the input input
     forEachPixelFilterRead.addInput( imageIn );
 
+    var min = +Infinity;
+    var max = -Infinity;
+
     forEachPixelFilterRead.on( "pixel", function(position, color){
-      var elevation = -10000 + ((color[0] * 256 * 256 + color[1] * 256 + color[2]) * 0.1)
+      var elevation = -10000 + ((color[0] * 256 * 256 + color[1] * 256 + color[2]) * 0.1);
+      min = Math.min(min, elevation);
+      max = Math.max(max, elevation);
       outputImg.setPixel( position, [ elevation ])
     });
+
+    outputImg.setMetadata("min", min);
+    outputImg.setMetadata("max", max);
 
     forEachPixelFilterRead.update();
     this._output[0] = outputImg;
