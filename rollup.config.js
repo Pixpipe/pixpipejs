@@ -14,7 +14,7 @@ export default [
   {
     input: pkg.entry,
     output: {
-      file: pkg.umd,
+      file: pkg.main,
       sourcemap: false,
       name: pkg.name,
       format: 'umd'
@@ -40,7 +40,7 @@ export default [
   {
     input: pkg.entry,
     output: {
-      file: pkg.umdmin,
+      file: pkg.min,
       sourcemap: false,
       name: pkg.name,
       format: 'umd'

@@ -25,13 +25,13 @@ class PixpipeObject {
     // Metadata can be anything, a name, an ID, a description, a DOM element.
     // everything that is not an input but rather a setting
     this._metadata = {};
-    
+
     // a joi schema to validate the _metadata integrity. If null, integrity not validated.
     // I has to be overloaded when a class inherits from PixpipeObject
     this._metadataSchema = this._buildMetadataSchema();
 
     this._type = PixpipeObject.TYPE();
-    
+
     // to leasure time. The 2 default values are added by _beforeRun and _afterRun
     // under the name of "begin" and "end"
     this._timer = {};
@@ -147,8 +147,8 @@ class PixpipeObject {
   getMetadataCopy(){
     return JSON.parse( JSON.stringify( this._metadata ) );
   }
-  
-  
+
+
   /**
   * Associate the internal metadata object with the one in args.
   * @param {Object} m - metadata. Should NOT contain TypedArray
@@ -157,8 +157,8 @@ class PixpipeObject {
     this._metadata = m;
     this._metadataRawCopied();
   }
-  
-  
+
+
   /**
   * Called just after metadata were raw-copied. Useful to perform checkings and pre processing.
   * To be overwriten
@@ -168,7 +168,7 @@ class PixpipeObject {
           *** TO BE OVERWRITTEN ***
     */
   }
-  
+
   /**
   * [PRIVATE]
   * Deal with an option object (usually as an argument of a constructor).
@@ -180,7 +180,7 @@ class PixpipeObject {
   _getOption(optionsObject, key, defaultValue){
     if(!optionsObject)
       return defaultValue;
-      
+
     return optionsObject[ key ] || defaultValue;
   }
 
@@ -195,7 +195,7 @@ class PixpipeObject {
     }catch(e){
       return true;
     }
-    
+
     return false;
   }
 
@@ -205,7 +205,7 @@ class PixpipeObject {
   * @param {String} recordName - name of the record
   */
   addTimeRecord( recordName ){
-    this._timer[ recordName ] = performance.now();
+    this._timer[ recordName ] = Date.now();
   }
 
 
@@ -227,8 +227,8 @@ class PixpipeObject {
       return -1;
     }
   }
-  
-  
+
+
   /**
   * Build the joi validation schema for the _metadata object.
   * This method has to be overwriten and return a proper validation object, though
@@ -242,8 +242,8 @@ class PixpipeObject {
     */
     return null;
   }
-  
-  
+
+
   /**
   * Performs an inetgrity check of a metadata object. If none is given in argument,
   * integrity check is performed on this._metadata.
@@ -254,7 +254,7 @@ class PixpipeObject {
     if( metadataObj == null ){
       metadataObj = this._metadata;
     }
-    
+
     if( metadataObj ){
       var validationResults = joi.validate( metadataObj, this._metadataSchema );
       if(validationResults.error){
@@ -267,8 +267,8 @@ class PixpipeObject {
       return true;
     }
   }
-  
-  
+
+
   /**
   * Get a clone of the _metadata object. Deep copy, no reference in common.
   */
@@ -278,8 +278,8 @@ class PixpipeObject {
     }
     return null;
   }
-  
-  
+
+
   /**
   * Get a string containing information about metadata
   * @return {String} meta to string
@@ -287,11 +287,11 @@ class PixpipeObject {
   metadataToString(){
     var str = "__metadata__\n";
     for( var meta in this._metadata ){
-      str += `\t[${meta}]\n\t${JSON.stringify(this._metadata[meta])}\n\n` 
+      str += `\t[${meta}]\n\t${JSON.stringify(this._metadata[meta])}\n\n`
     }
     return str;
   }
-  
+
 }
 
 export { PixpipeObject }

@@ -16,7 +16,7 @@ export default [
   {
     input: pkg.entry,
     output: {
-      file: pkg.umd,
+      file: pkg.main,
       name: pkg.name,
       sourcemap: true,
       format: 'umd'
