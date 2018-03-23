@@ -13,8 +13,10 @@ import { Image2D } from '../core/Image2D.js';
 /**
 * An instance of IDWSparseInterpolationImageFilter performs a 2D interpolation from
 * a sparse dataset using the method of Inverse Distance Weighting.
-* The original dataset is specified using the method `.addInput( points )`, where
-* `points` is an `Array` of `{x: Number, y: Number, value: Number}`.
+*
+* The original dataset is specified using the method `.addInput( seeds )`, where
+* `seeds` is an `Array` of `{x: Number, y: Number, value: Number}`. You specify
+* the seeds with the methodd `.addInput( seeds , "seeds" );`.
 * This filter outputs an `Image2D` with interpolated values. The size of the output must be
 * specified using the method `.setMetadata( "outputSize", {width: Number, height: Number})`.
 *
@@ -27,14 +29,14 @@ import { Image2D } from '../core/Image2D.js';
 * pixel of the output. If larger than the number of seeds, it will be automatically
 * clamped to the number of seeds. Set "k" with `.setMetadata( "k", Number )`
 *
-* To make the interpolation faster when done several times with seed points of
+* To make the interpolation faster when done several times with seed of
 * the same position but different values, a distance map is built at the begining.
 * The map that is firstly built will be reuse unless the metadata 'forceBuildMap'
 * is set to 'true'. If true, the map will be rebuilt at every run. It can take a
 * while so make sure you rebuild the map only if you need (= seed changed position,
 * output image changed size). Use the method `.setMetadata( "forceBuildMap", Boolean )`
 *
-* Note 1: points can be outside the boundaries of the original image
+* Note 1: seeds can be outside the boundaries of the original image
 * Note 2: interpolated values are floating point
 *
 * Note that only single-component images are outputed from this filter.
@@ -48,7 +50,7 @@ class IDWSparseInterpolationImageFilter extends Filter {
   constructor(){
     super()
     this.setMetadata( "strength", 2 );
-    this.setMetadata( "k", 5 );
+    this.setMetadata( "k", -1 );
     this.setMetadata( "forceBuildMap", false );
     this.setMetadata( "outputSize", {width: 256, height: 256});
 
@@ -57,13 +59,11 @@ class IDWSparseInterpolationImageFilter extends Filter {
 
 
   _run(){
-    var points = null;
+    var seeds = this._getInput("seeds");
 
     // getting the input
-    if( "0" in this._input ){
-      points = this._input[ 0 ];
-    }else{
-      console.warn("No input point set were given.");
+    if( !seeds ){
+      console.warn("No input seeds were given.");
       return;
     }
 
@@ -80,10 +80,21 @@ class IDWSparseInterpolationImageFilter extends Filter {
       this._buildMap();
     }
 
+    // look for min max. With IDW the min and max of the end image are the
+    // min and max of the seeds. It's always less expansive than looping all the image...
+    var min = +Infinity;
+    var max = -Infinity;
+    for(var i=0; i<seeds.length; i++){
+      min = Math.min(min, seeds[i].value);
+      max = Math.max(max, seeds[i].value);
+    }
+
     // creating the output image
     var out = new pixpipe.Image2D({width: outputSize.width, height: outputSize.height, color: [0]})
     var strength = this.getMetadata( "strength" );
-    var k = Math.min( this.getMetadata( "k" ) , points.length );
+
+    var metadataK = this.getMetadata( "k" );
+    var k = metadataK <= 0 ? seeds.length : Math.min( metadataK , seeds.length );
 
     console.time("make")
     // for each pixel of the image...
@@ -108,12 +119,12 @@ class IDWSparseInterpolationImageFilter extends Filter {
 
           if( d == 0){
             isOnPoint = true;
-            pointValue = points[index].value;
+            pointValue = seeds[index].value;
             break;
           }
 
           var w = 1 / Math.pow( d, strength );
-          numerator += ( points[index].value * w );
+          numerator += ( seeds[index].value * w );
           denominator += w ;
         }
 
@@ -122,6 +133,9 @@ class IDWSparseInterpolationImageFilter extends Filter {
         out.setPixel( {x: i, y: j}, [ pixelValue ] );
       }
     }
+
+    out.setMetadata("min", min);
+    out.setMetadata("max", max);
     this._output[ 0 ] = out;
   }
 
@@ -133,8 +147,11 @@ class IDWSparseInterpolationImageFilter extends Filter {
   */
   _buildMap(){
     var outputSize = this.getMetadata( "outputSize" );
-    var points = this._input[ 0 ];
-    var k = Math.min( this.getMetadata( "k" ) , points.length );
+    var seeds = this._getInput("seeds");
+    //var k = Math.min( this.getMetadata( "k" ) , seeds.length );
+
+    var metadataK = this.getMetadata( "k" );
+    var k = metadataK <= 0 ? seeds.length : Math.min( metadataK , seeds.length );
 
     this._map = new Array( outputSize.width * outputSize.height );
 
@@ -145,9 +162,9 @@ class IDWSparseInterpolationImageFilter extends Filter {
         var index1D = i + j*outputSize.width;
         var localMap = new Array( p );
 
-        for(var p=0; p<points.length; p++){
+        for(var p=0; p<seeds.length; p++){
           // compute euclidian distance from [i, j] to p(x, y)
-          var d = Math.sqrt( Math.pow( points[p].x - i, 2 ) + Math.pow( points[p].y - j, 2) );
+          var d = Math.sqrt( Math.pow( seeds[p].x - i, 2 ) + Math.pow( seeds[p].y - j, 2) );
           localMap[ p ] = { index: p, distance: d};
         }
 
