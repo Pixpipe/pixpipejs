@@ -1,4 +1,10 @@
-![Pixpipe.js](images/pixpipe256.png)
+![Pixpipe.js](images/pixpipe256.png)  
+
+
+[![GitHub last commit](https://img.shields.io/github/last-commit/pixpipe/pixpipejs.svg)](https://github.com/Pixpipe/pixpipejs)
+[![Gitter](https://img.shields.io/gitter/room/nwjs/nw.js.svg)](https://gitter.im/pixpipe/General)
+[![npm](https://img.shields.io/npm/v/pixpipe.svg)](https://www.npmjs.com/package/pixpipe)
+
 
 [Pixpipe.js](https://github.com/Pixpipe/pixpipejs) is an attempt of building an image processing pipeline entirely in native Javascript for browsers. Its architecture was somewhat inspired by [ITK](https://itk.org/), making a clear distinction between objects that *contains* data (inherit from `PixpipeContainer`) from object that *processes* data (inherit from `Filter`).  
 
