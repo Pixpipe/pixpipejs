@@ -17,8 +17,6 @@ const DIRECTIONS = {
 };
 
 
-// more info:
-// http://paulbourke.net/miscellaneous/dft/
 class BaseFourierSignalFilter extends Filter {
   constructor(direction) {
     super();
@@ -49,11 +47,11 @@ class BaseFourierSignalFilter extends Filter {
     this._output[0].setData(real.data);
     this._output[1] = new Signal1D();
     this._output[1].setData(img.data);
-    
+
     // metadata
     this._output[0].setMetadata("samplingFrequency", realSignal.getMetadata("samplingFrequency"));
     this._output[1].setMetadata("samplingFrequency", realSignal.getMetadata("samplingFrequency"));
-    
+
   }
 }
 

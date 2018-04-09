@@ -2271,7 +2271,6 @@ class Minc2DecoderAlt extends Decoder{
 
     /**
      * @doc function
-     * @name hdf5.this.scaleVoxels
      * @param {object} image The link object corresponding to the image data.
      * @param {object} image_min The link object corresponding to the image-min
      * data.
@@ -2468,7 +2467,6 @@ class Minc2DecoderAlt extends Decoder{
 
     /**
      * @doc function
-     * @name hdf5.this.isRgbVolume
      * @param {object} header The header object representing the structure
      * of the MINC file.
      * @param {object} image The typed array object used to represent the
@@ -2490,7 +2488,6 @@ class Minc2DecoderAlt extends Decoder{
 
     /**
      * @doc function
-     * @name hdf5.this.rgbVoxels
      * @param {object} image The 'link' object created using createLink(),
      * that corresponds to the image within the HDF5 or NetCDF file.
      * @returns {object} A new ArrayBuffer that contains the original RGB
