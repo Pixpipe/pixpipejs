@@ -3,20 +3,22 @@
 <head>
   <meta charset='utf-8' />
   <title>Pixpipejs 0.1.1 | Documentation</title>
+  <link rel="shortcut icon" href="assets/favicon.png" type="image/x-icon">
   <meta name='viewport' content='width=device-width,initial-scale=1'>
   <link href='assets/bass.css' type='text/css' rel='stylesheet' />
   <link href='assets/style.css' type='text/css' rel='stylesheet' />
   <link href='assets/github.css' type='text/css' rel='stylesheet' />
   <link href='assets/split.css' type='text/css' rel='stylesheet' />
+
 </head>
 <body class='documentation m0'>
     <div class='flex'>
       <div id='split-left' class='overflow-auto fs0 height-viewport-100'>
         <div class='py1 px2'>
-          <h3 class='mb0 no-anchor'>Pixpipejs</h3>
-          <div class='mb1'><code>0.1.1</code></div>
+          <h3 class='mb0 no-anchor'><img class="width100pc" src="assets/name_1000.png" alt="Pixpipejs"></h3>
+          <div class='mb1'><code>v0.1.1</code></div>
           <input
-            placeholder='Filter'
+            placeholder='What are you looking for?'
             id='filter-input'
             class='col12 block input'
             type='text' />
@@ -3528,7 +3530,7 @@
             </ul>
           </div>
           <div class='mt1 h6 quiet'>
-            <a href='http://documentation.js.org/reading-documentation.html'>Need help reading this?</a>
+            <a href='http://pixpipe.io'>pixpipe.io</a>
           </div>
         </div>
       </div>
@@ -3542,7 +3544,8 @@
   </h2>
 
   
-    <p>The core of Pixpipe is a list of useful classes and containers</p>
+    <p>The core of Pixpipe is a list of the base classes that most of Pixpipe objects will inherit from. Some are supposed to be used extensively by developers (<code>Signal1D</code>, <code>Image2D</code>, <code>Image3D</code>) and some are just fundamental parts that work in the shadow (<code>Filter</code>, <code>PixpipeContainer</code>, <code>PixpipeObject</code>).<br>
+Make sure you understand <a href="http://www.pixpipe.io/cookbook/2-core-description/0-README.html">who is who</a> before you start.  </p>
 
   
 </section>
@@ -16705,7 +16708,8 @@ Conpute min-max</p>
   </h2>
 
   
-    <p>All decoders iherit from <code>Filter</code>, they intend to parse specific file format and output structured data. In addition to decoders, you can also find some encoders (<code>PixBinEncoder</code>).</p>
+    <p>All decoders inherit from <code>Filter</code>, they intend to parse specific file format and output one of the basic <code>PixpipeObject</code>. In addition to decoders, you can also find some encoders (<code>PixBinEncoder</code>).  </p>
+<p>A decoder will usually take an <code>ArrayBuffer</code> as input.</p>
 
   
 </section>
@@ -25052,7 +25056,8 @@ various bith depth and types (8bits, 32bits, etc.)</p>
   </h2>
 
   
-    <p>Filters are objects that takes one or more input, performs some task and creates one or more output.</p>
+    <p>Filters are objects that takes one or more input, performs some task and creates one or more output.<br>
+The input is never to be overwritten by a filter and an entirely new object should be created by a filter.</p>
 
   
 </section>
@@ -28880,7 +28885,7 @@ R, G, B, A
   </h2>
 
   
-    <p>the input/output ar special <code>Filter</code> object that read or write file from a server or from disk.</p>
+    <p>the input/output are special kinds of <code>Filter</code> objects. they read or write file from a server or from disk.</p>
 
   
 </section>

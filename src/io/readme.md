@@ -1,1 +1,1 @@
-the input/output ar special `Filter` object that read or write file from a server or from disk.
+the input/output are special kinds of `Filter` objects. they read or write file from a server or from disk.
