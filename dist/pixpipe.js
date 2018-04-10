@@ -35471,7 +35471,7 @@
   */
 
   /**
-  * A PixBinDecoder instance decodes a *.pixp file and output an Image2D or Image3D.
+  * A PixBinDecoder instance decodes a pixbin file and output an `Image2D` or `Image3D`.
   * The input, specified by `.addInput(...)` must be an ArrayBuffer
   * (from an `UrlToArrayBufferFilter`, an `UrlToArrayBufferReader` or anothrer source ).
   * The metadata `targetType` can be a string or an array of
@@ -38002,7 +38002,6 @@
 
       /**
        * @doc function
-       * @name hdf5.this.scaleVoxels
        * @param {object} image The link object corresponding to the image data.
        * @param {object} image_min The link object corresponding to the image-min
        * data.
@@ -38192,7 +38191,6 @@
 
       /**
        * @doc function
-       * @name hdf5.this.isRgbVolume
        * @param {object} header The header object representing the structure
        * of the MINC file.
        * @param {object} image The typed array object used to represent the
@@ -38214,7 +38212,6 @@
 
       /**
        * @doc function
-       * @name hdf5.this.rgbVoxels
        * @param {object} image The 'link' object created using createLink(),
        * that corresponds to the image within the HDF5 or NetCDF file.
        * @returns {object} A new ArrayBuffer that contains the original RGB
@@ -44050,7 +44047,6 @@
 
       /**
        * @doc function
-       * @name hdf5.this.scaleVoxels
        * @param {object} image The link object corresponding to the image data.
        * @param {object} image_min The link object corresponding to the image-min
        * data.
@@ -44240,7 +44236,6 @@
 
       /**
        * @doc function
-       * @name hdf5.this.isRgbVolume
        * @param {object} header The header object representing the structure
        * of the MINC file.
        * @param {object} image The typed array object used to represent the
@@ -44262,7 +44257,6 @@
 
       /**
        * @doc function
-       * @name hdf5.this.rgbVoxels
        * @param {object} image The 'link' object created using createLink(),
        * that corresponds to the image within the HDF5 or NetCDF file.
        * @returns {object} A new ArrayBuffer that contains the original RGB
@@ -59582,9 +59576,6 @@ b" + i + "*=d\
     'FORWARD': 1,
     'INVERSE': -1
   };
-
-  // more info:
-  // http://paulbourke.net/miscellaneous/dft/
 
   var BaseFourierSignalFilter = function (_Filter) {
     inherits(BaseFourierSignalFilter, _Filter);

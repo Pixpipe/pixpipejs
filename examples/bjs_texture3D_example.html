@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+  <title>MRI Volume</title>
+
+  <style>
+  html, body {
+    overflow: hidden;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    font-family: sans-serif;
+    color: white;
+  }
+
+  a {
+    text-decoration: none;
+    color: #FF91D7;
+  }
+
+  #renderCanvas {
+    width: 100%;
+    height: 100%;
+    touch-action: none;
+  }
+
+  #footer {
+    height: 100px;
+    background: rgba(255, 255, 255, 0.3);
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    margin: 0;
+    width: 100vw;
+    display: flex;
+  }
+
+  #footer img {
+    height: 100px;
+    width: 100px;
+    margin-right: 10px;
+  }
+
+  #footer p {
+    margin: 8px;
+    font-size: 15px;
+  }
+
+  </style>
+
+
+  <script src="https://preview.babylonjs.com/babylon.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.1/dat.gui.js"></script>
+  <script src="https://cdn.rawgit.com/Pixpipe/pixpipejs/2272809d/dist/pixpipe.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gl-matrix/2.4.0/gl-matrix-min.js"></script>
+</head>
+
+<body>
+  <canvas id="renderCanvas" touch-action="none"></canvas>
+  <div id="footer">
+    <a href="http://www.pixpipe.io/" >
+      <img src="https://cdn.rawgit.com/Pixpipe/assets/d6a3daa2/logos/org_logo_512.png"/>
+    </a>
+    <p>
+      Reading and parsing of a NIfTI file (structural MRI) with <a href="http://www.pixpipe.io/">PixpipeJS</a>, and conversion into a native WebGL2 3D texture with <a href="https://www.babylonjs.com/">BabylonJS</a>. The volume is then displayed in subject coordinates (MNI space) using the MRI's affine transformation matrix and a custom GLSL shader. Units: positions in mm and rotation in radian.<br />
+      Data has been defaced for anonymity. Courtesy of <a href="http://www.mcgill.ca/neuro/about">Montreal Neurological Hospital</a><br />
+      By <a href="https://twitter.com/jonathanlurie">@jonathanlurie</a> for <a href="http://mcin.ca/">MCIN lab</a>. Source code available <a href="https://github.com/Pixpipe/pixpipejs/blob/master/examples/bjs_texture3D_example.html">on Github</a>.
+    </p>
+  </div>
+
+
+  <script type="x-shader/vs" id="vertexShaderCode">
+  precision highp float;
+
+  // Attributes
+  attribute vec3 position;
+
+  // Uniforms
+  uniform mat4 world;
+  uniform mat4 worldViewProjection;
+
+  // Varying
+  varying vec3 vPositionW;
+
+  void main(void) {
+    vec4 outPosition = worldViewProjection * vec4(position, 1.0);
+    gl_Position = outPosition;
+
+    vPositionW = vec3(world * vec4(position, 1.0));
+  }
+  </script>
+
+
+
+  <script type="x-shader/vf" id="fragmentShaderCode">
+  precision highp float;
+  precision highp sampler3D;
+
+  uniform mat4 transfoMat;
+  varying vec3 vPositionW;
+
+  uniform sampler3D texture3D;
+  uniform int textureReady;
+
+  // the current time position
+  uniform int timeVal;
+  // the number of time position available
+  uniform int timeSize;
+
+  void main(void) {
+    if( textureReady == 0 ){
+      discard;
+      return;
+    }
+
+    vec4 v4PositionW = vec4( vPositionW, 1.0 );
+    vec4 unitPositionV4 = v4PositionW * transfoMat;
+
+    vec3 unitPositionV3 = vec3( unitPositionV4.x  , unitPositionV4.y, (unitPositionV4.z + float(timeVal))/ float(timeSize) ) ;
+
+    if( unitPositionV3.x < 0. || unitPositionV3.x > 1. ||
+        unitPositionV3.y < 0. || unitPositionV3.y > 1. ||
+        unitPositionV3.z < (float(timeVal)/ float(timeSize)) || unitPositionV3.z > ((1. + float(timeVal))/ float(timeSize)) )
+    {
+      discard;
+      return;
+    }
+
+    vec4 textureColor = texture( texture3D, unitPositionV3 ) * 1.;
+
+    // to prevent Firefox displaying it only red
+    // (maybe there is a hardcoded _RED texture thing in BJS)
+    textureColor.r = textureColor.r;
+    textureColor.g = textureColor.r;
+    textureColor.b = textureColor.r;
+
+    gl_FragColor = textureColor;
+  }
+  </script>
+
+
+  <script>
+  let gui = new dat.GUI({name: 'My GUI'});
+  let canvas = document.getElementById("renderCanvas"); // Get the canvas element
+
+  let camera = null;
+  let engine = new BABYLON.Engine(canvas, true); // Generate the BABYLON 3D engine
+  let scene = new BABYLON.Scene(engine);
+
+  let planeContainer = null;
+  let shaderMaterial = null;
+
+  let timeController = null;
+
+  let spatialConfig = {
+    x: 0,
+    y: 0,
+    z: 0,
+    xRot: 0,
+    yRot: 0,
+    zRot: 0,
+    t: 0
+  }
+
+
+  /******* Add the create scene function ******/
+  function createScene( texture3D ) {
+
+    // Add a camera to the scene and attach it to the canvas
+    camera = new BABYLON.ArcRotateCamera("Camera", Math.PI / 2, Math.PI / 2, 2, BABYLON.Vector3.Zero(), scene);
+    console.log( camera );
+    camera.inertia = 0.7;
+    camera.setPosition( new BABYLON.Vector3(250, 250, 250) )
+    camera.attachControl(canvas, true, true);
+    camera.upperBetaLimit = null;
+    camera.lowerBetaLimit = null;
+
+    scene.registerBeforeRender(function(){
+      if(camera.beta <= 0){
+        camera.beta += Math.PI * 2;
+      }
+    });
+
+    // Add lights to the scene
+    let light1 = new BABYLON.HemisphericLight("light1", new BABYLON.Vector3(1, 1, 0), scene);
+    let light2 = new BABYLON.PointLight("light2", new BABYLON.Vector3(0, 1, -1), scene);
+
+    shaderMaterial = new BABYLON.ShaderMaterial(
+      'shad',
+      scene,
+      {
+        vertexElement: "vertexShaderCode",
+        fragmentElement: "fragmentShaderCode"
+      },
+      {
+        attributes: ["position", "normal", "uv"],
+        uniforms: ["world", "worldView", "worldViewProjection", "transfoMat", "texture3D", "textureReady"]
+      });
+
+    shaderMaterial.setInt("textureReady", 0);
+    shaderMaterial.setInt("timeVal", 0);
+    shaderMaterial.setInt("timeSize", 1);
+
+    // we create a fake 1x1x1 texture so that GLSL does not cry it's missing...
+    let emptyTexture3D = new BABYLON.RawTexture3D( new Uint8Array(1),1,1,1,BABYLON.Engine.TEXTUREFORMAT_LUMINANCE,scene);
+    shaderMaterial.setTexture("texture3D", emptyTexture3D);
+
+    // Add and manipulate meshes in the scene
+    //let sphere = BABYLON.MeshBuilder.CreateSphere("laSphere", {radius: 1, radialSegments: 100}, scene);
+    planeContainer = new BABYLON.Mesh( "planeContainer", scene );
+
+    let xyPlane = BABYLON.MeshBuilder.CreatePlane("xyPlane", {height:1000, width: 1000, sideOrientation: BABYLON.Mesh.DOUBLESIDE}, scene);
+    xyPlane.parent = planeContainer;
+    xyPlane.material = shaderMaterial
+
+    let xzPlane = BABYLON.MeshBuilder.CreatePlane("xzPlane", {height:1000, width: 1000, sideOrientation: BABYLON.Mesh.DOUBLESIDE}, scene);
+    xzPlane.rotation.x = Math.PI/2;
+    xzPlane.parent = planeContainer;
+    xzPlane.material = shaderMaterial;
+
+    let yzPlane = BABYLON.MeshBuilder.CreatePlane("yzPlane", {height:1000, width: 1000, sideOrientation: BABYLON.Mesh.DOUBLESIDE}, scene);
+    yzPlane.rotation.y = Math.PI/2;
+    yzPlane.parent = planeContainer;
+    yzPlane.material = shaderMaterial;
+
+    engine.runRenderLoop(function () { // Register a render loop to repeatedly render the scene
+      updateObjectSpatialConfig();
+      scene.render();
+    });
+  };
+
+
+  function initGui(){
+    gui.add(spatialConfig, 'x', -150, 150, 0.1).name('X position');
+    gui.add(spatialConfig, 'y', -150, 150, 0.1).name('Y position');
+    gui.add(spatialConfig, 'z', -150, 150, 0.1).name('Z position');
+    gui.add(spatialConfig, 'xRot', -Math.PI, Math.PI, 0.01).name('X rotation');
+    gui.add(spatialConfig, 'yRot', -Math.PI, Math.PI, 0.01).name('Y rotation');
+    gui.add(spatialConfig, 'zRot', -Math.PI, Math.PI, 0.01).name('Z rotation');
+
+    timeController = gui.add(spatialConfig, 't',0, 0, 1)
+    .name('T')
+    .onChange( function(timeVal){
+      shaderMaterial.setInt("timeVal", timeVal);
+    })
+  }
+
+
+  function updateObjectSpatialConfig(){
+    planeContainer.position.x = spatialConfig.x *-1;
+    planeContainer.position.y = spatialConfig.y;
+    planeContainer.position.z = spatialConfig.z;
+    planeContainer.rotation.x = spatialConfig.xRot;
+    planeContainer.rotation.y = spatialConfig.yRot;
+    planeContainer.rotation.z = spatialConfig.zRot;
+  }
+
+
+  function initTexture(){
+    let distantFile = "https://cdn.rawgit.com/Pixpipe/pixpipeData/708106f2/MRI/structural/structural.nii.gz";
+    let urlArrBuff =  new pixpipe.UrlToArrayBufferReader();
+
+    urlArrBuff.addInput( distantFile, 0 );
+
+    urlArrBuff.on("ready", function(){
+      let arrBuff = this.getOutput();
+      let generic3DDecoder = new pixpipe.Image3DGenericDecoderAlt();
+      generic3DDecoder.addInput( arrBuff );
+      generic3DDecoder.update();
+
+      let img3D = generic3DDecoder.getOutput();
+
+      if( img3D ){
+        let dim0 = img3D.getDimensionSize(0);
+        let dim1 = img3D.getDimensionSize(1);
+        let dim2 = img3D.getDimensionSize(2);
+        let dimT = img3D.getTimeLength();
+        let total = dim0 * dim1 * dim2 * dimT;
+
+        let texture3D = new BABYLON.RawTexture3D(
+          img3D.getDataUint8(),
+          dim0 ,
+          dim1 ,
+          dim2 * dimT,
+          BABYLON.Engine.TEXTUREFORMAT_LUMINANCE,
+          scene,
+          false, // generate mipmaps
+          false, // invertY
+          //BABYLON.Texture.NEAREST_SAMPLINGMODE
+          BABYLON.Texture.TRILINEAR_SAMPLINGMODE
+        )
+
+        shaderMaterial.setTexture("texture3D", texture3D);
+        timeController.max( dimT-1 );
+        timeController.updateDisplay()
+        shaderMaterial.setInt("timeSize", dimT);
+        let v2t = computeTransfoMat( img3D );
+        shaderMaterial.setMatrix("transfoMat", v2t );
+        shaderMaterial.setInt("textureReady", 1)
+      }else{
+        alert( "ERROR: unable to load the texture." );
+      }
+    })
+    urlArrBuff.update();
+  }
+
+
+  function computeTransfoMat( img3D ){
+    let pixpipe_SwapMat = img3D.getVoxelCoordinatesSwapMatrix( false, true );
+    let pixpipe_V2W = img3D.getTransformMatrix('v2w') ;
+
+    // Just for curiosity, let's compute the rotation angle and axis
+    // involved in this v2w afine transformation
+    let glMat_V2W = mat4.fromValues( ...pixpipe_V2W );
+    let glQuat_V2W = quat.create();
+    let glVect3_rotAxis = vec3.create();
+    mat4.getRotation( glQuat_V2W, glMat_V2W );
+    let rotationAngle = quat.getAxisAngle( glVect3_rotAxis, glQuat_V2W );
+    vec3.normalize( glVect3_rotAxis, glVect3_rotAxis );
+    console.log(`v2w: rotation of ${rotationAngle}rad (${(rotationAngle/Math.PI)*180}deg) over the axis [${glVect3_rotAxis[0]}, ${glVect3_rotAxis[1]}, ${glVect3_rotAxis[2]}]`);
+
+    let glMat_test = mat4.create();
+    mat4.fromRotation(glMat_test, rotationAngle, glVect3_rotAxis);
+    // ... END of computing angle
+
+    let swapMatrix = BABYLON.Matrix.FromArray( pixpipe_SwapMat ).transpose();
+    let v2w = BABYLON.Matrix.FromArray( pixpipe_V2W ).transpose();
+
+    let scalingMat = new BABYLON.Matrix.FromValues(
+      img3D.getDimensionSize("x"), 0, 0, 1,
+      0, img3D.getDimensionSize("y"), 0, 1,
+      0, 0, img3D.getDimensionSize("z"), 1,
+      0, 0, 0, 1
+    )
+
+    // for whatever reason, MNI space is flipped on X compared to WebGL.
+    // No big deal, it's probably just texture indexing convention.
+    let flipper = new BABYLON.Matrix.FromValues(
+      -1, 0, 0, 0,
+      0, 1, 0, 0,
+      0, 0, 1, 0,
+      0, 0, 0, 1
+    )
+
+    scalingMat = scalingMat.multiply( swapMatrix );
+
+    let transfoMat = v2w.multiply( scalingMat );
+    let transfoMatInvert = BABYLON.Matrix.Invert( transfoMat ).multiply( flipper );
+
+    // sometimes, one of the offset (or more) is zero, which makes no
+    // sens in this brain context (weither it's Talairach or MNI space).
+    // Then, we arbitrarily set the origin at the center of the volume.
+    // In this case, the world origin is no longer valid but we still
+    // keep relative size ok.
+    if( v2w.m[3] === 0 || v2w.m[7] === 0 || v2w.m[11] === 0 ){
+      transfoMatInvert.m[3] = 0.5;
+      transfoMatInvert.m[7] = 0.5;
+      transfoMatInvert.m[11] = 0.5;
+    }
+
+    return transfoMatInvert;
+  }
+
+
+  initGui();
+  createScene();
+  initTexture();
+
+  window.addEventListener("resize", function () {
+    engine.resize();
+  });
+
+  </script>
+
+</body>
+
+</html>
