@@ -1,0 +1,1 @@
+The Utils are usually not respecting the inheritance schema provided by Pixpipe because they are neither data structure, nor filters. They just provide some small feature that can be used by multiple `PixpipeObject`s.

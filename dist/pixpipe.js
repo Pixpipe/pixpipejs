@@ -13998,6 +13998,23 @@
       }
 
       /**
+       * Get the transformation matrix (as a copy) with a given name.
+       * The name can be "v2w", "w2v" or any other custom transfo name specified earlier.
+       * @param  {String} transformName - name of the transformation.
+       * @return {Float32Array} a copy (slice) of the transformation matrix, of null if not existant. This matrix is column-major (like OpenGL/WebGL, but unlike ThreeJS/BabylonJS)
+       */
+
+    }, {
+      key: 'getTransformMatrix',
+      value: function getTransformMatrix(transformName) {
+        if (transformName in this._metadata.transformations) {
+          return this._metadata.transformations[transformName].slice();
+        } else {
+          return null;
+        }
+      }
+
+      /**
       * [PRIVATE]
       * Convert a position from a coordinate system to another. Should be called by a method that makes sure of the
       * order of the dimensions.
@@ -14108,8 +14125,8 @@
         }
 
         if (output4x4) {
-          outputMat = MatrixTricks.getExpandedMatrix3x3To4x4(mat33Flipped);
-          MatrixTricks.setValueMatrix33(outputMat, 3, 3, 1);
+          outputMat = MatrixTricks.getExpandedMatrix3x3To4x4(outputMat);
+          MatrixTricks.setValueMatrix44(outputMat, 3, 3, 1);
         }
 
         return outputMat;

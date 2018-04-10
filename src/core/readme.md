@@ -1,0 +1,2 @@
+The core of Pixpipe is a list of the base classes that most of Pixpipe objects will inherit from. Some are supposed to be used extensively by developers (`Signal1D`, `Image2D`, `Image3D`) and some are just fundamental parts that work in the shadow (`Filter`, `PixpipeContainer`, `PixpipeObject`).  
+Make sure you understand [who is who](http://www.pixpipe.io/cookbook/2-core-description/0-README.html) before you start.  
