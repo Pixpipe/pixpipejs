@@ -98,8 +98,6 @@ class NiftiDecoderAlt extends Decoder {
       niftiTransfoMatrix = header.affine;
     }
 
-    console.log( header );
-
     // dimensions info ordered from the fastest varying to the slowest varying
     var voxelSpaceNames = ['k', 'j', 'i', 't'];
     var worldSpaceNames = ['x', 'y', 'z', 't'];
@@ -268,11 +266,17 @@ class NiftiDecoderAlt extends Decoder {
       max: 0
     }
 
-    var output = new Image3DAlt();
+    /*
+    // doing that would imply re-setting widthDimension and heightDimension
+    var dims = metadata.dimensions;
+    dims.sort( function(a, b){
+      return a.stride > b.stride;
+    })
+    */
+
+    var output = new Image3DAlt(); 
     output.setRawData( data );
     output.setRawMetadata( metadata );
-
-    console.log( metadata );
 
     if(output.metadataIntegrityCheck()){
       output.scanDataRange();

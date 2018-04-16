@@ -2848,6 +2848,11 @@ class Minc2DecoderAlt extends Decoder{
 
     var metadata = Image3DMetadataConverter.convertImage3DMetadata( minc_header );
 
+    var dims = metadata.dimensions;
+    dims.sort( function(a, b){
+      return a.stride > b.stride;
+    })
+
     var output = new Image3DAlt();
     output.setRawData( dataArray );
     output.setRawMetadata( metadata );
