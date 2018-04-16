@@ -343,7 +343,7 @@ class MghDecoderAlt extends Decoder {
 
     var dims = metadata.dimensions;
     dims.sort( function(a, b){
-      return a.stride < b.stride;
+      return a.stride > b.stride;
     })
 
     // return the dimsniosn object given its world name ('x', 'y' or 'z')

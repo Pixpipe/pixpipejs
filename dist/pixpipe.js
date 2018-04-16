@@ -40514,8 +40514,6 @@
           niftiTransfoMatrix = header.affine;
         }
 
-        console.log(header);
-
         // dimensions info ordered from the fastest varying to the slowest varying
         var voxelSpaceNames = ['k', 'j', 'i', 't'];
         var worldSpaceNames = ['x', 'y', 'z', 't'];
@@ -40676,13 +40674,18 @@
           upToDate: false,
           min: 0,
           max: 0
-        };
 
-        var output = new Image3DAlt();
+          /*
+          // doing that would imply re-setting widthDimension and heightDimension
+          var dims = metadata.dimensions;
+          dims.sort( function(a, b){
+            return a.stride > b.stride;
+          })
+          */
+
+        };var output = new Image3DAlt();
         output.setRawData(data);
         output.setRawMetadata(metadata);
-
-        console.log(metadata);
 
         if (output.metadataIntegrityCheck()) {
           output.scanDataRange();
@@ -44609,6 +44612,11 @@
 
         var metadata = Image3DMetadataConverter.convertImage3DMetadata(minc_header);
 
+        var dims = metadata.dimensions;
+        dims.sort(function (a, b) {
+          return a.stride > b.stride;
+        });
+
         var output = new Image3DAlt();
         output.setRawData(dataArray);
         output.setRawMetadata(metadata);
@@ -44952,7 +44960,7 @@
 
         var dims = metadata.dimensions;
         dims.sort(function (a, b) {
-          return a.stride < b.stride;
+          return a.stride > b.stride;
         });
 
         function getWidthDimension(directionDim) {
