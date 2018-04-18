@@ -15,6 +15,7 @@ import { Image3DMetadataConverter } from '../utils/Image3DMetadataConverter.js';
 /**
 * Decodes a MGH file.
 * Takes an ArrayBuffer as input (0) and output a `MniVolume` (which inherit `Image3D`).
+* Some doc can be found [here](https://surfer.nmr.mgh.harvard.edu/fswiki/FsTutorial/MghFormat) 
 *
 * **Usage**
 * - [examples/fileToMgh.html](../examples/fileToMgh.html)
@@ -341,10 +342,15 @@ class MghDecoderAlt extends Decoder {
 
     // ********** SWAPPING DIM *************
 
+
     var dims = metadata.dimensions;
+
+    /*
     dims.sort( function(a, b){
       return a.stride > b.stride;
     })
+    */
+
 
     // return the dimsniosn object given its world name ('x', 'y' or 'z')
     function getDimensionByWorldName( name ){

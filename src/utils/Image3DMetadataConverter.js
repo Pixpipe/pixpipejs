@@ -1,18 +1,18 @@
 import { glMatrix, mat2, mat2d, mat3, mat4, quat, vec2, vec3, vec4 } from 'gl-matrix';
 
 class Image3DMetadataConverter {
-  
+
   static convertOld2New( oldMeta ){
     var newMeta = {};
-    
+
     // we never have RGB from MINC/NIfTI/MGH. Though it could happen...
     newMeta.ncpp = 1;
     newMeta.dimensions = [];
-    
+
     //var spacenameLUT = {x: "i", y: "j", z: "k", t: "t"};
     var voxelSpaceNames = ["k", "j", "i", "t"];
     var spacePosition = {};
-    
+
     for(var i=0; i<oldMeta.order.length; i++){
       var oldDim = oldMeta[ oldMeta.order[i] ];
       var dimension = {};
@@ -20,24 +20,25 @@ class Image3DMetadataConverter {
       dimension.nameWorldSpace = oldMeta.order[i][0];
       dimension.nameVoxelSpace = ''; //voxelSpaceNames[i]; //spacenameLUT[ dimension.nameWorldSpace ];
       spacePosition[ dimension.nameWorldSpace ] = i;
-      
+
       dimension.worldUnitSize = Math.abs(oldDim.step);
       dimension.step = oldDim.step;
       dimension.worldStep = oldDim.step;
       dimension.stride = oldDim.offset;
       newMeta.dimensions.push( dimension );
     }
-    
-    
+
+
     newMeta.dimensions.sort( function(a, b){
       return a.stride > b.stride;
     })
     
-    
+
+
     for(var i=0; i<oldMeta.order.length; i++){
       newMeta.dimensions[i].nameVoxelSpace = voxelSpaceNames[i];
     }
-    
+
     // return the index of a dimension based on the given world axis name
     function getIndexOfWorld( axisName ){
       for(var i=0; i<newMeta.dimensions.length; i++){
@@ -47,31 +48,31 @@ class Image3DMetadataConverter {
       }
       return -1;
     }
-    
+
     // given a world axis name, return the the name of the world axis that goes as width
     function getWidthAxisFrom( axisName ){
       return axisName === "x" ? "y" : axisName === "y" ? "x" : axisName === "z" ? "x" : null;
     }
-    
-    
+
+
     // given a world axis name, return the the name of the world axis that goes as heigth
     function getHeightAxisFrom( axisName ){
       return axisName === "x" ? "z" : axisName === "y" ? "z" : axisName === "z" ? "y" : null;
     }
-    
-    
+
+
     for(var i=0; i<newMeta.dimensions.length; i++){
       var axisName = newMeta.dimensions[i].nameWorldSpace;
       newMeta.dimensions[i].widthDimension = getIndexOfWorld( getWidthAxisFrom( axisName ) );
       newMeta.dimensions[i].heightDimension = getIndexOfWorld( getHeightAxisFrom( axisName ) );
     }
-  
+
     newMeta.statistics = {
       upToDate: false,
       min: 0,
       max: 0
     }
-    
+
     newMeta.description = "";
     newMeta.spatialUnit = "";
     newMeta.temporalUnit = "";
@@ -83,7 +84,7 @@ class Image3DMetadataConverter {
                                  transfoMatrixToUse[0][2], transfoMatrixToUse[1][2], transfoMatrixToUse[2][2], transfoMatrixToUse[3][2],
                                  transfoMatrixToUse[0][3], transfoMatrixToUse[1][3], transfoMatrixToUse[2][3], transfoMatrixToUse[3][3] );
     */
-    
+
     var w2vMat = mat4.fromValues(oldMeta.w2v[0][0], oldMeta.w2v[1][0], oldMeta.w2v[2][0], 0,
                                  oldMeta.w2v[0][1], oldMeta.w2v[1][1], oldMeta.w2v[2][1], 0,
                                  oldMeta.w2v[0][2], oldMeta.w2v[1][2], oldMeta.w2v[2][2], 0,
@@ -92,20 +93,20 @@ class Image3DMetadataConverter {
 
     var v2wMat = mat4.create();
     mat4.invert( v2wMat, w2vMat );
-    
+
     newMeta.transformations = {
       "v2w": v2wMat,
       "w2v": w2vMat
     };
-    
+
     return newMeta;
   }
-  
-  
-  
+
+
+
   /**
   * Converts the original Image3D metadata into the new
-  * 
+  *
   */
   static convertImage3DMetadata( oldMeta ){
     Image3DMetadataConverter.completeHeader( oldMeta );
@@ -113,8 +114,8 @@ class Image3DMetadataConverter {
 
     return newMetaObj;
   }
-  
-  
+
+
   static completeHeader( oldMetaObj ) {
     var xspace = oldMetaObj.xspace;
     var yspace = oldMetaObj.yspace;
@@ -148,13 +149,13 @@ class Image3DMetadataConverter {
       [cy[0] / stepy, cy[1] / stepy, cy[2] / stepy, ty],
       [cz[0] / stepz, cz[1] / stepz, cz[2] / stepz, tz]
     ];
-    
+
     /*
     x: x * cx[0] * stepx + y * cy[0] * stepy + z * cz[0] * stepz + o.x,
     y: x * cx[1] * stepx + y * cy[1] * stepy + z * cz[1] * stepz + o.y,
     z: x * cx[2] * stepx + y * cy[2] * stepy + z * cz[2] * stepz + o.z
     */
-    
+
     var v2w =  [
       cx[0] * stepx,
       cx[1] * stepx,
@@ -191,9 +192,9 @@ class Image3DMetadataConverter {
     zspace.height_space = JSON.parse( JSON.stringify( yspace ) );//yspace;
     zspace.height       = yspace.space_length;
   }
-  
-  
-  
+
+
+
     /**
     * [STATIC]
     * mainly used by the ouside world (like from Nifti)
@@ -273,8 +274,8 @@ class Image3DMetadataConverter {
       header.yspace.direction_cosines = y_dir_cosines;
       header.zspace.direction_cosines = z_dir_cosines;
     };
-  
-  
+
+
     /**
     * [STATIC]
     * swap the data to be used from the outside (ie. nifti)

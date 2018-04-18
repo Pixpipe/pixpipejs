@@ -279,6 +279,62 @@
     return out;
   }
 
+  /**
+   * Multiplies two mat4s
+   *
+   * @param {mat4} out the receiving matrix
+   * @param {mat4} a the first operand
+   * @param {mat4} b the second operand
+   * @returns {mat4} out
+   */
+  function multiply$3(out, a, b) {
+    var a00 = a[0],
+        a01 = a[1],
+        a02 = a[2],
+        a03 = a[3];
+    var a10 = a[4],
+        a11 = a[5],
+        a12 = a[6],
+        a13 = a[7];
+    var a20 = a[8],
+        a21 = a[9],
+        a22 = a[10],
+        a23 = a[11];
+    var a30 = a[12],
+        a31 = a[13],
+        a32 = a[14],
+        a33 = a[15];
+
+    // Cache only the current line of the second matrix
+    var b0 = b[0],
+        b1 = b[1],
+        b2 = b[2],
+        b3 = b[3];
+    out[0] = b0 * a00 + b1 * a10 + b2 * a20 + b3 * a30;
+    out[1] = b0 * a01 + b1 * a11 + b2 * a21 + b3 * a31;
+    out[2] = b0 * a02 + b1 * a12 + b2 * a22 + b3 * a32;
+    out[3] = b0 * a03 + b1 * a13 + b2 * a23 + b3 * a33;
+
+    b0 = b[4];b1 = b[5];b2 = b[6];b3 = b[7];
+    out[4] = b0 * a00 + b1 * a10 + b2 * a20 + b3 * a30;
+    out[5] = b0 * a01 + b1 * a11 + b2 * a21 + b3 * a31;
+    out[6] = b0 * a02 + b1 * a12 + b2 * a22 + b3 * a32;
+    out[7] = b0 * a03 + b1 * a13 + b2 * a23 + b3 * a33;
+
+    b0 = b[8];b1 = b[9];b2 = b[10];b3 = b[11];
+    out[8] = b0 * a00 + b1 * a10 + b2 * a20 + b3 * a30;
+    out[9] = b0 * a01 + b1 * a11 + b2 * a21 + b3 * a31;
+    out[10] = b0 * a02 + b1 * a12 + b2 * a22 + b3 * a32;
+    out[11] = b0 * a03 + b1 * a13 + b2 * a23 + b3 * a33;
+
+    b0 = b[12];b1 = b[13];b2 = b[14];b3 = b[15];
+    out[12] = b0 * a00 + b1 * a10 + b2 * a20 + b3 * a30;
+    out[13] = b0 * a01 + b1 * a11 + b2 * a21 + b3 * a31;
+    out[14] = b0 * a02 + b1 * a12 + b2 * a22 + b3 * a32;
+    out[15] = b0 * a03 + b1 * a13 + b2 * a23 + b3 * a33;
+    return out;
+  }
+
   /* Copyright (c) 2015, Brandon Jones, Colin MacKenzie IV.
 
   Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -13442,8 +13498,8 @@
           // required
           dimensions: joiBrowser.array().min(3).max(4).items(joiBrowser.object({
             length: joiBrowser.number().integer().min(1).required(),
-            widthDimension: joiBrowser.number().integer().min(-1).max(2).required(), // -1 means "does not apply" --> time series
-            heightDimension: joiBrowser.number().integer().min(-1).max(2).required(), // idem
+            widthDimension: joiBrowser.number().integer().min(-1).max(3).required(), // -1 means "does not apply" --> time series
+            heightDimension: joiBrowser.number().integer().min(-1).max(3).required(), // idem
             nameVoxelSpace: joiBrowser.string().regex(/(i|j|k|t)/).required(),
             nameWorldSpace: joiBrowser.string().regex(/(x|y|z|t)/).required(),
             worldUnitSize: joiBrowser.number().required(),
@@ -14093,6 +14149,66 @@
       }
 
       /**
+       * If the matrix 'w2v' exist in the available transformations, this method gives
+       * the voxel position {i, j, k} corresponding to the given world position {x, y, z}.
+       * Since voxel coordinates are integers, the result is rounded by deafult but this
+       * can be changed by providing false to the 'round' arg.
+       * @param  {Object}  [wPos={x:0, y:0, z:0}] - position in world coordinates (default: origin)
+       * @param  {Boolean} [round=true] - do you wish to round the output? (default: true)
+       * @return {Object} the corresponding position in voxel coorinate as {i: Number, j: Number, k: Number}
+       */
+
+    }, {
+      key: 'getPositionWorldToVoxel',
+      value: function getPositionWorldToVoxel() {
+        var wPos = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : { x: 0, y: 0, z: 0 };
+        var round$$1 = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : true;
+
+        var w2vSwappedMatrix = this.getW2VMatrixSwapped();
+
+        if (!w2vSwappedMatrix) return null;
+
+        var worldPos = fromValues$5(wPos.x, wPos.y, wPos.z, 1);
+        var voxelPos = create$5();
+        transformMat4$1(voxelPos, worldPos, w2vSwappedMatrix);
+        var voxelPosObj = { i: voxelPos[0], j: voxelPos[1], k: voxelPos[2] };
+
+        if (round$$1) {
+          voxelPosObj.i = Math.round(voxelPosObj.i);
+          voxelPosObj.j = Math.round(voxelPosObj.j);
+          voxelPosObj.k = Math.round(voxelPosObj.k);
+        }
+
+        return voxelPosObj;
+      }
+
+      /**
+       * Get the w2v (world to voxel) transformation matrix (if it exists) in its swapped version.
+       * Most of the time, the swap matrix is an identity matrix, so it won't change anything
+       * to have it swapped, but some files dont respect the NIfTI spec regarding the dimensionality
+       * of the volume.
+       * @return {Array} the 4x4 matrix (column major)
+       */
+
+    }, {
+      key: 'getW2VMatrixSwapped',
+      value: function getW2VMatrixSwapped() {
+        var transformations = this._metadata.transformations;
+
+        if (!("w2v" in transformations)) {
+          console.warn("No transform named w2v");
+          return null;
+        }
+
+        var w2vMatrix = transformations.w2v;
+        var swapMatrix = this.getVoxelCoordinatesSwapMatrix(true, true);
+        var w2vSwappedMatrix = create$3();
+
+        multiply$3(w2vSwappedMatrix, swapMatrix, w2vMatrix);
+        return w2vSwappedMatrix;
+      }
+
+      /**
       * For external use (e.g. in a shader).
       * Get the matrix for swapping voxel coordinates before converting to world coord
       * or after having converted from world. To serve multiple purposes, this method
@@ -14316,8 +14432,8 @@
 
         var dimensions = this._metadata.dimensions;
 
-        // The dimension of the normalAxis must exist (and not be time)
-        if (normalAxis > 2) {
+        // The dimension of the normalAxis must exist
+        if (normalAxis > 3) {
           console.warn("The dimension of a slice should be lower than 3.");
           return null;
         }
@@ -41566,7 +41682,7 @@
 
       /**
       * Converts the original Image3D metadata into the new
-      * 
+      *
       */
 
     }, {
@@ -44642,6 +44758,7 @@
   /**
   * Decodes a MGH file.
   * Takes an ArrayBuffer as input (0) and output a `MniVolume` (which inherit `Image3D`).
+  * Some doc can be found [here](https://surfer.nmr.mgh.harvard.edu/fswiki/FsTutorial/MghFormat) 
   *
   * **Usage**
   * - [examples/fileToMgh.html](../examples/fileToMgh.html)
@@ -44958,10 +45075,8 @@
 
         // ********** SWAPPING DIM *************
 
+
         var dims = metadata.dimensions;
-        dims.sort(function (a, b) {
-          return a.stride > b.stride;
-        });
 
         function getWidthDimension(directionDim) {
           return directionDim === "x" ? "y" : directionDim === "y" ? "x" : directionDim === "z" ? "x" : null;
