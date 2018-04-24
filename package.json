@@ -1,6 +1,6 @@
 {
   "name": "pixpipe",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "A image processing pipeline in pure Javascript for browsers and Node",
   "entry": "src/pixpipe.js",
   "main": "dist/pixpipe.js",
