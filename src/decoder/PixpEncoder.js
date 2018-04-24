@@ -35,7 +35,7 @@ class PixpEncoder extends Filter {
 
 
   /**
-  * [PRIVATE]
+  * @private
   * overwrite the original from Filter
   * Only accept Image2D and Image3D
   */

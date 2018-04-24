@@ -111,7 +111,7 @@ class Filter extends PixpipeObject {
 
 
   /**
-  * [PRIVATE]
+  * @private
   * Perform an action for each input. Within the callback, "this" is this filter.
   * @param {function} cb - callback function to call for every single input
   * with 2 args: the output category and the outpub object.
@@ -131,7 +131,7 @@ class Filter extends PixpipeObject {
 
 
   /**
-  * [PRIVATE]
+  * @private
   * Internal way to setup an output for this filter. Acts like a singleton in a sens
   * that if an output of a given category was already Initialized, it returns it.
   * If no input was Initialized, it creates one.
@@ -161,7 +161,7 @@ class Filter extends PixpipeObject {
 
 
   /**
-  * [PRIVATE]
+  * @private
   * should noly be used by the class that inherit Filter.
   * @param {Number} category - in case we want to get data from different categories.
   * @return {Object} or null if no input can be returned
@@ -302,9 +302,9 @@ class Filter extends PixpipeObject {
   update(){
     // flush any existing output previously computed. Usefull when a filter is ran more than once.
     // If no output is created the second time, the output from the previous time cannot be used instead
-    // (leading the user to think the second run created an output while it's actually the one from the first run) 
+    // (leading the user to think the second run created an output while it's actually the one from the first run)
     this._output = {};
-    
+
     if( this._metadata.time ){
       this.addTimeRecord("begin");
       this._run();

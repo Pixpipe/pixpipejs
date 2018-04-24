@@ -196,7 +196,7 @@ class LineString extends PixpipeContainer {
   
   
   /**
-  * [PRIVATE]
+  * @private
   * define the last point
   */
   _setLastPoint(){

@@ -56,7 +56,7 @@ class Image3DAlt extends PixpipeContainer{
 
   /**
   * [SUPER OVERWRITE - PipxpipeObject]
-  * [PRIVATE]
+  * @private
   */
   _buildMetadataSchema(){
     var metadataSchema = joi.object({
@@ -68,8 +68,8 @@ class Image3DAlt extends PixpipeContainer{
       dimensions: joi.array().min(3).max(4).items(
         joi.object({
           length: joi.number().integer().min(1).required(),
-          widthDimension: joi.number().integer().min(-1).max(2).required(), // -1 means "does not apply" --> time series
-          heightDimension: joi.number().integer().min(-1).max(2).required(), // idem
+          widthDimension: joi.number().integer().min(-1).max(3).required(), // -1 means "does not apply" --> time series
+          heightDimension: joi.number().integer().min(-1).max(3).required(), // idem
           nameVoxelSpace: joi.string().regex(/(i|j|k|t)/).required(),
           nameWorldSpace: joi.string().regex(/(x|y|z|t)/).required(),
           worldUnitSize: joi.number().required(),
@@ -111,7 +111,7 @@ class Image3DAlt extends PixpipeContainer{
 
   /**
   * [SUPER OVERWRITE - PipxpipeObject]
-  * [PRIVATE]
+  * @private
   * This method is called at the end of setRawMetadata
   */
   _metadataRawCopied(){
@@ -120,7 +120,7 @@ class Image3DAlt extends PixpipeContainer{
 
 
   /**
-  * [PRIVATE]
+  * @private
   * Build the LUT to fetch dimensions easier = using their name as index rather than just a their index
   */
   _buildDimensionsLUT(){
@@ -175,7 +175,7 @@ class Image3DAlt extends PixpipeContainer{
   }
 
   /**
-  * [PRIVATE]
+  * @private
   * initialize some default values for metadata
   */
   _initMetadata(){
@@ -231,7 +231,7 @@ class Image3DAlt extends PixpipeContainer{
 
 
   /**
-  * [PRIVATE]
+  * @private
   * Get an 4x4 identity matrix. This is used as the default transformations w2v
   * and v2w, which means "no transformation"
   * @return {Array} the 4x4 identity as a 1D array
@@ -247,7 +247,7 @@ class Image3DAlt extends PixpipeContainer{
 
 
   /**
-  * [PRIVATE]
+  * @private
   * Called from the constructor or the setData method
   */
   _initData( options, buffer = null ){
@@ -369,7 +369,7 @@ class Image3DAlt extends PixpipeContainer{
 
 
   /**
-  * [PRIVATE]
+  * @private
   * Look for min and max on the dataset and add them to the header metadata
   */
   scanDataRange(){
@@ -618,7 +618,7 @@ class Image3DAlt extends PixpipeContainer{
 
 
   /**
-  * [PRIVATE]
+  * @private
   * Convert a position from a coordinate system to another. Should be called by a method that makes sure of the
   * order of the dimensions.
   * @param {Array} positionArr - 3D position, could be [x, y, z] or in voxel coord not necessary ordered [i, j, k]
@@ -688,6 +688,61 @@ class Image3DAlt extends PixpipeContainer{
     }
 
     return posOrdered;
+  }
+
+
+
+  /**
+   * If the matrix 'w2v' exist in the available transformations, this method gives
+   * the voxel position {i, j, k} corresponding to the given world position {x, y, z}.
+   * Since voxel coordinates are integers, the result is rounded by deafult but this
+   * can be changed by providing false to the 'round' arg.
+   * @param  {Object}  [wPos={x:0, y:0, z:0}] - position in world coordinates (default: origin)
+   * @param  {Boolean} [round=true] - do you wish to round the output? (default: true)
+   * @return {Object} the corresponding position in voxel coorinate as {i: Number, j: Number, k: Number}
+   */
+  getPositionWorldToVoxel( wPos={x:0, y:0, z:0} , round=true ){
+    var w2vSwappedMatrix = this.getW2VMatrixSwapped();
+
+    if( !w2vSwappedMatrix )
+      return null;
+
+    var worldPos = vec4.fromValues(wPos.x, wPos.y, wPos.z, 1);
+    var voxelPos = vec4.create();
+    vec4.transformMat4(voxelPos, worldPos, w2vSwappedMatrix);
+    var voxelPosObj = {i: voxelPos[0], j: voxelPos[1], k: voxelPos[2]};
+
+    if( round ){
+      voxelPosObj.i = Math.round( voxelPosObj.i );
+      voxelPosObj.j = Math.round( voxelPosObj.j );
+      voxelPosObj.k = Math.round( voxelPosObj.k );
+    }
+
+    return voxelPosObj;
+  }
+
+
+  /**
+   * Get the w2v (world to voxel) transformation matrix (if it exists) in its swapped version.
+   * Most of the time, the swap matrix is an identity matrix, so it won't change anything
+   * to have it swapped, but some files dont respect the NIfTI spec regarding the dimensionality
+   * of the volume.
+   * @return {Array} the 4x4 matrix (column major)
+   */
+  getW2VMatrixSwapped(){
+    var transformations = this._metadata.transformations;
+
+    if( !("w2v" in transformations) ){
+      console.warn("No transform named w2v" );
+      return null;
+    }
+
+    var w2vMatrix = transformations.w2v;
+    var swapMatrix = this.getVoxelCoordinatesSwapMatrix(true, true);
+    var w2vSwappedMatrix = mat4.create();
+
+    mat4.multiply(w2vSwappedMatrix, swapMatrix, w2vMatrix )
+    return w2vSwappedMatrix;
   }
 
 
@@ -894,8 +949,8 @@ class Image3DAlt extends PixpipeContainer{
 
     var dimensions = this._metadata.dimensions;
 
-    // The dimension of the normalAxis must exist (and not be time)
-    if( normalAxis > 2 ){
+    // The dimension of the normalAxis must exist
+    if( normalAxis > 3 ){
       console.warn("The dimension of a slice should be lower than 3.");
       return null;
     }

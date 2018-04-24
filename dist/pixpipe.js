@@ -279,6 +279,62 @@
     return out;
   }
 
+  /**
+   * Multiplies two mat4s
+   *
+   * @param {mat4} out the receiving matrix
+   * @param {mat4} a the first operand
+   * @param {mat4} b the second operand
+   * @returns {mat4} out
+   */
+  function multiply$3(out, a, b) {
+    var a00 = a[0],
+        a01 = a[1],
+        a02 = a[2],
+        a03 = a[3];
+    var a10 = a[4],
+        a11 = a[5],
+        a12 = a[6],
+        a13 = a[7];
+    var a20 = a[8],
+        a21 = a[9],
+        a22 = a[10],
+        a23 = a[11];
+    var a30 = a[12],
+        a31 = a[13],
+        a32 = a[14],
+        a33 = a[15];
+
+    // Cache only the current line of the second matrix
+    var b0 = b[0],
+        b1 = b[1],
+        b2 = b[2],
+        b3 = b[3];
+    out[0] = b0 * a00 + b1 * a10 + b2 * a20 + b3 * a30;
+    out[1] = b0 * a01 + b1 * a11 + b2 * a21 + b3 * a31;
+    out[2] = b0 * a02 + b1 * a12 + b2 * a22 + b3 * a32;
+    out[3] = b0 * a03 + b1 * a13 + b2 * a23 + b3 * a33;
+
+    b0 = b[4];b1 = b[5];b2 = b[6];b3 = b[7];
+    out[4] = b0 * a00 + b1 * a10 + b2 * a20 + b3 * a30;
+    out[5] = b0 * a01 + b1 * a11 + b2 * a21 + b3 * a31;
+    out[6] = b0 * a02 + b1 * a12 + b2 * a22 + b3 * a32;
+    out[7] = b0 * a03 + b1 * a13 + b2 * a23 + b3 * a33;
+
+    b0 = b[8];b1 = b[9];b2 = b[10];b3 = b[11];
+    out[8] = b0 * a00 + b1 * a10 + b2 * a20 + b3 * a30;
+    out[9] = b0 * a01 + b1 * a11 + b2 * a21 + b3 * a31;
+    out[10] = b0 * a02 + b1 * a12 + b2 * a22 + b3 * a32;
+    out[11] = b0 * a03 + b1 * a13 + b2 * a23 + b3 * a33;
+
+    b0 = b[12];b1 = b[13];b2 = b[14];b3 = b[15];
+    out[12] = b0 * a00 + b1 * a10 + b2 * a20 + b3 * a30;
+    out[13] = b0 * a01 + b1 * a11 + b2 * a21 + b3 * a31;
+    out[14] = b0 * a02 + b1 * a12 + b2 * a22 + b3 * a32;
+    out[15] = b0 * a03 + b1 * a13 + b2 * a23 + b3 * a33;
+    return out;
+  }
+
   /* Copyright (c) 2015, Brandon Jones, Colin MacKenzie IV.
 
   Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -10641,7 +10697,7 @@
 
 
       /**
-      * [PRIVATE]
+      * @private
       * Deal with an option object (usually as an argument of a constructor).
       * @param {Object} optionsObject - the option object
       * @param {String} key - a property name in this optionObject
@@ -10913,7 +10969,7 @@
       }
 
       /**
-      * [PRIVATE]
+      * @private
       * Perform an action for each input. Within the callback, "this" is this filter.
       * @param {function} cb - callback function to call for every single input
       * with 2 args: the output category and the outpub object.
@@ -10935,7 +10991,7 @@
       }
 
       /**
-      * [PRIVATE]
+      * @private
       * Internal way to setup an output for this filter. Acts like a singleton in a sens
       * that if an output of a given category was already Initialized, it returns it.
       * If no input was Initialized, it creates one.
@@ -10968,7 +11024,7 @@
       }
 
       /**
-      * [PRIVATE]
+      * @private
       * should noly be used by the class that inherit Filter.
       * @param {Number} category - in case we want to get data from different categories.
       * @return {Object} or null if no input can be returned
@@ -11126,7 +11182,7 @@
       value: function update() {
         // flush any existing output previously computed. Usefull when a filter is ran more than once.
         // If no output is created the second time, the output from the previous time cannot be used instead
-        // (leading the user to think the second run created an output while it's actually the one from the first run) 
+        // (leading the user to think the second run created an output while it's actually the one from the first run)
         this._output = {};
 
         if (this._metadata.time) {
@@ -11419,7 +11475,7 @@
       }
 
       /**
-      * [PRIVATE]
+      * @private
       * Conpute min-max
       */
 
@@ -12174,7 +12230,7 @@
       }
 
       /**
-      * [PRIVATE]
+      * @private
       * Creates common fields all headers must contain.
       */
 
@@ -12206,7 +12262,7 @@
       }
 
       /**
-      * [PRIVATE]
+      * @private
       * Look for min and max on the dataset and add them to the header metadata
       */
 
@@ -12302,7 +12358,7 @@
 
 
       /**
-      * [PRIVATE]
+      * @private
       * Return a slice from the minc cube as a 1D typed array,
       * along with some relative data (slice size, step, etc.)
       * args:
@@ -13117,7 +13173,7 @@
       }
 
       /**
-      * [PRIVATE]
+      * @private
       * define the last point
       */
 
@@ -13431,7 +13487,7 @@
 
       /**
       * [SUPER OVERWRITE - PipxpipeObject]
-      * [PRIVATE]
+      * @private
       */
       value: function _buildMetadataSchema() {
         var metadataSchema = joiBrowser.object({
@@ -13442,8 +13498,8 @@
           // required
           dimensions: joiBrowser.array().min(3).max(4).items(joiBrowser.object({
             length: joiBrowser.number().integer().min(1).required(),
-            widthDimension: joiBrowser.number().integer().min(-1).max(2).required(), // -1 means "does not apply" --> time series
-            heightDimension: joiBrowser.number().integer().min(-1).max(2).required(), // idem
+            widthDimension: joiBrowser.number().integer().min(-1).max(3).required(), // -1 means "does not apply" --> time series
+            heightDimension: joiBrowser.number().integer().min(-1).max(3).required(), // idem
             nameVoxelSpace: joiBrowser.string().regex(/(i|j|k|t)/).required(),
             nameWorldSpace: joiBrowser.string().regex(/(x|y|z|t)/).required(),
             worldUnitSize: joiBrowser.number().required(),
@@ -13482,7 +13538,7 @@
 
       /**
       * [SUPER OVERWRITE - PipxpipeObject]
-      * [PRIVATE]
+      * @private
       * This method is called at the end of setRawMetadata
       */
 
@@ -13493,7 +13549,7 @@
       }
 
       /**
-      * [PRIVATE]
+      * @private
       * Build the LUT to fetch dimensions easier = using their name as index rather than just a their index
       */
 
@@ -13553,7 +13609,7 @@
       }
 
       /**
-      * [PRIVATE]
+      * @private
       * initialize some default values for metadata
       */
 
@@ -13616,7 +13672,7 @@
       }
 
       /**
-      * [PRIVATE]
+      * @private
       * Get an 4x4 identity matrix. This is used as the default transformations w2v
       * and v2w, which means "no transformation"
       * @return {Array} the 4x4 identity as a 1D array
@@ -13629,7 +13685,7 @@
       }
 
       /**
-      * [PRIVATE]
+      * @private
       * Called from the constructor or the setData method
       */
 
@@ -13752,7 +13808,7 @@
       }
 
       /**
-      * [PRIVATE]
+      * @private
       * Look for min and max on the dataset and add them to the header metadata
       */
 
@@ -14015,7 +14071,7 @@
       }
 
       /**
-      * [PRIVATE]
+      * @private
       * Convert a position from a coordinate system to another. Should be called by a method that makes sure of the
       * order of the dimensions.
       * @param {Array} positionArr - 3D position, could be [x, y, z] or in voxel coord not necessary ordered [i, j, k]
@@ -14090,6 +14146,66 @@
         }
 
         return posOrdered;
+      }
+
+      /**
+       * If the matrix 'w2v' exist in the available transformations, this method gives
+       * the voxel position {i, j, k} corresponding to the given world position {x, y, z}.
+       * Since voxel coordinates are integers, the result is rounded by deafult but this
+       * can be changed by providing false to the 'round' arg.
+       * @param  {Object}  [wPos={x:0, y:0, z:0}] - position in world coordinates (default: origin)
+       * @param  {Boolean} [round=true] - do you wish to round the output? (default: true)
+       * @return {Object} the corresponding position in voxel coorinate as {i: Number, j: Number, k: Number}
+       */
+
+    }, {
+      key: 'getPositionWorldToVoxel',
+      value: function getPositionWorldToVoxel() {
+        var wPos = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : { x: 0, y: 0, z: 0 };
+        var round$$1 = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : true;
+
+        var w2vSwappedMatrix = this.getW2VMatrixSwapped();
+
+        if (!w2vSwappedMatrix) return null;
+
+        var worldPos = fromValues$5(wPos.x, wPos.y, wPos.z, 1);
+        var voxelPos = create$5();
+        transformMat4$1(voxelPos, worldPos, w2vSwappedMatrix);
+        var voxelPosObj = { i: voxelPos[0], j: voxelPos[1], k: voxelPos[2] };
+
+        if (round$$1) {
+          voxelPosObj.i = Math.round(voxelPosObj.i);
+          voxelPosObj.j = Math.round(voxelPosObj.j);
+          voxelPosObj.k = Math.round(voxelPosObj.k);
+        }
+
+        return voxelPosObj;
+      }
+
+      /**
+       * Get the w2v (world to voxel) transformation matrix (if it exists) in its swapped version.
+       * Most of the time, the swap matrix is an identity matrix, so it won't change anything
+       * to have it swapped, but some files dont respect the NIfTI spec regarding the dimensionality
+       * of the volume.
+       * @return {Array} the 4x4 matrix (column major)
+       */
+
+    }, {
+      key: 'getW2VMatrixSwapped',
+      value: function getW2VMatrixSwapped() {
+        var transformations = this._metadata.transformations;
+
+        if (!("w2v" in transformations)) {
+          console.warn("No transform named w2v");
+          return null;
+        }
+
+        var w2vMatrix = transformations.w2v;
+        var swapMatrix = this.getVoxelCoordinatesSwapMatrix(true, true);
+        var w2vSwappedMatrix = create$3();
+
+        multiply$3(w2vSwappedMatrix, swapMatrix, w2vMatrix);
+        return w2vSwappedMatrix;
       }
 
       /**
@@ -14316,8 +14432,8 @@
 
         var dimensions = this._metadata.dimensions;
 
-        // The dimension of the normalAxis must exist (and not be time)
-        if (normalAxis > 2) {
+        // The dimension of the normalAxis must exist
+        if (normalAxis > 3) {
           console.warn("The dimension of a slice should be lower than 3.");
           return null;
         }
@@ -17091,7 +17207,7 @@
     }
 
     /**
-    * [PRIVATE]
+    * @private
     * Non static counterpart of `isBinary`. It's mostly just a shortcut to call isBinary from `this` easily.
     * @return {Boolean} true if binary, false if text
     */
@@ -17104,7 +17220,7 @@
       }
 
       /**
-      * [PRIVATE]
+      * @private
       * Overloads `Filter._getInput()` and add the logic of converting a binary buffer
       * into a utf8 string when it is required and possible.
       * @param {String} category - category of input (default: 0)
@@ -17167,14 +17283,14 @@
 
   /**
   * CanvasImageWriter is a filter to output an instance of Image into a
-  * HTML5 canvas element.  
-  * The metadata "parentDivID" has to be set using `setMetadata("parentDivID", "whatever")`  
-  * The metadata "alpha", if true, enable transparency. Default: false.  
-  * If the input Image2D has values not in [0, 255], you can remap/stretch using  
-  * setMetadata("min", xxx ) default: 0  
-  * setMetadata("max", xxx ) default: 255  
+  * HTML5 canvas element.
+  * The metadata "parentDivID" has to be set using `setMetadata("parentDivID", "whatever")`
+  * The metadata "alpha", if true, enable transparency. Default: false.
+  * If the input Image2D has values not in [0, 255], you can remap/stretch using
+  * setMetadata("min", xxx ) default: 0
+  * setMetadata("max", xxx ) default: 255
   * We can also use `setMetadata("reset", false)` so that we can add another canvas
-  * with a new image at update.  
+  * with a new image at update.
   *
   * **Usage**
   * - [examples/imageToCanvasFilter.html](../examples/imageToCanvasFilter.html)
@@ -17229,7 +17345,7 @@
       }
 
       /**
-      * [PRIVATE]
+      * @private
       * Initialize a new canvas object
       */
 
@@ -17349,7 +17465,7 @@
       }
 
       /**
-      * [PRIVATE]
+      * @private
       * remap the intensity between getMetadata("min") and getMetadata("max")
       * @param {Number} intensity - input pixel value
       * @return {Number} the adjusted number
@@ -17435,7 +17551,7 @@
       }
 
       /**
-      * [PRIVATE]
+      * @private
       * Loading task for a single category (aka file, in this case)
       */
 
@@ -25322,7 +25438,7 @@
       }
 
       /**
-      * [PRIVATE]
+      * @private
       * Perform the loading for the input of the given category
       * @param {String} category - input category
        */
@@ -25419,12 +25535,13 @@
           reader.readAsText(this._getInput(category));
         } else {
           reader.onloadend = onLoadEndBinaryFile;
-          reader.readAsArrayBuffer(this._getInput(category));
+          var fileObj = this._getInput(category);
+          reader.readAsArrayBuffer(fileObj);
         }
       }
 
       /**
-      * [PRIVATE]
+      * @private
       * Launch the "ready" event if all files are loaded
       */
 
@@ -25505,7 +25622,7 @@
       }
 
       /**
-      * [PRIVATE]
+      * @private
       * Perform a XMLHttpRequest with the given url and adds it to the output
       */
 
@@ -35564,7 +35681,7 @@
       }
 
       /**
-      * [PRIVATE]
+      * @private
       * Tells if the given type matches the whitelist of types to decode.
       * This whitelist is specified in the `targetType` metadata and can be a single
       * string or an array of strings.
@@ -35753,7 +35870,7 @@
     }
 
     /**
-    * [PRIVATE]
+    * @private
     */
 
 
@@ -35781,7 +35898,7 @@
       }
 
       /**
-      * [PRIVATE]
+      * @private
       *
       * Turns out that alignment of the messages in at least the
       * version 1 object header is actually relative to the start
@@ -35797,7 +35914,7 @@
       }
 
       /**
-      * [PRIVATE]
+      * @private
       */
 
     }, {
@@ -35814,7 +35931,7 @@
       }
 
       /**
-      * [PRIVATE]
+      * @private
       *
       * helper functions to manipulate the current DataView offset.
       */
@@ -35826,7 +35943,7 @@
       }
 
       /**
-      * [PRIVATE]
+      * @private
       */
 
     }, {
@@ -35836,7 +35953,7 @@
       }
 
       /**
-      * [PRIVATE]
+      * @private
       */
 
     }, {
@@ -35846,7 +35963,7 @@
       }
 
       /**
-      * [PRIVATE]
+      * @private
       *
       * helper functions for access to our DataView.
       */
@@ -35860,7 +35977,7 @@
       }
 
       /**
-      * [PRIVATE]
+      * @private
       */
 
     }, {
@@ -35872,7 +35989,7 @@
       }
 
       /**
-      * [PRIVATE]
+      * @private
       */
 
     }, {
@@ -35884,7 +36001,7 @@
       }
 
       /**
-      * [PRIVATE]
+      * @private
       */
 
     }, {
@@ -35896,7 +36013,7 @@
       }
 
       /**
-      * [PRIVATE]
+      * @private
       */
 
     }, {
@@ -35908,7 +36025,7 @@
       }
 
       /**
-      * [PRIVATE]
+      * @private
       */
 
     }, {
@@ -35920,7 +36037,7 @@
       }
 
       /**
-      * [PRIVATE]
+      * @private
       */
 
     }, {
@@ -35940,7 +36057,7 @@
       }
 
       /**
-      * [PRIVATE]
+      * @private
       */
 
     }, {
@@ -35952,7 +36069,7 @@
       }
 
       /**
-      * [PRIVATE]
+      * @private
       */
 
     }, {
@@ -35973,7 +36090,7 @@
       }
 
       /**
-      * [PRIVATE]
+      * @private
       */
 
     }, {
@@ -36083,7 +36200,7 @@
       }
 
       /**
-      * [PRIVATE]
+      * @private
       *
       * Get a variably-sized integer from the DataView.
       */
@@ -36126,7 +36243,7 @@
       }
 
       /**
-      * [PRIVATE]
+      * @private
       *
       * Verify that the expected signature is found at this offset.
       */
@@ -36145,7 +36262,7 @@
       }
 
       /**
-      * [PRIVATE]
+      * @private
       */
 
     }, {
@@ -36200,7 +36317,7 @@
       }
 
       /**
-      * [PRIVATE]
+      * @private
       *
       * read the v2 fractal heap header
       */
@@ -36253,7 +36370,7 @@
       }
 
       /**
-      * [PRIVATE]
+      * @private
       *
       * read the v2 btree header
       */
@@ -36284,7 +36401,7 @@
       }
 
       /**
-      * [PRIVATE]
+      * @private
       *
       * Enumerates btree records in a block. Records are found both in direct
       * and indirect v2 btree blocks.
@@ -36385,7 +36502,7 @@
       }
 
       /**
-      * [PRIVATE]
+      * @private
       *
       * read a v2 btree leaf node
       */
@@ -36408,7 +36525,7 @@
       }
 
       /**
-      * [PRIVATE]
+      * @private
       *
       * read the hdf5 v2 btree internal node
       */
@@ -36448,7 +36565,7 @@
       }
 
       /**
-      * [PRIVATE]
+      * @private
       */
 
     }, {
@@ -36469,7 +36586,7 @@
       }
 
       /**
-      * [PRIVATE]
+      * @private
       */
 
     }, {
@@ -36612,7 +36729,7 @@
       }
 
       /**
-      * [PRIVATE]
+      * @private
       */
 
     }, {
@@ -36663,7 +36780,7 @@
       }
 
       /**
-      * [PRIVATE]
+      * @private
       *
       * Read a v1 local heap header. These define relatively small
       * regions used primarily for storing symbol names associated with
@@ -36689,7 +36806,7 @@
       }
 
       /**
-      * [PRIVATE]
+      * @private
       *
       * Process a "dataspace" message. Dataspaces define the
       * dimensionality of a dataset or attribute. They define the
@@ -36757,7 +36874,7 @@
       }
 
       /**
-      * [PRIVATE]
+      * @private
       *
       *
       * link info messages may contain a fractal heap address where we
@@ -36806,7 +36923,7 @@
       }
 
       /**
-      * [PRIVATE]
+      * @private
       */
 
     }, {
@@ -36821,7 +36938,7 @@
       }
 
       /**
-      * [PRIVATE]
+      * @private
       *
       * Process a "datatype" message. These messages specify the data
       * type of a single element within a dataset or attribute. Data
@@ -36951,7 +37068,7 @@
       }
 
       /**
-      * [PRIVATE]
+      * @private
       *
       * Process a "layout" message. These messages specify the location and organization
       * of data in a dataset. The organization can be either compact, contiguous, or
@@ -37066,7 +37183,7 @@
       }
 
       /**
-      * [PRIVATE]
+      * @private
       *
       * Read a "filter pipeline" message. At the moment we _only_ handle
       * deflate/inflate. Anything else will cause us to throw an exception.
@@ -37127,7 +37244,7 @@
       }
 
       /**
-      * [PRIVATE]
+      * @private
       *
       * Process an "attribute" message. This actually defines an attribute that is
       * to be associated with a group or dataset (what I generally call a "link"
@@ -37198,7 +37315,7 @@
       }
 
       /**
-      * [PRIVATE]
+      * @private
       *
       * Process a "group info" message. We don't actually do anything with these.
       */
@@ -37224,7 +37341,7 @@
       }
 
       /**
-      * [PRIVATE]
+      * @private
       *
       * Process a "link" message. This specifies the name and header location of either a
       * group or a dataset within the current group. It is probably also used to implement
@@ -37267,7 +37384,7 @@
       }
 
       /**
-      * [PRIVATE]
+      * @private
       *
       * The fractal heap direct block contains:
       * 1. A signature.
@@ -37319,7 +37436,7 @@
       }
 
       /**
-      * [PRIVATE]
+      * @private
       *
       * The fractal heap indirect block contains:
       * 1. A signature.
@@ -37397,7 +37514,7 @@
       }
 
       /**
-      * [PRIVATE]
+      * @private
       *
       * enumerate over all of the direct blocks in the fractal heap.
       */
@@ -37414,7 +37531,7 @@
       }
 
       /**
-      * [PRIVATE]
+      * @private
       */
 
     }, {
@@ -37432,7 +37549,7 @@
       }
 
       /**
-      * [PRIVATE]
+      * @private
       *
       * Attribute info messages contain pointers to a fractal heap and a v2 btree.
       * If these pointers are valid, we must follow them to find more attributes.
@@ -37486,7 +37603,7 @@
       }
 
       /**
-      * [PRIVATE]
+      * @private
       *
       * Process a single message, given a message header. Assumes that
       * the data view offset is pointing to the remainder of the
@@ -37576,7 +37693,7 @@
       }
 
       /**
-      * [PRIVATE]
+      * @private
       *
       * Read a V2 object header. Object headers contain a series of messages that define
       * an HDF5 object, primarily a group or a dataset. V2 object headers, and V2 objects
@@ -37680,7 +37797,7 @@
       }
 
       /**
-      * [PRIVATE]
+      * @private
       */
 
     }, {
@@ -37750,7 +37867,7 @@
       }
 
       /**
-      * [PRIVATE]
+      * @private
       *
       * Read a v1 object header. Object headers contain a series of
       * messages that define an HDF5 object, primarily a group or a
@@ -38581,7 +38698,7 @@
     }
 
     /**
-    * [PRIVATE]
+    * @private
     */
 
 
@@ -38750,7 +38867,7 @@
       }
 
       /**
-      * [PRIVATE]
+      * @private
       * This function is a direct translation of the identical function
       * found in the standard NIfTI-1 library (nifti1_io.c).
       */
@@ -38807,7 +38924,7 @@
       }
 
       /**
-      * [PRIVATE]
+      * @private
       */
 
     }, {
@@ -40694,7 +40811,7 @@
       }
 
       /**
-      * [PRIVATE]
+      * @private
       * The header field `scl_slope` is used to scale the data, thus if non-0,
       * we should scale the data.
       * @param {typed array} data - the nifti data array, WILL BE MODIFIED
@@ -40722,7 +40839,7 @@
       }
 
       /**
-      * [PRIVATE]
+      * @private
       * Get the number of components per pixel encoded in the Nifti file
       * @param {Object} header - Nifti header
       * @return {number} the ncpp
@@ -40795,7 +40912,7 @@
       }
 
       /**
-      * [PRIVATE]
+      * @private
       * Cast the raw ArrayBuffer into the appropriate type. Some Nifti types are not
       * compatible with Javascript and cannot be used.
       * @param {Object} header - the nifti header
@@ -40909,7 +41026,7 @@
     }
 
     /**
-    * [PRIVATE]
+    * @private
     * overwrite the original from Filter
     * Only accept Image2D and Image3D
     */
@@ -41566,7 +41683,7 @@
 
       /**
       * Converts the original Image3D metadata into the new
-      * 
+      *
       */
 
     }, {
@@ -41801,7 +41918,7 @@
     }
 
     /**
-    * [PRIVATE]
+    * @private
     */
 
 
@@ -41829,7 +41946,7 @@
       }
 
       /**
-      * [PRIVATE]
+      * @private
       *
       * Turns out that alignment of the messages in at least the
       * version 1 object header is actually relative to the start
@@ -41845,7 +41962,7 @@
       }
 
       /**
-      * [PRIVATE]
+      * @private
       */
 
     }, {
@@ -41862,7 +41979,7 @@
       }
 
       /**
-      * [PRIVATE]
+      * @private
       *
       * helper functions to manipulate the current DataView offset.
       */
@@ -41874,7 +41991,7 @@
       }
 
       /**
-      * [PRIVATE]
+      * @private
       */
 
     }, {
@@ -41884,7 +42001,7 @@
       }
 
       /**
-      * [PRIVATE]
+      * @private
       */
 
     }, {
@@ -41894,7 +42011,7 @@
       }
 
       /**
-      * [PRIVATE]
+      * @private
       *
       * helper functions for access to our DataView.
       */
@@ -41908,7 +42025,7 @@
       }
 
       /**
-      * [PRIVATE]
+      * @private
       */
 
     }, {
@@ -41920,7 +42037,7 @@
       }
 
       /**
-      * [PRIVATE]
+      * @private
       */
 
     }, {
@@ -41932,7 +42049,7 @@
       }
 
       /**
-      * [PRIVATE]
+      * @private
       */
 
     }, {
@@ -41944,7 +42061,7 @@
       }
 
       /**
-      * [PRIVATE]
+      * @private
       */
 
     }, {
@@ -41956,7 +42073,7 @@
       }
 
       /**
-      * [PRIVATE]
+      * @private
       */
 
     }, {
@@ -41968,7 +42085,7 @@
       }
 
       /**
-      * [PRIVATE]
+      * @private
       */
 
     }, {
@@ -41988,7 +42105,7 @@
       }
 
       /**
-      * [PRIVATE]
+      * @private
       */
 
     }, {
@@ -42000,7 +42117,7 @@
       }
 
       /**
-      * [PRIVATE]
+      * @private
       */
 
     }, {
@@ -42021,7 +42138,7 @@
       }
 
       /**
-      * [PRIVATE]
+      * @private
       */
 
     }, {
@@ -42131,7 +42248,7 @@
       }
 
       /**
-      * [PRIVATE]
+      * @private
       *
       * Get a variably-sized integer from the DataView.
       */
@@ -42174,7 +42291,7 @@
       }
 
       /**
-      * [PRIVATE]
+      * @private
       *
       * Verify that the expected signature is found at this offset.
       */
@@ -42193,7 +42310,7 @@
       }
 
       /**
-      * [PRIVATE]
+      * @private
       */
 
     }, {
@@ -42248,7 +42365,7 @@
       }
 
       /**
-      * [PRIVATE]
+      * @private
       *
       * read the v2 fractal heap header
       */
@@ -42301,7 +42418,7 @@
       }
 
       /**
-      * [PRIVATE]
+      * @private
       *
       * read the v2 btree header
       */
@@ -42332,7 +42449,7 @@
       }
 
       /**
-      * [PRIVATE]
+      * @private
       *
       * Enumerates btree records in a block. Records are found both in direct
       * and indirect v2 btree blocks.
@@ -42433,7 +42550,7 @@
       }
 
       /**
-      * [PRIVATE]
+      * @private
       *
       * read a v2 btree leaf node
       */
@@ -42456,7 +42573,7 @@
       }
 
       /**
-      * [PRIVATE]
+      * @private
       *
       * read the hdf5 v2 btree internal node
       */
@@ -42496,7 +42613,7 @@
       }
 
       /**
-      * [PRIVATE]
+      * @private
       */
 
     }, {
@@ -42517,7 +42634,7 @@
       }
 
       /**
-      * [PRIVATE]
+      * @private
       */
 
     }, {
@@ -42660,7 +42777,7 @@
       }
 
       /**
-      * [PRIVATE]
+      * @private
       */
 
     }, {
@@ -42711,7 +42828,7 @@
       }
 
       /**
-      * [PRIVATE]
+      * @private
       *
       * Read a v1 local heap header. These define relatively small
       * regions used primarily for storing symbol names associated with
@@ -42737,7 +42854,7 @@
       }
 
       /**
-      * [PRIVATE]
+      * @private
       *
       * Process a "dataspace" message. Dataspaces define the
       * dimensionality of a dataset or attribute. They define the
@@ -42805,7 +42922,7 @@
       }
 
       /**
-      * [PRIVATE]
+      * @private
       *
       *
       * link info messages may contain a fractal heap address where we
@@ -42854,7 +42971,7 @@
       }
 
       /**
-      * [PRIVATE]
+      * @private
       */
 
     }, {
@@ -42869,7 +42986,7 @@
       }
 
       /**
-      * [PRIVATE]
+      * @private
       *
       * Process a "datatype" message. These messages specify the data
       * type of a single element within a dataset or attribute. Data
@@ -42999,7 +43116,7 @@
       }
 
       /**
-      * [PRIVATE]
+      * @private
       *
       * Process a "layout" message. These messages specify the location and organization
       * of data in a dataset. The organization can be either compact, contiguous, or
@@ -43114,7 +43231,7 @@
       }
 
       /**
-      * [PRIVATE]
+      * @private
       *
       * Read a "filter pipeline" message. At the moment we _only_ handle
       * deflate/inflate. Anything else will cause us to throw an exception.
@@ -43175,7 +43292,7 @@
       }
 
       /**
-      * [PRIVATE]
+      * @private
       *
       * Process an "attribute" message. This actually defines an attribute that is
       * to be associated with a group or dataset (what I generally call a "link"
@@ -43246,7 +43363,7 @@
       }
 
       /**
-      * [PRIVATE]
+      * @private
       *
       * Process a "group info" message. We don't actually do anything with these.
       */
@@ -43272,7 +43389,7 @@
       }
 
       /**
-      * [PRIVATE]
+      * @private
       *
       * Process a "link" message. This specifies the name and header location of either a
       * group or a dataset within the current group. It is probably also used to implement
@@ -43315,7 +43432,7 @@
       }
 
       /**
-      * [PRIVATE]
+      * @private
       *
       * The fractal heap direct block contains:
       * 1. A signature.
@@ -43367,7 +43484,7 @@
       }
 
       /**
-      * [PRIVATE]
+      * @private
       *
       * The fractal heap indirect block contains:
       * 1. A signature.
@@ -43445,7 +43562,7 @@
       }
 
       /**
-      * [PRIVATE]
+      * @private
       *
       * enumerate over all of the direct blocks in the fractal heap.
       */
@@ -43462,7 +43579,7 @@
       }
 
       /**
-      * [PRIVATE]
+      * @private
       */
 
     }, {
@@ -43480,7 +43597,7 @@
       }
 
       /**
-      * [PRIVATE]
+      * @private
       *
       * Attribute info messages contain pointers to a fractal heap and a v2 btree.
       * If these pointers are valid, we must follow them to find more attributes.
@@ -43534,7 +43651,7 @@
       }
 
       /**
-      * [PRIVATE]
+      * @private
       *
       * Process a single message, given a message header. Assumes that
       * the data view offset is pointing to the remainder of the
@@ -43624,7 +43741,7 @@
       }
 
       /**
-      * [PRIVATE]
+      * @private
       *
       * Read a V2 object header. Object headers contain a series of messages that define
       * an HDF5 object, primarily a group or a dataset. V2 object headers, and V2 objects
@@ -43728,7 +43845,7 @@
       }
 
       /**
-      * [PRIVATE]
+      * @private
       */
 
     }, {
@@ -43798,7 +43915,7 @@
       }
 
       /**
-      * [PRIVATE]
+      * @private
       *
       * Read a v1 object header. Object headers contain a series of
       * messages that define an HDF5 object, primarily a group or a
@@ -44642,6 +44759,7 @@
   /**
   * Decodes a MGH file.
   * Takes an ArrayBuffer as input (0) and output a `MniVolume` (which inherit `Image3D`).
+  * Some doc can be found [here](https://surfer.nmr.mgh.harvard.edu/fswiki/FsTutorial/MghFormat) 
   *
   * **Usage**
   * - [examples/fileToMgh.html](../examples/fileToMgh.html)
@@ -44958,10 +45076,8 @@
 
         // ********** SWAPPING DIM *************
 
+
         var dims = metadata.dimensions;
-        dims.sort(function (a, b) {
-          return a.stride > b.stride;
-        });
 
         function getWidthDimension(directionDim) {
           return directionDim === "x" ? "y" : directionDim === "y" ? "x" : directionDim === "z" ? "x" : null;
@@ -59837,7 +59953,7 @@ b" + i + "*=d\
       }
 
       /**
-      * [PRIVATE]
+      * @private
       * generic function for painting row, colum or whole
       * @param {Number} firstPixel - Index of the first pixel in 1D array
       * @param {Number} lastPixel - Index of the last pixel in 1D array
@@ -62751,7 +62867,7 @@ b" + i + "*=d\
       }
 
       /**
-      * [PRIVATE]
+      * @private
       * Build the distance map. The point is to build it once and reuse it multiple times
       * as long as the position of the seeds and the sixe of the output don't change.
       */
@@ -64033,7 +64149,7 @@ b" + i + "*=d\
       }
 
       /**
-      * [PRIVATE]  
+      * @private  
       * For a given Signal1D in frequency domain, return the index in the _data that corresponds to
       * the requested frequency.
       * @param {Signal1D} signal - a Signal1D object in frequency domain
@@ -64048,7 +64164,7 @@ b" + i + "*=d\
       }
 
       /**
-      * [PRIVATE]  
+      * @private  
       * Perform a rectangular function on the signal, which basically means thresholding
       * the FT of the signal at a given cutoff frequency. This is a very bad lo-pass
       * filter, it sould be used only for testing (c.f. Gibbs phenomenon)
@@ -64075,7 +64191,7 @@ b" + i + "*=d\
       }
 
       /**
-      * [PRIVATE]  
+      * @private  
       * Perform a gaussian lo-pass on the signal.
       * @param {Signal1D} real - the real part of the FT
       * @param {Signal1D} imag - the imaginary part of the FT
@@ -67773,7 +67889,7 @@ b" + i + "*=d\
       }
 
       /**
-      * [PRIVATE]
+      * @private
       * Validates a colormap description integrity.
       * @return {Boolean} true is the description is valid, false if not
       */
@@ -67942,22 +68058,28 @@ b" + i + "*=d\
       }
 
       /**
-      * Creates a horizontal Image2D of the colormap. The height is 1px and
+      * Creates a horizontal RGB Image2D of the colormap. The height is 1px and
       * the width is the size of the LUT currently in use.
-      * The image can be horizontally flipped when the "flip" metadata is true;
+      * A RGBA image can be created when passing the argument `forceRGBA` to `true`.
+      * In this case, the alpha channel is `255`.
+      * The image can be horizontally flipped when the "flip" metadata is true
+      * @param {Boolean} forceRGBA - forces the creation of a RGBA image instead of a RGB image
       * @return {Image2D} the result image
       */
 
     }, {
       key: 'createHorizontalLutImage',
       value: function createHorizontalLutImage() {
+        var forceRGBA = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
+
         if (!this._LUT) {
           console.warn("The LUT must be built before creating a LUT image.");
           return;
         }
 
+        var initColor = forceRGBA ? [0, 0, 0, 255] : [0, 0, 0];
         var LutSize = this._LUT.length;
-        var colorStrip = new Image2D({ width: LutSize, height: 1, color: [0, 0, 0] });
+        var colorStrip = new Image2D({ width: LutSize, height: 1, color: initColor });
 
         for (var i = 0; i < LutSize; i++) {
           colorStrip.setPixel({ x: i, y: 0 }, this._LUT[i]);
@@ -67967,22 +68089,26 @@ b" + i + "*=d\
       }
 
       /**
-      * Creates a vertical Image2D of the colormap. The height is 1px and
+      * Creates a vertical RGB Image2D of the colormap. The height is 1px and
       * the width is the size of the LUT currently in use.
-      * The image can be vertically flipped when the "flip" metadata is true;
+      * The image can be vertically flipped when the "flip" metadata is true
+      * @param {Boolean} forceRGBA - forces the creation of a RGBA image instead of a RGB image
       * @return {Image2D} the result image
       */
 
     }, {
       key: 'createVerticalLutImage',
       value: function createVerticalLutImage() {
+        var forceRGBA = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
+
         if (!this._LUT) {
           console.warn("The LUT must be built before creating a LUT image.");
           return;
         }
 
+        var initColor = forceRGBA ? [0, 0, 0, 255] : [0, 0, 0];
         var LutSize = this._LUT.length;
-        var colorStrip = new Image2D({ width: 1, height: LutSize, color: [0, 0, 0] });
+        var colorStrip = new Image2D({ width: 1, height: LutSize, color: initColor });
 
         for (var i = 0; i < LutSize; i++) {
           colorStrip.setPixel({ x: 0, y: i }, this._LUT[i]);

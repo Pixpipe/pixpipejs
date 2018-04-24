@@ -675,7 +675,7 @@ class CanvasSpliner {
 
 
   /**
-  * [PRIVATE]
+  * @private
   * Refresh the position of the pointer we store internally (relative to the canvas)
   */
   _updateMousePosition(evt) {
@@ -689,7 +689,7 @@ class CanvasSpliner {
 
 
   /**
-  * [EVENT] [PRIVATE]
+  * [EVENT] @private
   * for when the mouse is moving over the canvas
   */
   _onCanvasMouseMove(evt){
@@ -757,7 +757,7 @@ class CanvasSpliner {
 
 
   /**
-  * [EVENT] [PRIVATE]
+  * [EVENT] @private
   * for when the mouse is clicked over the canvas
   */
   _onCanvasMouseDown(evt){
@@ -772,7 +772,7 @@ class CanvasSpliner {
 
 
   /**
-  * [EVENT] [PRIVATE]
+  * [EVENT] @private
   * for when the mouse is released over the canvas
   */
   _onCanvasMouseUp(evt){
@@ -789,7 +789,7 @@ class CanvasSpliner {
 
 
   /**
-  * [EVENT] [PRIVATE]
+  * [EVENT] @private
   * for when we double click on the canvas
   */
   _onCanvasMouseDbclick(evt){
@@ -809,7 +809,7 @@ class CanvasSpliner {
 
 
   /**
-  * [EVENT] [PRIVATE]
+  * [EVENT] @private
   * for when the mouse is leaving the canvas
   */
   _onCanvasMouseLeave(evt){
@@ -827,7 +827,7 @@ class CanvasSpliner {
 
 
   /**
-  * [EVENT] [PRIVATE]
+  * [EVENT] @private
   * The mouse enters the canvas
   */
   _onCanvasMouseEnter(evt){
@@ -838,7 +838,7 @@ class CanvasSpliner {
 
 
   /**
-  * [EVENT] [PRIVATE]
+  * [EVENT] @private
   * A keyboard key is released
   */
   _onKeyUp(evt){
@@ -909,7 +909,7 @@ class CanvasSpliner {
   
   
   /**
-  * [PRIVATE]
+  * @private
   * Paint the background with a given color
   */
   _fillBackground(){
@@ -924,7 +924,7 @@ class CanvasSpliner {
 
 
   /**
-  * [PRIVATE]
+  * @private
   * Display xy coordinates on the upper left corner
   */
   _drawCoordinates(x, y){
@@ -937,7 +937,7 @@ class CanvasSpliner {
 
 
   /**
-  * [PRIVATE]
+  * @private
   * Draw the background grid
   */
   _drawGrid(){
@@ -969,7 +969,7 @@ class CanvasSpliner {
 
 
   /**
-  * [PRIVATE]
+  * @private
   * Draw the data on the canvas
   * @param {Boolean} curve - whether or not we draw the curve
   * @param {Boolean} control - whether or not we draw the control points

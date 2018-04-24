@@ -101,7 +101,7 @@ class PixBinDecoder extends Decoder {
 
 
   /**
-  * [PRIVATE]
+  * @private
   * Tells if the given type matches the whitelist of types to decode.
   * This whitelist is specified in the `targetType` metadata and can be a single
   * string or an array of strings.

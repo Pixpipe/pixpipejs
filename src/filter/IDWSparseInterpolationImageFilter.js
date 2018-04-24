@@ -141,7 +141,7 @@ class IDWSparseInterpolationImageFilter extends Filter {
 
 
   /**
-  * [PRIVATE]
+  * @private
   * Build the distance map. The point is to build it once and reuse it multiple times
   * as long as the position of the seeds and the sixe of the output don't change.
   */

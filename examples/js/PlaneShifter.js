@@ -77,7 +77,7 @@ class PlaneShifter {
   
   
   /**
-  * [PRIVATE]
+  * @private
   * initialize a normal vector for each plane
   */
   _initNormals(){
@@ -88,7 +88,7 @@ class PlaneShifter {
   
   
   /**
-  * [PRIVATE]
+  * @private
   * Initialize all the mouse/keyboard events
   */
   _initEvents(){
@@ -135,7 +135,7 @@ class PlaneShifter {
   
   
   /**
-  * [PRIVATE]
+  * @private
   * tell if a key from the keyboard is pressed
   * @param {String} keycode - the keycode of the keypressed
   * @return {Boolean} true if yes, false if not
@@ -166,7 +166,7 @@ class PlaneShifter {
 
 
   /**
-  * [PRIVATE]
+  * @private
   * Evaluate the current state and enable or disable the control upon this state
   */
   _evaluateCurentState(){
@@ -201,7 +201,7 @@ class PlaneShifter {
   
   
   /**
-  * [PRIVATE]
+  * @private
   * Get screen coordinates of a 3D position
   * @param {THREE.Vector3} coord3D - 3D position.
   * Note: the project method is not reliable when the point is out of screen
@@ -214,7 +214,7 @@ class PlaneShifter {
   
   
   /**
-  * [PRIVATE]
+  * @private
   * Performs a raycasting on the children of the plane container, then based on the
   * active state, take a decision of what to do.
   */
@@ -246,7 +246,7 @@ class PlaneShifter {
   
   
   /**
-  * [PRIVATE]
+  * @private
   * Deals with an intersection in the context of a translation
   * @param {Object} intersect - result from a THREE.Raycaster.intersectObject
   * (not the array, but rather the single object)
@@ -273,7 +273,7 @@ class PlaneShifter {
   
   
   /**
-  * [PRIVATE]
+  * @private
   * Continue the interaction (but mostly decide which kind and delegate the work)
   */
   _followInteraction(){
@@ -296,7 +296,7 @@ class PlaneShifter {
 
 
   /**
-  * [PRIVATE]
+  * @private
   * When a translation has started, this method keep updating the position of the
   * shifting plane.
   */
@@ -337,7 +337,7 @@ class PlaneShifter {
   
   
   /**
-  * [PRIVATE]
+  * @private
   * Disable the orbit/trackball control
   */
   _disableControl(){
@@ -353,7 +353,7 @@ class PlaneShifter {
   
   
   /**
-  * [PRIVATE]
+  * @private
   * enable the orbit/trackball control
   */
   _enableControl(){
@@ -371,7 +371,7 @@ class PlaneShifter {
   
   
   /**
-  * [PRIVATE]
+  * @private
   * Helper method to call before disabling the controls
   */
   _saveOrbitData(){
@@ -387,7 +387,7 @@ class PlaneShifter {
 
 
   /**
-  * [PRIVATE]
+  * @private
   * Helper method to call before re-enabling the controls
   */
   _restoreOrbitData(){
@@ -405,7 +405,7 @@ class PlaneShifter {
   
   
   /**
-  * [PRIVATE]
+  * @private
   * Deals with an intersection in the context of a rotation
   * @param {Object} intersect - result from a THREE.Raycaster.intersectObject
   * (not the array, but rather the single object)
@@ -434,7 +434,7 @@ class PlaneShifter {
   
 
   /**
-  * [PRIVATE]
+  * @private
   * When a translation has started, this method keep updating the position of the
   * shifting plane.
   */

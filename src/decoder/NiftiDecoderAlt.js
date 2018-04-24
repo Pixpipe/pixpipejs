@@ -286,7 +286,7 @@ class NiftiDecoderAlt extends Decoder {
 
 
   /**
-  * [PRIVATE]
+  * @private
   * The header field `scl_slope` is used to scale the data, thus if non-0,
   * we should scale the data.
   * @param {typed array} data - the nifti data array, WILL BE MODIFIED
@@ -312,7 +312,7 @@ class NiftiDecoderAlt extends Decoder {
 
 
   /**
-  * [PRIVATE]
+  * @private
   * Get the number of components per pixel encoded in the Nifti file
   * @param {Object} header - Nifti header
   * @return {number} the ncpp
@@ -383,7 +383,7 @@ class NiftiDecoderAlt extends Decoder {
 
 
   /**
-  * [PRIVATE]
+  * @private
   * Cast the raw ArrayBuffer into the appropriate type. Some Nifti types are not
   * compatible with Javascript and cannot be used.
   * @param {Object} header - the nifti header

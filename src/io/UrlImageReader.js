@@ -58,7 +58,7 @@ class UrlImageReader extends Filter {
 
 
   /**
-  * [PRIVATE]
+  * @private
   * Loading task for a single category (aka file, in this case)
   */
   _loadImage( inputCategory ){
