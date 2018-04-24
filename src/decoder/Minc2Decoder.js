@@ -70,7 +70,7 @@ class Minc2Decoder extends Decoder{
   }
 
   /**
-  * [PRIVATE]
+  * @private
   */
   createLink() {
     var r = {};
@@ -95,7 +95,7 @@ class Minc2Decoder extends Decoder{
 
 
   /**
-  * [PRIVATE]
+  * @private
   *
   * Turns out that alignment of the messages in at least the
   * version 1 object header is actually relative to the start
@@ -109,7 +109,7 @@ class Minc2Decoder extends Decoder{
 
 
   /**
-  * [PRIVATE]
+  * @private
   */
   checkAlignment() {
     var tmp = this._dv_offset - this._start_offset;
@@ -124,7 +124,7 @@ class Minc2Decoder extends Decoder{
 
 
   /**
-  * [PRIVATE]
+  * @private
   *
   * helper functions to manipulate the current DataView offset.
   */
@@ -134,7 +134,7 @@ class Minc2Decoder extends Decoder{
 
 
   /**
-  * [PRIVATE]
+  * @private
   */
   seek(new_offset) {
     this._dv_offset = new_offset;
@@ -142,7 +142,7 @@ class Minc2Decoder extends Decoder{
 
 
   /**
-  * [PRIVATE]
+  * @private
   */
   tell() {
     return this._dv_offset;
@@ -150,7 +150,7 @@ class Minc2Decoder extends Decoder{
 
 
   /**
-  * [PRIVATE]
+  * @private
   *
   * helper functions for access to our DataView.
   */
@@ -162,7 +162,7 @@ class Minc2Decoder extends Decoder{
 
 
   /**
-  * [PRIVATE]
+  * @private
   */
   getU16() {
     var v = this._dv.getUint16(this._dv_offset, this._little_endian);
@@ -172,7 +172,7 @@ class Minc2Decoder extends Decoder{
 
 
   /**
-  * [PRIVATE]
+  * @private
   */
   getU32() {
     var v = this._dv.getUint32(this._dv_offset, this._little_endian);
@@ -182,7 +182,7 @@ class Minc2Decoder extends Decoder{
 
 
   /**
-  * [PRIVATE]
+  * @private
   */
   getU64() {
     var v = this._dv.getUint64(this._dv_offset, this._little_endian);
@@ -192,7 +192,7 @@ class Minc2Decoder extends Decoder{
 
 
   /**
-  * [PRIVATE]
+  * @private
   */
   getF32() {
     var v = this._dv.getFloat32(this._dv_offset, this._little_endian);
@@ -202,7 +202,7 @@ class Minc2Decoder extends Decoder{
 
 
   /**
-  * [PRIVATE]
+  * @private
   */
   getF64() {
     var v = this._dv.getFloat64(this._dv_offset, this._little_endian);
@@ -212,7 +212,7 @@ class Minc2Decoder extends Decoder{
 
 
   /**
-  * [PRIVATE]
+  * @private
   */
   getOffset(offsz) {
     var v = 0;
@@ -230,7 +230,7 @@ class Minc2Decoder extends Decoder{
 
 
   /**
-  * [PRIVATE]
+  * @private
   */
   getLength() {
     var v = this._dv.getUint64(this._dv_offset, this._little_endian);
@@ -240,7 +240,7 @@ class Minc2Decoder extends Decoder{
 
 
   /**
-  * [PRIVATE]
+  * @private
   */
   getString(length) {
     var r = "";
@@ -259,7 +259,7 @@ class Minc2Decoder extends Decoder{
 
 
   /**
-  * [PRIVATE]
+  * @private
   */
   getArray(typ, n_bytes, new_off) {
     var value;
@@ -367,7 +367,7 @@ class Minc2Decoder extends Decoder{
 
 
   /**
-  * [PRIVATE]
+  * @private
   *
   * Get a variably-sized integer from the DataView.
   */
@@ -409,7 +409,7 @@ class Minc2Decoder extends Decoder{
 
 
   /**
-  * [PRIVATE]
+  * @private
   *
   * Verify that the expected signature is found at this offset.
   */
@@ -426,7 +426,7 @@ class Minc2Decoder extends Decoder{
 
 
   /**
-  * [PRIVATE]
+  * @private
   */
   hdf5Superblock() {
     var sb = {};
@@ -479,7 +479,7 @@ class Minc2Decoder extends Decoder{
 
 
   /**
-  * [PRIVATE]
+  * @private
   *
   * read the v2 fractal heap header
   */
@@ -530,7 +530,7 @@ class Minc2Decoder extends Decoder{
 
 
   /**
-  * [PRIVATE]
+  * @private
   *
   * read the v2 btree header
   */
@@ -560,7 +560,7 @@ class Minc2Decoder extends Decoder{
 
 
   /**
-  * [PRIVATE]
+  * @private
   *
   * Enumerates btree records in a block. Records are found both in direct
   * and indirect v2 btree blocks.
@@ -665,7 +665,7 @@ class Minc2Decoder extends Decoder{
 
 
   /**
-  * [PRIVATE]
+  * @private
   *
   * read a v2 btree leaf node
   */
@@ -686,7 +686,7 @@ class Minc2Decoder extends Decoder{
 
 
   /**
-  * [PRIVATE]
+  * @private
   *
   * read the hdf5 v2 btree internal node
   */
@@ -724,7 +724,7 @@ class Minc2Decoder extends Decoder{
 
 
   /**
-  * [PRIVATE]
+  * @private
   */
   hdf5GetMsgName(n) {
 
@@ -750,7 +750,7 @@ class Minc2Decoder extends Decoder{
 
 
   /**
-  * [PRIVATE]
+  * @private
   */
   hdf5V1BtreeNode(link) {
     var abuf = this._getInput();
@@ -899,7 +899,7 @@ class Minc2Decoder extends Decoder{
 
 
   /**
-  * [PRIVATE]
+  * @private
   */
   hdf5GroupSymbolTable(lh, link) {
     if (!this.checkSignature("SNOD")) {
@@ -951,7 +951,7 @@ class Minc2Decoder extends Decoder{
 
 
   /**
-  * [PRIVATE]
+  * @private
   *
   * Read a v1 local heap header. These define relatively small
   * regions used primarily for storing symbol names associated with
@@ -976,7 +976,7 @@ class Minc2Decoder extends Decoder{
 
 
   /**
-  * [PRIVATE]
+  * @private
   *
   * Process a "dataspace" message. Dataspaces define the
   * dimensionality of a dataset or attribute. They define the
@@ -1042,7 +1042,7 @@ class Minc2Decoder extends Decoder{
 
 
   /**
-  * [PRIVATE]
+  * @private
   *
   *
   * link info messages may contain a fractal heap address where we
@@ -1090,7 +1090,7 @@ class Minc2Decoder extends Decoder{
 
 
   /**
-  * [PRIVATE]
+  * @private
   */
   dt_class_name(cls) {
     var names = [
@@ -1107,7 +1107,7 @@ class Minc2Decoder extends Decoder{
 
 
   /**
-  * [PRIVATE]
+  * @private
   *
   * Process a "datatype" message. These messages specify the data
   * type of a single element within a dataset or attribute. Data
@@ -1242,7 +1242,7 @@ class Minc2Decoder extends Decoder{
 
 
   /**
-  * [PRIVATE]
+  * @private
   *
   * Process a "layout" message. These messages specify the location and organization
   * of data in a dataset. The organization can be either compact, contiguous, or
@@ -1352,7 +1352,7 @@ class Minc2Decoder extends Decoder{
 
 
   /**
-  * [PRIVATE]
+  * @private
   *
   * Read a "filter pipeline" message. At the moment we _only_ handle
   * deflate/inflate. Anything else will cause us to throw an exception.
@@ -1411,7 +1411,7 @@ class Minc2Decoder extends Decoder{
 
 
   /**
-  * [PRIVATE]
+  * @private
   *
   * Process an "attribute" message. This actually defines an attribute that is
   * to be associated with a group or dataset (what I generally call a "link"
@@ -1480,7 +1480,7 @@ class Minc2Decoder extends Decoder{
 
 
   /**
-  * [PRIVATE]
+  * @private
   *
   * Process a "group info" message. We don't actually do anything with these.
   */
@@ -1504,7 +1504,7 @@ class Minc2Decoder extends Decoder{
 
 
   /**
-  * [PRIVATE]
+  * @private
   *
   * Process a "link" message. This specifies the name and header location of either a
   * group or a dataset within the current group. It is probably also used to implement
@@ -1546,7 +1546,7 @@ class Minc2Decoder extends Decoder{
 
 
   /**
-  * [PRIVATE]
+  * @private
   *
   * The fractal heap direct block contains:
   * 1. A signature.
@@ -1598,7 +1598,7 @@ class Minc2Decoder extends Decoder{
 
 
   /**
-  * [PRIVATE]
+  * @private
   *
   * The fractal heap indirect block contains:
   * 1. A signature.
@@ -1674,7 +1674,7 @@ class Minc2Decoder extends Decoder{
 
 
   /**
-  * [PRIVATE]
+  * @private
   *
   * enumerate over all of the direct blocks in the fractal heap.
   */
@@ -1690,7 +1690,7 @@ class Minc2Decoder extends Decoder{
 
 
   /**
-  * [PRIVATE]
+  * @private
   */
   hdf5FractalHeapOffset(fh, offset) {
     var location;
@@ -1706,7 +1706,7 @@ class Minc2Decoder extends Decoder{
 
 
   /**
-  * [PRIVATE]
+  * @private
   *
   * Attribute info messages contain pointers to a fractal heap and a v2 btree.
   * If these pointers are valid, we must follow them to find more attributes.
@@ -1760,7 +1760,7 @@ class Minc2Decoder extends Decoder{
 
 
   /**
-  * [PRIVATE]
+  * @private
   *
   * Process a single message, given a message header. Assumes that
   * the data view offset is pointing to the remainder of the
@@ -1847,7 +1847,7 @@ class Minc2Decoder extends Decoder{
 
 
   /**
-  * [PRIVATE]
+  * @private
   *
   * Read a V2 object header. Object headers contain a series of messages that define
   * an HDF5 object, primarily a group or a dataset. V2 object headers, and V2 objects
@@ -1953,7 +1953,7 @@ class Minc2Decoder extends Decoder{
 
 
   /**
-  * [PRIVATE]
+  * @private
   */
   loadData(link) {
     var that = this;
@@ -2022,7 +2022,7 @@ class Minc2Decoder extends Decoder{
 
 
   /**
-  * [PRIVATE]
+  * @private
   *
   * Read a v1 object header. Object headers contain a series of
   * messages that define an HDF5 object, primarily a group or a

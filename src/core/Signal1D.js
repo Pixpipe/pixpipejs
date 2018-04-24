@@ -120,7 +120,7 @@ class Signal1D extends PixpipeContainer {
 
 
   /**
-  * [PRIVATE]
+  * @private
   * Conpute min-max
   */
   _computeStatistics(){

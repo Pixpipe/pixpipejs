@@ -10,14 +10,14 @@ import { Filter } from '../core/Filter.js';
 
 /**
 * CanvasImageWriter is a filter to output an instance of Image into a
-* HTML5 canvas element.  
-* The metadata "parentDivID" has to be set using `setMetadata("parentDivID", "whatever")`  
-* The metadata "alpha", if true, enable transparency. Default: false.  
-* If the input Image2D has values not in [0, 255], you can remap/stretch using  
-* setMetadata("min", xxx ) default: 0  
-* setMetadata("max", xxx ) default: 255  
+* HTML5 canvas element.
+* The metadata "parentDivID" has to be set using `setMetadata("parentDivID", "whatever")`
+* The metadata "alpha", if true, enable transparency. Default: false.
+* If the input Image2D has values not in [0, 255], you can remap/stretch using
+* setMetadata("min", xxx ) default: 0
+* setMetadata("max", xxx ) default: 255
 * We can also use `setMetadata("reset", false)` so that we can add another canvas
-* with a new image at update.  
+* with a new image at update.
 *
 * **Usage**
 * - [examples/imageToCanvasFilter.html](../examples/imageToCanvasFilter.html)
@@ -42,7 +42,7 @@ class CanvasImageWriter extends Filter{
     super();
 
     this.addInputValidator(0, Image2D);
-    
+
     this.setMetadata("alpha", false);
     this.setMetadata("min", 0);
     this.setMetadata("max", 255);
@@ -62,10 +62,10 @@ class CanvasImageWriter extends Filter{
   getCanvas(){
     return this._canvas;
   }
-  
+
 
   /**
-  * [PRIVATE]
+  * @private
   * Initialize a new canvas object
   */
   _init(){
@@ -178,13 +178,13 @@ class CanvasImageWriter extends Filter{
         }
       }
     }
-    
+
     this._ctx.putImageData(canvasImageData, 0, 0);
   }
 
 
   /**
-  * [PRIVATE]
+  * @private
   * remap the intensity between getMetadata("min") and getMetadata("max")
   * @param {Number} intensity - input pixel value
   * @return {Number} the adjusted number

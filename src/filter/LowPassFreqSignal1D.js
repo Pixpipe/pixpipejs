@@ -82,7 +82,7 @@ class LowPassFreqSignal1D extends Filter {
   
   
   /**
-  * [PRIVATE]  
+  * @private  
   * For a given Signal1D in frequency domain, return the index in the _data that corresponds to
   * the requested frequency.
   * @param {Signal1D} signal - a Signal1D object in frequency domain
@@ -95,7 +95,7 @@ class LowPassFreqSignal1D extends Filter {
   
   
   /**
-  * [PRIVATE]  
+  * @private  
   * Perform a rectangular function on the signal, which basically means thresholding
   * the FT of the signal at a given cutoff frequency. This is a very bad lo-pass
   * filter, it sould be used only for testing (c.f. Gibbs phenomenon)
@@ -120,7 +120,7 @@ class LowPassFreqSignal1D extends Filter {
   
   
   /**
-  * [PRIVATE]  
+  * @private  
   * Perform a gaussian lo-pass on the signal.
   * @param {Signal1D} real - the real part of the FT
   * @param {Signal1D} imag - the imaginary part of the FT

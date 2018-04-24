@@ -9,7 +9,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "rollup -c",
     "dev": "serve . & rollup -w -c rollup.config.dev.js",
-    "doc": "node ./docgen/ConfigGenerator.js; documentation build src/pixpipe.js --format html --project-name Pixpipejs --config ./docgen/config.yml --theme ./docgen/themes/pixpipe_theme/  -o ./doc/"
+    "doc": "node ./docgen/ConfigGenerator.js; documentation build src/pixpipe.js --format html --sort-order 'alpha' --project-name Pixpipejs --config ./docgen/config.yml --theme ./docgen/themes/pixpipe_theme/  -o ./doc/"
   },
   "repository": {
     "type": "git",

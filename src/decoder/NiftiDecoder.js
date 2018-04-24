@@ -30,7 +30,7 @@ class NiftiDecoder extends Decoder {
 
 
   /**
-  * [PRIVATE]
+  * @private
   */
   parseNifti1Header(raw_data) {
     var header = {
@@ -215,7 +215,7 @@ class NiftiDecoder extends Decoder {
 
 
   /**
-  * [PRIVATE]
+  * @private
   * This function is a direct translation of the identical function
   * found in the standard NIfTI-1 library (nifti1_io.c).
   */
@@ -276,7 +276,7 @@ class NiftiDecoder extends Decoder {
 
 
   /**
-  * [PRIVATE]
+  * @private
   */
   createNifti1Data(header, raw_data) {
     var native_data = null;

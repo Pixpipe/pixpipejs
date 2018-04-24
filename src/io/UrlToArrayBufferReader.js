@@ -64,7 +64,7 @@ class UrlToArrayBufferReader extends Filter {
 
 
   /**
-  * [PRIVATE]
+  * @private
   * Perform a XMLHttpRequest with the given url and adds it to the output
   */
   _loadUrl( category, url ){

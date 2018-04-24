@@ -170,7 +170,7 @@ class PixpipeObject {
   }
 
   /**
-  * [PRIVATE]
+  * @private
   * Deal with an option object (usually as an argument of a constructor).
   * @param {Object} optionsObject - the option object
   * @param {String} key - a property name in this optionObject

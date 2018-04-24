@@ -182,7 +182,7 @@ class Image3D extends PixpipeContainer{
 
 
   /**
-  * [PRIVATE]
+  * @private
   * Creates common fields all headers must contain.
   */
   _finishHeader() {
@@ -212,7 +212,7 @@ class Image3D extends PixpipeContainer{
 
 
   /**
-  * [PRIVATE]
+  * @private
   * Look for min and max on the dataset and add them to the header metadata
   */
   _scanDataRange(){
@@ -294,7 +294,7 @@ class Image3D extends PixpipeContainer{
 
 
   /**
-  * [PRIVATE]
+  * @private
   * Return a slice from the minc cube as a 1D typed array,
   * along with some relative data (slice size, step, etc.)
   * args:

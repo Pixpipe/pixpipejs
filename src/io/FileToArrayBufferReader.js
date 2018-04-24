@@ -63,7 +63,7 @@ class FileToArrayBufferReader extends Filter {
 
 
   /**
-  * [PRIVATE]
+  * @private
   * Perform the loading for the input of the given category
   * @param {String} category - input category
    */
@@ -158,13 +158,14 @@ class FileToArrayBufferReader extends Filter {
       reader.readAsText( this._getInput(category) );
     }else{
       reader.onloadend = onLoadEndBinaryFile;
-      reader.readAsArrayBuffer( this._getInput(category) );
+      var fileObj = this._getInput(category)
+      reader.readAsArrayBuffer( fileObj );
     }
   }
 
 
   /**
-  * [PRIVATE]
+  * @private
   * Launch the "ready" event if all files are loaded
   */
   _fileLoadCount(){

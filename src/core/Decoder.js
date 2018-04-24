@@ -33,7 +33,7 @@ class Decoder extends Filter {
 
 
   /**
-  * [PRIVATE]
+  * @private
   * Non static counterpart of `isBinary`. It's mostly just a shortcut to call isBinary from `this` easily.
   * @return {Boolean} true if binary, false if text
   */
@@ -42,7 +42,7 @@ class Decoder extends Filter {
   }
 
   /**
-  * [PRIVATE]
+  * @private
   * Overloads `Filter._getInput()` and add the logic of converting a binary buffer
   * into a utf8 string when it is required and possible.
   * @param {String} category - category of input (default: 0)

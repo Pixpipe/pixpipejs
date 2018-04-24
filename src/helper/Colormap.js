@@ -108,7 +108,7 @@ class Colormap extends PixpipeObject {
 
 
   /**
-  * [PRIVATE]
+  * @private
   * Validates a colormap description integrity.
   * @return {Boolean} true is the description is valid, false if not
   */
@@ -252,7 +252,7 @@ class Colormap extends PixpipeObject {
     return this._LUT[ index ];
   }
 
-  
+
   getLutAtNormalized( position ){
     var index = -1;
 
@@ -269,19 +269,23 @@ class Colormap extends PixpipeObject {
 
 
   /**
-  * Creates a horizontal Image2D of the colormap. The height is 1px and
+  * Creates a horizontal RGB Image2D of the colormap. The height is 1px and
   * the width is the size of the LUT currently in use.
-  * The image can be horizontally flipped when the "flip" metadata is true;
+  * A RGBA image can be created when passing the argument `forceRGBA` to `true`.
+  * In this case, the alpha channel is `255`.
+  * The image can be horizontally flipped when the "flip" metadata is true
+  * @param {Boolean} forceRGBA - forces the creation of a RGBA image instead of a RGB image
   * @return {Image2D} the result image
   */
-  createHorizontalLutImage(){
+  createHorizontalLutImage( forceRGBA=false ){
     if(! this._LUT ){
       console.warn("The LUT must be built before creating a LUT image.");
       return;
     }
 
+    var initColor = forceRGBA ? [0, 0, 0, 255] : [0, 0, 0];
     var LutSize = this._LUT.length;
-    var colorStrip = new Image2D({width: LutSize, height: 1, color: [0, 0, 0]});
+    var colorStrip = new Image2D({width: LutSize, height: 1 , color: initColor});
 
     for(var i=0; i<LutSize; i++){
       colorStrip.setPixel( {x: i, y: 0},  this._LUT[ i ] );
@@ -292,19 +296,21 @@ class Colormap extends PixpipeObject {
 
 
   /**
-  * Creates a vertical Image2D of the colormap. The height is 1px and
+  * Creates a vertical RGB Image2D of the colormap. The height is 1px and
   * the width is the size of the LUT currently in use.
-  * The image can be vertically flipped when the "flip" metadata is true;
+  * The image can be vertically flipped when the "flip" metadata is true
+  * @param {Boolean} forceRGBA - forces the creation of a RGBA image instead of a RGB image
   * @return {Image2D} the result image
   */
-  createVerticalLutImage(){
+  createVerticalLutImage( forceRGBA=false ){
     if(! this._LUT ){
       console.warn("The LUT must be built before creating a LUT image.");
       return;
     }
 
+    var initColor = forceRGBA ? [0, 0, 0, 255] : [0, 0, 0];
     var LutSize = this._LUT.length;
-    var colorStrip = new Image2D({width: 1, height: LutSize, color: [0, 0, 0]});
+    var colorStrip = new Image2D({width: 1, height: LutSize, color: initColor});
 
     for(var i=0; i<LutSize; i++){
       colorStrip.setPixel( {x: 0, y: i},  this._LUT[ i ] );

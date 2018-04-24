@@ -56,7 +56,7 @@ class Image3DAlt extends PixpipeContainer{
 
   /**
   * [SUPER OVERWRITE - PipxpipeObject]
-  * [PRIVATE]
+  * @private
   */
   _buildMetadataSchema(){
     var metadataSchema = joi.object({
@@ -111,7 +111,7 @@ class Image3DAlt extends PixpipeContainer{
 
   /**
   * [SUPER OVERWRITE - PipxpipeObject]
-  * [PRIVATE]
+  * @private
   * This method is called at the end of setRawMetadata
   */
   _metadataRawCopied(){
@@ -120,7 +120,7 @@ class Image3DAlt extends PixpipeContainer{
 
 
   /**
-  * [PRIVATE]
+  * @private
   * Build the LUT to fetch dimensions easier = using their name as index rather than just a their index
   */
   _buildDimensionsLUT(){
@@ -175,7 +175,7 @@ class Image3DAlt extends PixpipeContainer{
   }
 
   /**
-  * [PRIVATE]
+  * @private
   * initialize some default values for metadata
   */
   _initMetadata(){
@@ -231,7 +231,7 @@ class Image3DAlt extends PixpipeContainer{
 
 
   /**
-  * [PRIVATE]
+  * @private
   * Get an 4x4 identity matrix. This is used as the default transformations w2v
   * and v2w, which means "no transformation"
   * @return {Array} the 4x4 identity as a 1D array
@@ -247,7 +247,7 @@ class Image3DAlt extends PixpipeContainer{
 
 
   /**
-  * [PRIVATE]
+  * @private
   * Called from the constructor or the setData method
   */
   _initData( options, buffer = null ){
@@ -369,7 +369,7 @@ class Image3DAlt extends PixpipeContainer{
 
 
   /**
-  * [PRIVATE]
+  * @private
   * Look for min and max on the dataset and add them to the header metadata
   */
   scanDataRange(){
@@ -618,7 +618,7 @@ class Image3DAlt extends PixpipeContainer{
 
 
   /**
-  * [PRIVATE]
+  * @private
   * Convert a position from a coordinate system to another. Should be called by a method that makes sure of the
   * order of the dimensions.
   * @param {Array} positionArr - 3D position, could be [x, y, z] or in voxel coord not necessary ordered [i, j, k]

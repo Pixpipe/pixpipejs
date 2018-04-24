@@ -75,7 +75,7 @@ class ForEachPixelImageFilter extends ImageToImageFilter {
 
 
   /**
-  * [PRIVATE]
+  * @private
   * generic function for painting row, colum or whole
   * @param {Number} firstPixel - Index of the first pixel in 1D array
   * @param {Number} lastPixel - Index of the last pixel in 1D array
