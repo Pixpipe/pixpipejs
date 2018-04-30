@@ -5,6 +5,8 @@
   "entry": "src/pixpipe.js",
   "main": "dist/pixpipe.js",
   "min": "dist/pixpipe.min.js",
+  "es6": "dist/pixpipe.es6.js",
+  "esmodule": "dist/pixpipe.esmodule.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "rollup -c",

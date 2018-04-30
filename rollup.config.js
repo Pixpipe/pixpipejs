@@ -10,12 +10,13 @@ import uglify from 'rollup-plugin-uglify';
 
 export default [
 
-  // the production bundle
+  // Default 'main' bundle
+  // UMD + ES5 (transpiled from ES6 using Babel)
   {
     input: pkg.entry,
     output: {
       file: pkg.main,
-      sourcemap: false,
+      sourcemap: true,
       name: pkg.name,
       format: 'umd'
     },
@@ -25,7 +26,6 @@ export default [
         preferBuiltins: false
       }),
       commonjs(),
-      //bundleWorker(),
       globals(),
       builtins(),
       babel({
@@ -36,7 +36,7 @@ export default [
   },
 
 
-  // the minified bundle
+  // UMD + ES5 + min (transpiled from ES6 using Babel)
   {
     input: pkg.entry,
     output: {
@@ -51,7 +51,6 @@ export default [
         preferBuiltins: false
       }),
       commonjs(),
-      //bundleWorker(),
       globals(),
       builtins(),
       babel({
@@ -60,6 +59,46 @@ export default [
       }),
 
       uglify()
+    ]
+  },
+
+  // UMD + ES6
+  {
+    input: pkg.entry,
+    output: {
+      file: pkg.es6,
+      name: pkg.name,
+      sourcemap: true,
+      format: 'umd'
+    },
+
+    plugins: [
+      nodeResolve({
+        preferBuiltins: false
+      }),
+      commonjs(),
+      globals(),
+      builtins()
+    ]
+  },
+
+  // ESMODULE + ES6
+  {
+    input: pkg.entry,
+    output: {
+      file: pkg.esmodule,
+      name: pkg.name,
+      sourcemap: true,
+      format: 'es'
+    },
+
+    plugins: [
+      nodeResolve({
+        preferBuiltins: false
+      }),
+      commonjs(),
+      globals(),
+      builtins()
     ]
   }
 
