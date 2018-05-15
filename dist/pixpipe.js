@@ -35271,7 +35271,7 @@
   * used for Minc2 file format.
   * The metadata "debug" can be set to true to
   * enable a verbose mode.
-  * Takes an ArrayBuffer as input (0) and output a `MniVolume` (which inherit `Image3D`).
+  * Takes an ArrayBuffer as input (0) and output a `Image3D`
   *
   * **Usage**
   * - [examples/fileToMinc2.html](../examples/fileToMinc2.html)
@@ -38122,14 +38122,6 @@
         minc_header.format = "minc2";
         var dataArray = this.createMincData(minc_header, new_abuf);
 
-        /*
-        // add the output to this filter
-        this._addOutput(MniVolume);
-        var mniVol = this.getOutput();
-        mniVol.setData(dataArray, minc_header);
-        mniVol.setMetadata("format", "minc2");
-        */
-
         var metadata = Image3DMetadataConverter.convertImage3DMetadata(minc_header);
 
         var dims = metadata.dimensions;
@@ -40157,7 +40149,7 @@
           dataType: input.getData().constructor.name, // typed array type
           data: Array.prototype.slice.call(input.getData()), // data of pixel/voxel
           metadata: input.getMetadataCopy(), // Image2D/Image3D._metadata
-          pixpipeType: input.constructor.name // most likely "Image2D", "Image3D", "MniVolume", "LineString", etc.
+          pixpipeType: input.constructor.name // most likely "Image2D", "Image3D", "LineString", etc.
         };
 
         var pixpString = JSON.stringify(arrayAndMeta);
@@ -40310,7 +40302,7 @@
 
   /**
   * Decodes a MGH file.
-  * Takes an ArrayBuffer as input (0) and output a `MniVolume` (which inherit `Image3D`).
+  * Takes an ArrayBuffer as input (0) and output a `Image3D`
   * Some doc can be found [here](https://surfer.nmr.mgh.harvard.edu/fswiki/FsTutorial/MghFormat)
   *
   * **Usage**
@@ -40615,14 +40607,6 @@
         var dataArray = this._createMGHData(header, inputBuffer);
 
         if (!dataArray) return null;
-
-        /*
-        // add the output to this filter
-        this._addOutput(MniVolume);
-        var mniVol = this.getOutput();
-        mniVol.setData(dataArray, header);
-        mniVol.setMetadata("format", "mgh");
-        */
 
         var metadata = Image3DMetadataConverter.convertImage3DMetadata(header);
 
