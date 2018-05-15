@@ -14,7 +14,7 @@ import { Image3DMetadataConverter } from '../utils/Image3DMetadataConverter.js';
 
 /**
 * Decodes a MGH file.
-* Takes an ArrayBuffer as input (0) and output a `MniVolume` (which inherit `Image3D`).
+* Takes an ArrayBuffer as input (0) and output a `Image3D`
 * Some doc can be found [here](https://surfer.nmr.mgh.harvard.edu/fswiki/FsTutorial/MghFormat)
 *
 * **Usage**
@@ -327,15 +327,6 @@ class MghDecoder extends Decoder {
 
     if(!dataArray)
       return null;
-
-
-    /*
-    // add the output to this filter
-    this._addOutput(MniVolume);
-    var mniVol = this.getOutput();
-    mniVol.setData(dataArray, header);
-    mniVol.setMetadata("format", "mgh");
-    */
 
 
     var metadata = Image3DMetadataConverter.convertImage3DMetadata( header );
