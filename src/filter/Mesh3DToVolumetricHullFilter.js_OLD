@@ -9,10 +9,10 @@
 
 import { Filter } from '../core/Filter.js';
 import { Mesh3D } from '../core/Mesh3D.js';
-import { Image3D } from '../core/Image3D.js';
+import { Image3DAlt } from '../core/Image3DAlt.js';
 
 /**
-* An instance of Mesh3DToVolumetricHullFilter creates a voxel based volume (Image3D)
+* An instance of Mesh3DToVolumetricHullFilter creates a voxel based volume (Image3DAlt)
 * of a Mesh3D (input). The hull of the mesh is represnted by voxels in the output.
 *
 */
@@ -32,7 +32,7 @@ class Mesh3DToVolumetricHullFilter extends Filter {
     // with a resolutionStep of 2, a distance of 1 in the mesh will be 0.5 voxels
     // with a resolutionStep of 0.5, a distance of 1 in the mesh will be 2 voxels.
     // Notice: a mesh can (and will) have floating point vertex position and floating
-    // point ray intersection while a volume (Image3D) has only integer voxel indices.
+    // point ray intersection while a volume (Image3DAlt) has only integer voxel indices.
     this.setMetadata("resolutionStep", 1);
 
     // The margin is the distance around the mesh bouding box to include in the output volume.
@@ -127,7 +127,7 @@ class Mesh3DToVolumetricHullFilter extends Filter {
 
 
 
-    var outputImage = new Image3D({
+    var outputImage = new Image3DAlt({
       xSize: enlargedBoxSize.x * resolutionStepInverse,
       ySize: enlargedBoxSize.y * resolutionStepInverse,
       zSize: enlargedBoxSize.z * resolutionStepInverse,

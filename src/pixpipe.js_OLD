@@ -13,7 +13,9 @@ export { Signal1D } from './core/Signal1D.js'
 export { Image2D } from './core/Image2D.js';
 export { Image3D } from './core/Image3D.js';
 export { ImageToImageFilter } from './core/ImageToImageFilter.js';
+export { MniVolume } from './core/MniVolume.js';
 export { LineString } from './core/LineString.js';
+export { Image3DAlt } from './core/Image3DAlt.js';
 export { Mesh3D } from './core/Mesh3D.js';
 export { Decoder } from './core/Decoder.js';
 
@@ -29,17 +31,21 @@ export { BrowserDownloadBuffer } from './io/BrowserDownloadBuffer.js';
 export { GenericDecoderInterface } from './decoder/GenericDecoderInterface.js'
 export { Minc2Decoder } from './decoder/Minc2Decoder.js';
 export { NiftiDecoder } from './decoder/NiftiDecoder.js';
+export { NiftiDecoderAlt } from './decoder/NiftiDecoderAlt.js';
 export { PixpEncoder } from './decoder/PixpEncoder.js';
 export { PixpDecoder } from './decoder/PixpDecoder.js';
 export { Image3DGenericDecoder } from './decoder/Image3DGenericDecoder.js';
+export { Image3DGenericDecoderAlt } from './decoder/Image3DGenericDecoderAlt.js';
 export { TiffDecoder } from './decoder/TiffDecoder.js';
 export { MghDecoder } from './decoder/MghDecoder.js';
+export { MghDecoderAlt } from './decoder/MghDecoderAlt.js';
 export { EegModDecoder } from './decoder/EegModDecoder.js';
 export { PixBinEncoder } from './decoder/PixBinEncoder.js';
 export { PixBinDecoder } from './decoder/PixBinDecoder.js';
 export { JpegDecoder } from './decoder/JpegDecoder.js';
 export { PngDecoder } from './decoder/PngDecoder.js';
 export { Image2DGenericDecoder } from './decoder/Image2DGenericDecoder.js';
+export { Minc2DecoderAlt } from './decoder/Minc2DecoderAlt.js';
 export { MniObjDecoder } from './decoder/MniObjDecoder.js';
 export { EdfDecoder } from './decoder/EdfDecoder.js';
 export { Mesh3DGenericDecoder } from './decoder/Mesh3DGenericDecoder.js';
@@ -87,6 +93,7 @@ export { Colormap } from './helper/Colormap.js';
 
 // filters - processing of Image3D
 export { Image3DToMosaicFilter } from './filter/Image3DToMosaicFilter.js';
+export { Image3DToMosaicFilterAlt } from './filter/Image3DToMosaicFilterAlt.js';
 
 // utils
 export { Image3DMetadataConverter } from './utils/Image3DMetadataConverter.js';

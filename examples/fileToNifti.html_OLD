@@ -47,50 +47,34 @@
 
       var niftiBuff = this.getOutput();
 
-      var niftiDecoder = new pixpipe.NiftiDecoderAlt();
+      var niftiDecoder = new pixpipe.NiftiDecoder();
       niftiDecoder.addInput( niftiBuff );
       niftiDecoder.update();
 
       var mniVolume = niftiDecoder.getOutput();
 
       if(mniVolume){
-        console.log( mniVolume.getPositionFromVoxelSpaceToTransfoSpace({i:20, j:10, k:30}, "v2w") );
-        console.log( "color ar world coord {x:20, y:10, z:30}: " + mniVolume.getVoxelTransfoSpace( "w2v", {x:20, y:10, z:30} ) );
-        //console.log( mniVolume.getPositionFromVoxelSpaceToTransfoSpaceEXP1({i:20, j:10, k:30}, "v2w") );
-
-        //console.log( mniVolume.getPositionFromTransfoSpaceToVoxelSpace({x:20, y:10, z:30}, "w2v") );
-        //console.log( mniVolume.getValueTransfoSpace( "w2v", {x:20, y:10, z:30} ));
-        
-        //var voxelOrigInWorld = mniVolume.getPositionFromVoxelSpaceToTransfoSpace({i:20, j:30, k:10}, "v2w");
-        //console.log( voxelOrigInWorld );
-        
-        //var voxelOrigInWorld = mniVolume.getPositionFromTransfoSpaceToVoxelSpace({x:20, y:30, z:10}, "w2v");
-        //console.log( voxelOrigInWorld );
-        
-        //console.log( "safe: " + mniVolume.getVoxelSafe({i:25, j:35, k: 15}));
-        //console.log( "unsafe: " + mniVolume.getVoxel({i:80, j:120, k: 150}));
-        
-        
         // create a filter to write the image into a canvas
         var imageToCanvasFilter = new pixpipe.CanvasImageWriter( );
         // replace the default min max values of [0, 255]
-        imageToCanvasFilter.setMetadata("min", mniVolume.getMinValue());
-        imageToCanvasFilter.setMetadata("max", mniVolume.getMaxValue());
+        imageToCanvasFilter.setMetadata("min", mniVolume.getMetadata("voxel_min"));
+        imageToCanvasFilter.setMetadata("max", mniVolume.getMetadata("voxel_max"));
+
+        var timeSample = 2;
 
         // display sagital
         imageToCanvasFilter.setMetadata( "parentDivID", "myDiv_x" );
-        imageToCanvasFilter.addInput( mniVolume.getSlice('x', Math.round(mniVolume.getDimensionSize('x')/3 )) );
-        //imageToCanvasFilter.addInput( mniVolume.getSliceDim0( Math.round(mniVolume.getDimensionSize(0)/3 )) );
+        imageToCanvasFilter.addInput( mniVolume.getSlice("xspace", Math.round(mniVolume.getMetadata("xspace").space_length/2), timeSample) );
         imageToCanvasFilter.update();
 
         // display coronal
         imageToCanvasFilter.setMetadata( "parentDivID", "myDiv_y" );
-        imageToCanvasFilter.addInput( mniVolume.getSlice('y', Math.round(mniVolume.getDimensionSize('y')/3 )) );
+        imageToCanvasFilter.addInput( mniVolume.getSlice("yspace", Math.round(mniVolume.getMetadata("yspace").space_length/2), timeSample) );
         imageToCanvasFilter.update();
 
         // display axial
         imageToCanvasFilter.setMetadata( "parentDivID", "myDiv_z" );
-        imageToCanvasFilter.addInput( mniVolume.getSlice('z', Math.round(mniVolume.getDimensionSize('z')/3 )) );
+        imageToCanvasFilter.addInput( mniVolume.getSlice("zspace", Math.round(mniVolume.getMetadata("zspace").space_length/2), timeSample) );
         imageToCanvasFilter.update();
       }else{
         console.warn("Non-existant output for niftiDecoder.");

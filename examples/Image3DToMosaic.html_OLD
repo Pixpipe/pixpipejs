@@ -47,8 +47,7 @@
 
       var buff = this.getOutput();
 
-      //var image3DDecoder = new pixpipe.Image3DGenericDecoder();
-      var image3DDecoder = new pixpipe.Image3DGenericDecoderAlt(); 
+      var image3DDecoder = new pixpipe.Image3DGenericDecoder();
       image3DDecoder.addInput( buff );
       image3DDecoder.update();
 
@@ -56,24 +55,22 @@
 
       if(mniVolume){
 
-        var mosaicFilter = new pixpipe.Image3DToMosaicFilterAlt();
+        var mosaicFilter = new pixpipe.Image3DToMosaicFilter();
 
         // image3DDecoder ouputs a pixpipe.MniVolume, which iherit pixpipe.Image3D
         // making it compatible with pixpipe.Image3DToMosaicFilter
         mosaicFilter.addInput( mniVolume );
 
         // which axis do we want the picture of?
-        var space = "y";
+        var space = "yspace";
         mosaicFilter.setMetadata( "axis", space);
 
-        /*
         var spaceInfo = mniVolume.getMetadata(space);
         document.getElementById('fileInfo').innerHTML += "<br>" + filenames[0] + " is composed of "
           + spaceInfo.space_length + " slices of size "
           + spaceInfo.width + "x" + spaceInfo.height + "px <br>"
           + "Number of time samples: " + mniVolume.getTimeLength() ;
-        */
-        
+
         // default is 4096 * 4096 but we can print a canvas in a more "parametric"
         // way so that we have 10 images for each row. Be aware HTML5 Canvas have
         // size/area limits. See http://bit.ly/2nIlyoi for more info.
@@ -93,8 +90,8 @@
         // create a filter to write the image into a canvas
         var imageToCanvasFilter = new pixpipe.CanvasImageWriter( );
         // replace the default min max values of [0, 255]
-        imageToCanvasFilter.setMetadata("min", mniVolume.getMinValue() );
-        imageToCanvasFilter.setMetadata("max", mniVolume.getMaxValue() );
+        imageToCanvasFilter.setMetadata("min", mniVolume.getMetadata("voxel_min"));
+        imageToCanvasFilter.setMetadata("max", mniVolume.getMetadata("voxel_max"));
         imageToCanvasFilter.setMetadata("reset", false);
 
         // display the output in multiple canvas if needed

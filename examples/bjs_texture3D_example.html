@@ -268,7 +268,7 @@
 
     urlArrBuff.on("ready", function(){
       let arrBuff = this.getOutput();
-      let generic3DDecoder = new pixpipe.Image3DGenericDecoderAlt();
+      let generic3DDecoder = new pixpipe.Image3DGenericDecoder();
       generic3DDecoder.addInput( arrBuff );
       generic3DDecoder.update();
 
