@@ -9,11 +9,13 @@
 
 import pako from 'pako';
 import { Decoder } from '../core/Decoder.js';
-import { MniVolume } from '../core/MniVolume.js';
+import { Image3D } from '../core/Image3D.js';
+import { Image3DMetadataConverter } from '../utils/Image3DMetadataConverter.js';
 
 /**
 * Decodes a MGH file.
-* Takes an ArrayBuffer as input (0) and output a `MniVolume` (which inherit `Image3D`).
+* Takes an ArrayBuffer as input (0) and output a `Image3D`
+* Some doc can be found [here](https://surfer.nmr.mgh.harvard.edu/fswiki/FsTutorial/MghFormat)
 *
 * **Usage**
 * - [examples/fileToMgh.html](../examples/fileToMgh.html)
@@ -22,7 +24,7 @@ class MghDecoder extends Decoder {
 
   constructor() {
     super();
-    this.setMetadata("targetType", MniVolume.name);
+    this.setMetadata("targetType", Image3D.name);
     this.addInputValidator(0, ArrayBuffer);
     this.setMetadata("debug", false);
   }
@@ -127,7 +129,6 @@ class MghDecoder extends Decoder {
         for (j = 0; j < 4; j++) {
           s1 += "xyzc"[j] + "_" + "ras"[i] + " " + dircos[j][i] + " ";
         }
-        console.log(s1);
       }
     }
 
@@ -224,7 +225,7 @@ class MghDecoder extends Decoder {
     // Now that we have the transform, need to convert it to MINC-like
     // steps and direction_cosines.
 
-    MniVolume.transformToMinc(transform, header);
+    Image3DMetadataConverter.transformToMinc(transform, header);
 
     // Save the datatype so that we can refer to it later.
     header.datatype = datatype;
@@ -264,7 +265,7 @@ class MghDecoder extends Decoder {
     var nbytes = header.nvoxels * bytes_per_voxel;
 
     if (bytes_per_voxel > 1 && !header.little_endian) {
-      MniVolume.swapn( new Uint8Array(raw_data, 284, nbytes), bytes_per_voxel );
+      Image3DMetadataConverter.swapn( new Uint8Array(raw_data, 284, nbytes), bytes_per_voxel );
     }
 
     switch (header.datatype) {
@@ -327,11 +328,65 @@ class MghDecoder extends Decoder {
     if(!dataArray)
       return null;
 
-    // add the output to this filter
-    this._addOutput(MniVolume);
-    var mniVol = this.getOutput();
-    mniVol.setData(dataArray, header);
-    mniVol.setMetadata("format", "mgh");
+
+    var metadata = Image3DMetadataConverter.convertImage3DMetadata( header );
+
+    // ********** SWAPPING DIM *************
+
+
+    var dims = metadata.dimensions;
+
+    /*
+    dims.sort( function(a, b){
+      return a.stride > b.stride;
+    })
+    */
+
+
+    // return the dimsniosn object given its world name ('x', 'y' or 'z')
+    function getDimensionByWorldName( name ){
+      for(var i=0; i<dimensionsToUse.length; i++){
+        if(dimensionsToUse[i].nameWorldSpace === name)
+          return dimensionsToUse[i];
+      }
+      return null;
+    }
+
+    function getWidthDimension( directionDim ){
+      return directionDim === "x" ? "y" : directionDim === "y" ? "x" : directionDim === "z" ? "x" : null;
+    }
+
+    function getHeightDimension( directionDim ){
+      return directionDim === "x" ? "z" : directionDim === "y" ? "z" : directionDim === "z" ? "y" : null;
+    }
+
+    function getDimIndexByDimName( dimName ){
+      for(var i=0; i<dims.length; i++){
+        if( dims[i].nameWorldSpace === dimName )
+          return i;
+      }
+      return -1;
+    }
+
+    for(var i=0; i<dims.length; i++){
+      var dimName = dims[i].nameWorldSpace;
+      dims[i].heightDimension = getDimIndexByDimName( getHeightDimension( dimName ) );
+      dims[i].widthDimension = getDimIndexByDimName( getWidthDimension( dimName ) );
+    }
+
+
+    // ********** END OF SWAPPING **********
+
+
+
+    var output = new Image3D();
+    output.setRawData( dataArray );
+    output.setRawMetadata( metadata );
+
+    if(output.metadataIntegrityCheck()){
+      output.scanDataRange();
+      this._output[0] = output;
+    }
 
   }
 

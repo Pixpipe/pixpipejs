@@ -13,7 +13,7 @@
   <ul>
     <li>open a local MGH file, using <code>pixpipe.FileToArrayBufferReader</code></li>
     <li>redirect the file buffer into a <code>pixpipe.MghDecoder</code> to extract MGH dataset and metadata</li>
-    <li>get the output as a generique <code>pixpipe.MniVolume</code> object</li>
+    <li>get the output as a generique <code>pixpipe.Image3D</code> object</li>
     <li><code>slice()</code> the volume 3 times, along 3 given axis to get 3 <code>pixpipe.Image2D</code> objects</li>
     <li>display the images in separate canvas using a single instance of <code>pixpipe.CanvasImageWriter</code></li>
   </ul>
@@ -51,7 +51,7 @@
       mghDecoder.addInput( mghBuff );
       mghDecoder.update();
 
-      
+
 
       var mniVolume = mghDecoder.getOutput();
 
@@ -59,22 +59,23 @@
         // create a filter to write the image into a canvas
         var imageToCanvasFilter = new pixpipe.CanvasImageWriter( );
         // replace the default min max values of [0, 255]
-        imageToCanvasFilter.setMetadata("min", mniVolume.getMetadata("voxel_min"));
-        imageToCanvasFilter.setMetadata("max", mniVolume.getMetadata("voxel_max"));
+        imageToCanvasFilter.setMetadata("min", mniVolume.getMinValue());
+        imageToCanvasFilter.setMetadata("max", mniVolume.getMaxValue());
 
         // display sagital
         imageToCanvasFilter.setMetadata( "parentDivID", "myDiv_x" );
-        imageToCanvasFilter.addInput( mniVolume.getSlice("xspace", 80) );
+        imageToCanvasFilter.addInput( mniVolume.getSlice('x', Math.round(mniVolume.getDimensionSize('x')/2 )) );
+        //imageToCanvasFilter.addInput( mniVolume.getSliceDim0( Math.round(mniVolume.getDimensionSize(0)/3 )) );
         imageToCanvasFilter.update();
 
         // display coronal
         imageToCanvasFilter.setMetadata( "parentDivID", "myDiv_y" );
-        imageToCanvasFilter.addInput( mniVolume.getSlice("yspace", 128) );
+        imageToCanvasFilter.addInput( mniVolume.getSlice('y', Math.round(mniVolume.getDimensionSize('y')/2 )) );
         imageToCanvasFilter.update();
 
         // display axial
         imageToCanvasFilter.setMetadata( "parentDivID", "myDiv_z" );
-        imageToCanvasFilter.addInput( mniVolume.getSlice("zspace", 128) );
+        imageToCanvasFilter.addInput( mniVolume.getSlice('z', Math.round(mniVolume.getDimensionSize('z')/2 )) );
         imageToCanvasFilter.update();
       }else{
         console.warn("Non-existant output for mghDecoder.");

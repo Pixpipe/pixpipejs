@@ -1,360 +1,57 @@
 /*
 * Author    Jonathan Lurie - http://me.jonathanlurie.fr
-*           Robert D. Vincent
 *
 * License   MIT
 * Link      https://github.com/Pixpipe/pixpipejs
 * Lab       MCIN - Montreal Neurological Institute
 */
 
-import pako from 'pako';
+import nifti from 'nifti-reader-js';
+import { glMatrix, mat2, mat2d, mat3, mat4, quat, vec2, vec3, vec4 } from 'gl-matrix';
 import { Decoder } from '../core/Decoder.js';
-import { MniVolume } from '../core/MniVolume.js';
+import { Image3D } from '../core/Image3D.js';
 
 
 /**
-* Decodes a NIfTI file.
-* Takes an ArrayBuffer as input (0) and output a `MniVolume` (which inherit `Image3D`).
+* Important information:
+* NIfTI dataset are using two indexing methods:
+* - A voxel based system (i, j, k), the most intuitive, where i is the fastest varying dim and k is the sloest varying dim.
+*   Thus for a given (i, j, k) the value is at (i + j*dim[1] + k*dim[1]*dim[2])
+* - A subject based system (x, y, z), where +x is right, +y is anterior, +z is superior (right handed coord system).
+*   This system is CENTER pixel/voxel and is the result of a transformation from (i, j, k) and a scaling given by the size of
+*   each voxel in a world unit (eg. mm)
 *
-* **Usage**
-* - [examples/fileToNifti.html](../examples/fileToNifti.html)
+* NIfTI provides three alternatives to characterize this transformation:
+*
+* METHOD 1 , when header.qform_code = 0
+* Here, no specific orientation difers in [x, y, z], only spatial scaling based on voxel world dimensions.
+* This method is NOT the default one, neither it is the most common. It is mainly for bacward compatibility
+* to ANALYZE 7.5.
+* Thus we simply have:
+* x = pixdim[1] * i
+* y = pixdim[2] * j
+* z = pixdim[3] * k
+*
+* METHOD 2, the "normal" case, when header.qform_code > 0
+* In this situation, three components are involved in the transformation:
+* 1. voxel dimensions (header.pixDims[]) for the spatial scaling
+* 2. a rotation matrix, for orientation
+* 3. a shift
+* Thus, we have:
+* [ x ]   [ R11 R12 R13 ] [        header.pixDims[1] * i ]   [ header.qoffset_x ]
+* [ y ] = [ R21 R22 R23 ] [        header.pixDims[2] * j ] + [ header.qoffset_y ]
+* [ z ]   [ R31 R32 R33 ] [ qfac * header.pixDims[3] * k ]   [ header.qoffset_z ]
+* Info:
+* The official NIfTI header description ( https://nifti.nimh.nih.gov/pub/dist/src/niftilib/nifti1.h )
+* was used to interpret the data.
 */
 class NiftiDecoder extends Decoder {
-
   constructor(){
     super();
-    this.setMetadata("targetType", MniVolume.name);
+    this.setMetadata("targetType", Image3D.name);
     this.addInputValidator(0, ArrayBuffer);
-    this.setMetadata("debug", false);
   }
 
-
-  /**
-  * @private
-  */
-  parseNifti1Header(raw_data) {
-    var header = {
-      order: [],
-      xspace: {},
-      yspace: {},
-      zspace: {}
-    };
-    var error_message = null;
-    var dview = new DataView(raw_data, 0, 348);
-    var bytes = new Uint8Array(raw_data, 0, 348);
-    var littleEndian = true;
-
-    var sizeof_hdr = dview.getUint32(0, true);
-    if (sizeof_hdr === 0x0000015c) {
-      littleEndian = true;
-    } else if (sizeof_hdr === 0x5c010000) {
-      littleEndian = false;
-    } else {
-      error_message = "This does not look like a NIfTI-1 file.";
-    }
-
-    var ndims = dview.getUint16(40, littleEndian);
-    if (ndims < 3 || ndims > 4) {
-      error_message = "Cannot handle " + ndims + "-dimensional images yet.";
-    }
-
-    var magic = String.fromCharCode.apply(null, bytes.subarray(344, 348));
-    if (magic !== "n+1\0") {
-      error_message = "Bad magic number: '" + magic + "'";
-    }
-
-    if (error_message) {
-      //throw new Error(error_message);
-      console.warn("The input file is not a NIfTI file.");
-      return null;
-    }
-
-    header.xspace.space_length = dview.getUint16(42, littleEndian);
-    header.yspace.space_length = dview.getUint16(44, littleEndian);
-    header.zspace.space_length = dview.getUint16(46, littleEndian);
-    var tlength = dview.getUint16(48, littleEndian);
-
-    var datatype = dview.getUint16(70, littleEndian);
-    var bitpix = dview.getUint16(72, littleEndian);
-
-    var xstep = dview.getFloat32(80, littleEndian);
-    var ystep = dview.getFloat32(84, littleEndian);
-    var zstep = dview.getFloat32(88, littleEndian);
-    var tstep = dview.getFloat32(92, littleEndian);
-
-    var vox_offset = dview.getFloat32(108, littleEndian);
-    if (vox_offset < 352) {
-      vox_offset = 352;
-    }
-
-    var scl_slope = dview.getFloat32(112, littleEndian);
-    var scl_inter = dview.getFloat32(116, littleEndian);
-
-    var qform_code = dview.getUint16(252, littleEndian);
-    var sform_code = dview.getUint16(254, littleEndian);
-
-    var nifti_xfm = [
-      [1, 0, 0, 0],
-      [0, 1, 0, 0],
-      [0, 0, 1, 0],
-      [0, 0, 0, 1]
-    ];
-
-    if (tlength >= 1) {
-      header.time = {};
-      header.time.space_length = tlength;
-      header.time.step = tstep;
-      header.time.start = 0;
-      header.time.name = "time";
-    }
-
-    /* Record the number of bytes per voxel, and note whether we need
-     * to swap bytes in the voxel data.
-     */
-    header.bytes_per_voxel = bitpix / 8;
-    header.must_swap_data = !littleEndian && header.bytes_per_voxel > 1;
-
-    if (sform_code > 0) {
-      /* The "Sform", if present, defines an affine transform which is
-       * generally assumed to correspond to some standard coordinate
-       * space (e.g. Talairach).
-       */
-      nifti_xfm[0][0] = dview.getFloat32(280, littleEndian);
-      nifti_xfm[0][1] = dview.getFloat32(284, littleEndian);
-      nifti_xfm[0][2] = dview.getFloat32(288, littleEndian);
-      nifti_xfm[0][3] = dview.getFloat32(292, littleEndian);
-      nifti_xfm[1][0] = dview.getFloat32(296, littleEndian);
-      nifti_xfm[1][1] = dview.getFloat32(300, littleEndian);
-      nifti_xfm[1][2] = dview.getFloat32(304, littleEndian);
-      nifti_xfm[1][3] = dview.getFloat32(308, littleEndian);
-      nifti_xfm[2][0] = dview.getFloat32(312, littleEndian);
-      nifti_xfm[2][1] = dview.getFloat32(316, littleEndian);
-      nifti_xfm[2][2] = dview.getFloat32(320, littleEndian);
-      nifti_xfm[2][3] = dview.getFloat32(324, littleEndian);
-    }
-    else if (qform_code > 0) {
-      /* The "Qform", if present, defines a quaternion which specifies
-       * a less general transformation, often to scanner space.
-       */
-      var quatern_b = dview.getFloat32(256, littleEndian);
-      var quatern_c = dview.getFloat32(260, littleEndian);
-      var quatern_d = dview.getFloat32(264, littleEndian);
-      var qoffset_x = dview.getFloat32(268, littleEndian);
-      var qoffset_y = dview.getFloat32(272, littleEndian);
-      var qoffset_z = dview.getFloat32(276, littleEndian);
-      var qfac = (dview.getFloat32(76, littleEndian) < 0) ? -1.0 : 1.0;
-
-      nifti_xfm = this.niftiQuaternToMat44(quatern_b, quatern_c, quatern_d,
-                                           qoffset_x, qoffset_y, qoffset_z,
-                                           xstep,     ystep,     zstep,     qfac);
-    }
-    else {
-      nifti_xfm[0][0] = xstep;
-      nifti_xfm[1][1] = ystep;
-      nifti_xfm[2][2] = zstep;
-    }
-
-
-    var i, j;
-    var axis_index_from_file = [0, 1, 2];
-    var transform = [[0, 0, 0, 0],
-                     [0, 0, 0, 0],
-                     [0, 0, 0, 0],
-                     [0, 0, 0, 1]];
-
-    for (i = 0; i < 3; i++) {
-      var c_x = Math.abs(nifti_xfm[0][i]);
-      var c_y = Math.abs(nifti_xfm[1][i]);
-      var c_z = Math.abs(nifti_xfm[2][i]);
-
-      if (c_x > c_y && c_x > c_z) {
-        header.order[2 - i] = "xspace";
-        axis_index_from_file[i] = 0;
-      }
-      else if (c_y > c_x && c_y > c_z) {
-        header.order[2 - i] = "yspace";
-        axis_index_from_file[i] = 1;
-      }
-      else {
-        header.order[2 - i] = "zspace";
-        axis_index_from_file[i] = 2;
-      }
-    }
-
-    for (i = 0; i < 3; i++) {
-      for (j = 0; j < 4; j++) {
-        var volume_axis = j;
-        if (j < 3) {
-          volume_axis = axis_index_from_file[j];
-        }
-        transform[i][volume_axis] = nifti_xfm[i][j];
-      }
-    }
-
-
-
-
-    MniVolume.transformToMinc(transform, header);
-
-    header[header.order[2]].space_length = dview.getUint16(42, littleEndian);
-    header[header.order[1]].space_length = dview.getUint16(44, littleEndian);
-    header[header.order[0]].space_length = dview.getUint16(46, littleEndian);
-
-    if (tlength >= 1) {
-       header.order.unshift("time");
-    }
-
-
-    header.datatype = datatype;
-    header.vox_offset = vox_offset;
-    header.scl_slope = scl_slope;
-    header.scl_inter = scl_inter;
-
-    return header;
-  }
-
-
-  /**
-  * @private
-  * This function is a direct translation of the identical function
-  * found in the standard NIfTI-1 library (nifti1_io.c).
-  */
-  niftiQuaternToMat44( qb, qc, qd,
-                       qx, qy, qz,
-                       dx, dy, dz, qfac )
-  {
-    var m = [                   // 4x4 transform
-      [0, 0, 0, 0],
-      [0, 0, 0, 0],
-      [0, 0, 0, 0],
-      [0, 0, 0, 1]
-    ];
-    var b = qb;
-    var c = qc;
-    var d = qd;
-    var a, xd, yd, zd;
-
-    // compute a parameter from b,c,d
-
-    a = 1.0 - (b * b + c * c + d * d);
-    if ( a < 1.e-7 ) {           // special case
-      a = 1.0 / Math.sqrt(b * b + c * c + d * d);
-      b *= a;                    // normalize (b,c,d) vector
-      c *= a;
-      d *= a;
-      a = 0.0;                   // a = 0 ==> 180 degree rotation
-    } else {
-      a = Math.sqrt(a);          // angle = 2*arccos(a)
-    }
-
-    // load rotation matrix, including scaling factors for voxel sizes
-
-    xd = (dx > 0.0) ? dx : 1.0;  // make sure are positive
-    yd = (dy > 0.0) ? dy : 1.0;
-    zd = (dz > 0.0) ? dz : 1.0;
-
-    if ( qfac < 0.0 )            // left handedness?
-      zd = -zd;
-
-    m[0][0] =       (a * a + b * b - c * c - d * d) * xd;
-    m[0][1] = 2.0 * (b * c - a * d                ) * yd;
-    m[0][2] = 2.0 * (b * d + a * c                ) * zd;
-    m[1][0] = 2.0 * (b * c + a * d                ) * xd;
-    m[1][1] =       (a * a + c * c - b * b - d * d) * yd;
-    m[1][2] = 2.0 * (c * d - a * b                ) * zd;
-    m[2][0] = 2.0 * (b * d - a * c                ) * xd;
-    m[2][1] = 2.0 * (c * d + a * b                ) * yd;
-    m[2][2] =       (a * a + d * d - c * c - b * b) * zd;
-
-    // load offsets
-    m[0][3] = qx;
-    m[1][3] = qy;
-    m[2][3] = qz;
-
-    return m;
-  }
-
-
-  /**
-  * @private
-  */
-  createNifti1Data(header, raw_data) {
-    var native_data = null;
-
-    if (header.must_swap_data) {
-      MniVolume.swapn(
-        new Uint8Array(raw_data, header.vox_offset),
-        header.bytes_per_voxel
-      );
-    }
-
-    switch (header.datatype) {
-    case 2:                     // DT_UNSIGNED_CHAR
-      // no translation necessary; could optimize this out.
-      native_data = new Uint8Array(raw_data, header.vox_offset);
-      break;
-    case 4:                     // DT_SIGNED_SHORT
-      native_data = new Int16Array(raw_data, header.vox_offset);
-      break;
-    case 8:                     // DT_SIGNED_INT
-      native_data = new Int32Array(raw_data, header.vox_offset);
-      break;
-    case 16:                    // DT_FLOAT
-      native_data = new Float32Array(raw_data, header.vox_offset);
-      break;
-    case 64:                    // DT_DOUBLE
-      native_data = new Float64Array(raw_data, header.vox_offset);
-      break;
-    // Values above 256 are NIfTI-specific, and rarely used.
-    case 256:                   // DT_INT8
-      native_data = new Int8Array(raw_data, header.vox_offset);
-      break;
-    case 512:                   // DT_UINT16
-      native_data = new Uint16Array(raw_data, header.vox_offset);
-      break;
-    case 768:                   // DT_UINT32
-      native_data = new Uint32Array(raw_data, header.vox_offset);
-      break;
-    default:
-      // We don't yet support 64-bit, complex, RGB, and float 128 types.
-      throw new Error("Unsupported data type: " + header.datatype);
-    }
-
-    var d = 0;                  // Generic loop counter.
-    var slope = header.scl_slope;
-    var inter = header.scl_inter;
-
-    // According to the NIfTI specification, a slope value of zero means
-    // that the data should _not_ be scaled. Otherwise, every voxel is
-    // transformed according to value = value * slope + inter
-    //
-    if (slope !== 0.0) {
-      var float_data = new Float32Array(native_data.length);
-
-      for (d = 0; d < native_data.length; d++) {
-        float_data[d] = native_data[d] * slope + inter;
-      }
-      native_data = float_data; // Return the new float buffer.
-    }
-
-    if(header.order.length === 4) {
-      header.order = header.order.slice(1);
-    }
-
-    // Incrementation offsets for each dimension of the volume.
-    header[header.order[0]].offset = header[header.order[1]].space_length * header[header.order[2]].space_length;
-    header[header.order[1]].offset = header[header.order[2]].space_length;
-    header[header.order[2]].offset = 1;
-
-    if(header.time) {
-      header.time.offset = header.xspace.space_length * header.yspace.space_length * header.zspace.space_length;
-    }
-
-    return native_data;
-  }
-
-
-  //----------------------------------------------------------------------------
 
   _run(){
     var that = this;
@@ -365,32 +62,402 @@ class NiftiDecoder extends Decoder {
       return;
     }
 
-    var header = null;
-    try{
-      header = this.parseNifti1Header( inputBuffer );
-    }catch(e){
-      //console.warn( e );
-    }
-
-
-    // abort if header not valid
-    if(!header){
-      console.warn("This file is not a NIfTI file.");
+    if(! nifti.isNIFTI( inputBuffer )) {
+      console.warn("Not a NIfTI file");
       return;
     }
 
+    var metadata = {};
+    var data = null;
 
-    var dataArray = this.createNifti1Data(header, inputBuffer)
+    var header = nifti.readHeader(inputBuffer);
+    var rawData = nifti.readImage(header, inputBuffer);
 
-    // add the output to this filter
-    this._addOutput(MniVolume);
-    var mniVol = this.getOutput();
-    mniVol.setData(dataArray, header);
-    mniVol.setMetadata("format", "nifti");
+    data = this._fetchDataArray(header, rawData);
 
+    if( !data ){
+      console.warn("This NIfTI file is valid but does not contain any readable data.");
+      return;
+    }
+
+    this._scaleData(data, header);
+    var numberOfDimensions = header.dims[0];
+
+    // copying all the original metadata into the field "formatSpecific", for the sake of quality.
+    metadata.formatSpecific = header;
+    metadata.statistics = { upToDate: true, min: "sdfsdf", max: NaN };
+    metadata.ncpp = this._fetchNcpp(header);
+    metadata.description = header.description;
+    metadata.format = "nifti";
+    metadata.spatialUnit = header.getUnitsCodeString(nifti.NIFTI1.SPATIAL_UNITS_MASK & header.xyzt_units);
+    metadata.temporalUnit = header.getUnitsCodeString(nifti.NIFTI1.TEMPORAL_UNITS_MASK & header.xyzt_units);
+
+    // the transformation
+    var niftiTransfoMatrix = header.getQformMat(); // the default case (METHOD2)
+    if( header.qform_code == 0){  // though sometimes qform_code is 0, then we have to use affine (METHOD3)
+      niftiTransfoMatrix = header.affine;
+    }
+
+    // dimensions info ordered from the fastest varying to the slowest varying
+    var voxelSpaceNames = ['k', 'j', 'i', 't'];
+    var worldSpaceNames = ['x', 'y', 'z', 't'];
+    var dimensions = [];
+
+    for(var d=0; d<numberOfDimensions; d++){
+      // compute the stride based on the previous dim
+      var stride = 1;
+      for(var pd=0; pd<d; pd++){
+        stride *= header.dims[pd + 1];
+      }
+
+      var dimension = {
+        length: header.dims[d + 1],
+        widthDimension: -1, // to be filled later
+        heightDimension: -1, // to be filled later
+        nameVoxelSpace: voxelSpaceNames[d],
+        nameWorldSpace: worldSpaceNames[d],
+        worldUnitSize: header.pixDims[d + 1],
+        stride: stride,
+        step: header.pixDims[d + 1], // same to worldUnitSize but will prob be changed if swapped, except for time
+        //direction: niftiTransfoMatrix[d][d] < 0 ? -1 : 1, // to be filled later
+      }
+      dimensions.push( dimension )
+    }
+
+    if( dimensions.length >= 3){
+      // dim x has for width  y and for heigth z
+      dimensions[0].widthDimension = 1
+      dimensions[0].heightDimension = 2;
+
+      // dim y has for width  x and for heigth z
+      dimensions[1].widthDimension = 0;
+      dimensions[1].heightDimension = 2;
+
+      // dim z has for width  x and for heigth y
+      dimensions[2].widthDimension = 0;
+      dimensions[2].heightDimension = 1;
+    }
+
+    /*
+    swaping dimensions:
+    In some cases, a NIfTI does not respect the orientation from the specfication.
+    In order to get the proper orientation, we have to swap some dimensions as
+    well as the corresponding rows in the v2w matrix.
+    The criterion to find what dim is suposed to come first, what is supposed to
+    be last is direction cosine fron the matrix:
+    - the 1st row should be the one with the highest absolute value from all 1st columns
+    - the 2nd row should be the one with the highest absolute value from all 2nd columns
+    - the 3rd row should be the one with the highest absolute value from all 3rd columns
+    */
+
+    // give the index of the row that has the highest value among a given col
+    function whichRowHasHighestValueFromGivenCol( arrOfArr, col){
+      var cx = Math.abs(arrOfArr[0][col]);
+      var cy = Math.abs(arrOfArr[1][col]);
+      var cz = Math.abs(arrOfArr[2][col]);
+
+      if( cx > cy && cx > cz){
+        return 0;
+      }else if(cy > cx && cy > cz){
+        return 1;
+      }else{
+        return 2
+      }
+    }
+
+    function getMagnitude( arr ){
+      return Math.sqrt( arr[0]*arr[0] + arr[1]*arr[1] + arr[2]*arr[2] );
+    }
+
+    var shouldBeCol0 = whichRowHasHighestValueFromGivenCol(niftiTransfoMatrix, 0);
+    var shouldBeCol1 = whichRowHasHighestValueFromGivenCol(niftiTransfoMatrix, 1);
+    var shouldBeCol2 = whichRowHasHighestValueFromGivenCol(niftiTransfoMatrix, 2);
+
+    // when we have shouldBeCol[ n ] = m it means that the current original row m
+    // of transfo-matrix should move to the position n
+    var shouldBeCol = [ shouldBeCol0, shouldBeCol1, shouldBeCol2 ];
+    // this is the inverse lookup of shouldBeCol
+    var wasCol = [ shouldBeCol.indexOf(0), shouldBeCol.indexOf(1), shouldBeCol.indexOf(2) ];
+
+    var transfoMatrixToUse = JSON.parse(JSON.stringify(niftiTransfoMatrix));
+    var dimensionsToUse = dimensions;
+
+    // ******************* BEGIN TO SWAP ***************************************
+
+    // if so, the dimension list and the matrix need swapping
+    if( shouldBeCol[0] != 0 || shouldBeCol[1] != 1 || shouldBeCol[2] != 2){
+
+      // swap the matrix cols
+      for (var i = 0; i < 3; i++) {
+        for (var j = 0; j < 4; j++) {
+          var volumeAxis = j;
+          if (j < 3) {
+            volumeAxis = shouldBeCol[j];
+          }
+          transfoMatrixToUse[i][volumeAxis] = niftiTransfoMatrix[i][j];
+        }
+      }
+
+      // just making a safe copy
+      var dimensionsCp = JSON.parse(JSON.stringify(dimensions))
+
+      // renaming it. Then it seems to already be in the correct order. Not sure why?? TODO: see why!
+      dimensionsCp[0].nameVoxelSpace = "k";
+      dimensionsCp[1].nameVoxelSpace = "j";
+      dimensionsCp[2].nameVoxelSpace = "i";
+
+      dimensionsCp[wasCol[0]].nameWorldSpace = "x";
+      dimensionsCp[wasCol[1]].nameWorldSpace = "y";
+      dimensionsCp[wasCol[2]].nameWorldSpace = "z";
+
+      // associating width and height
+      dimensionsCp[wasCol[0]].widthDimension = wasCol[1];
+      dimensionsCp[wasCol[0]].heightDimension = wasCol[2];
+      dimensionsCp[wasCol[1]].widthDimension = wasCol[0];
+      dimensionsCp[wasCol[1]].heightDimension = wasCol[2];
+      dimensionsCp[wasCol[2]].widthDimension = wasCol[0];
+      dimensionsCp[wasCol[2]].heightDimension = wasCol[1];
+
+      dimensionsToUse = dimensionsCp;
+    }
+    // ******************* END OF SWAPING **************************************
+
+    // return the dimsniosn object given its world name ('x', 'y' or 'z')
+    function getDimensionByWorldName( name ){
+      for(var i=0; i<dimensionsToUse.length; i++){
+        if(dimensionsToUse[i].nameWorldSpace === name)
+          return dimensionsToUse[i];
+      }
+      return null;
+    }
+
+    // set the directions
+    for(var i=0; i<3; i++){
+      var stepSize = getMagnitude( transfoMatrixToUse[i] )
+      var directionSign = Math.sign( transfoMatrixToUse[i][i]);
+      //dimensionsToUse[i].step = stepSize * directionSign;
+
+      // so that when i==0, dimension is x, etc.
+      var dimension = getDimensionByWorldName(worldSpaceNames[i])
+      dimension.step = stepSize * directionSign;
+    }
+
+
+
+    metadata.dimensions = dimensionsToUse;
+
+    var v2wMat = mat4.fromValues(transfoMatrixToUse[0][0], transfoMatrixToUse[1][0], transfoMatrixToUse[2][0], transfoMatrixToUse[3][0],
+                                 transfoMatrixToUse[0][1], transfoMatrixToUse[1][1], transfoMatrixToUse[2][1], transfoMatrixToUse[3][1],
+                                 transfoMatrixToUse[0][2], transfoMatrixToUse[1][2], transfoMatrixToUse[2][2], transfoMatrixToUse[3][2],
+                                 transfoMatrixToUse[0][3], transfoMatrixToUse[1][3], transfoMatrixToUse[2][3], transfoMatrixToUse[3][3] );
+
+    var w2vMat = mat4.create();
+    mat4.invert( w2vMat, v2wMat );
+
+    // register all the transformations available here
+    metadata.transformations = {
+      v2w: v2wMat,
+      w2v: w2vMat
+    }
+
+    metadata.statistics = {
+      upToDate: false,
+      min: 0,
+      max: 0
+    }
+
+    /*
+    // doing that would imply re-setting widthDimension and heightDimension
+    var dims = metadata.dimensions;
+    dims.sort( function(a, b){
+      return a.stride > b.stride;
+    })
+    */
+
+    var output = new Image3D();
+    output.setRawData( data );
+    output.setRawMetadata( metadata );
+
+    if(output.metadataIntegrityCheck()){
+      output.scanDataRange();
+      this._output[0] = output;
+    }
   }
 
 
-} /* END class NiftiDecoder */
+  /**
+  * @private
+  * The header field `scl_slope` is used to scale the data, thus if non-0,
+  * we should scale the data.
+  * @param {typed array} data - the nifti data array, WILL BE MODIFIED
+  * @param {Object} header - nifti header
+  */
+  _scaleData( data, header ){
+    // We dont scale in the case RGB24
+    if( header.datatypeCode == nifti.NIFTI1.TYPE_RGB24 ){
+      return;
+    }
+
+    // the data scaling wont change anything, thus we dont perform it
+    if( header.scl_slope == 1 && header.scl_inter == 0 ){
+      return;
+    }
+
+    if( header.scl_slope ){
+      for(var i=0; i<data.length; i++){
+        data[i] = data[i] * header.scl_slope + header.scl_inter;
+      }
+    }
+  }
+
+
+  /**
+  * @private
+  * Get the number of components per pixel encoded in the Nifti file
+  * @param {Object} header - Nifti header
+  * @return {number} the ncpp
+  */
+  _fetchNcpp( header ){
+    var ncpp = 0;
+
+    switch ( header.datatypeCode ) {
+      case nifti.NIFTI1.TYPE_BINARY:
+        console.warn("The datatype nifti.TYPE_BINARY is not compatible yet.");
+        break;
+      case nifti.NIFTI1.TYPE_COMPLEX64:
+        console.warn("The datatype nifti.TYPE_COMPLEX64 is not compatible yet.");
+        break;
+      case nifti.NIFTI1.TYPE_COMPLEX128:
+        console.warn("The datatype nifti.TYPE_COMPLEX128 is not compatible yet.");
+        break;
+      case nifti.NIFTI1.TYPE_COMPLEX256:
+        console.warn("The datatype nifti.TYPE_COMPLEX256 is not compatible yet.");
+        break;
+      case nifti.NIFTI1.TYPE_FLOAT128:
+        console.warn("The datatype nifti.TYPE_FLOAT128 is not compatible yet.");
+        break;
+      case nifti.NIFTI1.TYPE_INT64:
+        console.warn("The datatype nifti.TYPE_INT64 is not compatible yet.");
+        break;
+      case nifti.NIFTI1.TYPE_NONE:
+        console.warn("The datatype nifti.TYPE_NONE is not compatible.");
+        break;
+      case nifti.NIFTI1.TYPE_UINT64:
+        console.warn("The datatype nifti.TYPE_INT64 is not compatible yet.");
+        break;
+
+      case nifti.NIFTI1.TYPE_FLOAT32:
+        ncpp = 1;
+        break;
+      case nifti.NIFTI1.TYPE_FLOAT64:
+        ncpp = 1;
+        break;
+      case nifti.NIFTI1.TYPE_INT8:
+        ncpp = 1;
+        break;
+      case nifti.NIFTI1.TYPE_INT16:
+        ncpp = 1;
+        break;
+      case nifti.NIFTI1.TYPE_INT32:
+        ncpp = 1;
+        break;
+      case nifti.NIFTI1.TYPE_UINT8:
+        ncpp = 1;
+        break;
+      case nifti.NIFTI1.TYPE_UINT16:
+        ncpp = 1;
+        break;
+      case nifti.NIFTI1.TYPE_UINT32:
+        ncpp = 1;
+        break;
+      case nifti.NIFTI1.TYPE_RGB24:
+        ncpp = 3;
+        break;
+
+      default:
+        console.warn("The datatype is unknown.");
+    }
+
+    return ncpp;
+  }
+
+
+  /**
+  * @private
+  * Cast the raw ArrayBuffer into the appropriate type. Some Nifti types are not
+  * compatible with Javascript and cannot be used.
+  * @param {Object} header - the nifti header
+  * @param {ArrayBuffer} rawData - the nifti data buffer
+  * @return {typed array} a typed array with the data
+  */
+  _fetchDataArray( header, rawData ){
+    var typedData = null;
+
+    switch ( header.datatypeCode ) {
+      case nifti.NIFTI1.TYPE_BINARY:
+        console.warn("The datatype nifti.TYPE_BINARY is not compatible yet.");
+        break;
+      case nifti.NIFTI1.TYPE_COMPLEX64:
+        console.warn("The datatype nifti.TYPE_COMPLEX64 is not compatible yet.");
+        break;
+      case nifti.NIFTI1.TYPE_COMPLEX128:
+        console.warn("The datatype nifti.TYPE_COMPLEX128 is not compatible yet.");
+        break;
+      case nifti.NIFTI1.TYPE_COMPLEX256:
+        console.warn("The datatype nifti.TYPE_COMPLEX256 is not compatible yet.");
+        break;
+      case nifti.NIFTI1.TYPE_FLOAT128:
+        console.warn("The datatype nifti.TYPE_FLOAT128 is not compatible yet.");
+        break;
+      case nifti.NIFTI1.TYPE_INT64:
+        console.warn("The datatype nifti.TYPE_INT64 is not compatible yet.");
+        break;
+      case nifti.NIFTI1.TYPE_NONE:
+        console.warn("The datatype nifti.TYPE_NONE is not compatible.");
+        break;
+      case nifti.NIFTI1.TYPE_UINT64:
+        console.warn("The datatype nifti.TYPE_INT64 is not compatible yet.");
+        break;
+
+      case nifti.NIFTI1.TYPE_FLOAT32:
+        typedData = new Float32Array( rawData );
+        break;
+      case nifti.NIFTI1.TYPE_FLOAT64:
+        typedData = new Float64Array( rawData );
+        break;
+      case nifti.NIFTI1.TYPE_INT8:
+        typedData = new Int8Array( rawData );
+        break;
+      case nifti.NIFTI1.TYPE_INT16:
+        typedData = new Int16Array( rawData );
+        break;
+      case nifti.NIFTI1.TYPE_INT32:
+        typedData = new Int32Array( rawData );
+        break;
+      case nifti.NIFTI1.TYPE_UINT8:
+        typedData = new Uint8Array( rawData );
+        break;
+      case nifti.NIFTI1.TYPE_UINT16:
+        typedData = new Uint16Array( rawData );
+        break;
+      case nifti.NIFTI1.TYPE_UINT32:
+        typedData = new Uint32Array( rawData );
+        break;
+      case nifti.NIFTI1.TYPE_RGB24:
+        typedData = new Uint8Array( rawData );
+        break;
+
+      default:
+        console.warn("The datatype is unknown.");
+    }
+    return typedData;
+  }
+
+
+  _computeSubjsctBasedCoord( header ){
+
+  }
+
+} /* END of class NiftiDecoder */
 
 export { NiftiDecoder }

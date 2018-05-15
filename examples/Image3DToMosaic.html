@@ -47,6 +47,7 @@
 
       var buff = this.getOutput();
 
+      //var image3DDecoder = new pixpipe.Image3DGenericDecoder();
       var image3DDecoder = new pixpipe.Image3DGenericDecoder();
       image3DDecoder.addInput( buff );
       image3DDecoder.update();
@@ -62,14 +63,16 @@
         mosaicFilter.addInput( mniVolume );
 
         // which axis do we want the picture of?
-        var space = "yspace";
+        var space = "y";
         mosaicFilter.setMetadata( "axis", space);
 
+        /*
         var spaceInfo = mniVolume.getMetadata(space);
         document.getElementById('fileInfo').innerHTML += "<br>" + filenames[0] + " is composed of "
           + spaceInfo.space_length + " slices of size "
           + spaceInfo.width + "x" + spaceInfo.height + "px <br>"
           + "Number of time samples: " + mniVolume.getTimeLength() ;
+        */
 
         // default is 4096 * 4096 but we can print a canvas in a more "parametric"
         // way so that we have 10 images for each row. Be aware HTML5 Canvas have
@@ -90,8 +93,8 @@
         // create a filter to write the image into a canvas
         var imageToCanvasFilter = new pixpipe.CanvasImageWriter( );
         // replace the default min max values of [0, 255]
-        imageToCanvasFilter.setMetadata("min", mniVolume.getMetadata("voxel_min"));
-        imageToCanvasFilter.setMetadata("max", mniVolume.getMetadata("voxel_max"));
+        imageToCanvasFilter.setMetadata("min", mniVolume.getMinValue() );
+        imageToCanvasFilter.setMetadata("max", mniVolume.getMaxValue() );
         imageToCanvasFilter.setMetadata("reset", false);
 
         // display the output in multiple canvas if needed
@@ -107,8 +110,8 @@
 
         document.getElementById('fileInfo').innerHTML += "<p>Each mosaic is " + mosaicFilter.getMetadata("gridWidth") + " slices large and " + mosaicFilter.getMetadata("gridHeight") + " slices high.</p>";
 
-        
-        
+
+
 
       }else{
         console.warn("Non-existant output for Image3DGenericDecoder.");

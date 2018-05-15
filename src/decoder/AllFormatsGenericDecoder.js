@@ -10,7 +10,7 @@
 import { GenericDecoderInterface } from './GenericDecoderInterface.js';
 import { Image2DGenericDecoder } from './Image2DGenericDecoder.js';
 import { Signal1DGenericDecoder } from './Signal1DGenericDecoder.js';
-import { Image3DGenericDecoderAlt } from './Image3DGenericDecoderAlt.js';
+import { Image3DGenericDecoder } from './Image3DGenericDecoder.js';
 import { Mesh3DGenericDecoder } from './Mesh3DGenericDecoder.js';
 
 
@@ -25,7 +25,7 @@ import { Mesh3DGenericDecoder } from './Mesh3DGenericDecoder.js';
 * the such or such decoder. This can create a bottel neck and we advise not to use
 * `AllFormatsGenericDecoder` if you know your file will be of a specific type or
 * of a specific modality.
-* 
+*
 * Notice: at the moment, `AllFormatsGenericDecoder` does not decode the `pixBin` format.
 */
 class AllFormatsGenericDecoder extends GenericDecoderInterface {
@@ -35,7 +35,7 @@ class AllFormatsGenericDecoder extends GenericDecoderInterface {
     this._decoders = [
       Signal1DGenericDecoder,
       Image2DGenericDecoder,
-      Image3DGenericDecoderAlt,
+      Image3DGenericDecoder,
       Mesh3DGenericDecoder,
     ];
   }

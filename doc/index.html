@@ -2,7 +2,7 @@
 <html>
 <head>
   <meta charset='utf-8' />
-  <title>Pixpipejs 0.1.4 | Documentation</title>
+  <title>Pixpipejs 0.2.0 | Documentation</title>
   <link rel="shortcut icon" href="assets/favicon.png" type="image/x-icon">
   <meta name='viewport' content='width=device-width,initial-scale=1'>
   <link href='assets/bass.css' type='text/css' rel='stylesheet' />
@@ -16,7 +16,7 @@
       <div id='split-left' class='overflow-auto fs0 height-viewport-100'>
         <div class='py1 px2'>
           <h3 class='mb0 no-anchor'><img class="width100pc" src="assets/name_1000.png" alt="Pixpipejs"></h3>
-          <div class='mb1'><code>v0.1.4</code></div>
+          <div class='mb1'><code>v0.2.0</code></div>
           <input
             placeholder='What are you looking for?'
             id='filter-input'
@@ -423,15 +423,15 @@
                       <li class='h5'><span>Instance members</span></li>
                       
                       <li><a
-                        href='#image3dclone'
+                        href='#image3daddtransformation'
                         class='regular pre-open'>
-                        #clone
+                        #addTransformation
                       </a></li>
                       
                       <li><a
-                        href='#image3dget1dindexfrom3dposition'
+                        href='#image3dclone'
                         class='regular pre-open'>
-                        #get1dIndexFrom3dPosition
+                        #clone
                       </a></li>
                       
                       <li><a
@@ -447,33 +447,81 @@
                       </a></li>
                       
                       <li><a
-                        href='#image3dgetintensity_ijk'
+                        href='#image3dgetdatauint8'
                         class='regular pre-open'>
-                        #getIntensity_ijk
+                        #getDataUint8
                       </a></li>
                       
                       <li><a
-                        href='#image3dgetintensity_xyz'
+                        href='#image3dgetdimensionindexfromname'
                         class='regular pre-open'>
-                        #getIntensity_xyz
+                        #getDimensionIndexFromName
                       </a></li>
                       
                       <li><a
-                        href='#image3dgetpixel'
+                        href='#image3dgetdimensionsize'
                         class='regular pre-open'>
-                        #getPixel
+                        #getDimensionSize
                       </a></li>
                       
                       <li><a
-                        href='#image3dgetsegmentsample'
+                        href='#image3dgetmaxvalue'
                         class='regular pre-open'>
-                        #getSegmentSample
+                        #getMaxValue
                       </a></li>
                       
                       <li><a
-                        href='#image3dgetsize'
+                        href='#image3dgetminvalue'
                         class='regular pre-open'>
-                        #getSize
+                        #getMinValue
+                      </a></li>
+                      
+                      <li><a
+                        href='#image3dgetnumberofslices'
+                        class='regular pre-open'>
+                        #getNumberOfSlices
+                      </a></li>
+                      
+                      <li><a
+                        href='#image3dgetpositionfromtransfospacetovoxelspace'
+                        class='regular pre-open'>
+                        #getPositionFromTransfoSpaceToVoxelSpace
+                      </a></li>
+                      
+                      <li><a
+                        href='#image3dgetpositionfromvoxelspacetotransfospace'
+                        class='regular pre-open'>
+                        #getPositionFromVoxelSpaceToTransfoSpace
+                      </a></li>
+                      
+                      <li><a
+                        href='#image3dgetpositionworldtovoxel'
+                        class='regular pre-open'>
+                        #getPositionWorldToVoxel
+                      </a></li>
+                      
+                      <li><a
+                        href='#image3dgetsegmentsampletransfospace'
+                        class='regular pre-open'>
+                        #getSegmentSampleTransfoSpace
+                      </a></li>
+                      
+                      <li><a
+                        href='#image3dgetsegmentsamplevoxelspace'
+                        class='regular pre-open'>
+                        #getSegmentSampleVoxelSpace
+                      </a></li>
+                      
+                      <li><a
+                        href='#image3dgetslice'
+                        class='regular pre-open'>
+                        #getSlice
+                      </a></li>
+                      
+                      <li><a
+                        href='#image3dgetslicesize'
+                        class='regular pre-open'>
+                        #getSliceSize
                       </a></li>
                       
                       <li><a
@@ -483,9 +531,81 @@
                       </a></li>
                       
                       <li><a
-                        href='#image3disinside'
+                        href='#image3dgettransfobox'
                         class='regular pre-open'>
-                        #isInside
+                        #getTransfoBox
+                      </a></li>
+                      
+                      <li><a
+                        href='#image3dgettransformmatrix'
+                        class='regular pre-open'>
+                        #getTransformMatrix
+                      </a></li>
+                      
+                      <li><a
+                        href='#image3dgettransfovolumecorners'
+                        class='regular pre-open'>
+                        #getTransfoVolumeCorners
+                      </a></li>
+                      
+                      <li><a
+                        href='#image3dgetvoxel'
+                        class='regular pre-open'>
+                        #getVoxel
+                      </a></li>
+                      
+                      <li><a
+                        href='#image3dgetvoxelbox'
+                        class='regular pre-open'>
+                        #getVoxelBox
+                      </a></li>
+                      
+                      <li><a
+                        href='#image3dgetvoxelcoordinatesswapmatrix'
+                        class='regular pre-open'>
+                        #getVoxelCoordinatesSwapMatrix
+                      </a></li>
+                      
+                      <li><a
+                        href='#image3dgetvoxelsafe'
+                        class='regular pre-open'>
+                        #getVoxelSafe
+                      </a></li>
+                      
+                      <li><a
+                        href='#image3dgetvoxeltransfospace'
+                        class='regular pre-open'>
+                        #getVoxelTransfoSpace
+                      </a></li>
+                      
+                      <li><a
+                        href='#image3dgetw2vmatrixswapped'
+                        class='regular pre-open'>
+                        #getW2VMatrixSwapped
+                      </a></li>
+                      
+                      <li><a
+                        href='#image3dhastransform'
+                        class='regular pre-open'>
+                        #hasTransform
+                      </a></li>
+                      
+                      <li><a
+                        href='#image3disinsidetransfospace'
+                        class='regular pre-open'>
+                        #isInsideTransfoSpace
+                      </a></li>
+                      
+                      <li><a
+                        href='#image3disinsidevoxelspace'
+                        class='regular pre-open'>
+                        #isInsideVoxelSpace
+                      </a></li>
+                      
+                      <li><a
+                        href='#image3dresetdata'
+                        class='regular pre-open'>
+                        #resetData
                       </a></li>
                       
                       <li><a
@@ -495,244 +615,13 @@
                       </a></li>
                       
                       <li><a
-                        href='#image3dsetpixel'
-                        class='regular pre-open'>
-                        #setPixel
-                      </a></li>
-                      
-                    </ul>
-                  
-                  
-                  
-                </div>
-                
-                </li>
-              
-                
-                <li><a
-                  href='#image3dalt'
-                  class=" toggle-sibling">
-                  Image3DAlt
-                  <span class='icon'>▸</span>
-                </a>
-                
-                <div class='toggle-target display-none'>
-                  
-                  <ul class='list-reset py1-ul pl1'>
-                    <li class='h5'><span>Static members</span></li>
-                    
-                      <li><a
-                        href='#image3dalttype'
-                        class='regular pre-open'>
-                        .TYPE
-                      </a></li>
-                    
-                    </ul>
-                  
-                  
-                    <ul class='list-reset py1-ul pl1'>
-                      <li class='h5'><span>Instance members</span></li>
-                      
-                      <li><a
-                        href='#image3daltaddtransformation'
-                        class='regular pre-open'>
-                        #addTransformation
-                      </a></li>
-                      
-                      <li><a
-                        href='#image3daltclone'
-                        class='regular pre-open'>
-                        #clone
-                      </a></li>
-                      
-                      <li><a
-                        href='#image3daltgetdata'
-                        class='regular pre-open'>
-                        #getData
-                      </a></li>
-                      
-                      <li><a
-                        href='#image3daltgetdatacopy'
-                        class='regular pre-open'>
-                        #getDataCopy
-                      </a></li>
-                      
-                      <li><a
-                        href='#image3daltgetdatauint8'
-                        class='regular pre-open'>
-                        #getDataUint8
-                      </a></li>
-                      
-                      <li><a
-                        href='#image3daltgetdimensionindexfromname'
-                        class='regular pre-open'>
-                        #getDimensionIndexFromName
-                      </a></li>
-                      
-                      <li><a
-                        href='#image3daltgetdimensionsize'
-                        class='regular pre-open'>
-                        #getDimensionSize
-                      </a></li>
-                      
-                      <li><a
-                        href='#image3daltgetmaxvalue'
-                        class='regular pre-open'>
-                        #getMaxValue
-                      </a></li>
-                      
-                      <li><a
-                        href='#image3daltgetminvalue'
-                        class='regular pre-open'>
-                        #getMinValue
-                      </a></li>
-                      
-                      <li><a
-                        href='#image3daltgetnumberofslices'
-                        class='regular pre-open'>
-                        #getNumberOfSlices
-                      </a></li>
-                      
-                      <li><a
-                        href='#image3daltgetpositionfromtransfospacetovoxelspace'
-                        class='regular pre-open'>
-                        #getPositionFromTransfoSpaceToVoxelSpace
-                      </a></li>
-                      
-                      <li><a
-                        href='#image3daltgetpositionfromvoxelspacetotransfospace'
-                        class='regular pre-open'>
-                        #getPositionFromVoxelSpaceToTransfoSpace
-                      </a></li>
-                      
-                      <li><a
-                        href='#image3daltgetpositionworldtovoxel'
-                        class='regular pre-open'>
-                        #getPositionWorldToVoxel
-                      </a></li>
-                      
-                      <li><a
-                        href='#image3daltgetsegmentsampletransfospace'
-                        class='regular pre-open'>
-                        #getSegmentSampleTransfoSpace
-                      </a></li>
-                      
-                      <li><a
-                        href='#image3daltgetsegmentsamplevoxelspace'
-                        class='regular pre-open'>
-                        #getSegmentSampleVoxelSpace
-                      </a></li>
-                      
-                      <li><a
-                        href='#image3daltgetslice'
-                        class='regular pre-open'>
-                        #getSlice
-                      </a></li>
-                      
-                      <li><a
-                        href='#image3daltgetslicesize'
-                        class='regular pre-open'>
-                        #getSliceSize
-                      </a></li>
-                      
-                      <li><a
-                        href='#image3daltgettimelength'
-                        class='regular pre-open'>
-                        #getTimeLength
-                      </a></li>
-                      
-                      <li><a
-                        href='#image3daltgettransfobox'
-                        class='regular pre-open'>
-                        #getTransfoBox
-                      </a></li>
-                      
-                      <li><a
-                        href='#image3daltgettransformmatrix'
-                        class='regular pre-open'>
-                        #getTransformMatrix
-                      </a></li>
-                      
-                      <li><a
-                        href='#image3daltgettransfovolumecorners'
-                        class='regular pre-open'>
-                        #getTransfoVolumeCorners
-                      </a></li>
-                      
-                      <li><a
-                        href='#image3daltgetvoxel'
-                        class='regular pre-open'>
-                        #getVoxel
-                      </a></li>
-                      
-                      <li><a
-                        href='#image3daltgetvoxelbox'
-                        class='regular pre-open'>
-                        #getVoxelBox
-                      </a></li>
-                      
-                      <li><a
-                        href='#image3daltgetvoxelcoordinatesswapmatrix'
-                        class='regular pre-open'>
-                        #getVoxelCoordinatesSwapMatrix
-                      </a></li>
-                      
-                      <li><a
-                        href='#image3daltgetvoxelsafe'
-                        class='regular pre-open'>
-                        #getVoxelSafe
-                      </a></li>
-                      
-                      <li><a
-                        href='#image3daltgetvoxeltransfospace'
-                        class='regular pre-open'>
-                        #getVoxelTransfoSpace
-                      </a></li>
-                      
-                      <li><a
-                        href='#image3daltgetw2vmatrixswapped'
-                        class='regular pre-open'>
-                        #getW2VMatrixSwapped
-                      </a></li>
-                      
-                      <li><a
-                        href='#image3dalthastransform'
-                        class='regular pre-open'>
-                        #hasTransform
-                      </a></li>
-                      
-                      <li><a
-                        href='#image3daltisinsidetransfospace'
-                        class='regular pre-open'>
-                        #isInsideTransfoSpace
-                      </a></li>
-                      
-                      <li><a
-                        href='#image3daltisinsidevoxelspace'
-                        class='regular pre-open'>
-                        #isInsideVoxelSpace
-                      </a></li>
-                      
-                      <li><a
-                        href='#image3daltresetdata'
-                        class='regular pre-open'>
-                        #resetData
-                      </a></li>
-                      
-                      <li><a
-                        href='#image3daltsetdata'
-                        class='regular pre-open'>
-                        #setData
-                      </a></li>
-                      
-                      <li><a
-                        href='#image3daltsetvoxel'
+                        href='#image3dsetvoxel'
                         class='regular pre-open'>
                         #setVoxel
                       </a></li>
                       
                       <li><a
-                        href='#image3daltsetvoxeltransfospace'
+                        href='#image3dsetvoxeltransfospace'
                         class='regular pre-open'>
                         #setVoxelTransfoSpace
                       </a></li>
@@ -1081,57 +970,6 @@
                         href='#mesh3dupdatecolortriangle'
                         class='regular pre-open'>
                         #updateColorTriangle
-                      </a></li>
-                      
-                    </ul>
-                  
-                  
-                  
-                </div>
-                
-                </li>
-              
-                
-                <li><a
-                  href='#mnivolume'
-                  class=" toggle-sibling">
-                  MniVolume
-                  <span class='icon'>▸</span>
-                </a>
-                
-                <div class='toggle-target display-none'>
-                  
-                  <ul class='list-reset py1-ul pl1'>
-                    <li class='h5'><span>Static members</span></li>
-                    
-                      <li><a
-                        href='#mnivolumeswapn'
-                        class='regular pre-open'>
-                        .swapn
-                      </a></li>
-                    
-                      <li><a
-                        href='#mnivolumetransformtominc'
-                        class='regular pre-open'>
-                        .transformToMinc
-                      </a></li>
-                    
-                    </ul>
-                  
-                  
-                    <ul class='list-reset py1-ul pl1'>
-                      <li class='h5'><span>Instance members</span></li>
-                      
-                      <li><a
-                        href='#mnivolume_saveoriginandtransform'
-                        class='regular pre-open'>
-                        #_saveOriginAndTransform
-                      </a></li>
-                      
-                      <li><a
-                        href='#mnivolumesetdata'
-                        class='regular pre-open'>
-                        #setData
                       </a></li>
                       
                     </ul>
@@ -1495,16 +1333,6 @@
               
                 
                 <li><a
-                  href='#image3dgenericdecoderalt'
-                  class="">
-                  Image3DGenericDecoderAlt
-                  
-                </a>
-                
-                </li>
-              
-                
-                <li><a
                   href='#jpegdecoder'
                   class="">
                   JpegDecoder
@@ -1528,16 +1356,6 @@
                   href='#mghdecoder'
                   class="">
                   MghDecoder
-                  
-                </a>
-                
-                </li>
-              
-                
-                <li><a
-                  href='#mghdecoderalt'
-                  class="">
-                  MghDecoderAlt
                   
                 </a>
                 
@@ -1585,46 +1403,6 @@
               
                 
                 <li><a
-                  href='#minc2decoderalt'
-                  class=" toggle-sibling">
-                  Minc2DecoderAlt
-                  <span class='icon'>▸</span>
-                </a>
-                
-                <div class='toggle-target display-none'>
-                  
-                  
-                    <ul class='list-reset py1-ul pl1'>
-                      <li class='h5'><span>Instance members</span></li>
-                      
-                      <li><a
-                        href='#minc2decoderaltisrgbvolume'
-                        class='regular pre-open'>
-                        #isRgbVolume
-                      </a></li>
-                      
-                      <li><a
-                        href='#minc2decoderaltrgbvoxels'
-                        class='regular pre-open'>
-                        #rgbVoxels
-                      </a></li>
-                      
-                      <li><a
-                        href='#minc2decoderaltscalevoxels'
-                        class='regular pre-open'>
-                        #scaleVoxels
-                      </a></li>
-                      
-                    </ul>
-                  
-                  
-                  
-                </div>
-                
-                </li>
-              
-                
-                <li><a
                   href='#mniobjdecoder'
                   class=" toggle-sibling">
                   MniObjDecoder
@@ -1656,16 +1434,6 @@
                   href='#niftidecoder'
                   class="">
                   NiftiDecoder
-                  
-                </a>
-                
-                </li>
-              
-                
-                <li><a
-                  href='#niftidecoderalt'
-                  class="">
-                  NiftiDecoderAlt
                   
                 </a>
                 
@@ -1948,16 +1716,6 @@
                   href='#image3dtomosaicfilter'
                   class="">
                   Image3DToMosaicFilter
-                  
-                </a>
-                
-                </li>
-              
-                
-                <li><a
-                  href='#image3dtomosaicfilteralt'
-                  class="">
-                  Image3DToMosaicFilterAlt
                   
                 </a>
                 
@@ -2629,16 +2387,6 @@
                   href='#forwardfourierimagefilter'
                   class="">
                   ForwardFourierImageFilter
-                  
-                </a>
-                
-                </li>
-              
-                
-                <li><a
-                  href='#ignore_offsets'
-                  class="">
-                  ignore_offsets
                   
                 </a>
                 
@@ -5681,9 +5429,10 @@ typed array.</p>
 <ul>
 <li>options.xSize {Number} space length along x axis</li>
 <li>options.ySize {Number} space length along y axis</li>
-<li>option.zSize {Number} space length along z axis</li>
-<li>options.ncpp {Number} number of components per pixel. Default = 1</li>
-<li>options.order {Array} dimensionality order. default = ["zspace", "yspace", "xspace"]</li>
+<li>options.zSize {Number} space length along z axis</li>
+<li>options.tSize {Number} space length along t axis (time)</li>
+<li>options.ncpp {Number} number of components per pixel. Default = 1
+If at least xSize, ySize and zSize are specified, a buffer is automatically initialized with the value 0.</li>
 </ul>
 
           </div>
@@ -5759,6 +5508,75 @@ typed array.</p>
     <div class='py1 quiet mt1 prose-big'>Instance Members</div>
     <div class="clearfix">
   
+    <div class='border-bottom' id='image3daddtransformation'>
+      <div class="clearfix small pointer toggle-sibling">
+        <div class="py1 contain">
+            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
+            <span class='code strong strong truncate'>addTransformation(transform, name)</span>
+        </div>
+      </div>
+      <div class="clearfix display-none toggle-target">
+        <section class='p2 mb2 clearfix bg-white minishadow'>
+
+  
+
+  <p>Add a transformation to the collection</p>
+
+
+  <div class='pre p1 fill-light mt0'>addTransformation(transform: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a>, name: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">String</a>)</div>
+  
+  
+
+  
+  
+  
+  
+  
+  
+
+  
+    <div class='py1 quiet mt1 prose-big'>Parameters</div>
+    <div class='prose'>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>transform</span> <code class='quiet'>(<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a>)</code>
+	    a 4x4 matrix in a shape of a 1D array of size 16 column-major
+
+          </div>
+          
+        </div>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>name</span> <code class='quiet'>(<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">String</a>)</code>
+	    Name to give to this transformation
+
+          </div>
+          
+        </div>
+      
+    </div>
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+</section>
+
+      </div>
+    </div>
+  
     <div class='border-bottom' id='image3dclone'>
       <div class="clearfix small pointer toggle-sibling">
         <div class="py1 contain">
@@ -5793,75 +5611,6 @@ typed array.</p>
       <div class='py1 quiet mt1 prose-big'>Returns</div>
       <code><a href="#image3d">Image3D</a></code>:
         a deep copy instance of this Image3D
-
-      
-    
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-</section>
-
-      </div>
-    </div>
-  
-    <div class='border-bottom' id='image3dget1dindexfrom3dposition'>
-      <div class="clearfix small pointer toggle-sibling">
-        <div class="py1 contain">
-            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
-            <span class='code strong strong truncate'>get1dIndexFrom3dPosition(position)</span>
-        </div>
-      </div>
-      <div class="clearfix display-none toggle-target">
-        <section class='p2 mb2 clearfix bg-white minishadow'>
-
-  
-
-  <p>Compute the 1D index within the data buffer from a 3D position {x, y, z}.
-This has nothing to do with the number of components per pixel.</p>
-
-
-  <div class='pre p1 fill-light mt0'>get1dIndexFrom3dPosition(position: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a>): <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number">Number</a></div>
-  
-  
-
-  
-  
-  
-  
-  
-  
-
-  
-    <div class='py1 quiet mt1 prose-big'>Parameters</div>
-    <div class='prose'>
-      
-        <div class='space-bottom0'>
-          <div>
-            <span class='code bold'>position</span> <code class='quiet'>(<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a>)</code>
-	    3D coord like {x, y, z}
-
-          </div>
-          
-        </div>
-      
-    </div>
-  
-
-  
-
-  
-    
-      <div class='py1 quiet mt1 prose-big'>Returns</div>
-      <code><a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number">Number</a></code>:
-        the 1D position within the buffer
 
       
     
@@ -5988,1107 +5737,7 @@ in case of doubt, use  getDataCopy()
       </div>
     </div>
   
-    <div class='border-bottom' id='image3dgetintensity_ijk'>
-      <div class="clearfix small pointer toggle-sibling">
-        <div class="py1 contain">
-            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
-            <span class='code strong strong truncate'>getIntensity_ijk(i, j, k, time)</span>
-        </div>
-      </div>
-      <div class="clearfix display-none toggle-target">
-        <section class='p2 mb2 clearfix bg-white minishadow'>
-
-  
-
-  <p>Get the intensity of a given voxel, addressed by dimensionality order.
-In case of doubt, use getIntensity_xyz instead.</p>
-
-
-  <div class='pre p1 fill-light mt0'>getIntensity_ijk(i: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number">Number</a>, j: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number">Number</a>, k: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number">Number</a>, time: any)</div>
-  
-  
-
-  
-  
-  
-  
-  
-  
-
-  
-    <div class='py1 quiet mt1 prose-big'>Parameters</div>
-    <div class='prose'>
-      
-        <div class='space-bottom0'>
-          <div>
-            <span class='code bold'>i</span> <code class='quiet'>(<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number">Number</a>)</code>
-	    Position within the biggest dimensionality order
-
-          </div>
-          
-        </div>
-      
-        <div class='space-bottom0'>
-          <div>
-            <span class='code bold'>j</span> <code class='quiet'>(<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number">Number</a>)</code>
-	    Position within the in-the-middle dimensionality order
-
-          </div>
-          
-        </div>
-      
-        <div class='space-bottom0'>
-          <div>
-            <span class='code bold'>k</span> <code class='quiet'>(<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number">Number</a>)</code>
-	    Position within the smallest dimensionality order
-
-          </div>
-          
-        </div>
-      
-        <div class='space-bottom0'>
-          <div>
-            <span class='code bold'>time</span> <code class='quiet'>(any
-            = <code>0</code>)</code>
-	    
-          </div>
-          
-        </div>
-      
-    </div>
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-</section>
-
-      </div>
-    </div>
-  
-    <div class='border-bottom' id='image3dgetintensity_xyz'>
-      <div class="clearfix small pointer toggle-sibling">
-        <div class="py1 contain">
-            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
-            <span class='code strong strong truncate'>getIntensity_xyz(x, y, z, time)</span>
-        </div>
-      </div>
-      <div class="clearfix display-none toggle-target">
-        <section class='p2 mb2 clearfix bg-white minishadow'>
-
-  
-
-  <p>Get the intensity of a given voxel, addressed by dimension names.</p>
-
-
-  <div class='pre p1 fill-light mt0'>getIntensity_xyz(x: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number">Number</a>, y: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number">Number</a>, z: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number">Number</a>, time: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number">Number</a>)</div>
-  
-  
-
-  
-  
-  
-  
-  
-  
-
-  
-    <div class='py1 quiet mt1 prose-big'>Parameters</div>
-    <div class='prose'>
-      
-        <div class='space-bottom0'>
-          <div>
-            <span class='code bold'>x</span> <code class='quiet'>(<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number">Number</a>)</code>
-	    position within xspace
-
-          </div>
-          
-        </div>
-      
-        <div class='space-bottom0'>
-          <div>
-            <span class='code bold'>y</span> <code class='quiet'>(<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number">Number</a>)</code>
-	    position within yspace
-
-          </div>
-          
-        </div>
-      
-        <div class='space-bottom0'>
-          <div>
-            <span class='code bold'>z</span> <code class='quiet'>(<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number">Number</a>)</code>
-	    position within zspace
-
-          </div>
-          
-        </div>
-      
-        <div class='space-bottom0'>
-          <div>
-            <span class='code bold'>time</span> <code class='quiet'>(<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number">Number</a>
-            = <code>0</code>)</code>
-	    position in time (optional)
-
-          </div>
-          
-        </div>
-      
-    </div>
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-</section>
-
-      </div>
-    </div>
-  
-    <div class='border-bottom' id='image3dgetpixel'>
-      <div class="clearfix small pointer toggle-sibling">
-        <div class="py1 contain">
-            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
-            <span class='code strong strong truncate'>getPixel(position)</span>
-        </div>
-      </div>
-      <div class="clearfix display-none toggle-target">
-        <section class='p2 mb2 clearfix bg-white minishadow'>
-
-  
-
-  <p>Same as getIntensity_xyz, get a pixel/voxel value using (x, y, z) position</p>
-
-
-  <div class='pre p1 fill-light mt0'>getPixel(position: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a>): <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a></div>
-  
-  
-
-  
-  
-  
-  
-  
-  
-
-  
-    <div class='py1 quiet mt1 prose-big'>Parameters</div>
-    <div class='prose'>
-      
-        <div class='space-bottom0'>
-          <div>
-            <span class='code bold'>position</span> <code class='quiet'>(<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a>)</code>
-	    3D position like {x, y, z}
-
-          </div>
-          
-        </div>
-      
-    </div>
-  
-
-  
-
-  
-    
-      <div class='py1 quiet mt1 prose-big'>Returns</div>
-      <code><a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a></code>:
-        the color of the given pixel.
-
-      
-    
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-</section>
-
-      </div>
-    </div>
-  
-    <div class='border-bottom' id='image3dgetsegmentsample'>
-      <div class="clearfix small pointer toggle-sibling">
-        <div class="py1 contain">
-            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
-            <span class='code strong strong truncate'>getSegmentSample(posFrom, posTo, time)</span>
-        </div>
-      </div>
-      <div class="clearfix display-none toggle-target">
-        <section class='p2 mb2 clearfix bg-white minishadow'>
-
-  
-
-  <p>Sample the color along a segment</p>
-
-
-  <div class='pre p1 fill-light mt0'>getSegmentSample(posFrom: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a>, posTo: any, time: any): <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a></div>
-  
-  
-
-  
-  
-  
-  
-  
-  
-
-  
-    <div class='py1 quiet mt1 prose-big'>Parameters</div>
-    <div class='prose'>
-      
-        <div class='space-bottom0'>
-          <div>
-            <span class='code bold'>posFrom</span> <code class='quiet'>(<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a>)</code>
-	    ending position of type {x: Number, y: Number, z: Number}
-
-          </div>
-          
-        </div>
-      
-        <div class='space-bottom0'>
-          <div>
-            <span class='code bold'>posTo</span> <code class='quiet'>(any)</code>
-	    
-          </div>
-          
-        </div>
-      
-        <div class='space-bottom0'>
-          <div>
-            <span class='code bold'>time</span> <code class='quiet'>(any
-            = <code>0</code>)</code>
-	    
-          </div>
-          
-        </div>
-      
-    </div>
-  
-
-  
-
-  
-    
-      <div class='py1 quiet mt1 prose-big'>Returns</div>
-      <code><a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a></code>:
-        array of Array like that: {
-positions: 
-[
-
-{x: x0, y: y0, z: z0},
-{x: x1, y: y1, z: z1},
-{x: x2, y: y2, z: z2},
-...
-
-]
-,
-labels: 
-[
-
-"(x0, y0, z0)", "(x1, y1, z1)", "(x2, y2, z2)", ...
-
-]
-,
-colors: [
-
-[
-r0, r1, r2 ...
-]
-,
-
-[
-g0, g1, g2 ...
-]
-,
-
-[
-b0, b1, b2 ...
-]
-
-]
-}
-return null if posFrom or posTo is outside
-
-      
-    
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-</section>
-
-      </div>
-    </div>
-  
-    <div class='border-bottom' id='image3dgetsize'>
-      <div class="clearfix small pointer toggle-sibling">
-        <div class="py1 contain">
-            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
-            <span class='code strong strong truncate'>getSize(space)</span>
-        </div>
-      </div>
-      <div class="clearfix display-none toggle-target">
-        <section class='p2 mb2 clearfix bg-white minishadow'>
-
-  
-
-  
-
-  <div class='pre p1 fill-light mt0'>getSize(space: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">String</a>): <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number">Number</a></div>
-  
-  
-
-  
-  
-  
-  
-  
-  
-
-  
-    <div class='py1 quiet mt1 prose-big'>Parameters</div>
-    <div class='prose'>
-      
-        <div class='space-bottom0'>
-          <div>
-            <span class='code bold'>space</span> <code class='quiet'>(<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">String</a>)</code>
-	    "xspace", "yspace" or "zspace"
-
-          </div>
-          
-        </div>
-      
-    </div>
-  
-
-  
-
-  
-    
-      <div class='py1 quiet mt1 prose-big'>Returns</div>
-      <code><a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number">Number</a></code>:
-        the size of the Image3D along the given space
-
-      
-    
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-</section>
-
-      </div>
-    </div>
-  
-    <div class='border-bottom' id='image3dgettimelength'>
-      <div class="clearfix small pointer toggle-sibling">
-        <div class="py1 contain">
-            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
-            <span class='code strong strong truncate'>getTimeLength()</span>
-        </div>
-      </div>
-      <div class="clearfix display-none toggle-target">
-        <section class='p2 mb2 clearfix bg-white minishadow'>
-
-  
-
-  <p>Get the number of samples over time</p>
-
-
-  <div class='pre p1 fill-light mt0'>getTimeLength()</div>
-  
-  
-
-  
-  
-  
-  
-  
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-</section>
-
-      </div>
-    </div>
-  
-    <div class='border-bottom' id='image3disinside'>
-      <div class="clearfix small pointer toggle-sibling">
-        <div class="py1 contain">
-            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
-            <span class='code strong strong truncate'>isInside(pos)</span>
-        </div>
-      </div>
-      <div class="clearfix display-none toggle-target">
-        <section class='p2 mb2 clearfix bg-white minishadow'>
-
-  
-
-  <p>Tells if a given point is inside or outside the image</p>
-
-
-  <div class='pre p1 fill-light mt0'>isInside(pos: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a>): <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean">Boolean</a></div>
-  
-  
-
-  
-  
-  
-  
-  
-  
-
-  
-    <div class='py1 quiet mt1 prose-big'>Parameters</div>
-    <div class='prose'>
-      
-        <div class='space-bottom0'>
-          <div>
-            <span class='code bold'>pos</span> <code class='quiet'>(<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a>)</code>
-	    position like {x: Number, y: Number, z: Number}
-
-          </div>
-          
-        </div>
-      
-    </div>
-  
-
-  
-
-  
-    
-      <div class='py1 quiet mt1 prose-big'>Returns</div>
-      <code><a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean">Boolean</a></code>:
-        true for inside, false for outside
-
-      
-    
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-</section>
-
-      </div>
-    </div>
-  
-    <div class='border-bottom' id='image3dsetdata'>
-      <div class="clearfix small pointer toggle-sibling">
-        <div class="py1 contain">
-            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
-            <span class='code strong strong truncate'>setData(array, xSize, ySize, zSize, options, ncpp, deepCopy)</span>
-        </div>
-      </div>
-      <div class="clearfix display-none toggle-target">
-        <section class='p2 mb2 clearfix bg-white minishadow'>
-
-  
-
-  <p>Set the data to this Image3D.</p>
-
-
-  <div class='pre p1 fill-light mt0'>setData(array: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Float32Array">Float32Array</a>, xSize: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number">Number</a>, ySize: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number">Number</a>, zSize: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number">Number</a>, options: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a>, ncpp: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number">Number</a>, deepCopy: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean">Boolean</a>)</div>
-  
-  
-
-  
-  
-  
-  
-  
-  
-
-  
-    <div class='py1 quiet mt1 prose-big'>Parameters</div>
-    <div class='prose'>
-      
-        <div class='space-bottom0'>
-          <div>
-            <span class='code bold'>array</span> <code class='quiet'>(<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Float32Array">Float32Array</a>)</code>
-	    1D array of raw data stored as RGBARGBA...
-
-          </div>
-          
-        </div>
-      
-        <div class='space-bottom0'>
-          <div>
-            <span class='code bold'>xSize</span> <code class='quiet'>(<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number">Number</a>)</code>
-	    length along x dimension of the Image3D
-
-          </div>
-          
-        </div>
-      
-        <div class='space-bottom0'>
-          <div>
-            <span class='code bold'>ySize</span> <code class='quiet'>(<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number">Number</a>)</code>
-	    length along y dimension of the Image3D
-
-          </div>
-          
-        </div>
-      
-        <div class='space-bottom0'>
-          <div>
-            <span class='code bold'>zSize</span> <code class='quiet'>(<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number">Number</a>)</code>
-	    length along z dimension of the Image3D
-
-          </div>
-          
-        </div>
-      
-        <div class='space-bottom0'>
-          <div>
-            <span class='code bold'>options</span> <code class='quiet'>(<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a>)</code>
-	    , among them:
-<ul>
-<li>ncpp {Number} number of components per pixel. Default = 1</li>
-<li>order {Array} dimensionality order. Default = ["zspace", "yspace", "xspace"]</li>
-<li>deepCopy {Boolean} copy the whole array if true, or just the pointer if false. Default = false</li>
-</ul>
-
-          </div>
-          
-        </div>
-      
-        <div class='space-bottom0'>
-          <div>
-            <span class='code bold'>ncpp</span> <code class='quiet'>(<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number">Number</a>)</code>
-	    number of components per pixel (default: 4)
-
-          </div>
-          
-        </div>
-      
-        <div class='space-bottom0'>
-          <div>
-            <span class='code bold'>deepCopy</span> <code class='quiet'>(<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean">Boolean</a>)</code>
-	    if true, a copy of the data is given, if false we jsut give the pointer
-
-          </div>
-          
-        </div>
-      
-    </div>
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-</section>
-
-      </div>
-    </div>
-  
-    <div class='border-bottom' id='image3dsetpixel'>
-      <div class="clearfix small pointer toggle-sibling">
-        <div class="py1 contain">
-            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
-            <span class='code strong strong truncate'>setPixel(position, color)</span>
-        </div>
-      </div>
-      <div class="clearfix display-none toggle-target">
-        <section class='p2 mb2 clearfix bg-white minishadow'>
-
-  
-
-  <p>Modify the color of a given pixel.</p>
-
-
-  <div class='pre p1 fill-light mt0'>setPixel(position: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a>, color: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a>)</div>
-  
-  
-
-  
-  
-  
-  
-  
-  
-
-  
-    <div class='py1 quiet mt1 prose-big'>Parameters</div>
-    <div class='prose'>
-      
-        <div class='space-bottom0'>
-          <div>
-            <span class='code bold'>position</span> <code class='quiet'>(<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a>)</code>
-	    3D position in the form {x, y, z}
-
-          </div>
-          
-        </div>
-      
-        <div class='space-bottom0'>
-          <div>
-            <span class='code bold'>color</span> <code class='quiet'>(<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a>)</code>
-	    color, must have the same number of components per pixel than the image
-
-          </div>
-          
-        </div>
-      
-    </div>
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-</section>
-
-      </div>
-    </div>
-  
-</div>
-
-  
-
-  
-</section>
-
-          
-        
-          
-            <section class='p2 mb2 clearfix bg-white minishadow'>
-
-  
-  <div class='clearfix'>
-    
-    <h3 class='fl m0' id='image3dalt'>
-      Image3DAlt
-    </h3>
-    
-    
-  </div>
-  
-
-  <p>Image3DAlt class is one of the few base element of Pixpipejs.
-It is always considered to be 4 channels (RGBA) and stored as a Float32Array
-typed array.</p>
-
-
-  <div class='pre p1 fill-light mt0'>new Image3DAlt(options: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a>)</div>
-  
-  
-    <p>
-      Extends
-      
-        <a href="#pixpipecontainer">PixpipeContainer</a>
-      
-    </p>
-  
-
-  
-  
-  
-  
-  
-  
-
-  
-    <div class='py1 quiet mt1 prose-big'>Parameters</div>
-    <div class='prose'>
-      
-        <div class='space-bottom0'>
-          <div>
-            <span class='code bold'>options</span> <code class='quiet'>(<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a>
-            = <code>null</code>)</code>
-	    may contain the following:
-<ul>
-<li>options.xSize {Number} space length along x axis</li>
-<li>options.ySize {Number} space length along y axis</li>
-<li>options.zSize {Number} space length along z axis</li>
-<li>options.tSize {Number} space length along t axis (time)</li>
-<li>options.ncpp {Number} number of components per pixel. Default = 1
-If at least xSize, ySize and zSize are specified, a buffer is automatically initialized with the value 0.</li>
-</ul>
-
-          </div>
-          
-        </div>
-      
-    </div>
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-    <div class='py1 quiet mt1 prose-big'>Static Members</div>
-    <div class="clearfix">
-  
-    <div class='border-bottom' id='image3dalttype'>
-      <div class="clearfix small pointer toggle-sibling">
-        <div class="py1 contain">
-            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
-            <span class='code strong strong truncate'>TYPE()</span>
-        </div>
-      </div>
-      <div class="clearfix display-none toggle-target">
-        <section class='p2 mb2 clearfix bg-white minishadow'>
-
-  
-
-  <p>Hardcode the datatype</p>
-
-
-  <div class='pre p1 fill-light mt0'>TYPE()</div>
-  
-  
-
-  
-  
-  
-  
-  
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-</section>
-
-      </div>
-    </div>
-  
-</div>
-
-  
-
-  
-    <div class='py1 quiet mt1 prose-big'>Instance Members</div>
-    <div class="clearfix">
-  
-    <div class='border-bottom' id='image3daltaddtransformation'>
-      <div class="clearfix small pointer toggle-sibling">
-        <div class="py1 contain">
-            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
-            <span class='code strong strong truncate'>addTransformation(transform, name)</span>
-        </div>
-      </div>
-      <div class="clearfix display-none toggle-target">
-        <section class='p2 mb2 clearfix bg-white minishadow'>
-
-  
-
-  <p>Add a transformation to the collection</p>
-
-
-  <div class='pre p1 fill-light mt0'>addTransformation(transform: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a>, name: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">String</a>)</div>
-  
-  
-
-  
-  
-  
-  
-  
-  
-
-  
-    <div class='py1 quiet mt1 prose-big'>Parameters</div>
-    <div class='prose'>
-      
-        <div class='space-bottom0'>
-          <div>
-            <span class='code bold'>transform</span> <code class='quiet'>(<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a>)</code>
-	    a 4x4 matrix in a shape of a 1D array of size 16 column-major
-
-          </div>
-          
-        </div>
-      
-        <div class='space-bottom0'>
-          <div>
-            <span class='code bold'>name</span> <code class='quiet'>(<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">String</a>)</code>
-	    Name to give to this transformation
-
-          </div>
-          
-        </div>
-      
-    </div>
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-</section>
-
-      </div>
-    </div>
-  
-    <div class='border-bottom' id='image3daltclone'>
-      <div class="clearfix small pointer toggle-sibling">
-        <div class="py1 contain">
-            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
-            <span class='code strong strong truncate'>clone()</span>
-        </div>
-      </div>
-      <div class="clearfix display-none toggle-target">
-        <section class='p2 mb2 clearfix bg-white minishadow'>
-
-  
-
-  
-
-  <div class='pre p1 fill-light mt0'>clone(): <a href="#image3dalt">Image3DAlt</a></div>
-  
-  
-
-  
-  
-  
-  
-  
-  
-
-  
-
-  
-
-  
-    
-      <div class='py1 quiet mt1 prose-big'>Returns</div>
-      <code><a href="#image3dalt">Image3DAlt</a></code>:
-        a deep copy instance of this Image3DAlt
-
-      
-    
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-</section>
-
-      </div>
-    </div>
-  
-    <div class='border-bottom' id='image3daltgetdata'>
-      <div class="clearfix small pointer toggle-sibling">
-        <div class="py1 contain">
-            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
-            <span class='code strong strong truncate'>getData()</span>
-        </div>
-      </div>
-      <div class="clearfix display-none toggle-target">
-        <section class='p2 mb2 clearfix bg-white minishadow'>
-
-  
-
-  
-
-  <div class='pre p1 fill-light mt0'>getData(): <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Float32Array">Float32Array</a></div>
-  
-  
-
-  
-  
-  
-  
-  
-  
-
-  
-
-  
-
-  
-    
-      <div class='py1 quiet mt1 prose-big'>Returns</div>
-      <code><a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Float32Array">Float32Array</a></code>:
-        the original data, dont mess up with this one.
-in case of doubt, use  getDataCopy()
-
-      
-    
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-</section>
-
-      </div>
-    </div>
-  
-    <div class='border-bottom' id='image3daltgetdatacopy'>
-      <div class="clearfix small pointer toggle-sibling">
-        <div class="py1 contain">
-            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
-            <span class='code strong strong truncate'>getDataCopy()</span>
-        </div>
-      </div>
-      <div class="clearfix display-none toggle-target">
-        <section class='p2 mb2 clearfix bg-white minishadow'>
-
-  
-
-  
-
-  <div class='pre p1 fill-light mt0'>getDataCopy(): <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Float32Array">Float32Array</a></div>
-  
-  
-
-  
-  
-  
-  
-  
-  
-
-  
-
-  
-
-  
-    
-      <div class='py1 quiet mt1 prose-big'>Returns</div>
-      <code><a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Float32Array">Float32Array</a></code>:
-        a deep copy of the data
-
-      
-    
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-</section>
-
-      </div>
-    </div>
-  
-    <div class='border-bottom' id='image3daltgetdatauint8'>
+    <div class='border-bottom' id='image3dgetdatauint8'>
       <div class="clearfix small pointer toggle-sibling">
         <div class="py1 contain">
             <a class='icon pin-right py1 dark-link caret-right'>▸</a>
@@ -7144,7 +5793,7 @@ Notice: values are rounded</p>
       </div>
     </div>
   
-    <div class='border-bottom' id='image3daltgetdimensionindexfromname'>
+    <div class='border-bottom' id='image3dgetdimensionindexfromname'>
       <div class="clearfix small pointer toggle-sibling">
         <div class="py1 contain">
             <a class='icon pin-right py1 dark-link caret-right'>▸</a>
@@ -7213,7 +5862,7 @@ Looks up in the world dim and then in the voxel-based coord</p>
       </div>
     </div>
   
-    <div class='border-bottom' id='image3daltgetdimensionsize'>
+    <div class='border-bottom' id='image3dgetdimensionsize'>
       <div class="clearfix small pointer toggle-sibling">
         <div class="py1 contain">
             <a class='icon pin-right py1 dark-link caret-right'>▸</a>
@@ -7281,7 +5930,7 @@ Looks up in the world dim and then in the voxel-based coord</p>
       </div>
     </div>
   
-    <div class='border-bottom' id='image3daltgetmaxvalue'>
+    <div class='border-bottom' id='image3dgetmaxvalue'>
       <div class="clearfix small pointer toggle-sibling">
         <div class="py1 contain">
             <a class='icon pin-right py1 dark-link caret-right'>▸</a>
@@ -7336,7 +5985,7 @@ Hook to metadata.</p>
       </div>
     </div>
   
-    <div class='border-bottom' id='image3daltgetminvalue'>
+    <div class='border-bottom' id='image3dgetminvalue'>
       <div class="clearfix small pointer toggle-sibling">
         <div class="py1 contain">
             <a class='icon pin-right py1 dark-link caret-right'>▸</a>
@@ -7391,7 +6040,7 @@ Hook to metadata.</p>
       </div>
     </div>
   
-    <div class='border-bottom' id='image3daltgetnumberofslices'>
+    <div class='border-bottom' id='image3dgetnumberofslices'>
       <div class="clearfix small pointer toggle-sibling">
         <div class="py1 contain">
             <a class='icon pin-right py1 dark-link caret-right'>▸</a>
@@ -7467,7 +6116,7 @@ Hook to metadata.</p>
       </div>
     </div>
   
-    <div class='border-bottom' id='image3daltgetpositionfromtransfospacetovoxelspace'>
+    <div class='border-bottom' id='image3dgetpositionfromtransfospacetovoxelspace'>
       <div class="clearfix small pointer toggle-sibling">
         <div class="py1 contain">
             <a class='icon pin-right py1 dark-link caret-right'>▸</a>
@@ -7554,7 +6203,7 @@ Hook to metadata.</p>
       </div>
     </div>
   
-    <div class='border-bottom' id='image3daltgetpositionfromvoxelspacetotransfospace'>
+    <div class='border-bottom' id='image3dgetpositionfromvoxelspacetotransfospace'>
       <div class="clearfix small pointer toggle-sibling">
         <div class="py1 contain">
             <a class='icon pin-right py1 dark-link caret-right'>▸</a>
@@ -7631,7 +6280,7 @@ Hook to metadata.</p>
       </div>
     </div>
   
-    <div class='border-bottom' id='image3daltgetpositionworldtovoxel'>
+    <div class='border-bottom' id='image3dgetpositionworldtovoxel'>
       <div class="clearfix small pointer toggle-sibling">
         <div class="py1 contain">
             <a class='icon pin-right py1 dark-link caret-right'>▸</a>
@@ -7713,7 +6362,7 @@ can be changed by providing false to the 'round' arg.</p>
       </div>
     </div>
   
-    <div class='border-bottom' id='image3daltgetsegmentsampletransfospace'>
+    <div class='border-bottom' id='image3dgetsegmentsampletransfospace'>
       <div class="clearfix small pointer toggle-sibling">
         <div class="py1 contain">
             <a class='icon pin-right py1 dark-link caret-right'>▸</a>
@@ -7857,7 +6506,7 @@ return null if posFrom or posTo is outside
       </div>
     </div>
   
-    <div class='border-bottom' id='image3daltgetsegmentsamplevoxelspace'>
+    <div class='border-bottom' id='image3dgetsegmentsamplevoxelspace'>
       <div class="clearfix small pointer toggle-sibling">
         <div class="py1 contain">
             <a class='icon pin-right py1 dark-link caret-right'>▸</a>
@@ -7978,7 +6627,7 @@ return null if posFrom or posTo is outside
       </div>
     </div>
   
-    <div class='border-bottom' id='image3daltgetslice'>
+    <div class='border-bottom' id='image3dgetslice'>
       <div class="clearfix small pointer toggle-sibling">
         <div class="py1 contain">
             <a class='icon pin-right py1 dark-link caret-right'>▸</a>
@@ -8074,7 +6723,7 @@ return null if posFrom or posTo is outside
       </div>
     </div>
   
-    <div class='border-bottom' id='image3daltgetslicesize'>
+    <div class='border-bottom' id='image3dgetslicesize'>
       <div class="clearfix small pointer toggle-sibling">
         <div class="py1 contain">
             <a class='icon pin-right py1 dark-link caret-right'>▸</a>
@@ -8150,7 +6799,7 @@ return null if posFrom or posTo is outside
       </div>
     </div>
   
-    <div class='border-bottom' id='image3daltgettimelength'>
+    <div class='border-bottom' id='image3dgettimelength'>
       <div class="clearfix small pointer toggle-sibling">
         <div class="py1 contain">
             <a class='icon pin-right py1 dark-link caret-right'>▸</a>
@@ -8204,7 +6853,7 @@ return null if posFrom or posTo is outside
       </div>
     </div>
   
-    <div class='border-bottom' id='image3daltgettransfobox'>
+    <div class='border-bottom' id='image3dgettransfobox'>
       <div class="clearfix small pointer toggle-sibling">
         <div class="py1 contain">
             <a class='icon pin-right py1 dark-link caret-right'>▸</a>
@@ -8274,7 +6923,7 @@ To get the actual volume corners in a transfo space, use the method <code>getTra
       </div>
     </div>
   
-    <div class='border-bottom' id='image3daltgettransformmatrix'>
+    <div class='border-bottom' id='image3dgettransformmatrix'>
       <div class="clearfix small pointer toggle-sibling">
         <div class="py1 contain">
             <a class='icon pin-right py1 dark-link caret-right'>▸</a>
@@ -8343,7 +6992,7 @@ The name can be "v2w", "w2v" or any other custom transfo name specified earlier.
       </div>
     </div>
   
-    <div class='border-bottom' id='image3daltgettransfovolumecorners'>
+    <div class='border-bottom' id='image3dgettransfovolumecorners'>
       <div class="clearfix small pointer toggle-sibling">
         <div class="py1 contain">
             <a class='icon pin-right py1 dark-link caret-right'>▸</a>
@@ -8411,7 +7060,7 @@ The name can be "v2w", "w2v" or any other custom transfo name specified earlier.
       </div>
     </div>
   
-    <div class='border-bottom' id='image3daltgetvoxel'>
+    <div class='border-bottom' id='image3dgetvoxel'>
       <div class="clearfix small pointer toggle-sibling">
         <div class="py1 contain">
             <a class='icon pin-right py1 dark-link caret-right'>▸</a>
@@ -8491,7 +7140,7 @@ is ignored.</p>
       </div>
     </div>
   
-    <div class='border-bottom' id='image3daltgetvoxelbox'>
+    <div class='border-bottom' id='image3dgetvoxelbox'>
       <div class="clearfix small pointer toggle-sibling">
         <div class="py1 contain">
             <a class='icon pin-right py1 dark-link caret-right'>▸</a>
@@ -8545,7 +7194,7 @@ is ignored.</p>
       </div>
     </div>
   
-    <div class='border-bottom' id='image3daltgetvoxelcoordinatesswapmatrix'>
+    <div class='border-bottom' id='image3dgetvoxelcoordinatesswapmatrix'>
       <div class="clearfix small pointer toggle-sibling">
         <div class="py1 contain">
             <a class='icon pin-right py1 dark-link caret-right'>▸</a>
@@ -8637,7 +7286,7 @@ This matrix can be used in two cases:</p>
       </div>
     </div>
   
-    <div class='border-bottom' id='image3daltgetvoxelsafe'>
+    <div class='border-bottom' id='image3dgetvoxelsafe'>
       <div class="clearfix small pointer toggle-sibling">
         <div class="py1 contain">
             <a class='icon pin-right py1 dark-link caret-right'>▸</a>
@@ -8709,7 +7358,7 @@ supposed to be read. In other word, dimension.step is taken into account.</p>
       </div>
     </div>
   
-    <div class='border-bottom' id='image3daltgetvoxeltransfospace'>
+    <div class='border-bottom' id='image3dgetvoxeltransfospace'>
       <div class="clearfix small pointer toggle-sibling">
         <div class="py1 contain">
             <a class='icon pin-right py1 dark-link caret-right'>▸</a>
@@ -8798,7 +7447,7 @@ This does not perform interpolation.</p>
       </div>
     </div>
   
-    <div class='border-bottom' id='image3daltgetw2vmatrixswapped'>
+    <div class='border-bottom' id='image3dgetw2vmatrixswapped'>
       <div class="clearfix small pointer toggle-sibling">
         <div class="py1 contain">
             <a class='icon pin-right py1 dark-link caret-right'>▸</a>
@@ -8855,7 +7504,7 @@ of the volume.</p>
       </div>
     </div>
   
-    <div class='border-bottom' id='image3dalthastransform'>
+    <div class='border-bottom' id='image3dhastransform'>
       <div class="clearfix small pointer toggle-sibling">
         <div class="py1 contain">
             <a class='icon pin-right py1 dark-link caret-right'>▸</a>
@@ -8923,7 +7572,7 @@ of the volume.</p>
       </div>
     </div>
   
-    <div class='border-bottom' id='image3daltisinsidetransfospace'>
+    <div class='border-bottom' id='image3disinsidetransfospace'>
       <div class="clearfix small pointer toggle-sibling">
         <div class="py1 contain">
             <a class='icon pin-right py1 dark-link caret-right'>▸</a>
@@ -8993,7 +7642,7 @@ This is achieved by converting the transformed coordinates into voxel coordinate
       </div>
     </div>
   
-    <div class='border-bottom' id='image3daltisinsidevoxelspace'>
+    <div class='border-bottom' id='image3disinsidevoxelspace'>
       <div class="clearfix small pointer toggle-sibling">
         <div class="py1 contain">
             <a class='icon pin-right py1 dark-link caret-right'>▸</a>
@@ -9063,7 +7712,7 @@ where i is along the slowest varying dimension and k is along the fastest.
       </div>
     </div>
   
-    <div class='border-bottom' id='image3daltresetdata'>
+    <div class='border-bottom' id='image3dresetdata'>
       <div class="clearfix small pointer toggle-sibling">
         <div class="py1 contain">
             <a class='icon pin-right py1 dark-link caret-right'>▸</a>
@@ -9124,7 +7773,7 @@ where i is along the slowest varying dimension and k is along the fastest.
       </div>
     </div>
   
-    <div class='border-bottom' id='image3daltsetdata'>
+    <div class='border-bottom' id='image3dsetdata'>
       <div class="clearfix small pointer toggle-sibling">
         <div class="py1 contain">
             <a class='icon pin-right py1 dark-link caret-right'>▸</a>
@@ -9201,7 +7850,7 @@ where i is along the slowest varying dimension and k is along the fastest.
       </div>
     </div>
   
-    <div class='border-bottom' id='image3daltsetvoxel'>
+    <div class='border-bottom' id='image3dsetvoxel'>
       <div class="clearfix small pointer toggle-sibling">
         <div class="py1 contain">
             <a class='icon pin-right py1 dark-link caret-right'>▸</a>
@@ -9280,7 +7929,7 @@ where i is along the slowest varying dimension and k is along the fastest.
       </div>
     </div>
   
-    <div class='border-bottom' id='image3daltsetvoxeltransfospace'>
+    <div class='border-bottom' id='image3dsetvoxeltransfospace'>
       <div class="clearfix small pointer toggle-sibling">
         <div class="py1 contain">
             <a class='icon pin-right py1 dark-link caret-right'>▸</a>
@@ -12250,345 +10899,6 @@ R, G, B, A
   
   <div class='clearfix'>
     
-    <h3 class='fl m0' id='mnivolume'>
-      MniVolume
-    </h3>
-    
-    
-  </div>
-  
-
-  <p>MniVolume instance are like Image3D but include some brain things</p>
-
-
-  <div class='pre p1 fill-light mt0'>new MniVolume(options: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a>)</div>
-  
-  
-    <p>
-      Extends
-      
-        <a href="#image3d">Image3D</a>
-      
-    </p>
-  
-
-  
-  
-  
-  
-  
-  
-
-  
-    <div class='py1 quiet mt1 prose-big'>Parameters</div>
-    <div class='prose'>
-      
-        <div class='space-bottom0'>
-          <div>
-            <span class='code bold'>options</span> <code class='quiet'>(<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a>
-            = <code>null</code>)</code>
-	    if present, must have options.xSize, options.ySize, option.zSize.
-Also options.ncpp to set the number of components per pixel. (possibly for using time series)
-
-          </div>
-          
-        </div>
-      
-    </div>
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-    <div class='py1 quiet mt1 prose-big'>Static Members</div>
-    <div class="clearfix">
-  
-    <div class='border-bottom' id='mnivolumeswapn'>
-      <div class="clearfix small pointer toggle-sibling">
-        <div class="py1 contain">
-            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
-            <span class='code strong strong truncate'>swapn(byte_data, n_per_item)</span>
-        </div>
-      </div>
-      <div class="clearfix display-none toggle-target">
-        <section class='p2 mb2 clearfix bg-white minishadow'>
-
-  
-
-  <p>[STATIC]
-swap the data to be used from the outside (ie. nifti)</p>
-
-
-  <div class='pre p1 fill-light mt0'>swapn(byte_data: any, n_per_item: any)</div>
-  
-  
-
-  
-  
-  
-  
-  
-  
-
-  
-    <div class='py1 quiet mt1 prose-big'>Parameters</div>
-    <div class='prose'>
-      
-        <div class='space-bottom0'>
-          <div>
-            <span class='code bold'>byte_data</span> <code class='quiet'>(any)</code>
-	    
-          </div>
-          
-        </div>
-      
-        <div class='space-bottom0'>
-          <div>
-            <span class='code bold'>n_per_item</span> <code class='quiet'>(any)</code>
-	    
-          </div>
-          
-        </div>
-      
-    </div>
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-</section>
-
-      </div>
-    </div>
-  
-    <div class='border-bottom' id='mnivolumetransformtominc'>
-      <div class="clearfix small pointer toggle-sibling">
-        <div class="py1 contain">
-            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
-            <span class='code strong strong truncate'>transformToMinc(transform, header)</span>
-        </div>
-      </div>
-      <div class="clearfix display-none toggle-target">
-        <section class='p2 mb2 clearfix bg-white minishadow'>
-
-  
-
-  <p>[STATIC]
-mainly used by the ouside world (like from Nifti)</p>
-
-
-  <div class='pre p1 fill-light mt0'>transformToMinc(transform: any, header: any)</div>
-  
-  
-
-  
-  
-  
-  
-  
-  
-
-  
-    <div class='py1 quiet mt1 prose-big'>Parameters</div>
-    <div class='prose'>
-      
-        <div class='space-bottom0'>
-          <div>
-            <span class='code bold'>transform</span> <code class='quiet'>(any)</code>
-	    
-          </div>
-          
-        </div>
-      
-        <div class='space-bottom0'>
-          <div>
-            <span class='code bold'>header</span> <code class='quiet'>(any)</code>
-	    
-          </div>
-          
-        </div>
-      
-    </div>
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-</section>
-
-      </div>
-    </div>
-  
-</div>
-
-  
-
-  
-    <div class='py1 quiet mt1 prose-big'>Instance Members</div>
-    <div class="clearfix">
-  
-    <div class='border-bottom' id='mnivolume_saveoriginandtransform'>
-      <div class="clearfix small pointer toggle-sibling">
-        <div class="py1 contain">
-            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
-            <span class='code strong strong truncate'>_saveOriginAndTransform()</span>
-        </div>
-      </div>
-      <div class="clearfix display-none toggle-target">
-        <section class='p2 mb2 clearfix bg-white minishadow'>
-
-  
-
-  <p>[PRIVATE}
-Calculate the world to voxel transform and save it, so we
-can access it efficiently. The transform is:
-cxx / stepx | cxy / stepx | cxz / stepx | (-o.x <em> cxx - o.y </em> cxy - o.z <em> cxz) / stepx
-cyx / stepy | cyy / stepy | cyz / stepy | (-o.x </em> cyx - o.y <em> cyy - o.z </em> cyz) / stepy
-czx / stepz | czy / stepz | czz / stepz | (-o.x <em> czx - o.y </em> czy - o.z * czz) / stepz
-0           | 0           | 0           | 1</p>
-<p>Origin equation taken from (<a href="http://www.bic.mni.mcgill.ca/software/minc/minc2_format/node4.html">http://www.bic.mni.mcgill.ca/software/minc/minc2_format/node4.html</a>)</p>
-
-
-  <div class='pre p1 fill-light mt0'>_saveOriginAndTransform()</div>
-  
-  
-
-  
-  
-  
-  
-  
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-</section>
-
-      </div>
-    </div>
-  
-    <div class='border-bottom' id='mnivolumesetdata'>
-      <div class="clearfix small pointer toggle-sibling">
-        <div class="py1 contain">
-            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
-            <span class='code strong strong truncate'>setData(data, header)</span>
-        </div>
-      </div>
-      <div class="clearfix display-none toggle-target">
-        <section class='p2 mb2 clearfix bg-white minishadow'>
-
-  
-
-  <p>Initialize a MniVolume with the data and the header.</p>
-
-
-  <div class='pre p1 fill-light mt0'>setData(data: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a>, header: any)</div>
-  
-  
-
-  
-  
-  
-  
-  
-  
-
-  
-    <div class='py1 quiet mt1 prose-big'>Parameters</div>
-    <div class='prose'>
-      
-        <div class='space-bottom0'>
-          <div>
-            <span class='code bold'>data</span> <code class='quiet'>(<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a>)</code>
-	    TypedArray containing the data
-
-          </div>
-          
-        </div>
-      
-        <div class='space-bottom0'>
-          <div>
-            <span class='code bold'>header</span> <code class='quiet'>(any)</code>
-	    
-          </div>
-          
-        </div>
-      
-    </div>
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-</section>
-
-      </div>
-    </div>
-  
-</div>
-
-  
-
-  
-</section>
-
-          
-        
-          
-            <section class='p2 mb2 clearfix bg-white minishadow'>
-
-  
-  <div class='clearfix'>
-    
     <h3 class='fl m0' id='pixpipecontainer'>
       PixpipeContainer
     </h3>
@@ -15108,72 +13418,10 @@ this filter will not have any output.</p>
   </div>
   
 
-  <p>An instance of Image3DGenericDecoder takes a ArrayBuffer
-as input 0 (<code>.addInput(myArrayBuffer)</code>) and output an Image3D.
-The <code>update</code> method will perform several decoding attempts, using the readers
-specified in the constructor.
-In case of success (one of the registered decoder was compatible to the data)
-the metadata <code>decoderConstructor</code> and <code>decoderName</code> are made accessible and give
-information about the file format. If no decoder managed to decode the input buffer,
-this filter will not have any output.</p>
-<p>Developers: if a new 3D dataset decoder is added, reference it here.</p>
-
-
-  <div class='pre p1 fill-light mt0'>new Image3DGenericDecoder()</div>
-  
-  
-    <p>
-      Extends
-      
-        <a href="#filter">Filter</a>
-      
-    </p>
-  
-
-  
-  
-  
-  
-  
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-</section>
-
-          
-        
-          
-            <section class='p2 mb2 clearfix bg-white minishadow'>
-
-  
-  <div class='clearfix'>
-    
-    <h3 class='fl m0' id='image3dgenericdecoderalt'>
-      Image3DGenericDecoderAlt
-    </h3>
-    
-    
-  </div>
-  
-
   <p>This class implements <code>GenericDecoderInterface</code> that already contains the
 successive decoding logic. For this reason this filter does not need to have the
 <code>_run</code> method to be reimplemented.</p>
-<p>An instance of Image3DGenericDecoderAlt takes a ArrayBuffer
+<p>An instance of Image3DGenericDecoder takes a ArrayBuffer
 as input 0 (<code>.addInput(myArrayBuffer)</code>) and output an Image3D.
 The <code>update</code> method will perform several decoding attempts, using the readers
 specified in the constructor.
@@ -15184,11 +13432,11 @@ this filter will not have any output.</p>
 <p>Developers: if a new 3D dataset decoder is added, reference it here.</p>
 <p><strong>Usage</strong></p>
 <ul>
-<li><a href="../examples/fileToGenericImage3DAlt.html">examples/fileToGenericImage3DAlt.html</a></li>
+<li><a href="../examples/fileToGenericImage3D.html">examples/fileToGenericImage3D.html</a></li>
 </ul>
 
 
-  <div class='pre p1 fill-light mt0'>new Image3DGenericDecoderAlt()</div>
+  <div class='pre p1 fill-light mt0'>new Image3DGenericDecoder()</div>
   
   
     <p>
@@ -15369,7 +13617,8 @@ this filter will not have any output.</p>
   
 
   <p>Decodes a MGH file.
-Takes an ArrayBuffer as input (0) and output a <code>MniVolume</code> (which inherit <code>Image3D</code>).</p>
+Takes an ArrayBuffer as input (0) and output a <code>Image3D</code>
+Some doc can be found <a href="https://surfer.nmr.mgh.harvard.edu/fswiki/FsTutorial/MghFormat">here</a></p>
 <p><strong>Usage</strong></p>
 <ul>
 <li><a href="../examples/fileToMgh.html">examples/fileToMgh.html</a></li>
@@ -15377,66 +13626,6 @@ Takes an ArrayBuffer as input (0) and output a <code>MniVolume</code> (which inh
 
 
   <div class='pre p1 fill-light mt0'>new MghDecoder()</div>
-  
-  
-    <p>
-      Extends
-      
-        <a href="#decoder">Decoder</a>
-      
-    </p>
-  
-
-  
-  
-  
-  
-  
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-</section>
-
-          
-        
-          
-            <section class='p2 mb2 clearfix bg-white minishadow'>
-
-  
-  <div class='clearfix'>
-    
-    <h3 class='fl m0' id='mghdecoderalt'>
-      MghDecoderAlt
-    </h3>
-    
-    
-  </div>
-  
-
-  <p>Decodes a MGH file.
-Takes an ArrayBuffer as input (0) and output a <code>MniVolume</code> (which inherit <code>Image3D</code>).
-Some doc can be found <a href="https://surfer.nmr.mgh.harvard.edu/fswiki/FsTutorial/MghFormat">here</a> </p>
-<p><strong>Usage</strong></p>
-<ul>
-<li><a href="../examples/fileToMgh.html">examples/fileToMgh.html</a></li>
-</ul>
-
-
-  <div class='pre p1 fill-light mt0'>new MghDecoderAlt()</div>
   
   
     <p>
@@ -15491,7 +13680,7 @@ Some doc can be found <a href="https://surfer.nmr.mgh.harvard.edu/fswiki/FsTutor
 used for Minc2 file format.
 The metadata "debug" can be set to true to
 enable a verbose mode.
-Takes an ArrayBuffer as input (0) and output a <code>MniVolume</code> (which inherit <code>Image3D</code>).</p>
+Takes an ArrayBuffer as input (0) and output a <code>Image3D</code></p>
 <p><strong>Usage</strong></p>
 <ul>
 <li><a href="../examples/fileToMinc2.html">examples/fileToMinc2.html</a></li>
@@ -15814,341 +14003,6 @@ to the minimum and maximum valid
   
   <div class='clearfix'>
     
-    <h3 class='fl m0' id='minc2decoderalt'>
-      Minc2DecoderAlt
-    </h3>
-    
-    
-  </div>
-  
-
-  <p>Decode a HDF5 file, but is most likely to be restricted to the features that are
-used for Minc2 file format.
-The metadata "debug" can be set to true to
-enable a verbose mode.
-Takes an ArrayBuffer as input (0) and output a <code>MniVolume</code> (which inherit <code>Image3D</code>).</p>
-<p><strong>Usage</strong></p>
-<ul>
-<li><a href="../examples/fileToMinc2.html">examples/fileToMinc2.html</a></li>
-</ul>
-
-
-  <div class='pre p1 fill-light mt0'>new Minc2DecoderAlt()</div>
-  
-  
-    <p>
-      Extends
-      
-        <a href="#decoder">Decoder</a>
-      
-    </p>
-  
-
-  
-  
-  
-  
-  
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-    <div class='py1 quiet mt1 prose-big'>Instance Members</div>
-    <div class="clearfix">
-  
-    <div class='border-bottom' id='minc2decoderaltisrgbvolume'>
-      <div class="clearfix small pointer toggle-sibling">
-        <div class="py1 contain">
-            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
-            <span class='code strong strong truncate'>isRgbVolume(header, image)</span>
-        </div>
-      </div>
-      <div class="clearfix display-none toggle-target">
-        <section class='p2 mb2 clearfix bg-white minishadow'>
-
-  
-
-  <p>A MINC volume is an RGB volume if all three are true:
-1. The voxel type is unsigned byte.
-2. It has a vector_dimension in the last (fastest-varying) position.
-3. The vector dimension has length 3.</p>
-
-
-  <div class='pre p1 fill-light mt0'>isRgbVolume(header: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a>, image: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a>): <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean">boolean</a></div>
-  
-  
-
-  
-  
-  
-  
-  
-  
-
-  
-    <div class='py1 quiet mt1 prose-big'>Parameters</div>
-    <div class='prose'>
-      
-        <div class='space-bottom0'>
-          <div>
-            <span class='code bold'>header</span> <code class='quiet'>(<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a>)</code>
-	    The header object representing the structure
-of the MINC file.
-
-          </div>
-          
-        </div>
-      
-        <div class='space-bottom0'>
-          <div>
-            <span class='code bold'>image</span> <code class='quiet'>(<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a>)</code>
-	    The typed array object used to represent the
-image data.
-
-          </div>
-          
-        </div>
-      
-    </div>
-  
-
-  
-
-  
-    
-      <div class='py1 quiet mt1 prose-big'>Returns</div>
-      <code><a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean">boolean</a></code>:
-        True if this is an RGB volume.
-
-      
-    
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-</section>
-
-      </div>
-    </div>
-  
-    <div class='border-bottom' id='minc2decoderaltrgbvoxels'>
-      <div class="clearfix small pointer toggle-sibling">
-        <div class="py1 contain">
-            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
-            <span class='code strong strong truncate'>rgbVoxels(image)</span>
-        </div>
-      </div>
-      <div class="clearfix display-none toggle-target">
-        <section class='p2 mb2 clearfix bg-white minishadow'>
-
-  
-
-  <p>This function copies the RGB voxels to the destination buffer.
-Essentially we just convert from 24 to 32 bits per voxel. This
-is another MINC-specific function.</p>
-
-
-  <div class='pre p1 fill-light mt0'>rgbVoxels(image: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a>): <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a></div>
-  
-  
-
-  
-  
-  
-  
-  
-  
-
-  
-    <div class='py1 quiet mt1 prose-big'>Parameters</div>
-    <div class='prose'>
-      
-        <div class='space-bottom0'>
-          <div>
-            <span class='code bold'>image</span> <code class='quiet'>(<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a>)</code>
-	    The 'link' object created using createLink(),
-that corresponds to the image within the HDF5 or NetCDF file.
-
-          </div>
-          
-        </div>
-      
-    </div>
-  
-
-  
-
-  
-    
-      <div class='py1 quiet mt1 prose-big'>Returns</div>
-      <code><a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a></code>:
-        A new ArrayBuffer that contains the original RGB
-data augmented with alpha values.
-
-      
-    
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-</section>
-
-      </div>
-    </div>
-  
-    <div class='border-bottom' id='minc2decoderaltscalevoxels'>
-      <div class="clearfix small pointer toggle-sibling">
-        <div class="py1 contain">
-            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
-            <span class='code strong strong truncate'>scaleVoxels(image, image_min, image_max, valid_range, debug)</span>
-        </div>
-      </div>
-      <div class="clearfix display-none toggle-target">
-        <section class='p2 mb2 clearfix bg-white minishadow'>
-
-  
-
-  <p>Convert the MINC data from voxel to real range. This returns a
-new buffer that contains the "real" voxel values. It does less
-work for floating-point volumes, since they don't need scaling.</p>
-<p>For debugging/testing purposes, also gathers basic voxel statistics,
-for comparison against mincstats.</p>
-
-
-  <div class='pre p1 fill-light mt0'>scaleVoxels(image: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a>, image_min: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a>, image_max: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a>, valid_range: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a>, debug: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean">boolean</a>): any</div>
-  
-  
-
-  
-  
-  
-  
-  
-  
-
-  
-    <div class='py1 quiet mt1 prose-big'>Parameters</div>
-    <div class='prose'>
-      
-        <div class='space-bottom0'>
-          <div>
-            <span class='code bold'>image</span> <code class='quiet'>(<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a>)</code>
-	    The link object corresponding to the image data.
-
-          </div>
-          
-        </div>
-      
-        <div class='space-bottom0'>
-          <div>
-            <span class='code bold'>image_min</span> <code class='quiet'>(<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a>)</code>
-	    The link object corresponding to the image-min
-data.
-
-          </div>
-          
-        </div>
-      
-        <div class='space-bottom0'>
-          <div>
-            <span class='code bold'>image_max</span> <code class='quiet'>(<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a>)</code>
-	    The link object corresponding to the image-max
-data.
-
-          </div>
-          
-        </div>
-      
-        <div class='space-bottom0'>
-          <div>
-            <span class='code bold'>valid_range</span> <code class='quiet'>(<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a>)</code>
-	    An array of exactly two items corresponding
-to the minimum and maximum valid 
-<em>raw</em>
- voxel values.
-
-          </div>
-          
-        </div>
-      
-        <div class='space-bottom0'>
-          <div>
-            <span class='code bold'>debug</span> <code class='quiet'>(<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean">boolean</a>)</code>
-	    True if we should print debugging information.
-
-          </div>
-          
-        </div>
-      
-    </div>
-  
-
-  
-
-  
-    
-      <div class='py1 quiet mt1 prose-big'>Returns</div>
-      <code>any</code>:
-        A new ArrayBuffer containing the rescaled data.
-
-      
-    
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-</section>
-
-      </div>
-    </div>
-  
-</div>
-
-  
-
-  
-</section>
-
-          
-        
-          
-            <section class='p2 mb2 clearfix bg-white minishadow'>
-
-  
-  <div class='clearfix'>
-    
     <h3 class='fl m0' id='mniobjdecoder'>
       MniObjDecoder
     </h3>
@@ -16283,65 +14137,6 @@ Overload of the <code>Decoder</code> function to precise <code>MniObjDecoder</co
   </div>
   
 
-  <p>Decodes a NIfTI file.
-Takes an ArrayBuffer as input (0) and output a <code>MniVolume</code> (which inherit <code>Image3D</code>).</p>
-<p><strong>Usage</strong></p>
-<ul>
-<li><a href="../examples/fileToNifti.html">examples/fileToNifti.html</a></li>
-</ul>
-
-
-  <div class='pre p1 fill-light mt0'>new NiftiDecoder()</div>
-  
-  
-    <p>
-      Extends
-      
-        <a href="#decoder">Decoder</a>
-      
-    </p>
-  
-
-  
-  
-  
-  
-  
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-</section>
-
-          
-        
-          
-            <section class='p2 mb2 clearfix bg-white minishadow'>
-
-  
-  <div class='clearfix'>
-    
-    <h3 class='fl m0' id='niftidecoderalt'>
-      NiftiDecoderAlt
-    </h3>
-    
-    
-  </div>
-  
-
   <p>Important information:
 NIfTI dataset are using two indexing methods:</p>
 <ul>
@@ -16373,7 +14168,7 @@ The official NIfTI header description ( <a href="https://nifti.nimh.nih.gov/pub/
 was used to interpret the data.</p>
 
 
-  <div class='pre p1 fill-light mt0'>new NiftiDecoderAlt()</div>
+  <div class='pre p1 fill-light mt0'>new NiftiDecoder()</div>
   
   
     <p>
@@ -17892,76 +15687,6 @@ Ressources:
   
 
   <p>An instance of Image3DToMosaicFilter takes an Image3D as Input and output a
-mosaic composed of each slice. The axis: "xspace", "yspace" or "zspace" can be
-specified with <code>setMetadata("axis", "xspace")</code>, the default being xspace.
-The default output image is 4096x4096 but these boundaries can be changed using
-<code>setMetadata("maxWidth", n)</code> and <code>setMetadata("maxHeight", m)</code>.
-These are boundaries so the size of the output image(s) will possibly be lower
-to not contain unused space.
-If mosaicing the whole given Image3D does not fit in maxWidth*maxHeight, more
-Image2D will be created and accessible through <code>getOutput(n)</code>.
-All output image have the same size so that the last one may have dead space.
-To know precisely the size of the output mosaic use <code>getMetadata("gridWidth")</code>
-and <code>getMetadata("gridHeight")</code>, this will give the number of slices used in
-horizontal and vertical respectively.</p>
-<p><strong>Usage</strong></p>
-<ul>
-<li><a href="../examples/niftiToMosaic.html">examples/niftiToMosaic.html</a></li>
-</ul>
-
-
-  <div class='pre p1 fill-light mt0'>new Image3DToMosaicFilter()</div>
-  
-  
-    <p>
-      Extends
-      
-        <a href="#filter">Filter</a>
-      
-    </p>
-  
-
-  
-  
-  
-  
-  
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-</section>
-
-          
-        
-          
-            <section class='p2 mb2 clearfix bg-white minishadow'>
-
-  
-  <div class='clearfix'>
-    
-    <h3 class='fl m0' id='image3dtomosaicfilteralt'>
-      Image3DToMosaicFilterAlt
-    </h3>
-    
-    
-  </div>
-  
-
-  <p>An instance of Image3DToMosaicFilterAlt takes an Image3D as Input and output a
 mosaic composed of each slice. The axis: "x", "y" or "z" can be
 specified with <code>setMetadata("axis", "x")</code>, the default being x.
 The default output image is 4096x4096 but these boundaries can be changed using
@@ -17979,11 +15704,11 @@ the default being <code>0</code>. If set to <code>-1</code>, then the filter out
 series.</p>
 <p><strong>Usage</strong></p>
 <ul>
-<li><a href="../examples/niftiToMosaicAlt.html">examples/niftiToMosaicAlt.html</a></li>
+<li><a href="../examples/niftiToMosaic.html">examples/niftiToMosaic.html</a></li>
 </ul>
 
 
-  <div class='pre p1 fill-light mt0'>new Image3DToMosaicFilterAlt()</div>
+  <div class='pre p1 fill-light mt0'>new Image3DToMosaicFilter()</div>
   
   
     <p>
@@ -18294,7 +16019,7 @@ likely to produce artifact waves due to Gibbs phenomenon.</p>
   </div>
   
 
-  <p>An instance of Mesh3DToVolumetricHullFilter creates a voxel based volume (Image3DAlt)
+  <p>An instance of Mesh3DToVolumetricHullFilter creates a voxel based volume (Image3D)
 of a Mesh3D (input). The hull of the mesh is represnted by voxels in the output.</p>
 
 
@@ -22597,60 +20322,6 @@ on an Image2D or a Signa1D.</p>
         BaseFourierImageFilter
       
     </p>
-  
-
-  
-  
-  
-  
-  
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-</section>
-
-          
-        
-          
-            <section class='p2 mb2 clearfix bg-white minishadow'>
-
-  
-  <div class='clearfix'>
-    
-    <h3 class='fl m0' id='ignore_offsets'>
-      ignore_offsets
-    </h3>
-    
-    
-  </div>
-  
-
-  <p>This is here because there are two different ways of interpreting
-the origin of an MGH file. One can ignore the offsets in the
-transform, using the centre of the voxel grid. Or you can correct
-these naive grid centres using the values stored in the transform.
-The first approach is what is used by surface files, so to get them
-to register nicely, we want ignore_offsets to be true. However,
-getting volumetric files to register correctly implies setting
-ignore_offsets to false.</p>
-
-
-  <div class='pre p1 fill-light mt0'>ignore_offsets</div>
-  
   
 
   

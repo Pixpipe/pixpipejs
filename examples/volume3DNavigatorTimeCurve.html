@@ -70,6 +70,7 @@
     width: 48px;
     margin: 5px;
     border-radius: 4px;
+    border-radius: 4px;
   }
   .logoCorner:hover{
     filter: invert(100%);
@@ -94,7 +95,7 @@
 
   <div id="info">
     <div id="fileOpener">
-  		Open a structural volume file (NIfTI, Minc2, Pixp)
+  		Open a structural volume file (NIfTI, Minc2, Pixbin)
   		<input type="file" id="fileInput">
       <br>
   	</div>
@@ -427,7 +428,7 @@
         mosaicFilter.addInput( mniVolume );
 
         // which axis do we want the picture of?
-        var space = "zspace";
+        var space = "z";
         mosaicFilter.setMetadata( "axis", space);
 
         // if time series, take it all
@@ -441,18 +442,20 @@
           document.getElementById('fileInfo').innerHTML = "Error.";
           return;
         }else{
-          var spaceInfo = mniVolume.getMetadata(space);
+          // TODO
+          var sliceSize = mniVolume.getSliceSize( space );
+          var nbSlices = mniVolume.getNumberOfSlices( space );
           document.getElementById('fileInfo').textContent = filenames[0] + " is composed of "
-            + spaceInfo.space_length + " slices of size "
-            + spaceInfo.width + "x" + spaceInfo.height + "px";
+            + nbSlices + " slices of size "
+            + sliceSize.w + "x" + sliceSize.h + "px";
         }
 
         // display the output in multiple canvas if needed
         for(var nbOut=0; nbOut<mosaicFilter.getNumberOfOutputs(); nbOut++){
           var outputMosaic = mosaicFilter.getOutput(nbOut);
           console.log( outputMosaic );
-          outputMosaic.setMetadata("min", mniVolume.getMetadata("voxel_min"));
-          outputMosaic.setMetadata("max", mniVolume.getMetadata("voxel_max"));
+          outputMosaic.setMetadata("min", mniVolume.getMinValue());
+          outputMosaic.setMetadata("max", mniVolume.getMaxValue()*1.001);
 
           var data = outputMosaic.getDataAsUInt8Array();
           //var data = outputMosaic.getData();
@@ -473,9 +476,9 @@
         sliceMatrixSize.x = mosaicFilter.getMetadata("gridWidth");
         sliceMatrixSize.y = mosaicFilter.getMetadata("gridHeight");
 
-        spaceLength.x = mniVolume.getMetadata("xspace").space_length;
-        spaceLength.y = mniVolume.getMetadata("yspace").space_length;
-        spaceLength.z = mniVolume.getMetadata("zspace").space_length;
+        spaceLength.x = mniVolume.getNumberOfSlices("x");
+        spaceLength.y = mniVolume.getNumberOfSlices("y");
+        spaceLength.z = mniVolume.getNumberOfSlices("z");
         spaceLength.t = mniVolume.getTimeLength();
 
         // since the volume is loaded, we can create the 3D env

@@ -9,7 +9,8 @@
 
 import pako from 'pako'
 import { Decoder } from '../core/Decoder.js';
-import { MniVolume } from '../core/MniVolume.js';
+import { Image3D } from '../core/Image3D.js';
+import { Image3DMetadataConverter } from '../utils/Image3DMetadataConverter.js';
 
 
 /**
@@ -17,7 +18,7 @@ import { MniVolume } from '../core/MniVolume.js';
 * used for Minc2 file format.
 * The metadata "debug" can be set to true to
 * enable a verbose mode.
-* Takes an ArrayBuffer as input (0) and output a `MniVolume` (which inherit `Image3D`).
+* Takes an ArrayBuffer as input (0) and output a `Image3D`
 *
 * **Usage**
 * - [examples/fileToMinc2.html](../examples/fileToMinc2.html)
@@ -26,7 +27,7 @@ class Minc2Decoder extends Decoder{
 
   constructor(){
     super();
-    this.setMetadata("targetType", MniVolume.name);
+    this.setMetadata("targetType", Image3D.name);
     this.addInputValidator(0, ArrayBuffer);
 
     this.setMetadata("debug", false);
@@ -2576,6 +2577,21 @@ class Minc2Decoder extends Decoder{
   }
 
 
+/*
+  createMincVolume(header, raw_data){
+    var volume = createVolume(header, this.createMincData(header, raw_data));
+    volume.type = "minc";
+
+    volume.saveOriginAndTransform(header);
+    volume.intensity_min = header.voxel_min;
+    volume.intensity_max = header.voxel_max;
+
+    return volume;
+
+  }
+*/
+
+
   /*
     initialize the large 1D array of data depending on the type found.
     Rearange the original ArrayBuffer into a typed array.
@@ -2816,15 +2832,30 @@ class Minc2Decoder extends Decoder{
       new_abuf = this.scaleVoxels(image, image_min, image_max, valid_range, this.getMetadata("debug"));
     }
 
+
+
     var minc_header = this.parseHeader( JSON.stringify(header) );
+    minc_header.format = "minc2";
     var dataArray = this.createMincData(minc_header, new_abuf)
 
-    // add the output to this filter
-    this._addOutput(MniVolume);
-    var mniVol = this.getOutput();
-    mniVol.setData(dataArray, minc_header);
-    mniVol.setMetadata("format", "minc2");
+    var metadata = Image3DMetadataConverter.convertImage3DMetadata( minc_header );
+
+    var dims = metadata.dimensions;
+    dims.sort( function(a, b){
+      return a.stride > b.stride;
+    })
+
+    var output = new Image3D();
+    output.setRawData( dataArray );
+    output.setRawMetadata( metadata );
+
+    if(output.metadataIntegrityCheck()){
+      output.scanDataRange();
+      this._output[0] = output;
+    }
   }
+
+
 
 
 

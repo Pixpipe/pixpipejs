@@ -11494,1134 +11494,6 @@
   CoreTypes.addCoreType( Image2D );
 
   /*
-  * Author   Jonathan Lurie - http://me.jonathanlurie.fr
-  * License  MIT
-  * Link      https://github.com/Pixpipe/pixpipejs
-  * Lab       MCIN - Montreal Neurological Institute
-  */
-
-  /**
-  * Image3D class is one of the few base element of Pixpipejs.
-  * It is always considered to be 4 channels (RGBA) and stored as a Float32Array
-  * typed array.
-  */
-  class Image3D extends PixpipeContainer{
-
-
-    /**
-    * Constructor of an Image3D instance. If no options, no array is allocated.
-    * @param {Object} options - may contain the following:
-    *   - options.xSize {Number} space length along x axis
-    *   - options.ySize {Number} space length along y axis
-    *   - option.zSize {Number} space length along z axis
-    *   - options.ncpp {Number} number of components per pixel. Default = 1
-    *   - options.order {Array} dimensionality order. default = ["zspace", "yspace", "xspace"]
-    */
-    constructor( options=null ){
-      super();
-      this._type = Image3D.TYPE();
-
-      // number of component per pixel, for color OR time series
-      this.setMetadata("ncpp", 1);
-
-      // dimensionality order
-      if(options && "order" in options){
-        this.setMetadata("order", options.order);
-      }else{
-        this.setMetadata("order", ["zspace", "yspace", "xspace"]);
-      }
-
-      var xspace = {
-        offset: 1,
-        step: 1
-      };
-
-      var yspace = {
-        step: 1
-      };
-
-      var zspace = {
-        step: 1
-      };
-      
-      var time = {
-        offset: 0,
-        space_length: 1
-      };
-
-      this.setMetadata("xspace", xspace);
-      this.setMetadata("yspace", yspace);
-      this.setMetadata("zspace", zspace);
-      this.setMetadata("time", time);
-
-      // replacing default value for ncpp
-      if(options && "ncpp" in options){
-        this.setMetadata("ncpp", options.ncpp);
-      }
-
-      // allocate the array if size is specified
-      if(options && "xSize" in options && "ySize" in options && "zSize" in options){
-
-        if( options.xSize > 0 && options.ySize > 0 && options.zSize > 0 ){
-          xspace.space_length = options.xSize;
-          yspace.space_length = options.ySize;
-          zspace.space_length = options.zSize;
-
-          yspace.offset = xspace.space_length;
-          zspace.offset = xspace.space_length * yspace.space_length;
-
-          this._data = new Float32Array( options.xSize * options.ySize * options.zSize * this.getMetadata("ncpp") );
-          this._data.fill(0);
-
-          this._scanDataRange();
-          this._finishHeader();
-        }
-      }
-    }
-
-
-    /**
-    * Hardcode the datatype
-    */
-    static TYPE(){
-      return "IMAGE3D";
-    }
-
-
-    /**
-    * @return {Image3D} a deep copy instance of this Image3D
-    */
-    clone(){
-      var cpImg = new Image3D();
-
-      cpImg.setData(
-        this._data,
-        this.getMetadata("xspace").space_length,
-        this.getMetadata("yspace").space_length,
-        this.getMetadata("zspace").space_length,
-        {
-          ncpp: this.getMetadata("ncpp"),
-          order: this.getMetadata("order").slice(),
-          deepCopy: true,
-        }
-      );
-
-      cpImg.copyMetadataFrom( this );
-
-      return cpImg;
-    }
-
-
-    /**
-    *  Set the data to this Image3D.
-    * @param {Float32Array} array - 1D array of raw data stored as RGBARGBA...
-    * @param {Number} xSize - length along x dimension of the Image3D
-    * @param {Number} ySize - length along y dimension of the Image3D
-    * @param {Number} zSize - length along z dimension of the Image3D
-    * @param {Number} ncpp - number of components per pixel (default: 4)
-    * @param {Boolean} deepCopy - if true, a copy of the data is given, if false we jsut give the pointer
-    * @param {Object} options, among them:
-    *   - ncpp {Number} number of components per pixel. Default = 1
-    *   - order {Array} dimensionality order. Default = ["zspace", "yspace", "xspace"]
-    *   - deepCopy {Boolean} copy the whole array if true, or just the pointer if false. Default = false
-    *
-    */
-    setData( array, xSize, ySize, zSize, options){
-      var ncpp = 1;
-
-      // number of components per pixel
-      if(options && "ncpp" in options){
-        ncpp = options.ncpp;
-      }
-
-      if( array.length != xSize*ySize*zSize*ncpp){
-        console.warn("The array size does not match the width and height. Cannot init the Image3D.");
-        return;
-      }
-
-      // number of components per pixel
-      if(options && "ncpp" in options){
-        this.setMetadata("ncpp", options.ncpp);
-      }
-
-      // dimensionality order
-      if(options && "order" in options){
-        this.setMetadata("order", options.order);
-      }
-
-      // deep of shallow copy
-      if(options && "deepCopy" in options && options.deepCopy){
-        this._data = new array.constructor( array );
-      }else{
-        this._data = array;
-      }
-
-      var xspace = this.getMetadata("xspace");
-      var yspace = this.getMetadata("yspace");
-      var zspace = this.getMetadata("zspace");
-
-      xspace.space_length = xSize;
-      yspace.space_length = ySize;
-      zspace.space_length = zSize;
-
-      yspace.offset = xspace.space_length;
-      zspace.offset = xspace.space_length * yspace.space_length;
-
-      this._scanDataRange();
-      this._finishHeader();
-    }
-
-
-    /**
-    * @private
-    * Creates common fields all headers must contain.
-    */
-    _finishHeader() {
-      var xspace = this.getMetadata("xspace");
-      var yspace = this.getMetadata("yspace");
-      var zspace = this.getMetadata("zspace");
-
-      xspace.name = "xspace";
-      yspace.name = "yspace";
-      zspace.name = "zspace";
-
-      xspace.width_space  = JSON.parse( JSON.stringify( yspace ) );//yspace;
-      xspace.width        = yspace.space_length;
-      xspace.height_space = JSON.parse( JSON.stringify( zspace ) );//zspace;
-      xspace.height       = zspace.space_length;
-
-      yspace.width_space  = JSON.parse( JSON.stringify( xspace ) );//xspace;
-      yspace.width        = xspace.space_length;
-      yspace.height_space = JSON.parse( JSON.stringify( zspace ) );//zspace;
-      yspace.height       = zspace.space_length;
-
-      zspace.width_space  = JSON.parse( JSON.stringify( xspace ) );//xspace;
-      zspace.width        = xspace.space_length;
-      zspace.height_space = JSON.parse( JSON.stringify( yspace ) );//yspace;
-      zspace.height       = yspace.space_length;
-    }
-
-
-    /**
-    * @private
-    * Look for min and max on the dataset and add them to the header metadata
-    */
-    _scanDataRange(){
-      var min = +Infinity;
-      var max = -Infinity;
-
-      for(var i=0; i<this._data.length; i++){
-        min = Math.min(min, this._data[i]);
-        max = Math.max(max, this._data[i]);
-      }
-
-      this.setMetadata("voxel_min", min);
-      this.setMetadata("voxel_max", max);
-    }
-
-
-    /**
-    * Modify the color of a given pixel.
-    * @param {Object} position - 3D position in the form {x, y, z}
-    * @param {Array} color - color, must have the same number of components per pixel than the image
-    */
-    setPixel( position, color ){
-      // TODO: to implement using order offset
-    }
-
-
-    /**
-    * Same as getIntensity_xyz, get a pixel/voxel value using (x, y, z) position
-    * @param {Object} position - 3D position like {x, y, z}
-    * @return {Array} the color of the given pixel.
-    */
-    getPixel( position ){
-      return this.getIntensity_xyz( position.x, position.y, position.z );
-    }
-
-
-    /**
-    * @param {String} space - "xspace", "yspace" or "zspace"
-    * @return {Number} the size of the Image3D along the given space
-    */
-    getSize( space ){
-      if( this.hasMetadata( space )){
-        return this.getMetadata( space ).space_length;
-      }else{
-        console.warn("The space must be \"xspace\", \"yspace\" or \"zspace\".");
-        return null;
-      }
-    }
-
-
-    /**
-    * @return {Float32Array} the original data, dont mess up with this one.
-    * in case of doubt, use  getDataCopy()
-    */
-    getData(){
-      return this._data;  // return the actual array, editable!
-    }
-
-
-    /**
-    * @return {Float32Array} a deep copy of the data
-    */
-    getDataCopy(){
-      return new this._data.constructor( this._data );
-    }
-
-
-    /**
-    * Compute the 1D index within the data buffer from a 3D position {x, y, z}.
-    * This has nothing to do with the number of components per pixel.
-    * @param {Object} position - 3D coord like {x, y, z}
-    * @return {Number} the 1D position within the buffer
-    */
-    get1dIndexFrom3dPosition( position ){
-      //return (position.x + position.y*this._width);
-      //return this._xSize * this._ySize * position.z + this._xSize * position.y + position.x;
-      // TODO: to implement using order offset
-    }
-
-
-    /**
-    * @private
-    * Return a slice from the minc cube as a 1D typed array,
-    * along with some relative data (slice size, step, etc.)
-    * args:
-    * @param {String} axis - "xspace", "yspace" or zspace (mandatory)
-    * @param {Number} slice_num - index of the slice [0; length-1] (optional, default: length-1)
-    * @param {Number} time - index of time (optional, default: 0)
-    * TODO: add some method to a slice (get value) because it's a 1D array... and compare with Python
-    */
-    getSlice(axis, slice_num = 0, time = 0) {
-      if( !this.hasMetadata(axis) ){
-        console.warn("The axis " + axis + " does not exist.");
-        return null;
-      }
-
-      var time_offset = this.hasMetadata("time") ? time * this.getMetadata("time").offset : 0;
-
-      var axis_space = this.getMetadata(axis);
-      var width_space = axis_space.width_space;
-      var height_space = axis_space.height_space;
-
-      var width = axis_space.width;
-      var height = axis_space.height;
-
-      var axis_space_offset = axis_space.offset;
-      var width_space_offset = width_space.offset;
-      var height_space_offset = height_space.offset;
-
-      // Calling the volume data's constructor guarantees that the
-      // slice data buffer has the same type as the volume.
-      //
-      //var slice_data = new this._data.constructor(width * height);
-      var slice_data = new this._data.constructor(width * height);
-
-      // Rows and colums of the result slice.
-      var row, col;
-
-      // Indexes into the volume, relative to the slice.
-      // NOT xspace, yspace, zspace coordinates!!!
-      var x, y, z;
-
-      // Linear offsets into volume considering an
-      // increasing number of axes: (t) time,
-      // (z) z-axis, (y) y-axis, (x) x-axis.
-      var tz_offset, tzy_offset, tzyx_offset;
-
-      // Whether the dimension steps positively or negatively.
-      var x_positive = width_space.step  > 0;
-      var y_positive = height_space.step > 0;
-      var z_positive = axis_space.step   > 0;
-
-      // iterator for the result slice.
-      var i = 0;
-      var intensity = 0;
-      var intensitySum = 0;
-      var min = Infinity;
-      var max = -Infinity;
-
-      var maxOfVolume = this.getMetadata("voxel_max");
-
-      z = z_positive ? slice_num : axis_space.space_length - slice_num - 1;
-      if (z >= 0 && z < axis_space.space_length) {
-        tz_offset = time_offset + z * axis_space_offset;
-
-        for (row = height - 1; row >= 0; row--) {
-          y = y_positive ? row : height - row - 1;
-          tzy_offset = tz_offset + y * height_space_offset;
-
-          for (col = 0; col < width; col++) {
-            x = x_positive ? col : width - col - 1;
-            tzyx_offset = tzy_offset + x * width_space_offset;
-
-            intensity = this._data[tzyx_offset];
-
-            min = Math.min(min, intensity);
-            max = Math.max(max, intensity);
-            intensitySum += intensity;
-
-            slice_data[i++] = intensity;
-          }
-        }
-      }
-
-      var outputImage = new Image2D();
-      outputImage.setData(  slice_data, width, height, 1);
-      outputImage.setMetadata("min", min);
-      outputImage.setMetadata("max", max);
-      outputImage.setMetadata("avg", intensitySum / (i-1) );
-      return outputImage;
-
-    }
-
-
-    /**
-    * Get the intensity of a given voxel, addressed by dimensionality order.
-    * In case of doubt, use getIntensity_xyz instead.
-    * @param {Number} i - Position within the biggest dimensionality order
-    * @param {Number} j - Position within the in-the-middle dimensionality order
-    * @param {Number} k - Position within the smallest dimensionality order
-    */
-    getIntensity_ijk(i, j, k, time = 0) {
-      var order = this.getMetadata("order");
-
-      if (i < 0 || i >= this.getMetadata( order[0] ).space_length ||
-          j < 0 || j >= this.getMetadata( order[1] ).space_length ||
-          k < 0 || k >= this.getMetadata( order[2] ).space_length)
-      {
-          console.warn("getIntensity_ijk position is out of range.");
-          return 0;
-      }
-
-      //var time_offset = this.hasMetadata( "time" ) ? time * this.getMetadata( "time" ).offset : 0;
-      var time_offset = this._metadata.time.offset * time;
-
-      var xyzt_offset = (
-        i * this.getMetadata( order[0] ).offset +
-        j * this.getMetadata( order[1] ).offset +
-        k * this.getMetadata( order[2] ).offset +
-        time_offset);
-
-      return this._data[xyzt_offset];
-    }
-
-
-    /**
-    * Get the intensity of a given voxel, addressed by dimension names.
-    * @param {Number} x - position within xspace
-    * @param {Number} y - position within yspace
-    * @param {Number} z - position within zspace
-    * @param {Number} time - position in time (optional)
-    */
-    getIntensity_xyz(x, y, z, time = 0) {
-
-      if (x < 0 || x >= this._metadata.xspace.space_length ||
-          y < 0 || y >= this._metadata.yspace.space_length ||
-          z < 0 || z >= this._metadata.zspace.space_length)
-      {
-          console.warn("getIntensity_xyz position is out of range.");
-          return 0;
-      }
-
-      //var time_offset = this.hasMetadata( "time" ) ? time * this.getMetadata( "time" ).offset : 0;
-      var time_offset = this._metadata.time.offset * time;
-      
-      var xyzt_offset = (
-        x * this._metadata.xspace.offset +
-        y * this._metadata.yspace.offset +
-        z * this._metadata.zspace.offset +
-        time_offset);
-
-      return this._data[xyzt_offset];
-    }
-
-    
-    getIntensity_xyzOrientation( x, y, z, time=0){
-      var time_offset = this.hasMetadata("time") ? time * this.getMetadata("time").offset : 0;
-      
-      if( x== 10 && y==30 && z==20){
-        console.log("stop");
-      }
-      
-      var xspace = this.getMetadata("xspace");
-      var yspace = this.getMetadata("yspace");
-      var zspace = this.getMetadata("zspace");
-      
-      // Whether the dimension steps positively or negatively.
-      var x_positive = xspace.step > 0;
-      var y_positive = yspace.step > 0;
-      var z_positive = zspace.step > 0;
-      
-      var xOrent = x_positive ? x : xspace.space_length - x - 1;
-      var yOrent = y_positive ? y : yspace.space_length - y - 1;
-      //var yOrent = y_positive ? yspace.space_length - y - 1 : y;
-      var zOrent = z_positive ? z : zspace.space_length - z - 1;
-      
-      if (x >= 0 && x < xspace.space_length &&
-          y >= 0 && y < yspace.space_length &&
-          z >= 0 && z < zspace.space_length )
-      {
-        var offset = time_offset + 
-                     xOrent * xspace.offset +
-                     yOrent * yspace.offset +
-                     zOrent * zspace.offset;
-        return this._data[offset];
-      }else{
-        return null;
-      }
-      
-    }
-    
-    
-    /**
-    * Get the number of samples over time
-    */
-    getTimeLength(){
-      return ( this.hasMetadata("time") ? this.getMetadata("time").space_length : 1 );
-    }
-
-
-    /**
-    * Tells if a given point is inside or outside the image
-    * @param {Object} pos - position like {x: Number, y: Number, z: Number}
-    * @return {Boolean} true for inside, false for outside
-    */
-    isInside( pos ){
-      return !(pos.x < 0 || pos.x >= this._metadata.xspace.space_length ||
-               pos.y < 0 || pos.y >= this._metadata.yspace.space_length ||
-               pos.z < 0 || pos.z >= this._metadata.zspace.space_length)
-    }
-    
-
-    /**
-    * Sample the color along a segment
-    * @param {Object} posFrom - starting position of type {x: Number, y: Number, z: Number}
-    * @param {Object} posFrom - ending position of type {x: Number, y: Number, z: Number}
-    * @return {Object} array of Array like that: {
-                                                    positions: [
-                                                      {x: x0, y: y0, z: z0},
-                                                      {x: x1, y: y1, z: z1},
-                                                      {x: x2, y: y2, z: z2},
-                                                      ...
-                                                    ],
-                                                    labels: [
-                                                      "(x0, y0, z0)", "(x1, y1, z1)", "(x2, y2, z2)", ...
-                                                    ],
-                                                    colors: [
-                                                              [r0, r1, r2 ...],
-                                                              [g0, g1, g2 ...],
-                                                              [b0, b1, b2 ...]
-                                                    ]
-                                                  }
-       return null if posFrom or posTo is outside
-    */
-    getSegmentSample( posFrom, posTo, time = 0 ){
-      // both position must be inside the image
-      if( !this.isInside(posFrom) || !this.isInside(posTo) )
-        return null;
-        
-      var dx = posTo.x - posFrom.x;
-      var dy = posTo.y - posFrom.y;
-      var dz = posTo.z - posFrom.z;
-      var euclidianDistance = Math.sqrt( Math.pow(dx , 2) + Math.pow(dy , 2) + Math.pow(dz , 2) );
-      var numberOfSamples = Math.floor( euclidianDistance + 1 );
-      
-      // we want to sample every unit distance along the segment
-      var stepX = dx / euclidianDistance;
-      var stepY = dy / euclidianDistance;
-      var stepZ = dz / euclidianDistance;
-      
-      var ncpp = this._metadata.ncpp;
-      var positions = new Array(numberOfSamples).fill(0);
-      var colors = new Array(ncpp).fill(0);
-      var labels = new Array(numberOfSamples).fill(0);
-      
-      // creating empty arrays for colors
-      for(var c=0; c<ncpp; c++){
-        colors[c] = new Array(numberOfSamples).fill(0);
-      }
-      
-      // walk along the segment, from posFrom to posTo
-      for(var i=0; i<numberOfSamples; i++){
-        var currentPos = {
-          x: Math.round(posFrom.x + i*stepX),
-          y: Math.round(posFrom.y + i*stepY),
-          z: Math.round(posFrom.z + i*stepZ)
-        };
-        
-        positions[i] = currentPos;
-        labels[i] = "(" + currentPos.x + ", " + currentPos.y + ", " + currentPos.z + ")";
-        
-        var pixValue = [this.getIntensity_xyz( currentPos.x, currentPos.y, currentPos.z )];
-        
-        // each channel is dispatched in its array
-        for(var c=0; c<ncpp; c++){
-          colors[c][i] = pixValue[c];
-        }
-      }
-      
-      return {
-        positions: positions,
-        labels: labels,
-        colors: colors
-      }
-    } /* END of method getLineSample */
-    
-
-  } /* END of class Image3D */
-
-  // register this type as a CoreType
-  CoreTypes.addCoreType( Image3D );
-
-  /*
-  * Author   Jonathan Lurie - http://me.jonathanlurie.fr
-  * License  MIT
-  * Link      https://github.com/Pixpipe/pixpipejs
-  * Lab       MCIN - Montreal Neurological Institute
-  */
-
-  /**
-  * ImageToImageFilter is not to be used as-is but rather as a base class for any
-  * filter that input a single Image2D and output a single Image2D.
-  * This class does not overload the update() method.
-  */
-  class ImageToImageFilter extends Filter {
-
-    constructor(){
-      super();
-    }
-
-
-    /**
-    * Check if all input image have the same size.
-    * @return {Boolean} true is same size, false if not.
-    */
-    hasSameSizeInput(){
-      var that = this;
-      var inputCategories = Object.keys( this._input );
-      var sameSize = true;
-
-      var widths = [];
-      var heights = [];
-
-      inputCategories.forEach( function(key){
-        widths.push( that._getInput( key ).getWidth() );
-        heights.push( that._getInput( key ).getHeight() );
-      });
-
-      // if all input have the same size
-      if(widths.length){
-        widths.sort();
-        heights.sort();
-        sameSize = (widths[ 0 ] == widths[ widths.length -1 ] ) &&
-                   (heights[ 0 ] == heights[ heights.length -1 ] );
-
-        if( !sameSize ){
-          console.warn("Input image do not all have the same size. Filter not valid");
-        }
-      }
-
-      return sameSize;
-    }
-
-
-    /**
-    * Check if all the inputs have the same number of component per pixel.
-    * @return {Boolean} true if the ncpp are the same for all input image
-    */
-    hasSameNcppInput(){
-      var inputCategories = Object.keys( this._input );
-
-      // if no input, return false
-      if(!inputCategories.length)
-        return false;
-
-      var ncpp = this._getInput( inputCategories[0] ).getComponentsPerPixel();
-
-      for(var i=0; i<inputCategories.length; i++){
-        if( ncpp != this._getInput( inputCategories[i] ).getComponentsPerPixel()){
-          console.warn("Input image do not all have the same number of components per pixel. Filter not valid");
-          return false;
-        }
-      }
-
-      return true;
-    }
-
-
-
-  } /* END class ImageToImageFilter */
-
-  /*
-  * Author   Jonathan Lurie - http://me.jonathanlurie.fr
-  * License  MIT
-  * Link      https://github.com/Pixpipe/pixpipejs
-  * Lab       MCIN - Montreal Neurological Institute
-  */
-
-  /**
-  * MniVolume instance are like Image3D but include some brain things
-  */
-  class MniVolume extends Image3D{
-
-
-    /**
-    * Constructor of an Image3D instance. If no options, no array is allocated.
-    * @param {Object} options - if present, must have options.xSize, options.ySize, option.zSize.
-    * Also options.ncpp to set the number of components per pixel. (possibly for using time series)
-    */
-    constructor( options=null ){
-      super();
-    }
-
-
-    /**
-    * [STATIC]
-    * mainly used by the ouside world (like from Nifti)
-    */
-    static transformToMinc(transform, header) {
-      var x_dir_cosines = [];
-      var y_dir_cosines = [];
-      var z_dir_cosines = [];
-
-      // A tiny helper function to calculate the magnitude of the rotational
-      // part of the transform.
-      //
-      function magnitude(v) {
-        var dotprod = v[0] * v[0] + v[1] * v[1] + v[2] * v[2];
-        if (dotprod <= 0) {
-          dotprod = 1.0;
-        }
-        return Math.sqrt(dotprod);
-      }
-
-      // Calculate the determinant of a 3x3 matrix, from:
-      // http://www.mathworks.com/help/aeroblks/determinantof3x3matrix.html
-      //
-      // det(A) = A_{11} (A_{22}A_{33} - A_{23}A_{32}) -
-      //          A_{12} (A_{21}A_{33} - A_{23}A_{31}) +
-      //          A_{13} (A_{21}A_{32} - A_{22}A_{31})
-      //
-      // Of course, I had to change the indices from 1-based to 0-based.
-      //
-      function determinant(c0, c1, c2) {
-        return (c0[0] * (c1[1] * c2[2] - c1[2] * c2[1]) -
-                c0[1] * (c1[0] * c2[2] - c1[2] * c2[0]) +
-                c0[2] * (c1[0] * c2[1] - c1[1] * c2[0]));
-      }
-
-      // Now that we have the transform, need to convert it to MINC-like
-      // steps and direction_cosines.
-
-      var xmag = magnitude(transform[0]);
-      var ymag = magnitude(transform[1]);
-      var zmag = magnitude(transform[2]);
-
-      var xstep = (transform[0][0] < 0) ? -xmag : xmag;
-      var ystep = (transform[1][1] < 0) ? -ymag : ymag;
-      var zstep = (transform[2][2] < 0) ? -zmag : zmag;
-
-      for (var i = 0; i < 3; i++) {
-        x_dir_cosines[i] = transform[i][0] / xstep;
-        y_dir_cosines[i] = transform[i][1] / ystep;
-        z_dir_cosines[i] = transform[i][2] / zstep;
-      }
-
-      header.xspace.step = xstep;
-      header.yspace.step = ystep;
-      header.zspace.step = zstep;
-
-      // Calculate the corrected start values.
-      var starts = [transform[0][3],
-                    transform[1][3],
-                    transform[2][3]
-                   ];
-
-      // (bert): I believe that the determinant of the direction
-      // cosines should always work out to 1, so the calculation of
-      // this value should not be needed. But I have no idea if NIfTI
-      // enforces this when sform transforms are written.
-      var denom  = determinant(x_dir_cosines, y_dir_cosines, z_dir_cosines);
-      var xstart = determinant(starts, y_dir_cosines, z_dir_cosines);
-      var ystart = determinant(x_dir_cosines, starts, z_dir_cosines);
-      var zstart = determinant(x_dir_cosines, y_dir_cosines, starts);
-
-      header.xspace.start = xstart / denom;
-      header.yspace.start = ystart / denom;
-      header.zspace.start = zstart / denom;
-
-      header.xspace.direction_cosines = x_dir_cosines;
-      header.yspace.direction_cosines = y_dir_cosines;
-      header.zspace.direction_cosines = z_dir_cosines;
-    };
-
-
-    /**
-    * [STATIC]
-    * swap the data to be used from the outside (ie. nifti)
-    */
-    static swapn(byte_data, n_per_item) {
-      for (var d = 0; d < byte_data.length; d += n_per_item) {
-        var hi_offset = n_per_item - 1;
-        var lo_offset = 0;
-        while (hi_offset > lo_offset) {
-          var tmp = byte_data[d + hi_offset];
-          byte_data[d + hi_offset] = byte_data[d + lo_offset];
-          byte_data[d + lo_offset] = tmp;
-          hi_offset--;
-          lo_offset++;
-        }
-      }
-    }
-
-
-    /**
-    * Initialize a MniVolume with the data and the header.
-    * @param {Array} data - TypedArray containing the data
-    */
-    setData( data, header ){
-      var that = this;
-      this._data = data;
-
-      this.setMetadata( "position", {} );
-      this.setMetadata( "current_time", 0 );
-
-      // copying header into metadata
-      var headerKeys = Object.keys(header);
-      headerKeys.forEach( function(key){
-        that.setMetadata( key, header[key] );
-      });
-
-      // find min/max
-      this._scanDataRange();
-
-      // set W2v matrix
-      this._saveOriginAndTransform();
-
-      // adding some fields to metadata header
-      this._finishHeader();
-
-      console.log(this);
-    }
-
-
-
-
-
-    /**
-    * [PRIVATE}
-    * Calculate the world to voxel transform and save it, so we
-    * can access it efficiently. The transform is:
-    * cxx / stepx | cxy / stepx | cxz / stepx | (-o.x * cxx - o.y * cxy - o.z * cxz) / stepx
-    * cyx / stepy | cyy / stepy | cyz / stepy | (-o.x * cyx - o.y * cyy - o.z * cyz) / stepy
-    * czx / stepz | czy / stepz | czz / stepz | (-o.x * czx - o.y * czy - o.z * czz) / stepz
-    * 0           | 0           | 0           | 1
-    *
-    * Origin equation taken from (http://www.bic.mni.mcgill.ca/software/minc/minc2_format/node4.html)
-    */
-    _saveOriginAndTransform() {
-
-      var xspace = this.getMetadata("xspace");
-      var yspace = this.getMetadata("yspace");
-      var zspace = this.getMetadata("zspace");
-
-      var startx = xspace.start;
-      var starty = yspace.start;
-      var startz = zspace.start;
-      var cx = xspace.direction_cosines;
-      var cy = yspace.direction_cosines;
-      var cz = zspace.direction_cosines;
-      var stepx = xspace.step;
-      var stepy = yspace.step;
-      var stepz = zspace.step;
-
-      // voxel_origin
-      var o = {
-        x: startx * cx[0] + starty * cy[0] + startz * cz[0],
-        y: startx * cx[1] + starty * cy[1] + startz * cz[1],
-        z: startx * cx[2] + starty * cy[2] + startz * cz[2]
-      };
-
-      this.setMetadata("voxel_origin", o);
-
-      var tx = (-o.x * cx[0] - o.y * cx[1] - o.z * cx[2]) / stepx;
-      var ty = (-o.x * cy[0] - o.y * cy[1] - o.z * cy[2]) / stepy;
-      var tz = (-o.x * cz[0] - o.y * cz[1] - o.z * cz[2]) / stepz;
-
-      var w2v = [
-        [cx[0] / stepx, cx[1] / stepx, cx[2] / stepx, tx],
-        [cy[0] / stepy, cy[1] / stepy, cy[2] / stepy, ty],
-        [cz[0] / stepz, cz[1] / stepz, cz[2] / stepz, tz]
-      ];
-
-      this.setMetadata("w2v", w2v);
-    }
-
-
-  } /* END of class Image3D */
-
-  // register this type as a CoreType
-  CoreTypes.addCoreType( MniVolume );
-
-  /*
-  * Author   Jonathan Lurie - http://me.jonathanlurie.fr
-  * License  MIT
-  * Link      https://github.com/Pixpipe/pixpipejs
-  * Lab       MCIN - Montreal Neurological Institute
-  */
-
-
-  /**
-  * A LineString is a vectorial reprensation of a line or polyline, open or closed.
-  * When closed, it can be considered as a polygon.  
-  * By default, a LineString is 2 dimensional but the dimension can be changed when
-  * using the `.setData(...)` method or before any point addition with `.setNod()`.
-  * To close a LineString, use `.setMetadata("closed", true);`, this will not add
-  * any point but will flag this LineString as "closed".
-  *
-  */
-  class LineString extends PixpipeContainer {
-    
-    constructor() {
-      super();
-      this.setMetadata("closed", false);
-      this.setMetadata("defaultNod", 2);
-      this.setMetadata("nod", 2);
-      
-      this._type = LineString.TYPE();
-      
-      // local record for saving the last point
-      this._lastPoint = null;
-    }
-    
-    
-    /**
-    * Hardcode the datatype
-    */
-    static TYPE(){
-      return "LINESTRING";
-    }
-    
-    
-    /**
-    * Set/replace the point data.
-    * @param {points} points - 1D array containing coord [x, y, x, y, x, y, ...]
-    * @param {Number} nod - Number of Dimensions, default = 2
-    * @param {Boolean} deepCopy - pointer copy if false, deep copy if true.
-    */
-    setData(points, nod=-1, deepCopy=false){
-      if( nod != -1){
-        this.setMetadata("nod", nod);
-      }
-      
-      if(points.length % this.getMetadata("nod") != 0 ){
-        console.warn("The number of points is not compatible with the number of dimensions (nod).");
-        return;
-      }
-      
-      if(deepCopy){
-        this._data = new points.constructor( points );
-      }else{
-        this._data = points;
-      }
-      
-      this._setLastPoint();
-    }
-    
-    
-    /**
-    * Define the number of dimensions. This can be done only when this LineString
-    * is still empty.
-    * @param {Number} nod - Number of dimensions
-    */
-    setNod( nod ){
-      if(!this._data || !this._data.length){
-        console.warn("The number of dimension can be set only when this LineString is empty.");
-        return;
-      }
-      
-      this.setMetadata("nod", nod);
-    }
-    
-    
-    /**
-    * Get the number of dimensions
-    * @return {Number} the nod
-    */
-    getNod(){
-      return this.getMetadata("nod");
-    }
-    
-    
-    /**
-    * Get the internal image data (pointer)
-    * @return {Array} the original data, dont mess up with this one.
-    * in case of doubt, use  getDataCopy()
-    */
-    getData(){
-      return this._data;  // return the actual array, editable!
-    }
-
-
-    /**
-    * Get a copy of the data
-    * @return {Array} a deep copy of the data
-    */
-    getDataCopy(){
-      return new this._data.constructor( this._data );
-    }
-    
-    
-    /**
-    * Get the number of points in this linestring
-    * @return {Number} nb of points
-    */
-    getNumberOfPoints(){
-      if(!this._data){
-        return 0;
-      }
-      
-      return this._data.length / this.getMetadata("nod");
-    }
-    
-    
-    /**
-    * Get a point of this LineString
-    * @return {Array} a point, being [x, y] if 2D or [x, y, z] if 3D
-    */
-    getPoint( index ){
-      if(index >=0 && index < getNumberOfPoints){
-        var nod = this._metadata.nod;
-        return this._data.slice(index*nod, index*nod + nod);
-      }else{
-        console.warn("Index of point is out of range.");
-        return null;
-      }
-    }
-    
-    
-    /**
-    * Considere this LineString as closed, making it a polygon
-    */
-    close(){
-      this.setMetadata("closed", true);
-    }
-    
-    
-    /**
-    * Considere this LineString as open
-    */
-    open(){
-      this.setMetadata("closed", false);
-    }
-    
-    
-    /**
-    * Add a point at the end of the LineString. Keeps the polygon open.
-    * @param {Array} position - [x, y] if 2D or [x, y, z] if 3D
-    */
-    addPoint( position ){
-      if( position.length != this._metadata.nod ){
-        console.warn("Cannot add the point becase it has a diferent number of dimensions.");
-        return;
-      }
-      
-      if( !this._data ){
-        this._data = new Array();
-      }
-      
-      for(var i=0; i<position.length; i++){
-        this._data.push( position[i] );
-      }
-      
-      // we keep it for easy access
-      this._lastPoint = position;
-    }
-    
-    
-    /**
-    * Get the last point but does not pop it out
-    * @return {Array} the point as [x, y] or [x, y, z]
-    */
-    peekPoint(){
-      if(!this._data){
-        return null;
-      }
-      
-      if(this._lastPoint){
-        return this._lastPoint;
-      }
-      
-      this._setLastPoint();
-      return this._lastPoint;
-    }
-    
-    
-    /**
-    * @private
-    * define the last point
-    */
-    _setLastPoint(){
-      this._lastPoint = this._data.slice(- this._metadata.nod);
-      if(this._lastPoint.length == 0){
-        this._lastPoint = null;
-      }
-    }
-    
-    
-    /**
-    * Get the last point and remove it from this LineString
-    * @return {Array} like [x, y] or [x, y, z] or null if no more point
-    */
-    popPoint(){
-      if(!this._data){
-        console.warn("This LineString was not added any point.");
-        return null;
-      }
-      
-      if(!this._data.length){
-        console.warn("No more point in this LineString.");
-        return null;
-      }
-
-      var pointToReturn = new Array(this._lastPoint);
-      this._lastPoint.length = this._lastPoint.length - this._metadata.nod;
-      this._setLastPoint();
-    }
-    
-    
-    /**
-    * Checks if a given point is part of this LineString
-    * @param {Array} p - point coords like [x, y] for 2D or [x, y, z] for 3D
-    * @return {Boolean} truee if the given point is in this LineString, false if not.
-    */
-    hasPoint( p ){
-      var nod = this.getMetadata("nod");
-      
-      if(p.length != nod){
-        console.warn("The given point does not have the same number of dimensions as the LineString.");
-        return false;
-      }
-      
-      for(var i=0; i<this._data.length-1; i+=2){
-        if(this._data[i] == p[0] && this._data[i+1] == p[1]){
-          return true;
-        }
-      }
-      
-      return false;
-    }
-    
-    
-  } /* END of class LineString */
-
-  // register this type as a CoreType
-  CoreTypes.addCoreType( LineString );
-
-  /*
   * Author    Jonathan Lurie - http://me.jonathanlurie.fr
   *
   * License   MIT
@@ -12783,13 +11655,13 @@
   */
 
   /**
-  * Image3DAlt class is one of the few base element of Pixpipejs.
+  * Image3D class is one of the few base element of Pixpipejs.
   * It is always considered to be 4 channels (RGBA) and stored as a Float32Array
   * typed array.
   */
-  class Image3DAlt extends PixpipeContainer{
+  class Image3D extends PixpipeContainer{
     /**
-    * Constructor of an Image3DAlt instance. If no options, no array is allocated.
+    * Constructor of an Image3D instance. If no options, no array is allocated.
     * @param {Object} options - may contain the following:
     *   - options.xSize {Number} space length along x axis
     *   - options.ySize {Number} space length along y axis
@@ -12800,7 +11672,7 @@
     */
     constructor( options=null ){
       super();
-      this._type = Image3DAlt.TYPE();
+      this._type = Image3D.TYPE();
 
       // default metadata values
       this._initMetadata();
@@ -12819,7 +11691,7 @@
     * Hardcode the datatype
     */
     static TYPE(){
-      return "IMAGE3DALT";
+      return "IMAGE3D";
     }
 
 
@@ -12972,10 +11844,10 @@
     }
 
     /**
-    * @return {Image3DAlt} a deep copy instance of this Image3DAlt
+    * @return {Image3D} a deep copy instance of this Image3D
     */
     clone(){
-      var cpImg = new Image3DAlt();
+      var cpImg = new Image3D();
       cpImg.setRawData( new this._data.constructor( this._data ) );
       cpImg.copyMetadataFrom( this );
       return cpImg;
@@ -14006,10 +12878,344 @@
 
 
 
-  } /* END of class Image3DAlt */
+  } /* END of class Image3D */
 
   // register this type as a CoreType
-  CoreTypes.addCoreType( Image3DAlt );
+  CoreTypes.addCoreType( Image3D );
+
+  /*
+  * Author   Jonathan Lurie - http://me.jonathanlurie.fr
+  * License  MIT
+  * Link      https://github.com/Pixpipe/pixpipejs
+  * Lab       MCIN - Montreal Neurological Institute
+  */
+
+  /**
+  * ImageToImageFilter is not to be used as-is but rather as a base class for any
+  * filter that input a single Image2D and output a single Image2D.
+  * This class does not overload the update() method.
+  */
+  class ImageToImageFilter extends Filter {
+
+    constructor(){
+      super();
+    }
+
+
+    /**
+    * Check if all input image have the same size.
+    * @return {Boolean} true is same size, false if not.
+    */
+    hasSameSizeInput(){
+      var that = this;
+      var inputCategories = Object.keys( this._input );
+      var sameSize = true;
+
+      var widths = [];
+      var heights = [];
+
+      inputCategories.forEach( function(key){
+        widths.push( that._getInput( key ).getWidth() );
+        heights.push( that._getInput( key ).getHeight() );
+      });
+
+      // if all input have the same size
+      if(widths.length){
+        widths.sort();
+        heights.sort();
+        sameSize = (widths[ 0 ] == widths[ widths.length -1 ] ) &&
+                   (heights[ 0 ] == heights[ heights.length -1 ] );
+
+        if( !sameSize ){
+          console.warn("Input image do not all have the same size. Filter not valid");
+        }
+      }
+
+      return sameSize;
+    }
+
+
+    /**
+    * Check if all the inputs have the same number of component per pixel.
+    * @return {Boolean} true if the ncpp are the same for all input image
+    */
+    hasSameNcppInput(){
+      var inputCategories = Object.keys( this._input );
+
+      // if no input, return false
+      if(!inputCategories.length)
+        return false;
+
+      var ncpp = this._getInput( inputCategories[0] ).getComponentsPerPixel();
+
+      for(var i=0; i<inputCategories.length; i++){
+        if( ncpp != this._getInput( inputCategories[i] ).getComponentsPerPixel()){
+          console.warn("Input image do not all have the same number of components per pixel. Filter not valid");
+          return false;
+        }
+      }
+
+      return true;
+    }
+
+
+
+  } /* END class ImageToImageFilter */
+
+  /*
+  * Author   Jonathan Lurie - http://me.jonathanlurie.fr
+  * License  MIT
+  * Link      https://github.com/Pixpipe/pixpipejs
+  * Lab       MCIN - Montreal Neurological Institute
+  */
+
+
+  /**
+  * A LineString is a vectorial reprensation of a line or polyline, open or closed.
+  * When closed, it can be considered as a polygon.  
+  * By default, a LineString is 2 dimensional but the dimension can be changed when
+  * using the `.setData(...)` method or before any point addition with `.setNod()`.
+  * To close a LineString, use `.setMetadata("closed", true);`, this will not add
+  * any point but will flag this LineString as "closed".
+  *
+  */
+  class LineString extends PixpipeContainer {
+    
+    constructor() {
+      super();
+      this.setMetadata("closed", false);
+      this.setMetadata("defaultNod", 2);
+      this.setMetadata("nod", 2);
+      
+      this._type = LineString.TYPE();
+      
+      // local record for saving the last point
+      this._lastPoint = null;
+    }
+    
+    
+    /**
+    * Hardcode the datatype
+    */
+    static TYPE(){
+      return "LINESTRING";
+    }
+    
+    
+    /**
+    * Set/replace the point data.
+    * @param {points} points - 1D array containing coord [x, y, x, y, x, y, ...]
+    * @param {Number} nod - Number of Dimensions, default = 2
+    * @param {Boolean} deepCopy - pointer copy if false, deep copy if true.
+    */
+    setData(points, nod=-1, deepCopy=false){
+      if( nod != -1){
+        this.setMetadata("nod", nod);
+      }
+      
+      if(points.length % this.getMetadata("nod") != 0 ){
+        console.warn("The number of points is not compatible with the number of dimensions (nod).");
+        return;
+      }
+      
+      if(deepCopy){
+        this._data = new points.constructor( points );
+      }else{
+        this._data = points;
+      }
+      
+      this._setLastPoint();
+    }
+    
+    
+    /**
+    * Define the number of dimensions. This can be done only when this LineString
+    * is still empty.
+    * @param {Number} nod - Number of dimensions
+    */
+    setNod( nod ){
+      if(!this._data || !this._data.length){
+        console.warn("The number of dimension can be set only when this LineString is empty.");
+        return;
+      }
+      
+      this.setMetadata("nod", nod);
+    }
+    
+    
+    /**
+    * Get the number of dimensions
+    * @return {Number} the nod
+    */
+    getNod(){
+      return this.getMetadata("nod");
+    }
+    
+    
+    /**
+    * Get the internal image data (pointer)
+    * @return {Array} the original data, dont mess up with this one.
+    * in case of doubt, use  getDataCopy()
+    */
+    getData(){
+      return this._data;  // return the actual array, editable!
+    }
+
+
+    /**
+    * Get a copy of the data
+    * @return {Array} a deep copy of the data
+    */
+    getDataCopy(){
+      return new this._data.constructor( this._data );
+    }
+    
+    
+    /**
+    * Get the number of points in this linestring
+    * @return {Number} nb of points
+    */
+    getNumberOfPoints(){
+      if(!this._data){
+        return 0;
+      }
+      
+      return this._data.length / this.getMetadata("nod");
+    }
+    
+    
+    /**
+    * Get a point of this LineString
+    * @return {Array} a point, being [x, y] if 2D or [x, y, z] if 3D
+    */
+    getPoint( index ){
+      if(index >=0 && index < getNumberOfPoints){
+        var nod = this._metadata.nod;
+        return this._data.slice(index*nod, index*nod + nod);
+      }else{
+        console.warn("Index of point is out of range.");
+        return null;
+      }
+    }
+    
+    
+    /**
+    * Considere this LineString as closed, making it a polygon
+    */
+    close(){
+      this.setMetadata("closed", true);
+    }
+    
+    
+    /**
+    * Considere this LineString as open
+    */
+    open(){
+      this.setMetadata("closed", false);
+    }
+    
+    
+    /**
+    * Add a point at the end of the LineString. Keeps the polygon open.
+    * @param {Array} position - [x, y] if 2D or [x, y, z] if 3D
+    */
+    addPoint( position ){
+      if( position.length != this._metadata.nod ){
+        console.warn("Cannot add the point becase it has a diferent number of dimensions.");
+        return;
+      }
+      
+      if( !this._data ){
+        this._data = new Array();
+      }
+      
+      for(var i=0; i<position.length; i++){
+        this._data.push( position[i] );
+      }
+      
+      // we keep it for easy access
+      this._lastPoint = position;
+    }
+    
+    
+    /**
+    * Get the last point but does not pop it out
+    * @return {Array} the point as [x, y] or [x, y, z]
+    */
+    peekPoint(){
+      if(!this._data){
+        return null;
+      }
+      
+      if(this._lastPoint){
+        return this._lastPoint;
+      }
+      
+      this._setLastPoint();
+      return this._lastPoint;
+    }
+    
+    
+    /**
+    * @private
+    * define the last point
+    */
+    _setLastPoint(){
+      this._lastPoint = this._data.slice(- this._metadata.nod);
+      if(this._lastPoint.length == 0){
+        this._lastPoint = null;
+      }
+    }
+    
+    
+    /**
+    * Get the last point and remove it from this LineString
+    * @return {Array} like [x, y] or [x, y, z] or null if no more point
+    */
+    popPoint(){
+      if(!this._data){
+        console.warn("This LineString was not added any point.");
+        return null;
+      }
+      
+      if(!this._data.length){
+        console.warn("No more point in this LineString.");
+        return null;
+      }
+
+      var pointToReturn = new Array(this._lastPoint);
+      this._lastPoint.length = this._lastPoint.length - this._metadata.nod;
+      this._setLastPoint();
+    }
+    
+    
+    /**
+    * Checks if a given point is part of this LineString
+    * @param {Array} p - point coords like [x, y] for 2D or [x, y, z] for 3D
+    * @return {Boolean} truee if the given point is in this LineString, false if not.
+    */
+    hasPoint( p ){
+      var nod = this.getMetadata("nod");
+      
+      if(p.length != nod){
+        console.warn("The given point does not have the same number of dimensions as the LineString.");
+        return false;
+      }
+      
+      for(var i=0; i<this._data.length-1; i+=2){
+        if(this._data[i] == p[0] && this._data[i+1] == p[1]){
+          return true;
+        }
+      }
+      
+      return false;
+    }
+    
+    
+  } /* END of class LineString */
+
+  // register this type as a CoreType
+  CoreTypes.addCoreType( LineString );
 
   var bvhtree_1 = createCommonjsModule(function (module) {
   /**
@@ -35086,5896 +34292,6 @@
 
   } /* END of class/interface GenericDecoderInterface */
 
-  /*
-  * Author    Jonathan Lurie - http://me.jonathanlurie.fr
-  *           Robert D. Vincent
-  *
-  * License   MIT
-  * Link      https://github.com/Pixpipe/pixpipejs
-  * Lab       MCIN - Montreal Neurological Institute
-  */
-
-
-  /**
-  * Decode a HDF5 file, but is most likely to be restricted to the features that are
-  * used for Minc2 file format.
-  * The metadata "debug" can be set to true to
-  * enable a verbose mode.
-  * Takes an ArrayBuffer as input (0) and output a `MniVolume` (which inherit `Image3D`).
-  *
-  * **Usage**
-  * - [examples/fileToMinc2.html](../examples/fileToMinc2.html)
-  */
-  class Minc2Decoder extends Decoder{
-
-    constructor(){
-      super();
-      this.setMetadata("targetType", MniVolume.name);
-      this.addInputValidator(0, ArrayBuffer);
-
-      this.setMetadata("debug", false);
-
-      this._type_enum = {
-        INT8: 1,
-        UINT8: 2,
-        INT16: 3,
-        UINT16: 4,
-        INT32: 5,
-        UINT32: 6,
-        FLT: 7,
-        DBL: 8,
-        STR: 9
-      };
-
-      this._type_matching = [
-        "int8",
-        "uint8",
-        "int16",
-        "uint16",
-        "int32",
-        "uint32",
-        "float32",
-        "float64",
-        "undef" // STR type is not compatible with minc
-        // we deal rgb8 manually
-      ];
-
-      this.type_sizes = [0, 1, 1, 2, 2, 4, 4, 4, 8, 0];
-
-      this._dv_offset = 0;
-      this._align = 8;
-      this._little_endian = true;
-      this._continuation_queue = [];
-      this._dv = null;//new DataView(abuf);
-      this._superblk = {};
-      this._start_offset = 0;
-      this._huge_id = 0;
-
-    }
-
-    /**
-    * @private
-    */
-    createLink() {
-      var r = {};
-      // internal/private
-      r.hdr_offset = 0;         // offset to object header.
-      r.data_offset = 0;        // offset to actual data.
-      r.data_length = 0;        // length of data.
-      r.n_filled = 0;           // counts elements written to array
-      r.chunk_size = 0;         // size of chunks
-      r.sym_btree = 0;          // offset of symbol table btree
-      r.sym_lheap = 0;          // offset of symbol table local heap
-      // permanent/global
-      r.name = "";              // name of this group or dataset.
-      r.attributes = {};        // indexed by attribute name.
-      r.children = [];          // not associative for now.
-      r.array = undefined;      // actual data, if dataset.
-      r.type = -1;              // type of data.
-      r.inflate = false;        // true if need to inflate (gzip).
-      r.dims = [];              // dimension sizes.
-      return r;
-    }
-
-
-    /**
-    * @private
-    *
-    * Turns out that alignment of the messages in at least the
-    * version 1 object header is actually relative to the start
-    * of the header. So we update the start position of the
-    * header here, so we can refer to it when calculating the
-    * alignment in this.checkAlignment().
-    */
-    startAlignment() {
-      this._start_offset = this._dv_offset;
-    }
-
-
-    /**
-    * @private
-    */
-    checkAlignment() {
-      var tmp = this._dv_offset - this._start_offset;
-      if ((tmp % this._align) !== 0) {
-        var n = this._align - (tmp % this._align);
-        this._dv_offset += n;
-        if (this.getMetadata("debug")) {
-          console.log('skipping ' + n + ' bytes at ' + tmp + ' for alignmnent');
-        }
-      }
-    }
-
-
-    /**
-    * @private
-    *
-    * helper functions to manipulate the current DataView offset.
-    */
-    skip(n_bytes) {
-      this._dv_offset += n_bytes;
-    }
-
-
-    /**
-    * @private
-    */
-    seek(new_offset) {
-      this._dv_offset = new_offset;
-    }
-
-
-    /**
-    * @private
-    */
-    tell() {
-      return this._dv_offset;
-    }
-
-
-    /**
-    * @private
-    *
-    * helper functions for access to our DataView.
-    */
-    getU8() {
-      var v = this._dv.getUint8(this._dv_offset);
-      this._dv_offset += 1;
-      return v;
-    }
-
-
-    /**
-    * @private
-    */
-    getU16() {
-      var v = this._dv.getUint16(this._dv_offset, this._little_endian);
-      this._dv_offset += 2;
-      return v;
-    }
-
-
-    /**
-    * @private
-    */
-    getU32() {
-      var v = this._dv.getUint32(this._dv_offset, this._little_endian);
-      this._dv_offset += 4;
-      return v;
-    }
-
-
-    /**
-    * @private
-    */
-    getU64() {
-      var v = this._dv.getUint64(this._dv_offset, this._little_endian);
-      this._dv_offset += 8;
-      return v;
-    }
-
-
-    /**
-    * @private
-    */
-    getF32() {
-      var v = this._dv.getFloat32(this._dv_offset, this._little_endian);
-      this._dv_offset += 4;
-      return v;
-    }
-
-
-    /**
-    * @private
-    */
-    getF64() {
-      var v = this._dv.getFloat64(this._dv_offset, this._little_endian);
-      this._dv_offset += 8;
-      return v;
-    }
-
-
-    /**
-    * @private
-    */
-    getOffset(offsz) {
-      var v = 0;
-      offsz = offsz || this._superblk.offsz;
-      if (offsz === 4) {
-        v = this._dv.getUint32(this._dv_offset, this._little_endian);
-      } else if (offsz === 8) {
-        v = this._dv.getUint64(this._dv_offset, this._little_endian);
-      } else {
-        throw new Error('Unsupported value for offset size ' + offsz);
-      }
-      this._dv_offset += offsz;
-      return v;
-    }
-
-
-    /**
-    * @private
-    */
-    getLength() {
-      var v = this._dv.getUint64(this._dv_offset, this._little_endian);
-      this._dv_offset += this._superblk.lensz;
-      return v;
-    }
-
-
-    /**
-    * @private
-    */
-    getString(length) {
-      var r = "";
-      var i;
-      var c;
-      for (i = 0; i < length; i += 1) {
-        c = this.getU8();
-        if (c === 0) {
-          this._dv_offset += (length - i - 1);
-          break;
-        }
-        r += String.fromCharCode(c);
-      }
-      return r;
-    }
-
-
-    /**
-    * @private
-    */
-    getArray(typ, n_bytes, new_off) {
-      var value;
-      var n_values;
-      var new_abuf;
-      var abuf = this._getInput();
-      var i;
-      var spp = this._dv_offset;
-      if (new_off) {
-        this._dv_offset = new_off;
-      }
-      switch (typ) {
-      case this._type_enum.INT8:
-        value = new Int8Array(abuf, this._dv_offset, n_bytes);
-        break;
-      case this._type_enum.UINT8:
-        value = new Uint8Array(abuf, this._dv_offset, n_bytes);
-        break;
-      case this._type_enum.INT16:
-        if ((this._dv_offset % 2) !== 0) {
-          new_abuf = new ArrayBuffer(n_bytes);
-          n_values = n_bytes / 2;
-          value = new Int16Array(new_abuf);
-          for (i = 0; i < n_values; i += 1) {
-            value[i] = this.getU16();
-          }
-        } else {
-          value = new Int16Array(abuf, this._dv_offset, n_bytes / 2);
-          this._dv_offset += n_bytes;
-        }
-        break;
-      case this._type_enum.UINT16:
-        if ((this._dv_offset % 2) !== 0) {
-          new_abuf = new ArrayBuffer(n_bytes);
-          n_values = n_bytes / 2;
-          value = new Uint16Array(new_abuf);
-          for (i = 0; i < n_values; i += 1) {
-            value[i] = this.getU16();
-          }
-        } else {
-          value = new Uint16Array(abuf, this._dv_offset, n_bytes / 2);
-          this._dv_offset += n_bytes;
-        }
-        break;
-      case this._type_enum.INT32:
-        if ((this._dv_offset % 4) !== 0) {
-          new_abuf = new ArrayBuffer(n_bytes);
-          n_values = n_bytes / 4;
-          value = new Int32Array(new_abuf);
-          for (i = 0; i < n_values; i += 1) {
-            value[i] = this.getU32();
-          }
-        } else {
-          value = new Int32Array(abuf, this._dv_offset, n_bytes / 4);
-          this._dv_offset += n_bytes;
-        }
-        break;
-      case this._type_enum.UINT32:
-        if ((this._dv_offset % 4) !== 0) {
-          new_abuf = new ArrayBuffer(n_bytes);
-          n_values = n_bytes / 4;
-          value = new Uint32Array(new_abuf);
-          for (i = 0; i < n_values; i += 1) {
-            value[i] = this.getU32();
-          }
-        } else {
-          value = new Uint32Array(abuf, this._dv_offset, n_bytes / 4);
-          this._dv_offset += n_bytes;
-        }
-        break;
-      case this._type_enum.FLT:
-        if ((this._dv_offset % 4) !== 0) {
-          new_abuf = new ArrayBuffer(n_bytes);
-          n_values = n_bytes / 4;
-          value = new Float32Array(new_abuf);
-          for (i = 0; i < n_values; i += 1) {
-            value[i] = this.getF32();
-          }
-        } else {
-          value = new Float32Array(abuf, this._dv_offset, n_bytes / 4);
-          this._dv_offset += n_bytes;
-        }
-        break;
-      case this._type_enum.DBL:
-        if ((this._dv_offset % 8) !== 0) {
-          new_abuf = new ArrayBuffer(n_bytes);
-          n_values = n_bytes / 8;
-          value = new Float64Array(new_abuf);
-          for (i = 0; i < n_values; i += 1) {
-            value[i] = this.getF64();
-          }
-        } else {
-          value = new Float64Array(abuf, this._dv_offset, n_bytes / 8);
-          this._dv_offset += n_bytes;
-        }
-        break;
-      default:
-        throw new Error('Bad type in this.getArray ' + typ);
-      }
-      if (new_off) {
-        this._dv_offset = spp;
-      }
-      return value;
-    }
-
-
-    /**
-    * @private
-    *
-    * Get a variably-sized integer from the DataView.
-    */
-    getUXX(n) {
-      var v;
-      var i;
-      switch (n) {
-      case 1:
-        v = this._dv.getUint8(this._dv_offset);
-        break;
-      case 2:
-        v = this._dv.getUint16(this._dv_offset, this._little_endian);
-        break;
-      case 4:
-        v = this._dv.getUint32(this._dv_offset, this._little_endian);
-        break;
-      case 8:
-        v = this._dv.getUint64(this._dv_offset, this._little_endian);
-        break;
-      default:
-        /* Certain hdf5 types can have odd numbers of bytes. We try
-         * to deal with that special case here.
-         */
-        v = 0;
-        if (!this._little_endian) {
-          for (i = 0; i < n; i++) {
-            v = (v << 8) + this._dv.getUint8(this._dv_offset + i);
-          }
-        }
-        else {
-          for (i = n - 1; i >= 0; i--) {
-            v = (v << 8) + this._dv.getUint8(this._dv_offset + i);
-          }
-        }
-      }
-      this._dv_offset += n;
-      return v;
-    }
-
-
-    /**
-    * @private
-    *
-    * Verify that the expected signature is found at this offset.
-    */
-    checkSignature(str) {
-      var i;
-      for (i = 0; i < str.length; i += 1) {
-        if (this._dv.getUint8(this._dv_offset + i) !== str.charCodeAt(i)) {
-          return false;
-        }
-      }
-      this.skip(str.length);
-      return true;
-    }
-
-
-    /**
-    * @private
-    */
-    hdf5Superblock() {
-      var sb = {};
-      if (!this.checkSignature("\u0089HDF\r\n\u001A\n")) {
-        throw new Error('Bad magic string in HDF5');
-      }
-      sb.sbver = this.getU8();
-      if (sb.sbver > 2) {
-        throw new Error('Unsupported HDF5 superblock version ' + sb.sbver);
-      }
-      if (sb.sbver <= 1) {
-        sb.fsver = this.getU8();
-        sb.rgver = this.getU8();
-        this.skip(1);            // reserved
-        sb.shver = this.getU8();
-        sb.offsz = this.getU8();
-        sb.lensz = this.getU8();
-        this.skip(1);            // reserved
-        sb.gln_k = this.getU16();
-        sb.gin_k = this.getU16();
-        sb.cflags = this.getU32();
-        if (sb.sbver === 1) {
-          sb.isin_k = this.getU16();
-          this.skip(2);        // reserved
-        }
-        sb.base_addr = this.getOffset(sb.offsz);
-        sb.gfsi_addr = this.getOffset(sb.offsz);
-        sb.eof_addr = this.getOffset(sb.offsz);
-        sb.dib_addr = this.getOffset(sb.offsz);
-        sb.root_ln_offs = this.getOffset(sb.offsz);
-        sb.root_addr = this.getOffset(sb.offsz);
-        sb.root_cache_type = this.getU32();
-        this.skip(4);
-        this.skip(16);
-      } else {
-        sb.offsz = this.getU8();
-        sb.lensz = this.getU8();
-        sb.cflags = this.getU8();
-        sb.base_addr = this.getOffset(sb.offsz);
-        sb.ext_addr = this.getOffset(sb.offsz);
-        sb.eof_addr = this.getOffset(sb.offsz);
-        sb.root_addr = this.getOffset(sb.offsz);
-        sb.checksum = this.getU32();
-      }
-      if (this.getMetadata("debug")) {
-        console.log("HDF5 SB " + sb.sbver + " " + sb.offsz + " " + sb.lensz + " " + sb.cflags);
-      }
-      return sb;
-    }
-
-
-    /**
-    * @private
-    *
-    * read the v2 fractal heap header
-    */
-    hdf5FractalHeapHeader() {
-      var fh = {};
-      if (!this.checkSignature("FRHP")) {
-        throw new Error('Bad or missing FRHP signature');
-      }
-      fh.ver = this.getU8();         // Version
-      fh.idlen = this.getU16();      // Heap ID length
-      fh.iof_el = this.getU16();     // I/O filter's encoded length
-      fh.flags = this.getU8();       // Flags
-      fh.objmax = this.getU32();     // Maximum size of managed objects.
-      fh.objnid = this.getLength();  // Next huge object ID
-      fh.objbta = this.getOffset();  // v2 B-tree address of huge objects
-      fh.nf_blk = this.getLength();  // Amount of free space in managed blocks
-      fh.af_blk = this.getOffset();  // Address of managed block free space manager
-      fh.heap_total = this.getLength(); // Amount of managed space in heap
-      fh.heap_alloc = this.getLength(); // Amount of allocated managed space in heap
-      fh.bai_offset = this.getLength(); // Offset of direct block allocation iterator
-      fh.heap_nobj = this.getLength();  // Number of managed objects in heap
-      fh.heap_chuge = this.getLength(); // Size of huge objects in heap
-      fh.heap_nhuge = this.getLength(); // Number of huge objects in heap
-      fh.heap_ctiny = this.getLength(); // Size of tiny objects in heap
-      fh.heap_ntiny = this.getLength(); // Number of tiny objects in heap
-      fh.table_width = this.getU16();   // Table width
-      fh.start_blksz = this.getLength(); // Starting block size
-      fh.max_blksz = this.getLength();   // Maximum direct block size
-      fh.max_heapsz = this.getU16();     // Maximum heap size
-      fh.rib_srows = this.getU16();      // Starting # of rows in root indirect block
-      fh.root_addr = this.getOffset();   // Address of root block
-      fh.rib_crows = this.getU16();      // Current # of rows in root indirect block
-
-      var max_dblock_rows = Math.log2(fh.max_blksz) - Math.log2(fh.start_blksz) + 2;
-      fh.K = Math.min(fh.rib_crows, max_dblock_rows) * fh.table_width;
-      fh.N = (fh.rib_crows < max_dblock_rows) ? 0 : fh.K - (max_dblock_rows * fh.table_width);
-
-      if (this.getMetadata("debug")) {
-        console.log("FRHP V" + fh.ver + " F" + fh.flags + " " + fh.objbta + " Total:" + fh.heap_total + " Alloc:" + fh.heap_alloc + " #obj:" + fh.heap_nobj + " width:" + fh.table_width + " start_blksz:" + fh.start_blksz + " max_blksz:" + fh.max_blksz + " " + fh.max_heapsz + " srows:" + fh.rib_srows + " crows:" + fh.rib_crows + " " + fh.heap_nhuge);
-        console.log("   K: " + fh.K + " N: " + fh.N);
-      }
-
-      if (fh.iof_el > 0) {
-        throw new Error("Filters present in fractal heap.");
-      }
-      return fh;
-    }
-
-
-    /**
-    * @private
-    *
-    * read the v2 btree header
-    */
-    hdf5V2BtreeHeader() {
-      var bh = {};
-      if (!this.checkSignature("BTHD")) {
-        throw new Error('Bad or missing BTHD signature');
-      }
-      bh.ver = this.getU8();
-      bh.type = this.getU8();
-      bh.nodesz = this.getU32();
-      bh.recsz = this.getU16();
-      bh.depth = this.getU16();
-      bh.splitp = this.getU8();
-      bh.mergep = this.getU8();
-      bh.root_addr = this.getOffset();
-      bh.root_nrec = this.getU16();
-      bh.total_nrec = this.getLength();
-      bh.checksum = this.getU32();
-
-      if (this.getMetadata("debug")) {
-        console.log("BTHD V" + bh.ver + " T" + bh.type + " " + bh.nodesz + " " + bh.recsz + " " + bh.depth + " " + bh.root_addr + " " + bh.root_nrec + " " + bh.total_nrec);
-      }
-      return bh;
-    }
-
-
-
-    /**
-    * @private
-    *
-    * Enumerates btree records in a block. Records are found both in direct
-    * and indirect v2 btree blocks.
-    */
-    hdf5V2BtreeRecords(fh, bt_type, nrec, link) {
-      var i;
-      var spp;                  // saved position pointer
-      var offset;
-      var length;
-      if (bt_type === 1) {
-        for (i = 0; i < nrec; i++) {
-          offset = this.getOffset();
-          length = this.getLength();
-          var id = this.getLength();
-          if (this.getMetadata("debug")) {
-            console.log("  -> " + offset + " " + length + " " + id + " " + this._this._huge_id);
-          }
-          spp = this.tell();
-          if (id === this._this._huge_id) {
-            this.seek(offset);
-            this.hdf5MsgAttribute(length, link);
-          }
-          this.seek(spp);
-        }
-      }
-      else if (bt_type === 8) {
-        var cb_offs;
-        var cb_leng;
-        /* maximum heap size is stored in bits! */
-        cb_offs = fh.max_heapsz / 8;
-        var tmp = Math.min(fh.objmax, fh.max_blksz);
-        if (tmp <= 256) {
-          cb_leng = 1;
-        }
-        else if (tmp <= 65536) {
-          cb_leng = 2;
-        }
-        else {
-          cb_leng = 4;
-        }
-        for (i = 0; i < nrec; i++) {
-          /* Read managed fractal heap ID.
-           */
-          var vt = this.getU8();
-          if ((vt & 0xc0) !== 0) {
-            throw new Error('Bad Fractal Heap ID version ' + vt);
-          }
-          var id_type = (vt & 0x30);
-          var flags;
-          if (id_type === 0x10) {     // huge!
-            this._this._huge_id = this.getUXX(7);
-          }
-          else if (id_type === 0x00) { // managed.
-            offset = this.getUXX(cb_offs);
-            length = this.getUXX(cb_leng);
-          }
-          else {
-            throw new Error("Can't handle this Heap ID: " + vt);
-          }
-          flags = this.getU8();
-
-          /* Read the rest of the record.
-           */
-          this.getU32();               // creation order (IGNORE)
-          this.getU32();               // hash (IGNORE)
-          if (this.getMetadata("debug")) {
-            console.log("  -> " + vt + " " + offset + " " + length + " " + flags);
-          }
-          spp = this.tell();
-          if (id_type === 0x10) {
-            /* A "huge" object is found by indexing through the btree
-             * present in the header
-             */
-            this.seek(fh.objbta);
-            var bh = this.hdf5V2BtreeHeader();
-            if (bh.type === 1) {
-              this.seek(bh.root_addr);
-              this.hdf5V2BtreeLeafNode(fh, bh.root_nrec, link);
-            }
-            else {
-              throw new Error("Can only handle type-1 btrees");
-            }
-          }
-          else {
-            /*
-             * A managed object implies that the attribute message is
-             * found in the associated fractal heap at the specified
-             * offset in the heap. We get the actual address
-             * corresponding to the offset here.
-             */
-            var location = this.hdf5FractalHeapOffset(fh, offset);
-            this.seek(location);
-            this.hdf5MsgAttribute(length, link);
-          }
-          this.seek(spp);
-        }
-      }
-      else {
-        throw new Error("Unhandled V2 btree type.");
-      }
-    }
-
-
-    /**
-    * @private
-    *
-    * read a v2 btree leaf node
-    */
-    hdf5V2BtreeLeafNode(fh, nrec, link) {
-
-      if (!this.checkSignature("BTLF")) {
-        throw new Error('Bad or missing BTLF signature');
-      }
-
-      var ver = this.getU8();
-      var typ = this.getU8();
-
-      if (this.getMetadata("debug")) {
-        console.log("BTLF V" + ver + " T" + typ + " " + this.tell());
-      }
-      this.hdf5V2BtreeRecords(fh, typ, nrec, link);
-    }
-
-
-    /**
-    * @private
-    *
-    * read the hdf5 v2 btree internal node
-    */
-    hdf5V2BtreeInternalNode(fh, nrec, depth, link) {
-
-      if (!this.checkSignature("BTIN")) {
-        throw new Error('Bad or missing BTIN signature');
-      }
-      var ver = this.getU8();
-      var type = this.getU8();
-      var i;
-
-      if (this.getMetadata("debug")) {
-        console.log("BTIN V" + ver + " T" + type);
-      }
-      this.hdf5V2BtreeRecords(fh, type, nrec, link);
-      for (i = 0; i <= nrec; i++) {
-        var child_offset = this.getOffset();
-        var child_nrec = this.getUXX(1); // TODO: calculate real size!!
-        var child_total;
-        /* TODO: unfortunately, this field is optional and
-         * variably-sized. Calculating the size is non-trivial, as it
-         * depends on the total depth and size of the tree. For now
-         * we will just assume it is its minimum size, as I've never
-         * encountered a file with depth > 1 anyway.
-         */
-        if (depth > 1) {
-          child_total = this.getUXX(1);
-        }
-        if (this.getMetadata("debug")) {
-          console.log(" child->" + child_offset + " " + child_nrec + " " + child_total);
-        }
-      }
-    }
-
-
-    /**
-    * @private
-    */
-    hdf5GetMsgName(n) {
-
-      // JO: used to be in the global scope.
-      /* Names of the various HDF5 messages.
-       * Note that MESSAGE23 appears to be illegal. All the rest are defined,
-       * although I've never encountered a BOGUS message!
-       */
-      var msg_names = [
-        "NIL", "Dataspace", "LinkInfo", "Datatype", "FillValue 1", "FillValue 2",
-        "Link", "ExternalFiles", "Layout", "BOGUS", "GroupInfo", "FilterPipeline",
-        "Attribute", "ObjectComment", "ObjectModTime 1", "SharedMsgTable",
-        "ObjHdrContinue", "SymbolTable", "ObjectModTime 2", "BtreeKValue",
-        "DriverInfo", "AttrInfo", "ObjectRefCnt", "MESSAGE23",
-        "FileSpaceInfo"
-      ];
-
-      if (n < msg_names.length) {
-        return msg_names[n];
-      }
-      throw new Error('Unknown message type ' + n + " " + this.tell());
-    }
-
-
-    /**
-    * @private
-    */
-    hdf5V1BtreeNode(link) {
-      var abuf = this._getInput();
-      var i;
-      var bt = {};
-      if (!this.checkSignature("TREE")) {
-        throw new Error('Bad TREE signature at ' + this.tell());
-      }
-
-      bt.keys = [];
-
-      bt.node_type = this.getU8();
-      bt.node_level = this.getU8();
-      bt.entries_used = this.getU16();
-      bt.left_sibling = this.getOffset();
-      bt.right_sibling = this.getOffset();
-
-      if (this.getMetadata("debug")) {
-        console.log("BTREE type " + bt.node_type + " lvl " +
-                    bt.node_level + " n_used " + bt.entries_used + " " +
-                    bt.left_sibling + " " + bt.right_sibling);
-      }
-
-      if (!link) {
-        /* If this BTREE is associated with a group (not a dataset),
-         * then its keys are single "length" value.
-         */
-        for (i = 0; i < bt.entries_used; i += 1) {
-          bt.keys[i] = {};
-          bt.keys[i].key_value = this.getLength();
-          bt.keys[i].child_address = this.getOffset();
-          if (this.getMetadata("debug")) {
-            console.log("  BTREE " + i + " key " +
-                        bt.keys[i].key_value + " adr " +
-                        bt.keys[i].child_address);
-          }
-        }
-      } else {
-        var j;
-
-        /* If this BTREE is a "chunked raw data node" associated
-         * with a dataset, then its keys are complex, consisting
-         * of the chunk size in bytes, a filter mask, and a set of
-         * offsets matching the dimensionality of the chunk layout.
-         * The chunk size stores the actual stored length of the
-         * data, so it may not equal the uncompressed chunk size.
-         */
-        var chunks = [];
-
-        for (i = 0; i < bt.entries_used; i += 1) {
-          bt.keys[i] = {};
-          chunks[i] = {};
-          chunks[i].chunk_size = this.getU32();
-          chunks[i].filter_mask = this.getU32();
-          chunks[i].chunk_offsets = [];
-          for (j = 0; j < link.dims.length + 1; j += 1) {
-            chunks[i].chunk_offsets.push(this.getU64());
-          }
-          bt.keys[i].child_address = this.getOffset();
-          if (i < bt.entries_used) {
-            if (this.getMetadata("debug")) {
-              console.log("  BTREE " + i +
-                          " chunk_size " + chunks[i].chunk_size +
-                          " filter_mask " + chunks[i].filter_mask +
-                          " addr " + bt.keys[i].child_address);
-            }
-          }
-        }
-        chunks[i] = {};
-        chunks[i].chunk_size = this.getU32();
-        chunks[i].filter_mask = this.getU32();
-        chunks[i].chunk_offsets = [];
-        for (j = 0; j < link.dims.length + 1; j += 1) {
-          chunks[i].chunk_offsets.push(this.getU64());
-        }
-
-        /* If we're at a leaf node, we have data to deal with.
-         * We might have to uncompress!
-         */
-        if (bt.node_level === 0) {
-          var length;
-          var offset;
-          var sp;
-          var dp;
-
-          for (i = 0; i < bt.entries_used; i += 1) {
-            length = chunks[i].chunk_size;
-            offset = bt.keys[i].child_address;
-
-            if (link.inflate) {
-              sp = new Uint8Array(abuf, offset, length);
-              dp = pako_1.inflate(sp);
-              switch (link.type) {
-              case this._type_enum.INT8:
-                dp = new Int8Array(dp.buffer);
-                break;
-              case this._type_enum.UINT8:
-                dp = new Uint8Array(dp.buffer);
-                break;
-              case this._type_enum.INT16:
-                dp = new Int16Array(dp.buffer);
-                break;
-              case this._type_enum.UINT16:
-                dp = new Uint16Array(dp.buffer);
-                break;
-              case this._type_enum.INT32:
-                dp = new Int32Array(dp.buffer);
-                break;
-              case this._type_enum.UINT32:
-                dp = new Uint32Array(dp.buffer);
-                break;
-              case this._type_enum.FLT:
-                dp = new Float32Array(dp.buffer);
-                break;
-              case this._type_enum.DBL:
-                dp = new Float64Array(dp.buffer);
-                break;
-              default:
-                throw new Error('Unknown type code ' + link.type);
-              }
-              if (link.array.length - link.n_filled < dp.length) {
-                dp = dp.subarray(0, link.array.length - link.n_filled);
-              }
-              link.array.set(dp, link.n_filled);
-              link.n_filled += dp.length;
-              if (this.getMetadata("debug")) {
-                console.log(link.name + " " + sp.length + " " + dp.length + " " + link.n_filled + "/" + link.array.length);
-              }
-            }
-            else {
-              /* no need to inflate data. */
-              dp = this.getArray(link.type, length, offset);
-              link.array.set(dp, link.n_filled);
-              link.n_filled += dp.length;
-            }
-          }
-        } else {
-          for (i = 0; i < bt.entries_used; i += 1) {
-            this.seek(bt.keys[i].child_address);
-            this.hdf5V1BtreeNode(link);
-          }
-        }
-      }
-      return bt;
-    }
-
-
-    /**
-    * @private
-    */
-    hdf5GroupSymbolTable(lh, link) {
-      if (!this.checkSignature("SNOD")) {
-        throw new Error('Bad or missing SNOD signature');
-      }
-      var ver = this.getU8();
-      this.skip(1);
-      var n_sym = this.getU16();
-      if (this.getMetadata("debug")) {
-        console.log("this.hdf5GroupSymbolTable V" + ver + " #" + n_sym +
-                    " '" + link.name + "'");
-      }
-      var i;
-      var link_name_offset;
-      var ohdr_address;
-      var cache_type;
-      var child;
-      var spp;
-
-      for (i = 0; i < 2 * this._superblk.gln_k; i += 1) {
-        link_name_offset = this.getOffset();
-        ohdr_address = this.getOffset();
-        cache_type = this.getU32();
-        this.skip(20);
-
-        if (i < n_sym) {
-          child = this.createLink();
-          child.hdr_offset = ohdr_address;
-          if (lh) {
-            spp = this.tell();
-            /* The link name is a zero-terminated string
-             * starting at the link_name_off relative to
-             * the beginning of the data segment of the local
-             * heap.
-             */
-            this.seek(lh.lh_dseg_off + link_name_offset);
-            child.name = this.getString(lh.lh_dseg_len);
-            this.seek(spp);
-          }
-          if (this.getMetadata("debug")) {
-            console.log("    " + i + " O " + link_name_offset + " A " +
-                        ohdr_address + " T " + cache_type + " '" +
-                        child.name + "'");
-          }
-          link.children.push(child);
-        }
-      }
-    }
-
-
-    /**
-    * @private
-    *
-    * Read a v1 local heap header. These define relatively small
-    * regions used primarily for storing symbol names associated with
-    * a symbol table message.
-    */
-    hdf5LocalHeap() {
-      var lh = {};
-      if (!this.checkSignature("HEAP")) {
-        throw new Error('Bad or missing HEAP signature');
-      }
-      lh.lh_ver = this.getU8();
-      this.skip(3);
-      lh.lh_dseg_len = this.getLength();
-      lh.lh_flst_len = this.getLength();
-      lh.lh_dseg_off = this.getOffset();
-      if (this.getMetadata("debug")) {
-        console.log("LHEAP V" + lh.lh_ver + " " + lh.lh_dseg_len + " " +
-                    lh.lh_flst_len + " " + lh.lh_dseg_off);
-      }
-      return lh;
-    }
-
-
-    /**
-    * @private
-    *
-    * Process a "dataspace" message. Dataspaces define the
-    * dimensionality of a dataset or attribute. They define the
-    * number of dimensions (rank) and the current length of each
-    * dimension. It is possible to specify a "maximum" length that is
-    * greater than or equal to the current length, but MINC doesn't
-    * rely on that feature so these values are ignored.  Finally it
-    * is also possible to specify a "permutation index" that alters
-    * storage order of the dataset, but again, MINC doesn't rely on
-    * this feature, so the values are ignored.
-    */
-    hdf5MsgDataspace(sz, link) {
-      var cb;
-      var ver = this.getU8();
-      var n_dim = this.getU8();
-      var flag = this.getU8();
-      if (ver <= 1) {
-        this.skip(5);
-      } else {
-        this.skip(1);
-      }
-
-      var n_items = 1;
-      var dlen = [];
-      var i;
-      for (i = 0; i < n_dim; i += 1) {
-        dlen[i] = this.getLength();
-        n_items *= dlen[i];
-      }
-
-      cb = (n_dim * this._superblk.lensz) + ((ver <= 1) ? 8 : 4);
-
-      var dmax = [];
-      if ((flag & 1) !== 0) {
-        cb += n_dim * this._superblk.lensz;
-        for (i = 0; i < n_dim; i += 1) {
-          dmax[i] = this.getLength();
-        }
-      }
-
-      var dind = [];
-      if ((flag & 2) !== 0) {
-        cb += n_dim * this._superblk.lensz;
-        for (i = 0; i < n_dim; i += 1) {
-          dind[i] = this.getLength();
-        }
-      }
-      var msg = "this.hdf5MsgDataspace V" + ver + " N" + n_dim + " F" + flag;
-      if (this.getMetadata("debug")) {
-        if (n_dim !== 0) {
-          msg += "[" + dlen.join(', ') + "]";
-        }
-        console.log(msg);
-      }
-      if (cb < sz) {
-        this.skip(sz - cb);
-      }
-      if (link) {
-        link.dims = dlen;
-      }
-      return n_items;
-    }
-
-
-    /**
-    * @private
-    *
-    *
-    * link info messages may contain a fractal heap address where we
-    * can find additional link messages for this object. This
-    * happens, for example, when there are lots of links in a
-    * particular group.
-    */
-    hdf5MsgLinkInfo(link) {
-      var that = this;
-
-      var ver = this.getU8();
-      var flags = this.getU8();
-      if ((flags & 1) !== 0) {
-        this.getU64();          // max. creation index (IGNORE).
-      }
-      var fh_address = this.getOffset(); // fractal heap address
-      var bt_address = this.getOffset(); // v2 btree for name index
-      if ((flags & 2) !== 0) {
-        this.getOffset();       // creation order index (IGNORE).
-      }
-      if (this.getMetadata("debug")) {
-        console.log("this.hdf5MsgLinkInfo V" + ver + " F" + flags +
-                    " FH " + fh_address + " BT " + bt_address);
-      }
-      var spp = this.tell();
-      if (fh_address < this._superblk.eof_addr) {
-        this.seek(fh_address);
-        /* If there is a valid fractal heap address in the link info message, that
-         * means the fractal heap is a collection of link messages. We can ignore
-         * the btree address because we can get the names from the link messages.
-         */
-        var fh = this.hdf5FractalHeapHeader();
-        var n_msg = 0;
-        this.hdf5FractalHeapEnumerate( fh, function(row, address, block_offset, block_length) {
-          var end_address = address + block_length;
-          while (n_msg < fh.heap_nobj && that.tell() < end_address) {
-            that.hdf5MsgLink(link);
-            n_msg += 1;
-          }
-          return true;          // continue with enumeration.
-        });
-      }
-      this.seek(spp);
-    }
-
-
-    /**
-    * @private
-    */
-    dt_class_name(cls) {
-      var names = [
-        "Fixed-Point", "Floating-Point", "Time", "String",
-        "BitField", "Opaque", "Compound", "Reference",
-        "Enumerated", "Variable-Length", "Array"
-      ];
-
-      if (cls < names.length) {
-        return names[cls];
-      }
-      throw new Error('Unknown datatype class: ' + cls);
-    }
-
-
-    /**
-    * @private
-    *
-    * Process a "datatype" message. These messages specify the data
-    * type of a single element within a dataset or attribute. Data
-    * types are extremely flexible, HDF5 supports a range of options
-    * for bit widths and organization atomic types. We support only
-    * fixed, float, and string atomic types, and those only for
-    * certain restricted (but common) cases.  At this point we
-    * provide no support for more exotic types such as bit field,
-    * enumerated, array, opaque, compound, time, reference,
-    * variable-length, etc.
-    *
-    * TODO: should support enumerated types, possibly a few others.
-    */
-    hdf5MsgDatatype(sz) {
-      var type = {};
-      var cb = 8;
-      var msg = "";
-      var bit_offs;
-      var bit_prec;
-      var exp_loc;
-      var exp_sz;
-      var mnt_loc;
-      var mnt_sz;
-      var exp_bias;
-
-      var cv = this.getU8();
-      var ver = cv >> 4;
-      var cls = cv & 15;
-      var bf = [];
-      var i;
-      for (i = 0; i < 3; i += 1) {
-        bf[i] = this.getU8();
-      }
-      var dt_size = this.getU32();
-
-      if (this.getMetadata("debug")) {
-        console.log("this.hdf5MsgDatatype V" + ver + " C" + cls +
-                    " " + this.dt_class_name(cls) +
-                    " " + bf[0] + "." + bf[1] + "." + bf[2] +
-                    " " + dt_size);
-      }
-
-      switch (cls) {
-      case 0:      /* Fixed (integer): bit 0 for byte order, bit 3 for signed */
-        bit_offs = this.getU16();
-        bit_prec = this.getU16();
-        switch (dt_size) {
-        case 4:
-          type.typ_type = (bf[0] & 8) ? this._type_enum.INT32 : this._type_enum.UINT32;
-          break;
-        case 2:
-          type.typ_type = (bf[0] & 8) ? this._type_enum.INT16 : this._type_enum.UINT16;
-          break;
-        case 1:
-          type.typ_type = (bf[0] & 8) ? this._type_enum.INT8 : this._type_enum.UINT8;
-          break;
-        default:
-          throw new Error('Unknown type size ' + dt_size);
-        }
-        type.typ_length = dt_size;
-        cb += 4;
-        if (this.getMetadata("debug")) {
-          console.log('  (' + bit_offs + ' ' + bit_prec + ')');
-        }
-        break;
-      case 1:                /* Float: uses bits 0,6 for byte order */
-        msg = "";
-        if (this.getMetadata("debug")) {
-          switch (bf[0] & 0x41) {
-          case 0:
-            msg += "LE ";
-            break;
-          case 1:
-            msg += "BE ";
-            break;
-          case 0x41:
-            msg += "VX ";
-            break;
-          default:
-            throw new Error('Reserved fp byte order: ' + bf[0]);
-          }
-        }
-        bit_offs = this.getU16();
-        bit_prec = this.getU16();
-        exp_loc = this.getU8();
-        exp_sz = this.getU8();
-        mnt_loc = this.getU8();
-        mnt_sz = this.getU8();
-        exp_bias = this.getU32();
-        if (this.getMetadata("debug")) {
-          msg += (bit_offs + " " + bit_prec + " " + exp_loc + " " + exp_sz +
-                  " " + mnt_loc + " " + mnt_sz + " " + exp_bias);
-        }
-        /* See if it's one of the formats we recognize.
-           IEEE 64-bit or IEEE 32-bit are the only two we handle.
-        */
-        if (bit_prec === 64 && bit_offs === 0 &&
-            exp_loc === 52 && exp_sz === 11 &&
-            mnt_loc === 0 && mnt_sz === 52 &&
-            exp_bias === 1023 && dt_size === 8) {
-          type.typ_type = this._type_enum.DBL;
-        } else if (bit_prec === 32 && bit_offs === 0 &&
-                   exp_loc === 23 && exp_sz === 8 &&
-                   mnt_loc === 0 && mnt_sz === 23 &&
-                   exp_bias === 127 && dt_size === 4) {
-          type.typ_type = this._type_enum.FLT;
-        } else {
-          throw new Error("Unsupported floating-point type");
-        }
-        if (this.getMetadata("debug")) {
-          console.log(msg);
-        }
-        type.typ_length = dt_size;
-        cb += 12;
-        break;
-
-      case 3:                   // string
-        /* bits 0-3 = 0: null terminate, 1: null pad, 2: space pad */
-        /* bits 4-7 = 0: ASCII, 1: UTF-8 */
-        type.typ_type = this._type_enum.STR;
-        type.typ_length = dt_size;
-        break;
-
-      default:
-        throw new Error('Unimplemented HDF5 data class ' + cls);
-      }
-      if (sz > cb) {
-        this.skip(sz - cb);
-      }
-      return type;
-    }
-
-
-    /**
-    * @private
-    *
-    * Process a "layout" message. These messages specify the location and organization
-    * of data in a dataset. The organization can be either compact, contiguous, or
-    * chunked. Compact data is stored in the message as a contiguous block. Contiguous
-    * data is stored elsewhere in the file in a single chunk. Chunked data is stored within
-    * a V1 Btree as a series of possibly filtered (e.g. compressed) chunks.
-    */
-    hdf5MsgLayout(link) {
-      var msg = "";
-
-      var ver = this.getU8();
-      var cls;
-      var n_dim;
-      var cdsz;
-      var dim = [];
-      var i;
-      var dtadr;
-      var dtsz;
-      var elsz;
-
-      var n_items = 1;
-      if (ver === 1 || ver === 2) {
-        n_dim = this.getU8();
-        cls = this.getU8();
-        this.skip(5);
-        if (this.getMetadata("debug")) {
-          msg += "this.hdf5MsgLayout V" + ver + " N" + n_dim + " C" + cls;
-        }
-        if (cls === 1 || cls === 2) { // contiguous or chunked
-          var addr = this.getOffset();
-          if (this.getMetadata("debug")) {
-            msg += " A" + addr;
-          }
-          link.data_offset = addr;
-        }
-
-        for (i = 0; i < n_dim; i += 1) {
-          dim[i] = this.getU32();
-          n_items *= dim[i];
-        }
-
-        if (this.getMetadata("debug")) {
-          msg += "[" + dim.join(', ') + "]";
-        }
-
-        if (cls === 2) {        // chunked
-          elsz = this.getU32();
-          link.chunk_size = n_items * elsz;
-          if (this.getMetadata("debug")) {
-            msg += " E" + elsz;
-          }
-        }
-        if (cls === 0) {        // compact
-          cdsz = this.getU32();
-          if (this.getMetadata("debug")) {
-            msg += "(" + cdsz + ")";
-          }
-          link.data_offset = this.tell();
-          link.data_length = cdsz;
-        } else if (cls === 1) {
-          link.data_length = n_items;
-        }
-      } else if (ver === 3) {
-        cls = this.getU8();
-        msg = "this.hdf5MsgLayout V" + ver + " C" + cls;
-
-        if (cls === 0) {
-          cdsz = this.getU16();
-          if (this.getMetadata("debug")) {
-            msg += "(" + cdsz + ")";
-          }
-          link.data_offset = this.tell();
-          link.data_length = cdsz;
-        } else if (cls === 1) {
-          dtadr = this.getOffset();
-          dtsz = this.getLength();
-          if (this.getMetadata("debug")) {
-            msg += "(" + dtadr + ", " + dtsz + ")";
-          }
-          link.data_offset = dtadr;
-          link.data_length = dtsz;
-        } else if (cls === 2) {
-          n_dim = this.getU8();
-          dtadr = this.getOffset();
-          link.data_offset = dtadr;
-          link.chunk_size = 1;
-          for (i = 0; i < n_dim - 1; i += 1) {
-            dim[i] = this.getU32();
-            n_items *= dim[i];
-          }
-          if (this.getMetadata("debug")) {
-            msg += "(N" + n_dim + ", A" + dtadr + " [" + dim.join(',') + "]";
-          }
-          elsz = this.getU32();
-          link.chunk_size = n_items * elsz;
-          if (this.getMetadata("debug")) {
-            msg += " E" + elsz;
-          }
-        }
-      } else {
-        throw new Error("Illegal layout version " + ver);
-      }
-      if (this.getMetadata("debug")) {
-        console.log(msg);
-      }
-    }
-
-
-    /**
-    * @private
-    *
-    * Read a "filter pipeline" message. At the moment we _only_ handle
-    * deflate/inflate. Anything else will cause us to throw an exception.
-    */
-    hdf5MsgPipeline(link) {
-      var ver = this.getU8();
-      var nflt = this.getU8();
-
-      var msg = "this.hdf5MsgPipeline V" + ver + " N" + nflt;
-      if (ver === 1) {
-        this.skip(6);
-      }
-
-      if (this.getMetadata("debug")) {
-        console.log(msg);
-      }
-
-      var i;
-      var fiv;
-      var nlen;
-      var flags;
-      var ncdv;
-      for (i = 0; i < nflt; i += 1) {
-        fiv = this.getU16();
-        if (fiv !== 1) {             /* deflate */
-          throw new Error("Unimplemented HDF5 filter " + fiv);
-        }
-        else {
-          if (typeof pako_1 !== 'object') {
-            throw new Error('Need pako to inflate data.');
-          }
-          link.inflate = true;
-        }
-        if (ver === 1 || fiv > 256) {
-          nlen = this.getU16();
-        } else {
-          nlen = 0;
-        }
-
-        flags = this.getU16();
-        ncdv = this.getU16();
-        if ((ncdv & 1) !== 0) {
-          ncdv += 1;
-        }
-        if (nlen !== 0) {
-          this.skip(nlen);     // ignore name.
-        }
-
-        this.skip(ncdv * 4);
-
-        if (this.getMetadata("debug")) {
-          console.log("  " + i + " ID" + fiv + " F" + flags + " " + ncdv);
-        }
-      }
-    }
-
-
-    /**
-    * @private
-    *
-    * Process an "attribute" message. This actually defines an attribute that is
-    * to be associated with a group or dataset (what I generally call a "link"
-    * in this code. Attributes include a name, a datatype, and a dataspace, followed
-    * by the actual data.
-    */
-    hdf5MsgAttribute(sz, link) {
-      var ver = this.getU8();
-      var flags = this.getU8();
-      var nm_len = this.getU16();
-      var dt_len = this.getU16();
-      var ds_len = this.getU16();
-      var msg = "this.hdf5MsgAttribute V" + ver + " F" + flags + " " + sz + ": ";
-
-      if ((flags & 3) !== 0) {
-        throw new Error('Shared dataspaces and datatypes are not supported.');
-      }
-
-      if (ver === 3) {
-        var cset = this.getU8();
-        if (this.getMetadata("debug")) {
-          msg += (cset === 0) ? "ASCII" : "UTF-8";
-        }
-      }
-      if (this.getMetadata("debug")) {
-        msg += "(" + nm_len + " " + dt_len + " " + ds_len + ")";
-      }
-      if (ver < 3) {
-        nm_len = Math.floor((nm_len + 7) / 8) * 8;
-        dt_len = Math.floor((dt_len + 7) / 8) * 8;
-        ds_len = Math.floor((ds_len + 7) / 8) * 8;
-
-        if (this.getMetadata("debug")) {
-          msg += "/(" + nm_len + " " + dt_len + " " + ds_len + ")";
-        }
-      }
-
-      var att_name = this.getString(nm_len);
-      if (this.getMetadata("debug")) {
-        msg += " Name: " + att_name;
-        console.log(msg);
-      }
-      var val_type = this.hdf5MsgDatatype(dt_len);
-      var n_items = this.hdf5MsgDataspace(ds_len);
-      var val_len = 0;
-      if (sz > 0) {
-        if (ver < 3) {
-          val_len = sz - (8 + nm_len + dt_len + ds_len);
-        } else {
-          val_len = sz - (9 + nm_len + dt_len + ds_len);
-        }
-      } else {
-        val_len = val_type.typ_length * n_items;
-      }
-      if (this.getMetadata("debug")) {
-        console.log("  attribute data size " + val_len + " " + this.tell());
-      }
-      var att_value;
-      if (val_type.typ_type === this._type_enum.STR) {
-        att_value = this.getString(val_len);
-      } else {
-        att_value = this.getArray(val_type.typ_type, val_len);
-      }
-      link.attributes[att_name] = att_value;
-    }
-
-
-    /**
-    * @private
-    *
-    * Process a "group info" message. We don't actually do anything with these.
-    */
-    hdf5MsgGroupInfo() {
-      var n_ent = 4;
-      var n_lnl = 8;
-      var ver = this.getU8();
-      var flags = this.getU8();
-      if ((flags & 1) !== 0) {
-        this.getU16();          // link phase change: max compact value (IGNORE)
-        this.getU16();          // link phase cange: max dense value (IGNORE)
-      }
-      if ((flags & 2) !== 0) {
-        n_ent = this.getU16();
-        n_lnl = this.getU16();
-      }
-      if (this.getMetadata("debug")) {
-        console.log("this.hdf5MsgGroupInfo V" + ver + " F" + flags + " ENT " + n_ent + " LNL " + n_lnl);
-      }
-    }
-
-
-    /**
-    * @private
-    *
-    * Process a "link" message. This specifies the name and header location of either a
-    * group or a dataset within the current group. It is probably also used to implement
-    * internal links but we don't really support that.
-    */
-    hdf5MsgLink(link) {
-      var ver = this.getU8();
-      var ltype = 0;
-      if (ver !== 1) {
-        throw new Error("Bad link message version " + ver);
-      }
-      var flags = this.getU8();
-      if ((flags & 8) !== 0) {
-        ltype = this.getU8();
-      }
-      if ((flags & 4) !== 0) {
-        this.getU64();               // creation order (IGNORE)
-      }
-      if ((flags & 16) !== 0) {
-        this.getU8();                // link name character set (IGNORE)
-      }
-      var cb = 1 << (flags & 3);
-      var lnsz = this.getUXX(cb);
-
-      var child = this.createLink();
-
-      child.name = this.getString(lnsz);
-
-      if ((flags & 8) === 0) {
-        child.hdr_offset = this.getOffset();
-      }
-
-      if (this.getMetadata("debug")) {
-        console.log("this.hdf5MsgLink V" + ver + " F" + flags + " T" + ltype +
-                    " NM " + child.name + " OF " + child.hdr_offset);
-      }
-      link.children.push(child);
-    }
-
-
-    /**
-    * @private
-    *
-    * The fractal heap direct block contains:
-    * 1. A signature.
-    * 2. a byte version.
-    * 3. an offset pointing to the header (for integrity checking).
-    * 4. A variably-sized block offset that gives (_I think_) the mininum block offset
-    * associated with this block.
-    * 5. Variably-sized data. Block size varies with row number in a slightly tricky
-    * fashion. Each "row" consists of "table_width" blocks. The first two rows, row 0 and 1,
-    * have blocks of the "starting block size". Row 2-N have blocks of size 2^(row-1) times
-    * the starting block size.
-    */
-    hdf5FractalHeapDirectBlock(fh, row, address, callback) {
-      if (!this.checkSignature("FHDB")) {
-        throw new Error("Bad or missing FHDB signature");
-      }
-      var ver = this.getU8();
-      if (ver !== 0) {
-        throw new Error('Bad FHDB version: ' + ver);
-      }
-      this.getOffset();              // heap header address (IGNORE)
-      var cb = Math.ceil(fh.max_heapsz / 8.0);
-      var block_offset = this.getUXX(cb); // block offset
-      if ((fh.flags & 2) !== 0) {
-        this.getU32();               // checksum (IGNORE)
-      }
-
-      if (this.getMetadata("debug")) {
-        console.log("FHDB V:" + ver + " R:" + row + " O:" + block_offset + " A:" + address);
-      }
-      var header_length = 5 + this._superblk.offsz + cb;
-      if ((fh.flags & 2) !== 0) {
-        header_length += 4;
-      }
-      var block_length;
-      if (row <= 1) {
-        block_length = fh.start_blksz;
-      }
-      else {
-        block_length = Math.pow(2, row - 1) * fh.start_blksz;
-      }
-      if (callback) {
-        return callback(row, address, block_offset, block_length);
-      }
-      else {
-        return true;            // continue enumeration.
-      }
-    }
-
-
-    /**
-    * @private
-    *
-    * The fractal heap indirect block contains:
-    * 1. A signature.
-    * 2. a byte version
-    * 3. an offset pointing to the header (for integrity checking).
-    * 4. a variably-sized block offset that gives (_I think_) the mininum block offset
-    * associated with children of this block.
-    * 5. pointers to K direct blocks
-    * 6. pointers to N indirect blocks
-    * 7. A checksum. This code completely ignores checksums.
-    * See calculations of K and N in this.hdf5FractalHeapHeader(). Note that there can also
-    * be additional information in the header if "filtered" direct blocks are used. I have
-    * made no attempt to support this.
-    */
-    hdf5FractalHeapIndirectBlock(fh, callback) {
-      if (!this.checkSignature("FHIB")) {
-        throw new Error("Bad or missing FHIB signature");
-      }
-      var ver = this.getU8();
-      if (ver !== 0) {
-        throw new Error('Bad FHIB version: ' + ver);
-      }
-      this.getOffset();              // heap header address (IGNORE)
-      var cb = Math.ceil(fh.max_heapsz / 8.0);
-      var block_offset = this.getUXX(cb); // block offset
-
-      if (this.getMetadata("debug")) {
-        console.log("FHIB V:" + ver + " O:" + block_offset);
-      }
-      var i;
-      var address;
-      var db_addrs = [];
-      for (i = 0; i < fh.K; i += 1) {
-        address = this.getOffset();
-        if (address < this._superblk.eof_addr) {
-          if (this.getMetadata("debug")) {
-            console.log("direct block at " + address);
-          }
-          db_addrs.push(address);
-        }
-      }
-
-      var ib_addrs = [];
-      for (i = 0; i < fh.N; i += 1) {
-        address = this.getOffset();
-        if (address < this._superblk.eof_addr) {
-          if (this.getMetadata("debug")) {
-            console.log("indirect block at " + address);
-          }
-          ib_addrs.push(address);
-        }
-      }
-      this.getU32();                 // checksum (IGNORE)
-
-      /* Finished reading the indirect block, now go read its children.
-       */
-      for (i = 0; i < db_addrs.length; i++) {
-        this.seek(db_addrs[i]);
-        /* TODO: check row calculation!
-         */
-        if (!this.hdf5FractalHeapDirectBlock(fh, i / fh.table_width, db_addrs[i], callback)) {
-          return false;
-        }
-      }
-      for (i = 0; i < ib_addrs.length; i++) {
-        this.seek(ib_addrs[i]);
-        if (!this.hdf5FractalHeapIndirectBlock(fh, callback)) {
-          return false;
-        }
-      }
-      return true;
-    }
-
-
-    /**
-    * @private
-    *
-    * enumerate over all of the direct blocks in the fractal heap.
-    */
-    hdf5FractalHeapEnumerate(fh, callback) {
-      this.seek(fh.root_addr);
-      if (fh.K === 0) {
-        this.hdf5FractalHeapDirectBlock(fh, 0, fh.root_addr, callback);
-      }
-      else {
-        this.hdf5FractalHeapIndirectBlock(fh, callback);
-      }
-    }
-
-
-    /**
-    * @private
-    */
-    hdf5FractalHeapOffset(fh, offset) {
-      var location;
-      this.hdf5FractalHeapEnumerate(fh, function(row, address, block_offset, block_length) {
-        if (offset >= block_offset && offset < block_offset + block_length) {
-          location = address + (offset - block_offset);
-          return false;         // stop enumeration.
-        }
-        return true;            // continue enumeration.
-      });
-      return location;
-    }
-
-
-    /**
-    * @private
-    *
-    * Attribute info messages contain pointers to a fractal heap and a v2 btree.
-    * If these pointers are valid, we must follow them to find more attributes.
-    * The attributes are indexed by records in the "type 8" btree. These btree
-    * records
-    */
-    hdf5MsgAttrInfo(link) {
-      var ver = this.getU8();
-      if (ver !== 0) {
-        throw new Error('Bad attribute information message version: ' + ver);
-      }
-
-      var flags = this.getU8();
-
-      if ((flags & 1) !== 0) {
-        this.getU16();          // maximum creation index (IGNORE)
-      }
-      var fh_addr = this.getOffset();
-      var bt_addr = this.getOffset();
-      if ((flags & 2) !== 0) {
-        this.getOffset();       // attribute creation order (IGNORE)
-      }
-
-      if (this.getMetadata("debug")) {
-        console.log("this.hdf5MsgAttrInfo V" + ver + " F" + flags + " HP " + fh_addr +
-                    " AN " + bt_addr);
-      }
-
-      var spp = this.tell();
-      var fh;                   // fractal heap header.
-      if (fh_addr < this._superblk.eof_addr) {
-        this.seek(fh_addr);
-        fh = this.hdf5FractalHeapHeader();
-      }
-      if (bt_addr < this._superblk.eof_addr) {
-        this.seek(bt_addr);
-        var bh = this.hdf5V2BtreeHeader();
-        if (bh.type !== 8) {
-          throw new Error("Can only handle indexed attributes.");
-        }
-        this.seek(bh.root_addr);
-        if (bh.depth > 0) {
-          this.hdf5V2BtreeInternalNode(fh, bh.root_nrec, bh.depth, link);
-        }
-        else {
-          this.hdf5V2BtreeLeafNode(fh, bh.root_nrec, link);
-        }
-      }
-      this.seek(spp);
-    }
-
-
-    /**
-    * @private
-    *
-    * Process a single message, given a message header. Assumes that
-    * the data view offset is pointing to the remainder of the
-    * message.
-    *
-    * V1 and V2 files use different sets of messages to accomplish
-    * similar things. For example, V1 files tend to use "symbol
-    * table" messages to describe links within a group, whereas V2
-    * files use "link" and "linkinfo" messages.
-    */
-    hdf5ProcessMessage(msg, link) {
-      var cq_new = {};
-      var val_type;
-
-      switch (msg.hm_type) {
-      case 1:
-        this.hdf5MsgDataspace(msg.hm_size, link);
-        break;
-      case 2:
-        this.hdf5MsgLinkInfo(link);
-        break;
-      case 3:
-        val_type = this.hdf5MsgDatatype(msg.hm_size);
-        if (link) {
-          link.type = val_type.typ_type;
-        }
-        break;
-      case 6:
-        this.hdf5MsgLink(link);
-        break;
-      case 8:
-        this.hdf5MsgLayout(link);
-        break;
-      case 10:
-        this.hdf5MsgGroupInfo();
-        break;
-      case 11:
-        this.hdf5MsgPipeline(link);
-        break;
-      case 12:
-        this.hdf5MsgAttribute(msg.hm_size, link);
-        break;
-      case 16:
-        /* Process an object header continuation message. These
-         * basically just say this header continues with a new segment
-         * with a given location and length. They can come before the
-         * end of the current message segment, and multiple
-         * continuation messages can occur in any particular segment.
-         * This means we have to enqueue them and shift them off the
-         * queue when we finish processing the current segment.
-         */
-        cq_new.cq_off = this.getOffset();
-        cq_new.cq_len = this.getLength();
-        this._continuation_queue.push(cq_new);
-        if (this.getMetadata("debug")) {
-          console.log("hdf5MsgObjHdrContinue " + cq_new.cq_off + " " + cq_new.cq_len);
-        }
-        break;
-      case 17: // SymbolTable
-        link.sym_btree = this.getOffset();
-        link.sym_lheap = this.getOffset();
-        if (this.getMetadata("debug")) {
-          console.log("hdf5MsgSymbolTable " + link.sym_btree + " " + link.sym_lheap);
-        }
-        break;
-      case 21:
-        this.hdf5MsgAttrInfo(link);
-        break;
-      case 0:
-      case 4:
-      case 5:
-      case 7:
-      case 18:
-      case 19:
-      case 20:
-      case 22:
-      case 24:
-        this.skip(msg.hm_size);
-        break;
-      default:
-        throw new Error('Unknown message type: ' + msg.hm_type);
-      }
-    }
-
-
-    /**
-    * @private
-    *
-    * Read a V2 object header. Object headers contain a series of messages that define
-    * an HDF5 object, primarily a group or a dataset. V2 object headers, and V2 objects
-    * generally, are much less concerned about alignment than V1 objects.
-    */
-    hdf5V2ObjectHeader(link) {
-      if (!this.checkSignature("OHDR")) {
-        throw new Error('Bad or missing OHDR signature');
-      }
-
-      var that = this;
-      var ver = this.getU8();
-      var flags = this.getU8();
-
-      if ((flags & 0x20) !== 0) {
-        this.getU32();          // access time (IGNORE)
-        this.getU32();          // modify time (IGNORE)
-        this.getU32();          // change time (IGNORE)
-        this.getU32();          // birth time (IGNORE)
-      }
-
-      if ((flags & 0x10) !== 0) {
-        this.getU16(); // maximum number of compact attributes (IGNORE)
-        this.getU16(); // maximum number of dense attributes (IGNORE)
-      }
-
-      var cb = 1 << (flags & 3);
-      var ck0_size = this.getUXX(cb);
-
-      var msg_num = 0;
-      var msg_offs = 0;
-      var msg_bytes = ck0_size;
-
-      if (this.getMetadata("debug")) {
-        console.log("this.hdf5V2ObjectHeader V" + ver + " F" + flags + " HS" + ck0_size);
-      }
-
-      var hmsg;
-      var cq_head;
-      var spp;
-
-      while (true) {
-        while (msg_bytes - msg_offs >= 8) {
-          hmsg = {};
-          hmsg.hm_type = this.getU8();
-          hmsg.hm_size = this.getU16();
-          hmsg.hm_flags = this.getU8();
-          if (this.getMetadata("debug")) {
-            console.log("  msg" + msg_num + " F" + hmsg.hm_flags + " T " +
-                        hmsg.hm_type + " S " + hmsg.hm_size +
-                        " (" + msg_offs + "/" + msg_bytes + ") " +
-                        this.hdf5GetMsgName(hmsg.hm_type));
-          }
-          if ((flags & 0x04) !== 0) {
-            hmsg.hm_corder = this.getU16();
-          }
-          spp = this.tell();
-          this.hdf5ProcessMessage(hmsg, link);
-          this.seek(spp + hmsg.hm_size); // this.skip past message.
-
-          msg_offs += hmsg.hm_size + 4;
-
-          msg_num += 1;
-        }
-
-        if ((msg_bytes - msg_offs) > 4) {
-          this.skip(msg_bytes - (msg_offs + 4));
-        }
-
-        this.getU32();          // checksum (IGNORE)
-
-        if (this._continuation_queue.length !== 0) {
-          cq_head = this._continuation_queue.shift();
-          this.seek(cq_head.cq_off);
-          msg_bytes = cq_head.cq_len - 4;
-          msg_offs = 0;
-          if (this.getMetadata("debug")) {
-            console.log('continuing with ' + cq_head.cq_len + ' bytes at ' + this.tell());
-          }
-          if (!this.checkSignature("OCHK")) {
-            throw new Error("Bad v2 object continuation");
-          }
-        } else {
-          break;
-        }
-      }
-
-      link.children.forEach(function (child, link_num) {
-        that.seek(child.hdr_offset);
-        if (that.getMetadata("debug")) {
-          console.log(link_num + " " + child.hdr_offset + " " + child.name);
-        }
-        if (that.checkSignature("OHDR")) {
-          that.seek(child.hdr_offset);
-          that.hdf5V2ObjectHeader(child);
-        }
-        else {
-          that.seek(child.hdr_offset);
-          that.hdf5V1ObjectHeader(child);
-        }
-      });
-    }
-
-
-    /**
-    * @private
-    */
-    loadData(link) {
-      var that = this;
-
-      if (link.chunk_size !== 0) {
-        this.seek(link.data_offset);
-
-        var n_bytes = 1;
-        var i;
-        for (i = 0; i < link.dims.length; i += 1) {
-          n_bytes *= link.dims[i];
-        }
-        n_bytes *= this.typeSize(link.type);
-        if (this.getMetadata("debug")) {
-          console.log('allocating ' + n_bytes + ' bytes');
-        }
-        var ab = new ArrayBuffer(n_bytes);
-        link.n_filled = 0;
-        switch (link.type) {
-        case this._type_enum.INT8:
-          link.array = new Int8Array(ab);
-          break;
-        case this._type_enum.UINT8:
-          link.array = new Uint8Array(ab);
-          break;
-        case this._type_enum.INT16:
-          link.array = new Int16Array(ab);
-          break;
-        case this._type_enum.UINT16:
-          link.array = new Uint16Array(ab);
-          break;
-        case this._type_enum.INT32:
-          link.array = new Int32Array(ab);
-          break;
-        case this._type_enum.UINT32:
-          link.array = new Uint32Array(ab);
-          break;
-        case this._type_enum.FLT:
-          link.array = new Float32Array(ab);
-          break;
-        case this._type_enum.DBL:
-          link.array = new Float64Array(ab);
-          break;
-        default:
-          throw new Error('Illegal type: ' + link.type);
-        }
-        this.hdf5V1BtreeNode(link);
-      } else {
-        if (link.data_offset > 0 && link.data_offset < this._superblk.eof_addr) {
-          if (this.getMetadata("debug")) {
-            console.log('loading ' + link.data_length + ' bytes from ' + link.data_offset + ' to ' + link.name);
-          }
-          link.array = this.getArray(link.type, link.data_length,
-                                     link.data_offset);
-        } else {
-          if (this.getMetadata("debug")) {
-            console.log('data not present for /' + link.name + '/');
-          }
-        }
-      }
-
-      link.children.forEach(function (child) {
-        that.loadData(child);
-      });
-    }
-
-
-    /**
-    * @private
-    *
-    * Read a v1 object header. Object headers contain a series of
-    * messages that define an HDF5 object, primarily a group or a
-    * dataset. The v1 object header, like most of the v1 format, is
-    * very careful about alignment. Every message must be on an
-    * 8-byte alignment RELATIVE TO THE START OF THE HEADER. So if the
-    * header starts on an odd boundary, messages may start on odd
-    * boundaries as well. No, this doesn't make much sense.
-    */
-    hdf5V1ObjectHeader(link) {
-      var that = this;
-      var oh = {};
-      this.startAlignment();
-      oh.oh_ver = this.getU8();
-      this.skip(1);                // reserved
-      oh.oh_n_msgs = this.getU16();
-      oh.oh_ref_cnt = this.getU32();
-      oh.oh_hdr_sz = this.getU32();
-      if (oh.oh_ver !== 1) {
-        throw new Error("Bad v1 object header version: " + oh.oh_ver);
-      }
-      if (this.getMetadata("debug")) {
-        console.log("this.hdf5V1ObjectHeader V" + oh.oh_ver +
-                    " #M " + oh.oh_n_msgs +
-                    " RC " + oh.oh_ref_cnt +
-                    " HS " + oh.oh_hdr_sz);
-      }
-
-      var msg_bytes = oh.oh_hdr_sz;
-      var cq_head;
-      var msg_num;
-      var hmsg;
-      var spp;
-
-      for (msg_num = 0; msg_num < oh.oh_n_msgs; msg_num += 1) {
-        if (msg_bytes <= 8) {
-          if (this._continuation_queue.length !== 0) {
-            cq_head = this._continuation_queue.shift();
-            this.seek(cq_head.cq_off);
-            msg_bytes = cq_head.cq_len;
-            if (this.getMetadata("debug")) {
-              console.log('continuing with ' + msg_bytes + ' bytes at ' + this.tell());
-            }
-            this.startAlignment();
-          } else {
-            break;
-          }
-        }
-
-        this.checkAlignment();
-
-        hmsg = {};
-        hmsg.hm_type = this.getU16();
-        hmsg.hm_size = this.getU16();
-        hmsg.hm_flags = this.getU8();
-
-        if ((hmsg.hm_size % 8) !== 0) {
-          throw new Error('Size is not 8-byte aligned: ' + hmsg.hm_size);
-        }
-        this.skip(3);            // this.skip reserved
-        msg_bytes -= (8 + hmsg.hm_size);
-        if (this.getMetadata("debug")) {
-          console.log("  msg" + msg_num +
-                      " F " + hmsg.hm_flags +
-                      " T " + hmsg.hm_type +
-                      " S " + hmsg.hm_size +
-                      "(" + msg_bytes + ") " + this.hdf5GetMsgName(hmsg.hm_type));
-        }
-
-        spp = this.tell();
-        this.hdf5ProcessMessage(hmsg, link);
-        this.seek(spp + hmsg.hm_size); // this.skip whole message.
-      }
-
-      if (link.sym_btree !== 0 && link.sym_lheap !== 0) {
-        this.seek(link.sym_btree);
-        var bt = this.hdf5V1BtreeNode();
-        this.seek(link.sym_lheap);
-        var lh = this.hdf5LocalHeap();
-        var i;
-        for (i = 0; i < bt.entries_used; i += 1) {
-          this.seek(bt.keys[i].child_address);
-          if (this.checkSignature("SNOD")) {
-            this.seek(bt.keys[i].child_address);
-            this.hdf5GroupSymbolTable(lh, link);
-          } else {
-            this.seek(bt.keys[i].child_address);
-            this.hdf5V1ObjectHeader(link);
-          }
-        }
-
-        link.children.forEach(function (child) {
-          that.seek(child.hdr_offset);
-          that.hdf5V1ObjectHeader(child);
-        });
-      }
-    }
-
-
-  //------------------------------------------------------------------------------
-  //      FROM hdf5_tools.js
-
-    getTypeMatchMinc(typeEnumVal){
-      return this._type_matching[typeEnumVal - 1];
-    }
-
-
-
-    defined(x) {
-        return typeof x !== 'undefined';
-    }
-
-
-    typeName(x) {
-        if (! this.defined(x)) {
-            return "undefined";
-        }
-        return x.constructor.name;
-    }
-
-
-
-    typeSize(typ) {
-        if (typ >= this._type_enum.INT8 && typ < this.type_sizes.length) {
-            return this.type_sizes[typ];
-        }
-        throw new Error('Unknown type ' + typ);
-    }
-
-
-    typeIsFloat(typ) {
-        return (typ >= this._type_enum.FLT && typ <=this._type_enum.DBL);
-    }
-
-
-      /*
-       * The remaining code after this point is not truly HDF5 specific -
-       * it's mostly about converting the MINC file into the form
-       * BrainBrowser is able to use. Therefore it is used for both HDF5
-       * and NetCDF files.
-       */
-
-      /*
-       * Join does not seem to be defined on the typed arrays in
-       * javascript, so I've re-implemented it here, sadly.
-       */
-      join(array, string) {
-        var result = "";
-        if (array && array.length) {
-          var i;
-          for (i = 0; i < array.length - 1; i += 1) {
-            result += array[i];
-            result += string;
-          }
-          result += array[i];
-        }
-        return result;
-      }
-
-      /*
-       * Recursively print out the structure and contents of the file.
-       * Primarily useful for debugging.
-       */
-      printStructure(link, level) {
-        var that = this;
-
-        var i;
-        var msg = "";
-        for (i = 0; i < level * 2; i += 1) {
-          msg += " ";
-        }
-        msg += link.name + (link.children.length ? "/" : "");
-        if (link.type > 0) {
-          msg += ' ' + this.typeName(link.array);
-          if (link.dims.length) {
-            msg += '[' + link.dims.join(', ') + ']';
-          }
-          if (link.array) {
-            msg += ":" + link.array.length;
-          } else {
-            msg += " NULL";
-          }
-        }
-        console.log(msg);
-
-        Object.keys(link.attributes).forEach(function (name) {
-          var value = link.attributes[name];
-
-          msg = "";
-          for (i = 0; i < level * 2 + 1; i += 1) {
-            msg += " ";
-          }
-          msg += link.name + ':' + name + " " +
-            that.typeName(value) + "[" + value.length + "] ";
-          if (typeof value === "string") {
-            msg += JSON.stringify(value);
-          } else {
-            msg += "{" + that.join(value.slice(0, 16), ', ');
-            if (value.length > 16) {
-              msg += ", ...";
-            }
-            msg += "}";
-          }
-          console.log(msg);
-        });
-
-        link.children.forEach(function (child) {
-          that.printStructure(child, level + 1);
-        });
-      }
-
-      /* Find a dataset with a given name, by recursively searching through
-       * the links. Groups will have 'type' fields of -1, since they contain
-       * no data.
-       * TODO (maybe): Use associative array for children?
-       */
-      findDataset(link, name, level) {
-        var that = this;
-        var result;
-        if (link && link.name === name && link.type > 0) {
-          result = link;
-        } else {
-          link.children.find( function( child ) {
-            result = that.findDataset(child, name, level + 1);
-            return that.defined(result);
-          });
-        }
-        return result;
-      }
-
-      /* Find an attribute with a given name.
-       */
-      findAttribute(link, name, level) {
-        var that = this;
-        var result = link.attributes[name];
-        if (result)
-          return result;
-
-        link.children.find( function (child ) {
-          result = that.findAttribute( child, name, level + 1);
-          return that.defined(result);
-        });
-        return result;
-      }
-
-      /**
-       * @doc function
-       * @param {object} image The link object corresponding to the image data.
-       * @param {object} image_min The link object corresponding to the image-min
-       * data.
-       * @param {object} image_max The link object corresponding to the image-max
-       * data.
-       * @param {object} valid_range An array of exactly two items corresponding
-       * to the minimum and maximum valid _raw_ voxel values.
-       * @param {boolean} debug True if we should print debugging information.
-       * @returns A new ArrayBuffer containing the rescaled data.
-       * @description
-       * Convert the MINC data from voxel to real range. This returns a
-       * new buffer that contains the "real" voxel values. It does less
-       * work for floating-point volumes, since they don't need scaling.
-       *
-       * For debugging/testing purposes, also gathers basic voxel statistics,
-       * for comparison against mincstats.
-       */
-      scaleVoxels(image, image_min, image_max, valid_range, debug) {
-        /*
-        var new_abuf = new ArrayBuffer(image.array.length *
-                                       Float32Array.BYTES_PER_ELEMENT);
-        var new_data = new Float32Array(new_abuf);
-
-        */
-
-        // 1D array to store the voxel data,
-        // not initialized yet because it depends on the hdf5 type.
-        var new_abuf = null;
-        var new_data = null;
-
-        // we could simply use image.type, but written types are easier to read...
-        switch (this.getTypeMatchMinc(image.type)) {
-          case 'int8':
-            new_abuf = new ArrayBuffer(image.array.length * Int8Array.BYTES_PER_ELEMENT);
-            new_data = new Int8Array(new_abuf);
-            break;
-
-          case 'int16':
-            new_abuf = new ArrayBuffer(image.array.length * Int16Array.BYTES_PER_ELEMENT);
-            new_data = new Int16Array(new_abuf);
-            break;
-
-          case 'int32':
-            new_abuf = new ArrayBuffer(image.array.length * Int32Array.BYTES_PER_ELEMENT);
-            new_data = new Int32Array(new_abuf);
-            break;
-
-          case 'float32':
-            new_abuf = new ArrayBuffer(image.array.length * Float32Array.BYTES_PER_ELEMENT);
-            new_data = new Float32Array(new_abuf);
-            break;
-
-          case 'float64':
-            new_abuf = new ArrayBuffer(image.array.length * Float64Array.BYTES_PER_ELEMENT);
-            new_data = new Float64Array(new_abuf);
-            break;
-
-          case 'uint8':
-            new_abuf = new ArrayBuffer(image.array.length * Uint8Array.BYTES_PER_ELEMENT);
-            new_data = new Uint8Array(new_abuf);
-            break;
-
-          case 'uint16':
-            new_abuf = new ArrayBuffer(image.array.length * Uint16Array.BYTES_PER_ELEMENT);
-            new_data = new Uint16Array(new_abuf);
-            break;
-
-          case 'uint32':
-            new_abuf = new ArrayBuffer(image.array.length * Uint32Array.BYTES_PER_ELEMENT);
-            new_data = new Uint32Array(new_abuf);
-            break;
-
-          default:
-            var error_message = "Unsupported data type: " + header.datatype;
-            console.log({ message: error_message } );
-            //BrainBrowser.events.triggerEvent("error", { message: error_message } );
-            throw new Error(error_message);
-
-        }
-
-
-        var n_slice_dims = image.dims.length - image_min.dims.length;
-
-        if (n_slice_dims < 1) {
-          throw new Error("Too few slice dimensions: " + image.dims.length +
-                          " " + image_min.dims.length);
-        }
-        var n_slice_elements = 1;
-        var i;
-        for (i = image_min.dims.length; i < image.dims.length; i += 1) {
-          n_slice_elements *= image.dims[i];
-        }
-        if (debug) {
-          console.log(n_slice_elements + " voxels in slice.");
-        }
-        var s = 0;
-        var c = 0;
-        var x = -Number.MAX_VALUE;
-        var n = Number.MAX_VALUE;
-        var im = image.array;
-        var im_max = image_max.array;
-        var im_min = image_min.array;
-        if (debug) {
-          console.log("valid range is " + valid_range[0] + " to " + valid_range[1]);
-        }
-
-        var vrange;
-        var rrange;
-        var vmin = valid_range[0];
-        var rmin;
-        var j;
-        var v;
-        var is_float = this.typeIsFloat(image.type);
-        for (i = 0; i < image_min.array.length; i += 1) {
-          if (debug) {
-            console.log(i + " " + im_min[i] + " " + im_max[i] + " " +
-                        im[i * n_slice_elements]);
-          }
-          if (is_float) {
-            /* For floating-point volumes there is no scaling to be performed.
-             * We do scan the data and make sure voxels are within the valid
-             * range, and collect our statistics.
-             */
-            for (j = 0; j < n_slice_elements; j += 1) {
-              v = im[c];
-              if (v < valid_range[0] || v > valid_range[1]) {
-                new_data[c] = 0.0;
-              }
-              else {
-                new_data[c] = v;
-                s += v;
-                if (v > x) {
-                  x = v;
-                }
-                if (v < n) {
-                  n = v;
-                }
-              }
-              c += 1;
-            }
-          }
-          else {
-            /* For integer volumes we have to scale each slice according to image-min,
-             * image-max, and valid_range.
-             */
-            vrange = (valid_range[1] - valid_range[0]);
-            rrange = (im_max[i] - im_min[i]);
-            rmin = im_min[i];
-
-            /*
-            console.log(n_slice_elements);
-            console.log(vrange);
-            console.log(rrange);
-            console.log(rmin);
-            console.log("-----------------");
-            */
-
-
-            for (j = 0; j < n_slice_elements; j += 1) {
-
-              // v normalization to avoid "flickering".
-              // v is scaled to the range [0, im_max[i]]
-              // (possibly uint16 if the original per-slice min-max was not scaled up/down)
-              v = (im[c] - vmin) / vrange * rrange + rmin;
-
-              // we scale up/down to match the type of the target array
-              v = v / im_max[i] * valid_range[1];
-
-
-              new_data[c] = v;
-              s += v;
-              c += 1;
-              if (v > x) {
-                x = v;
-              }
-              if (v < n) {
-                n = v;
-              }
-
-            }
-
-          }
-        }
-
-        if (debug) {
-          console.log("Min: " + n);
-          console.log("Max: " + x);
-          console.log("Sum: " + s);
-          console.log("Mean: " + s / c);
-        }
-
-        return new_abuf;
-      }
-
-      /**
-       * @doc function
-       * @param {object} header The header object representing the structure
-       * of the MINC file.
-       * @param {object} image The typed array object used to represent the
-       * image data.
-       * @returns {boolean} True if this is an RGB volume.
-       * @description
-       * A MINC volume is an RGB volume if all three are true:
-       * 1. The voxel type is unsigned byte.
-       * 2. It has a vector_dimension in the last (fastest-varying) position.
-       * 3. The vector dimension has length 3.
-       */
-      isRgbVolume(header, image) {
-        var order = header.order;
-        return (image.array.constructor.name === 'Uint8Array' &&
-                order.length > 0 &&
-                order[order.length - 1] === "vector_dimension" &&
-                header.vector_dimension.space_length === 3);
-      }
-
-      /**
-       * @doc function
-       * @param {object} image The 'link' object created using createLink(),
-       * that corresponds to the image within the HDF5 or NetCDF file.
-       * @returns {object} A new ArrayBuffer that contains the original RGB
-       * data augmented with alpha values.
-       * @description
-       * This function copies the RGB voxels to the destination buffer.
-       * Essentially we just convert from 24 to 32 bits per voxel. This
-       * is another MINC-specific function.
-       */
-      rgbVoxels(image) {
-        var im = image.array;
-        var n = im.length;
-        var new_abuf = new ArrayBuffer(n / 3 * 4);
-        var new_byte = new Uint8Array(new_abuf);
-        var i, j = 0;
-        for (i = 0; i < n; i += 3) {
-          new_byte[j+0] = im[i+0];
-          new_byte[j+1] = im[i+1];
-          new_byte[j+2] = im[i+2];
-          new_byte[j+3] = 255;
-          j += 4;
-        }
-        return new_abuf;
-      }
-
-
-    //----------------------------------------------------------------------------
-    // FROM minc_reader.js
-    parseHeader(header_text) {
-      var header;
-      var error_message;
-
-      try{
-        header = JSON.parse(header_text);
-      } catch(error) {
-        error_message = "server did not respond with valid JSON" + "\n" +
-        "Response was: \n" + header_text;
-
-        console.log( { message: error_message });
-
-        //  BrainBrowser.events.triggerEvent("error", { message: error_message });
-        throw new Error(error_message);
-      }
-
-      if(header.order.length === 4) {
-        header.order = header.order.slice(1);
-      }
-
-      header.datatype = header.datatype || "uint8";
-
-      header.xspace.space_length = parseFloat(header.xspace.space_length);
-      header.yspace.space_length = parseFloat(header.yspace.space_length);
-      header.zspace.space_length = parseFloat(header.zspace.space_length);
-
-      header.xspace.start = parseFloat(header.xspace.start);
-      header.yspace.start = parseFloat(header.yspace.start);
-      header.zspace.start = parseFloat(header.zspace.start);
-
-      header.xspace.step = parseFloat(header.xspace.step);
-      header.yspace.step = parseFloat(header.yspace.step);
-      header.zspace.step = parseFloat(header.zspace.step);
-
-      header.xspace.direction_cosines = header.xspace.direction_cosines || [1, 0, 0];
-      header.yspace.direction_cosines = header.yspace.direction_cosines || [0, 1, 0];
-      header.zspace.direction_cosines = header.zspace.direction_cosines || [0, 0, 1];
-
-      header.xspace.direction_cosines = header.xspace.direction_cosines.map(parseFloat);
-      header.yspace.direction_cosines = header.yspace.direction_cosines.map(parseFloat);
-      header.zspace.direction_cosines = header.zspace.direction_cosines.map(parseFloat);
-
-      /* Incrementation offsets for each dimension of the volume.
-      * Note that this somewhat format-specific, so it does not
-      * belong in the generic "createVolume()" code.
-      */
-      header[header.order[0]].offset = header[header.order[1]].space_length * header[header.order[2]].space_length;
-      header[header.order[1]].offset = header[header.order[2]].space_length;
-      header[header.order[2]].offset = 1;
-
-      if(header.time) {
-        header.time.space_length = parseFloat(header.time.space_length);
-        header.time.start = parseFloat(header.time.start);
-        header.time.step = parseFloat(header.time.step);
-        header.time.offset = header.xspace.space_length * header.yspace.space_length * header.zspace.space_length;
-      }
-
-      return header;
-    }
-
-
-    /*
-      initialize the large 1D array of data depending on the type found.
-      Rearange the original ArrayBuffer into a typed array.
-      args:
-        header: obj - header of the data
-        raw_data: ArrayBuffer - sub object given by hdf5Loader
-    */
-    createMincData(header, raw_data){
-
-      var native_data = null;
-
-      switch (header.datatype) {
-        case 'int8':
-        native_data = new Int8Array(raw_data);
-        break;
-        case 'int16':
-        native_data = new Int16Array(raw_data);
-        break;
-        case 'int32':
-        native_data = new Int32Array(raw_data);
-        break;
-        case 'float32':
-        native_data = new Float32Array(raw_data);
-        break;
-        case 'float64':
-        native_data = new Float64Array(raw_data);
-        break;
-        case 'uint8':
-        native_data = new Uint8Array(raw_data);
-        break;
-        case 'uint16':
-        native_data = new Uint16Array(raw_data);
-        break;
-        case 'uint32':
-        case 'rgb8':
-        native_data = new Uint32Array(raw_data);
-        break;
-        default:
-        var error_message = "Unsupported data type: " + header.datatype;
-        console.log({ message: error_message } );
-        //BrainBrowser.events.triggerEvent("error", { message: error_message } );
-        throw new Error(error_message);
-      }
-
-      return native_data;
-    }
-
-
-
-
-    //----------------------------------------------------------------------------
-
-    _run(){
-      var that = this;
-
-      var inputBuffer = this._getInput(0);
-
-      if(!inputBuffer){
-        console.warn("Minc2Decoder requires an ArrayBuffer as input \"0\". Unable to continue.");
-        return;
-      }
-
-      this._dv = new DataView(inputBuffer);
-
-
-      /* Patch in the missing function to get 64-bit integers.
-       * Note: this won't really quite work b/c Javascript doesn't
-       * have support for 64-bit integers.
-       */
-      this._dv.getUint64 = function (off, little_endian) {
-        var l4 = that._dv.getUint32(off + 0, little_endian);
-        var u4 = that._dv.getUint32(off + 4, little_endian);
-        if (little_endian) {
-          return (u4 << 32) + l4;
-        } else {
-          return (l4 << 32) + u4;
-        }
-      };
-
-
-      var root = this.createLink();
-
-      try{
-        this._superblk = this.hdf5Superblock();
-      }catch(e){
-        //console.error(e);
-        console.warn("The input file is not a Minc2 file.");
-        return;
-      }
-
-
-      this.seek(this._superblk.root_addr);
-
-      if (this._superblk.sbver <= 1) {
-        this.hdf5V1ObjectHeader(root);
-      } else {
-        this.hdf5V2ObjectHeader(root);
-      }
-
-      this.loadData(root);
-
-
-
-
-
-      if (this.getMetadata("debug")) {
-        this.printStructure(root, 0);
-      }
-
-      /* The rest of this code is MINC-specific, so like some of the
-       * functions above, it can migrate into minc.js once things have
-       * stabilized.
-       *
-       * This code is responsible for collecting up the various pieces
-       * of important data and metadata, and reorganizing them into the
-       * form the volume viewer can handle.
-       */
-      var image = this.findDataset(root, "image");
-      if (!this.defined(image)) {
-        throw new Error("Can't find image dataset.");
-      }
-
-      var valid_range = this.findAttribute(image, "valid_range", 0);
-      /* If no valid_range is found, we substitute our own. */
-      if (!this.defined(valid_range)) {
-        var min_val;
-        var max_val;
-        switch (image.type) {
-        case this._type_enum.INT8:
-          min_val = -(1 << 7);
-          max_val = (1 << 7) - 1;
-          break;
-        case this._type_enum.UINT8:
-          min_val = 0;
-          max_val = (1 << 8) - 1;
-          break;
-        case this._type_enum.INT16:
-          min_val = -(1 << 15);
-          max_val = (1 << 15) - 1;
-          break;
-        case this._type_enum.UINT16:
-          min_val = 0;
-          max_val = (1 << 16) - 1;
-          break;
-        case this._type_enum.INT32:
-          min_val = -(1 << 31);
-          max_val = (1 << 31) - 1;
-          break;
-        case this._type_enum.UINT32:
-          min_val = 0;
-          max_val = (1 << 32) - 1;
-          break;
-        }
-        valid_range = Float32Array.of(min_val, max_val);
-      }
-
-
-      var image_min = this.findDataset(root, "image-min");
-      if (!this.defined(image_min)) {
-        image_min = {
-          array: Float32Array.of(0),
-          dims: []
-        };
-      }
-
-      var image_max = this.findDataset(root, "image-max");
-      if (!this.defined(image_max)) {
-        image_max = {
-          array: Float32Array.of(1),
-          dims: []
-        };
-      }
-
-
-      /* Create the header expected by the existing brainbrowser code.
-       */
-      var header = {};
-      var tmp = this.findAttribute(image, "dimorder", 0);
-      if (typeof tmp !== 'string') {
-        throw new Error("Can't find dimension order.");
-      }
-      header.order = tmp.split(',');
-
-      header.order.forEach(function(dimname) {
-        var dim = that.findDataset(root, dimname);
-        if (!that.defined(dim)) {
-          throw new Error("Can't find dimension variable " + dimname);
-        }
-
-        header[dimname] = {};
-
-        tmp = that.findAttribute(dim, "step", 0);
-        if (!that.defined(tmp)) {
-          tmp = Float32Array.of(1);
-        }
-        header[dimname].step = tmp[0];
-
-        tmp = that.findAttribute(dim, "start", 0);
-        if (!that.defined(tmp)) {
-          tmp = Float32Array.of(0);
-        }
-        header[dimname].start = tmp[0];
-
-        tmp = that.findAttribute(dim, "length", 0);
-        if (!that.defined(tmp)) {
-          throw new Error("Can't find length for " + dimname);
-        }
-        header[dimname].space_length = tmp[0];
-
-        tmp = that.findAttribute(dim, "direction_cosines", 0);
-        if (that.defined(tmp)) {
-          // why is the bizarre call to slice needed?? it seems to work, though!
-          header[dimname].direction_cosines = Array.prototype.slice.call(tmp);
-        }
-        else {
-          if (dimname === "xspace") {
-            header[dimname].direction_cosines = [1, 0, 0];
-          } else if (dimname === "yspace") {
-            header[dimname].direction_cosines = [0, 1, 0];
-          } else if (dimname === "zspace") {
-            header[dimname].direction_cosines = [0, 0, 1];
-          }
-        }
-      });
-
-      var new_abuf;
-
-      if (this.isRgbVolume(header, image)) {
-        header.order.pop();
-        header.datatype = 'rgb8';
-        new_abuf = this.rgbVoxels(image);
-      }
-      else {
-
-        //header.datatype = 'float32';
-        header.datatype = this.getTypeMatchMinc(image.type);
-
-        new_abuf = this.scaleVoxels(image, image_min, image_max, valid_range, this.getMetadata("debug"));
-      }
-
-      var minc_header = this.parseHeader( JSON.stringify(header) );
-      var dataArray = this.createMincData(minc_header, new_abuf);
-
-      // add the output to this filter
-      this._addOutput(MniVolume);
-      var mniVol = this.getOutput();
-      mniVol.setData(dataArray, minc_header);
-      mniVol.setMetadata("format", "minc2");
-    }
-
-
-
-  } /* END of class Minc2Decoder */
-
-  /*
-  * Author    Jonathan Lurie - http://me.jonathanlurie.fr
-  *           Robert D. Vincent
-  *
-  * License   MIT
-  * Link      https://github.com/Pixpipe/pixpipejs
-  * Lab       MCIN - Montreal Neurological Institute
-  */
-
-
-  /**
-  * Decodes a NIfTI file.
-  * Takes an ArrayBuffer as input (0) and output a `MniVolume` (which inherit `Image3D`).
-  *
-  * **Usage**
-  * - [examples/fileToNifti.html](../examples/fileToNifti.html)
-  */
-  class NiftiDecoder extends Decoder {
-
-    constructor(){
-      super();
-      this.setMetadata("targetType", MniVolume.name);
-      this.addInputValidator(0, ArrayBuffer);
-      this.setMetadata("debug", false);
-    }
-
-
-    /**
-    * @private
-    */
-    parseNifti1Header(raw_data) {
-      var header = {
-        order: [],
-        xspace: {},
-        yspace: {},
-        zspace: {}
-      };
-      var error_message = null;
-      var dview = new DataView(raw_data, 0, 348);
-      var bytes = new Uint8Array(raw_data, 0, 348);
-      var littleEndian = true;
-
-      var sizeof_hdr = dview.getUint32(0, true);
-      if (sizeof_hdr === 0x0000015c) {
-        littleEndian = true;
-      } else if (sizeof_hdr === 0x5c010000) {
-        littleEndian = false;
-      } else {
-        error_message = "This does not look like a NIfTI-1 file.";
-      }
-
-      var ndims = dview.getUint16(40, littleEndian);
-      if (ndims < 3 || ndims > 4) {
-        error_message = "Cannot handle " + ndims + "-dimensional images yet.";
-      }
-
-      var magic = String.fromCharCode.apply(null, bytes.subarray(344, 348));
-      if (magic !== "n+1\0") {
-        error_message = "Bad magic number: '" + magic + "'";
-      }
-
-      if (error_message) {
-        //throw new Error(error_message);
-        console.warn("The input file is not a NIfTI file.");
-        return null;
-      }
-
-      header.xspace.space_length = dview.getUint16(42, littleEndian);
-      header.yspace.space_length = dview.getUint16(44, littleEndian);
-      header.zspace.space_length = dview.getUint16(46, littleEndian);
-      var tlength = dview.getUint16(48, littleEndian);
-
-      var datatype = dview.getUint16(70, littleEndian);
-      var bitpix = dview.getUint16(72, littleEndian);
-
-      var xstep = dview.getFloat32(80, littleEndian);
-      var ystep = dview.getFloat32(84, littleEndian);
-      var zstep = dview.getFloat32(88, littleEndian);
-      var tstep = dview.getFloat32(92, littleEndian);
-
-      var vox_offset = dview.getFloat32(108, littleEndian);
-      if (vox_offset < 352) {
-        vox_offset = 352;
-      }
-
-      var scl_slope = dview.getFloat32(112, littleEndian);
-      var scl_inter = dview.getFloat32(116, littleEndian);
-
-      var qform_code = dview.getUint16(252, littleEndian);
-      var sform_code = dview.getUint16(254, littleEndian);
-
-      var nifti_xfm = [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [0, 0, 0, 1]
-      ];
-
-      if (tlength >= 1) {
-        header.time = {};
-        header.time.space_length = tlength;
-        header.time.step = tstep;
-        header.time.start = 0;
-        header.time.name = "time";
-      }
-
-      /* Record the number of bytes per voxel, and note whether we need
-       * to swap bytes in the voxel data.
-       */
-      header.bytes_per_voxel = bitpix / 8;
-      header.must_swap_data = !littleEndian && header.bytes_per_voxel > 1;
-
-      if (sform_code > 0) {
-        /* The "Sform", if present, defines an affine transform which is
-         * generally assumed to correspond to some standard coordinate
-         * space (e.g. Talairach).
-         */
-        nifti_xfm[0][0] = dview.getFloat32(280, littleEndian);
-        nifti_xfm[0][1] = dview.getFloat32(284, littleEndian);
-        nifti_xfm[0][2] = dview.getFloat32(288, littleEndian);
-        nifti_xfm[0][3] = dview.getFloat32(292, littleEndian);
-        nifti_xfm[1][0] = dview.getFloat32(296, littleEndian);
-        nifti_xfm[1][1] = dview.getFloat32(300, littleEndian);
-        nifti_xfm[1][2] = dview.getFloat32(304, littleEndian);
-        nifti_xfm[1][3] = dview.getFloat32(308, littleEndian);
-        nifti_xfm[2][0] = dview.getFloat32(312, littleEndian);
-        nifti_xfm[2][1] = dview.getFloat32(316, littleEndian);
-        nifti_xfm[2][2] = dview.getFloat32(320, littleEndian);
-        nifti_xfm[2][3] = dview.getFloat32(324, littleEndian);
-      }
-      else if (qform_code > 0) {
-        /* The "Qform", if present, defines a quaternion which specifies
-         * a less general transformation, often to scanner space.
-         */
-        var quatern_b = dview.getFloat32(256, littleEndian);
-        var quatern_c = dview.getFloat32(260, littleEndian);
-        var quatern_d = dview.getFloat32(264, littleEndian);
-        var qoffset_x = dview.getFloat32(268, littleEndian);
-        var qoffset_y = dview.getFloat32(272, littleEndian);
-        var qoffset_z = dview.getFloat32(276, littleEndian);
-        var qfac = (dview.getFloat32(76, littleEndian) < 0) ? -1.0 : 1.0;
-
-        nifti_xfm = this.niftiQuaternToMat44(quatern_b, quatern_c, quatern_d,
-                                             qoffset_x, qoffset_y, qoffset_z,
-                                             xstep,     ystep,     zstep,     qfac);
-      }
-      else {
-        nifti_xfm[0][0] = xstep;
-        nifti_xfm[1][1] = ystep;
-        nifti_xfm[2][2] = zstep;
-      }
-
-
-      var i, j;
-      var axis_index_from_file = [0, 1, 2];
-      var transform = [[0, 0, 0, 0],
-                       [0, 0, 0, 0],
-                       [0, 0, 0, 0],
-                       [0, 0, 0, 1]];
-
-      for (i = 0; i < 3; i++) {
-        var c_x = Math.abs(nifti_xfm[0][i]);
-        var c_y = Math.abs(nifti_xfm[1][i]);
-        var c_z = Math.abs(nifti_xfm[2][i]);
-
-        if (c_x > c_y && c_x > c_z) {
-          header.order[2 - i] = "xspace";
-          axis_index_from_file[i] = 0;
-        }
-        else if (c_y > c_x && c_y > c_z) {
-          header.order[2 - i] = "yspace";
-          axis_index_from_file[i] = 1;
-        }
-        else {
-          header.order[2 - i] = "zspace";
-          axis_index_from_file[i] = 2;
-        }
-      }
-
-      for (i = 0; i < 3; i++) {
-        for (j = 0; j < 4; j++) {
-          var volume_axis = j;
-          if (j < 3) {
-            volume_axis = axis_index_from_file[j];
-          }
-          transform[i][volume_axis] = nifti_xfm[i][j];
-        }
-      }
-
-
-
-
-      MniVolume.transformToMinc(transform, header);
-
-      header[header.order[2]].space_length = dview.getUint16(42, littleEndian);
-      header[header.order[1]].space_length = dview.getUint16(44, littleEndian);
-      header[header.order[0]].space_length = dview.getUint16(46, littleEndian);
-
-      if (tlength >= 1) {
-         header.order.unshift("time");
-      }
-
-
-      header.datatype = datatype;
-      header.vox_offset = vox_offset;
-      header.scl_slope = scl_slope;
-      header.scl_inter = scl_inter;
-
-      return header;
-    }
-
-
-    /**
-    * @private
-    * This function is a direct translation of the identical function
-    * found in the standard NIfTI-1 library (nifti1_io.c).
-    */
-    niftiQuaternToMat44( qb, qc, qd,
-                         qx, qy, qz,
-                         dx, dy, dz, qfac )
-    {
-      var m = [                   // 4x4 transform
-        [0, 0, 0, 0],
-        [0, 0, 0, 0],
-        [0, 0, 0, 0],
-        [0, 0, 0, 1]
-      ];
-      var b = qb;
-      var c = qc;
-      var d = qd;
-      var a, xd, yd, zd;
-
-      // compute a parameter from b,c,d
-
-      a = 1.0 - (b * b + c * c + d * d);
-      if ( a < 1.e-7 ) {           // special case
-        a = 1.0 / Math.sqrt(b * b + c * c + d * d);
-        b *= a;                    // normalize (b,c,d) vector
-        c *= a;
-        d *= a;
-        a = 0.0;                   // a = 0 ==> 180 degree rotation
-      } else {
-        a = Math.sqrt(a);          // angle = 2*arccos(a)
-      }
-
-      // load rotation matrix, including scaling factors for voxel sizes
-
-      xd = (dx > 0.0) ? dx : 1.0;  // make sure are positive
-      yd = (dy > 0.0) ? dy : 1.0;
-      zd = (dz > 0.0) ? dz : 1.0;
-
-      if ( qfac < 0.0 )            // left handedness?
-        zd = -zd;
-
-      m[0][0] =       (a * a + b * b - c * c - d * d) * xd;
-      m[0][1] = 2.0 * (b * c - a * d                ) * yd;
-      m[0][2] = 2.0 * (b * d + a * c                ) * zd;
-      m[1][0] = 2.0 * (b * c + a * d                ) * xd;
-      m[1][1] =       (a * a + c * c - b * b - d * d) * yd;
-      m[1][2] = 2.0 * (c * d - a * b                ) * zd;
-      m[2][0] = 2.0 * (b * d - a * c                ) * xd;
-      m[2][1] = 2.0 * (c * d + a * b                ) * yd;
-      m[2][2] =       (a * a + d * d - c * c - b * b) * zd;
-
-      // load offsets
-      m[0][3] = qx;
-      m[1][3] = qy;
-      m[2][3] = qz;
-
-      return m;
-    }
-
-
-    /**
-    * @private
-    */
-    createNifti1Data(header, raw_data) {
-      var native_data = null;
-
-      if (header.must_swap_data) {
-        MniVolume.swapn(
-          new Uint8Array(raw_data, header.vox_offset),
-          header.bytes_per_voxel
-        );
-      }
-
-      switch (header.datatype) {
-      case 2:                     // DT_UNSIGNED_CHAR
-        // no translation necessary; could optimize this out.
-        native_data = new Uint8Array(raw_data, header.vox_offset);
-        break;
-      case 4:                     // DT_SIGNED_SHORT
-        native_data = new Int16Array(raw_data, header.vox_offset);
-        break;
-      case 8:                     // DT_SIGNED_INT
-        native_data = new Int32Array(raw_data, header.vox_offset);
-        break;
-      case 16:                    // DT_FLOAT
-        native_data = new Float32Array(raw_data, header.vox_offset);
-        break;
-      case 64:                    // DT_DOUBLE
-        native_data = new Float64Array(raw_data, header.vox_offset);
-        break;
-      // Values above 256 are NIfTI-specific, and rarely used.
-      case 256:                   // DT_INT8
-        native_data = new Int8Array(raw_data, header.vox_offset);
-        break;
-      case 512:                   // DT_UINT16
-        native_data = new Uint16Array(raw_data, header.vox_offset);
-        break;
-      case 768:                   // DT_UINT32
-        native_data = new Uint32Array(raw_data, header.vox_offset);
-        break;
-      default:
-        // We don't yet support 64-bit, complex, RGB, and float 128 types.
-        throw new Error("Unsupported data type: " + header.datatype);
-      }
-
-      var d = 0;                  // Generic loop counter.
-      var slope = header.scl_slope;
-      var inter = header.scl_inter;
-
-      // According to the NIfTI specification, a slope value of zero means
-      // that the data should _not_ be scaled. Otherwise, every voxel is
-      // transformed according to value = value * slope + inter
-      //
-      if (slope !== 0.0) {
-        var float_data = new Float32Array(native_data.length);
-
-        for (d = 0; d < native_data.length; d++) {
-          float_data[d] = native_data[d] * slope + inter;
-        }
-        native_data = float_data; // Return the new float buffer.
-      }
-
-      if(header.order.length === 4) {
-        header.order = header.order.slice(1);
-      }
-
-      // Incrementation offsets for each dimension of the volume.
-      header[header.order[0]].offset = header[header.order[1]].space_length * header[header.order[2]].space_length;
-      header[header.order[1]].offset = header[header.order[2]].space_length;
-      header[header.order[2]].offset = 1;
-
-      if(header.time) {
-        header.time.offset = header.xspace.space_length * header.yspace.space_length * header.zspace.space_length;
-      }
-
-      return native_data;
-    }
-
-
-    //----------------------------------------------------------------------------
-
-    _run(){
-      var inputBuffer = this._getInput(0);
-
-      if(!inputBuffer){
-        console.warn("NiftiDecoder requires an ArrayBuffer as input \"0\". Unable to continue.");
-        return;
-      }
-
-      var header = null;
-      try{
-        header = this.parseNifti1Header( inputBuffer );
-      }catch(e){
-        //console.warn( e );
-      }
-
-
-      // abort if header not valid
-      if(!header){
-        console.warn("This file is not a NIfTI file.");
-        return;
-      }
-
-
-      var dataArray = this.createNifti1Data(header, inputBuffer);
-
-      // add the output to this filter
-      this._addOutput(MniVolume);
-      var mniVol = this.getOutput();
-      mniVol.setData(dataArray, header);
-      mniVol.setMetadata("format", "nifti");
-
-    }
-
-
-  } /* END class NiftiDecoder */
-
-  var utilities = createCommonjsModule(function (module) {
-
-  /*** Imports ***/
-
-  var nifti = nifti || {};
-  nifti.Utils = nifti.Utils || {};
-
-
-
-  /*** Static Pseudo-constants ***/
-
-  nifti.Utils.crcTable = null;
-  nifti.Utils.GUNZIP_MAGIC_COOKIE1 = 31;
-  nifti.Utils.GUNZIP_MAGIC_COOKIE2 = 139;
-
-
-
-  /*** Static methods ***/
-
-  nifti.Utils.getStringAt = function (data, start, end) {
-      var str = "", ctr, ch;
-
-      for (ctr = start; ctr < end; ctr += 1) {
-          ch = data.getUint8(ctr);
-
-          if (ch !== 0) {
-              str += String.fromCharCode(ch);
-          }
-      }
-
-      return str;
-  };
-
-
-
-  nifti.Utils.getByteAt = function (data, start) {
-      return data.getInt8(start);
-  };
-
-
-
-  nifti.Utils.getShortAt = function (data, start, littleEndian) {
-      return data.getInt16(start, littleEndian);
-  };
-
-
-
-  nifti.Utils.getIntAt = function (data, start, littleEndian) {
-      return data.getInt32(start, littleEndian);
-  };
-
-
-
-  nifti.Utils.getFloatAt = function (data, start, littleEndian) {
-      return data.getFloat32(start, littleEndian);
-  };
-
-
-
-  nifti.Utils.getDoubleAt = function (data, start, littleEndian) {
-      return data.getFloat64(start, littleEndian);
-  };
-
-
-
-  nifti.Utils.getLongAt = function (data, start, littleEndian) {
-      var ctr, array = [], value = 0;
-
-      for (ctr = 0; ctr < 8; ctr += 1) {
-          array[ctr] = nifti.Utils.getByteAt(data, start + ctr, littleEndian);
-      }
-
-      for (ctr = array.length - 1; ctr >= 0; ctr--) {
-          value = (value * 256) + array[ctr];
-      }
-
-      return value;
-  };
-
-
-
-  nifti.Utils.toArrayBuffer = function (buffer) {
-      var ab, view, i;
-
-      ab = new ArrayBuffer(buffer.length);
-      view = new Uint8Array(ab);
-      for (i = 0; i < buffer.length; i += 1) {
-          view[i] = buffer[i];
-      }
-      return ab;
-  };
-
-
-
-  nifti.Utils.isString = function (obj) {
-      return (typeof obj === "string" || obj instanceof String);
-  };
-
-
-  nifti.Utils.formatNumber = function (num, shortFormat) {
-      var val = 0;
-
-      if (nifti.Utils.isString(num)) {
-          val = Number(num);
-      } else {
-          val = num;
-      }
-
-      if (shortFormat) {
-          val = val.toPrecision(5);
-      } else {
-          val = val.toPrecision(7);
-      }
-
-      return parseFloat(val);
-  };
-
-
-
-  // http://stackoverflow.com/questions/18638900/javascript-crc32
-  nifti.Utils.makeCRCTable = function(){
-      var c;
-      var crcTable = [];
-      for(var n =0; n < 256; n++){
-          c = n;
-          for(var k =0; k < 8; k++){
-              c = ((c&1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1));
-          }
-          crcTable[n] = c;
-      }
-      return crcTable;
-  };
-
-
-
-  nifti.Utils.crc32 = function(dataView) {
-      var crcTable = nifti.Utils.crcTable || (nifti.Utils.crcTable = nifti.Utils.makeCRCTable());
-      var crc = 0 ^ (-1);
-
-      for (var i = 0; i < dataView.byteLength; i++ ) {
-          crc = (crc >>> 8) ^ crcTable[(crc ^ dataView.getUint8(i)) & 0xFF];
-      }
-
-      return (crc ^ (-1)) >>> 0;
-  };
-
-
-
-  /*** Exports ***/
-
-  var moduleType = 'object';
-  if ((moduleType !== 'undefined') && module.exports) {
-      module.exports = nifti.Utils;
-  }
-  });
-
-  var nifti1 = createCommonjsModule(function (module) {
-
-  /*** Imports ***/
-
-  var nifti = nifti || {};
-  nifti.Utils = nifti.Utils || ((typeof commonjsRequire !== 'undefined') ? utilities : null);
-
-
-
-  /*** Constructor ***/
-
-  /**
-   * The NIFTI1 constructor.
-   * @constructor
-   * @property {boolean} littleEndian
-   * @property {number} dim_info
-   * @property {number[]} dims - image dimensions
-   * @property {number} intent_p1
-   * @property {number} intent_p2
-   * @property {number} intent_p3
-   * @property {number} intent_code
-   * @property {number} datatypeCode
-   * @property {number} numBitsPerVoxel
-   * @property {number} slice_start
-   * @property {number} slice_end
-   * @property {number} slice_code
-   * @property {number[]} pixDims - voxel dimensions
-   * @property {number} vox_offset
-   * @property {number} scl_slope
-   * @property {number} scl_inter
-   * @property {number} xyzt_units
-   * @property {number} cal_max
-   * @property {number} cal_min
-   * @property {number} slice_duration
-   * @property {number} toffset
-   * @property {string} description
-   * @property {string} aux_file
-   * @property {string} intent_name
-   * @property {number} qform_code
-   * @property {number} sform_code
-   * @property {number} quatern_b
-   * @property {number} quatern_c
-   * @property {number} quatern_d
-   * @property {number} quatern_x
-   * @property {number} quatern_y
-   * @property {number} quatern_z
-   * @property {Array.<Array.<number>>} affine
-   * @property {string} magic
-   * @property {boolean} isHDR - if hdr/img format
-   * @property {number[]} extensionFlag
-   * @property {number} extensionSize
-   * @property {number} extensionCode
-   * @type {Function}
-   */
-  nifti.NIFTI1 = nifti.NIFTI1 || function () {
-      this.littleEndian = false;
-      this.dim_info = 0;
-      this.dims = [];
-      this.intent_p1 = 0;
-      this.intent_p2 = 0;
-      this.intent_p3 = 0;
-      this.intent_code = 0;
-      this.datatypeCode = 0;
-      this.numBitsPerVoxel = 0;
-      this.slice_start = 0;
-      this.slice_end = 0;
-      this.slice_code = 0;
-      this.pixDims = [];
-      this.vox_offset = 0;
-      this.scl_slope = 1;
-      this.scl_inter = 0;
-      this.xyzt_units = 0;
-      this.cal_max = 0;
-      this.cal_min = 0;
-      this.slice_duration = 0;
-      this.toffset = 0;
-      this.description = "";
-      this.aux_file = "";
-      this.intent_name = "";
-      this.qform_code = 0;
-      this.sform_code = 0;
-      this.quatern_b = 0;
-      this.quatern_c = 0;
-      this.quatern_d = 0;
-      this.qoffset_x = 0;
-      this.qoffset_y = 0;
-      this.qoffset_z = 0;
-      this.affine = [[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]];
-      this.magic = 0;
-      this.isHDR = false;
-      this.extensionFlag = [0, 0, 0, 0];
-      this.extensionSize = 0;
-      this.extensionCode = 0;
-  };
-
-
-
-  /*** Static Pseudo-constants ***/
-
-  // datatype codes
-  nifti.NIFTI1.TYPE_NONE            = 0;
-  nifti.NIFTI1.TYPE_BINARY          = 1;
-  nifti.NIFTI1.TYPE_UINT8           = 2;
-  nifti.NIFTI1.TYPE_INT16           = 4;
-  nifti.NIFTI1.TYPE_INT32           = 8;
-  nifti.NIFTI1.TYPE_FLOAT32        = 16;
-  nifti.NIFTI1.TYPE_COMPLEX64      = 32;
-  nifti.NIFTI1.TYPE_FLOAT64        = 64;
-  nifti.NIFTI1.TYPE_RGB24         = 128;
-  nifti.NIFTI1.TYPE_INT8          = 256;
-  nifti.NIFTI1.TYPE_UINT16        = 512;
-  nifti.NIFTI1.TYPE_UINT32        = 768;
-  nifti.NIFTI1.TYPE_INT64        = 1024;
-  nifti.NIFTI1.TYPE_UINT64       = 1280;
-  nifti.NIFTI1.TYPE_FLOAT128     = 1536;
-  nifti.NIFTI1.TYPE_COMPLEX128   = 1792;
-  nifti.NIFTI1.TYPE_COMPLEX256   = 2048;
-
-  // transform codes
-  nifti.NIFTI1.XFORM_UNKNOWN        = 0;
-  nifti.NIFTI1.XFORM_SCANNER_ANAT   = 1;
-  nifti.NIFTI1.XFORM_ALIGNED_ANAT   = 2;
-  nifti.NIFTI1.XFORM_TALAIRACH      = 3;
-  nifti.NIFTI1.XFORM_MNI_152        = 4;
-
-  // unit codes
-  nifti.NIFTI1.SPATIAL_UNITS_MASK = 0x07;
-  nifti.NIFTI1.TEMPORAL_UNITS_MASK = 0x38;
-  nifti.NIFTI1.UNITS_UNKNOWN        = 0;
-  nifti.NIFTI1.UNITS_METER          = 1;
-  nifti.NIFTI1.UNITS_MM             = 2;
-  nifti.NIFTI1.UNITS_MICRON         = 3;
-  nifti.NIFTI1.UNITS_SEC            = 8;
-  nifti.NIFTI1.UNITS_MSEC          = 16;
-  nifti.NIFTI1.UNITS_USEC          = 24;
-  nifti.NIFTI1.UNITS_HZ            = 32;
-  nifti.NIFTI1.UNITS_PPM           = 40;
-  nifti.NIFTI1.UNITS_RADS          = 48;
-
-  // nifti1 codes
-  nifti.NIFTI1.MAGIC_COOKIE = 348;
-  nifti.NIFTI1.STANDARD_HEADER_SIZE = 348;
-  nifti.NIFTI1.MAGIC_NUMBER_LOCATION = 344;
-  nifti.NIFTI1.MAGIC_NUMBER = [0x6E, 0x2B, 0x31];  // n+1 (.nii)
-  nifti.NIFTI1.MAGIC_NUMBER2 = [0x6E, 0x69, 0x31];  // ni1 (.hdr/.img)
-  nifti.NIFTI1.EXTENSION_HEADER_SIZE = 8;
-
-
-  /*** Prototype Methods ***/
-
-  /**
-   * Reads the header data.
-   * @param {ArrayBuffer} data
-   */
-  nifti.NIFTI1.prototype.readHeader = function (data) {
-      var rawData = new DataView(data),
-          magicCookieVal = nifti.Utils.getIntAt(rawData, 0, this.littleEndian),
-          ctr,
-          ctrOut,
-          ctrIn,
-          index;
-
-      if (magicCookieVal !== nifti.NIFTI1.MAGIC_COOKIE) {  // try as little endian
-          this.littleEndian = true;
-          magicCookieVal = nifti.Utils.getIntAt(rawData, 0, this.littleEndian);
-      }
-
-      if (magicCookieVal !== nifti.NIFTI1.MAGIC_COOKIE) {
-          throw new Error("This does not appear to be a NIFTI file!");
-      }
-
-      this.dim_info = nifti.Utils.getByteAt(rawData, 39);
-
-      for (ctr = 0; ctr < 8; ctr += 1) {
-          index = 40 + (ctr * 2);
-          this.dims[ctr] = nifti.Utils.getShortAt(rawData, index, this.littleEndian);
-      }
-
-      this.intent_p1 = nifti.Utils.getFloatAt(rawData, 56, this.littleEndian);
-      this.intent_p2 = nifti.Utils.getFloatAt(rawData, 60, this.littleEndian);
-      this.intent_p3 = nifti.Utils.getFloatAt(rawData, 64, this.littleEndian);
-      this.intent_code = nifti.Utils.getShortAt(rawData, 68, this.littleEndian);
-
-      this.datatypeCode = nifti.Utils.getShortAt(rawData, 70, this.littleEndian);
-      this.numBitsPerVoxel = nifti.Utils.getShortAt(rawData, 72, this.littleEndian);
-
-      this.slice_start = nifti.Utils.getShortAt(rawData, 74, this.littleEndian);
-
-      for (ctr = 0; ctr < 8; ctr += 1) {
-          index = 76 + (ctr * 4);
-          this.pixDims[ctr] = nifti.Utils.getFloatAt(rawData, index, this.littleEndian);
-      }
-
-      this.vox_offset = nifti.Utils.getFloatAt(rawData, 108, this.littleEndian);
-
-      this.scl_slope = nifti.Utils.getFloatAt(rawData, 112, this.littleEndian);
-      this.scl_inter = nifti.Utils.getFloatAt(rawData, 116, this.littleEndian);
-
-      this.slice_end = nifti.Utils.getShortAt(rawData, 120, this.littleEndian);
-      this.slice_code = nifti.Utils.getByteAt(rawData, 122);
-
-      this.xyzt_units = nifti.Utils.getByteAt(rawData, 123);
-
-      this.cal_max = nifti.Utils.getFloatAt(rawData, 124, this.littleEndian);
-      this.cal_min = nifti.Utils.getFloatAt(rawData, 128, this.littleEndian);
-
-      this.slice_duration = nifti.Utils.getFloatAt(rawData, 132, this.littleEndian);
-      this.toffset = nifti.Utils.getFloatAt(rawData, 136, this.littleEndian);
-
-      this.description = nifti.Utils.getStringAt(rawData, 148, 228);
-      this.aux_file = nifti.Utils.getStringAt(rawData, 228, 252);
-
-      this.qform_code = nifti.Utils.getShortAt(rawData, 252, this.littleEndian);
-      this.sform_code = nifti.Utils.getShortAt(rawData, 254, this.littleEndian);
-
-      this.quatern_b = nifti.Utils.getFloatAt(rawData, 256, this.littleEndian);
-      this.quatern_c = nifti.Utils.getFloatAt(rawData, 260, this.littleEndian);
-      this.quatern_d = nifti.Utils.getFloatAt(rawData, 264, this.littleEndian);
-      this.qoffset_x = nifti.Utils.getFloatAt(rawData, 268, this.littleEndian);
-      this.qoffset_y = nifti.Utils.getFloatAt(rawData, 272, this.littleEndian);
-      this.qoffset_z = nifti.Utils.getFloatAt(rawData, 276, this.littleEndian);
-
-      for (ctrOut = 0; ctrOut < 3; ctrOut += 1) {
-          for (ctrIn = 0; ctrIn < 4; ctrIn += 1) {
-              index = 280 + (((ctrOut * 4) + ctrIn) * 4);
-              this.affine[ctrOut][ctrIn] = nifti.Utils.getFloatAt(rawData, index, this.littleEndian);
-          }
-      }
-
-      this.affine[3][0] = 0;
-      this.affine[3][1] = 0;
-      this.affine[3][2] = 0;
-      this.affine[3][3] = 1;
-
-      this.intent_name = nifti.Utils.getStringAt(rawData, 328, 344);
-      this.magic = nifti.Utils.getStringAt(rawData, 344, 348);
-
-      this.isHDR = (this.magic === nifti.NIFTI1.MAGIC_NUMBER2);
-
-      if (rawData.byteLength > nifti.NIFTI1.MAGIC_COOKIE) {
-          this.extensionFlag[0] = nifti.Utils.getByteAt(rawData, 348);
-          this.extensionFlag[1] = nifti.Utils.getByteAt(rawData, 348 + 1);
-          this.extensionFlag[2] = nifti.Utils.getByteAt(rawData, 348 + 2);
-          this.extensionFlag[3] = nifti.Utils.getByteAt(rawData, 348 + 3);
-
-          if (this.extensionFlag[0]) {
-              this.extensionSize = this.getExtensionSize(rawData);
-              this.extensionCode = this.getExtensionCode(rawData);
-          }
-      }
-  };
-
-
-  /**
-   * Returns a formatted string of header fields.
-   * @returns {string}
-   */
-  nifti.NIFTI1.prototype.toFormattedString = function () {
-      var fmt = nifti.Utils.formatNumber,
-          string = "";
-
-      string += ("Dim Info = " + this.dim_info + "\n");
-
-      string += ("Image Dimensions (1-8): " +
-          this.dims[0] + ", " +
-          this.dims[1] + ", " +
-          this.dims[2] + ", " +
-          this.dims[3] + ", " +
-          this.dims[4] + ", " +
-          this.dims[5] + ", " +
-          this.dims[6] + ", " +
-          this.dims[7] + "\n");
-
-      string += ("Intent Parameters (1-3): " +
-          this.intent_p1 + ", " +
-          this.intent_p2 + ", " +
-          this.intent_p3) + "\n";
-
-      string += ("Intent Code = " + this.intent_code + "\n");
-      string += ("Datatype = " + this.datatypeCode +  " (" + this.getDatatypeCodeString(this.datatypeCode) + ")\n");
-      string += ("Bits Per Voxel = " + this.numBitsPerVoxel + "\n");
-      string += ("Slice Start = " + this.slice_start + "\n");
-      string += ("Voxel Dimensions (1-8): " +
-          fmt(this.pixDims[0]) + ", " +
-          fmt(this.pixDims[1]) + ", " +
-          fmt(this.pixDims[2]) + ", " +
-          fmt(this.pixDims[3]) + ", " +
-          fmt(this.pixDims[4]) + ", " +
-          fmt(this.pixDims[5]) + ", " +
-          fmt(this.pixDims[6]) + ", " +
-          fmt(this.pixDims[7]) + "\n");
-
-      string += ("Image Offset = " + this.vox_offset + "\n");
-      string += ("Data Scale:  Slope = " + fmt(this.scl_slope) + "  Intercept = " + fmt(this.scl_inter) + "\n");
-      string += ("Slice End = " + this.slice_end + "\n");
-      string += ("Slice Code = " + this.slice_code + "\n");
-      string += ("Units Code = " + this.xyzt_units + " (" + this.getUnitsCodeString(nifti.NIFTI1.SPATIAL_UNITS_MASK & this.xyzt_units) + ", " + this.getUnitsCodeString(nifti.NIFTI1.TEMPORAL_UNITS_MASK & this.xyzt_units) + ")\n");
-      string += ("Display Range:  Max = " + fmt(this.cal_max) + "  Min = " + fmt(this.cal_min) + "\n");
-      string += ("Slice Duration = " + this.slice_duration + "\n");
-      string += ("Time Axis Shift = " + this.toffset + "\n");
-      string += ("Description: \"" + this.description + "\"\n");
-      string += ("Auxiliary File: \"" + this.aux_file + "\"\n");
-      string += ("Q-Form Code = " + this.qform_code + " (" + this.getTransformCodeString(this.qform_code) + ")\n");
-      string += ("S-Form Code = " + this.sform_code + " (" + this.getTransformCodeString(this.sform_code) + ")\n");
-      string += ("Quaternion Parameters:  " +
-          "b = " + fmt(this.quatern_b) + "  " +
-          "c = " + fmt(this.quatern_c) + "  " +
-          "d = " + fmt(this.quatern_d) + "\n");
-
-      string += ("Quaternion Offsets:  " +
-          "x = " + this.qoffset_x + "  " +
-          "y = " + this.qoffset_y + "  " +
-          "z = " + this.qoffset_z + "\n");
-
-      string += ("S-Form Parameters X: " +
-          fmt(this.affine[0][0]) + ", " +
-          fmt(this.affine[0][1]) + ", " +
-          fmt(this.affine[0][2]) + ", " +
-          fmt(this.affine[0][3]) + "\n");
-
-      string += ("S-Form Parameters Y: " +
-          fmt(this.affine[1][0]) + ", " +
-          fmt(this.affine[1][1]) + ", " +
-          fmt(this.affine[1][2]) + ", " +
-          fmt(this.affine[1][3]) + "\n");
-
-      string += ("S-Form Parameters Z: " +
-          fmt(this.affine[2][0]) + ", " +
-          fmt(this.affine[2][1]) + ", " +
-          fmt(this.affine[2][2]) + ", " +
-          fmt(this.affine[2][3]) + "\n");
-
-      string += ("Intent Name: \"" + this.intent_name + "\"\n");
-
-      if (this.extensionFlag[0]) {
-          string += ("Extension: Size = " + this.extensionSize + "  Code = " + this.extensionCode + "\n");
-
-      }
-
-      return string;
-  };
-
-
-  /**
-   * Returns a human-readable string of datatype.
-   * @param {number} code
-   * @returns {string}
-   */
-  nifti.NIFTI1.prototype.getDatatypeCodeString = function (code) {
-      if (code === nifti.NIFTI1.TYPE_UINT8) {
-          return "1-Byte Unsigned Integer";
-      } else if (code === nifti.NIFTI1.TYPE_INT16) {
-          return "2-Byte Signed Integer";
-      } else if (code === nifti.NIFTI1.TYPE_INT32) {
-          return "4-Byte Signed Integer";
-      } else if (code === nifti.NIFTI1.TYPE_FLOAT32) {
-          return "4-Byte Float";
-      } else if (code === nifti.NIFTI1.TYPE_FLOAT64) {
-          return "8-Byte Float";
-      } else if (code === nifti.NIFTI1.TYPE_RGB24) {
-          return "RGB";
-      } else if (code === nifti.NIFTI1.TYPE_INT8) {
-          return "1-Byte Signed Integer";
-      } else if (code === nifti.NIFTI1.TYPE_UINT16) {
-          return "2-Byte Unsigned Integer";
-      } else if (code === nifti.NIFTI1.TYPE_UINT32) {
-          return "4-Byte Unsigned Integer";
-      } else if (code === nifti.NIFTI1.TYPE_INT64) {
-          return "8-Byte Signed Integer";
-      } else if (code === nifti.NIFTI1.TYPE_UINT64) {
-          return "8-Byte Unsigned Integer";
-      } else {
-          return "Unknown";
-      }
-  };
-
-
-  /**
-   * Returns a human-readable string of transform type.
-   * @param {number} code
-   * @returns {string}
-   */
-  nifti.NIFTI1.prototype.getTransformCodeString = function (code) {
-      if (code === nifti.NIFTI1.XFORM_SCANNER_ANAT) {
-          return "Scanner";
-      } else if (code === nifti.NIFTI1.XFORM_ALIGNED_ANAT) {
-          return "Aligned";
-      } else if (code === nifti.NIFTI1.XFORM_TALAIRACH) {
-          return "Talairach";
-      } else if (code === nifti.NIFTI1.XFORM_MNI_152) {
-          return "MNI";
-      } else {
-          return "Unknown";
-      }
-  };
-
-
-  /**
-   * Returns a human-readable string of spatial and temporal units.
-   * @param {number} code
-   * @returns {string}
-   */
-  nifti.NIFTI1.prototype.getUnitsCodeString = function (code) {
-      if (code === nifti.NIFTI1.UNITS_METER) {
-          return "Meters";
-      } else if (code === nifti.NIFTI1.UNITS_MM) {
-          return "Millimeters";
-      } else if (code === nifti.NIFTI1.UNITS_MICRON) {
-          return "Microns";
-      } else if (code === nifti.NIFTI1.UNITS_SEC) {
-          return "Seconds";
-      } else if (code === nifti.NIFTI1.UNITS_MSEC) {
-          return "Milliseconds";
-      } else if (code === nifti.NIFTI1.UNITS_USEC) {
-          return "Microseconds";
-      } else if (code === nifti.NIFTI1.UNITS_HZ) {
-          return "Hz";
-      } else if (code === nifti.NIFTI1.UNITS_PPM) {
-          return "PPM";
-      } else if (code === nifti.NIFTI1.UNITS_RADS) {
-          return "Rads";
-      } else {
-          return "Unknown";
-      }
-  };
-
-
-  /**
-   * Returns the qform matrix.
-   * @returns {Array.<Array.<number>>}
-   */
-  nifti.NIFTI1.prototype.getQformMat = function () {
-      return this.convertNiftiQFormToNiftiSForm(this.quatern_b, this.quatern_c, this.quatern_d, this.qoffset_x,
-          this.qoffset_y, this.qoffset_z, this.pixDims[1], this.pixDims[2], this.pixDims[3], this.pixDims[0]);
-  };
-
-
-
-  /**
-   * Converts qform to an affine.  (See http://nifti.nimh.nih.gov/pub/dist/src/niftilib/nifti1_io.c)
-   * @param {number} qb
-   * @param {number} qc
-   * @param {number} qd
-   * @param {number} qx
-   * @param {number} qy
-   * @param {number} qz
-   * @param {number} dx
-   * @param {number} dy
-   * @param {number} dz
-   * @param {number} qfac
-   * @returns {Array.<Array.<number>>}
-   */
-  nifti.NIFTI1.prototype.convertNiftiQFormToNiftiSForm = function (qb, qc, qd, qx, qy, qz, dx, dy, dz,
-                                                  qfac) {
-      var R = [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]],
-          a,
-          b = qb,
-          c = qc,
-          d = qd,
-          xd,
-          yd,
-          zd;
-
-      // last row is always [ 0 0 0 1 ]
-      R[3][0] = R[3][1] = R[3][2] = 0.0;
-      R[3][3] = 1.0;
-
-      // compute a parameter from b,c,d
-      a = 1.0 - (b * b + c * c + d * d);
-      if (a < 0.0000001) {                   /* special case */
-
-          a = 1.0 / Math.sqrt(b * b + c * c + d * d);
-          b *= a;
-          c *= a;
-          d *= a;        /* normalize (b,c,d) vector */
-          a = 0.0;                        /* a = 0 ==> 180 degree rotation */
-      } else {
-
-          a = Math.sqrt(a);                     /* angle = 2*arccos(a) */
-      }
-
-      // load rotation matrix, including scaling factors for voxel sizes
-      xd = (dx > 0.0) ? dx : 1.0;       /* make sure are positive */
-      yd = (dy > 0.0) ? dy : 1.0;
-      zd = (dz > 0.0) ? dz : 1.0;
-
-      if (qfac < 0.0) {
-          zd = -zd;         /* left handedness? */
-      }
-
-      R[0][0] =       (a * a + b * b - c * c - d * d) * xd;
-      R[0][1] = 2.0 * (b * c - a * d) * yd;
-      R[0][2] = 2.0 * (b * d + a * c) * zd;
-      R[1][0] = 2.0 * (b * c + a * d) * xd;
-      R[1][1] =       (a * a + c * c - b * b - d * d) * yd;
-      R[1][2] = 2.0 * (c * d - a * b) * zd;
-      R[2][0] = 2.0 * (b * d - a * c) * xd;
-      R[2][1] = 2.0 * (c * d + a * b) * yd;
-      R[2][2] =       (a * a + d * d - c * c - b * b) * zd;
-
-      // load offsets
-      R[0][3] = qx;
-      R[1][3] = qy;
-      R[2][3] = qz;
-
-      return R;
-  };
-
-
-
-  /**
-   * Converts sform to an orientation string (e.g., XYZ+--).  (See http://nifti.nimh.nih.gov/pub/dist/src/niftilib/nifti1_io.c)
-   * @param {Array.<Array.<number>>} R
-   * @returns {string}
-   */
-  nifti.NIFTI1.prototype.convertNiftiSFormToNEMA = function (R) {
-      var xi, xj, xk, yi, yj, yk, zi, zj, zk, val, detQ, detP, i, j, k, p, q, r, ibest, jbest, kbest, pbest, qbest, rbest,
-          M, vbest, Q, P, iChar, jChar, kChar, iSense, jSense, kSense;
-      k = 0;
-
-      Q = [[0, 0, 0], [0, 0, 0], [0, 0, 0]];
-      P = [[0, 0, 0], [0, 0, 0], [0, 0, 0]];
-
-      //if( icod == NULL || jcod == NULL || kcod == NULL ) return ; /* bad */
-
-      //*icod = *jcod = *kcod = 0 ; /* this.errorMessage returns, if sh*t happens */
-
-      /* load column vectors for each (i,j,k) direction from matrix */
-
-      /*-- i axis --*/ /*-- j axis --*/ /*-- k axis --*/
-
-      xi = R[0][0];
-      xj = R[0][1];
-      xk = R[0][2];
-
-      yi = R[1][0];
-      yj = R[1][1];
-      yk = R[1][2];
-
-      zi = R[2][0];
-      zj = R[2][1];
-      zk = R[2][2];
-
-      /* normalize column vectors to get unit vectors along each ijk-axis */
-
-      /* normalize i axis */
-      val = Math.sqrt(xi * xi + yi * yi + zi * zi);
-      if (val === 0.0) {  /* stupid input */
-          return null;
-      }
-
-      xi /= val;
-      yi /= val;
-      zi /= val;
-
-      /* normalize j axis */
-      val = Math.sqrt(xj * xj + yj * yj + zj * zj);
-      if (val === 0.0) {  /* stupid input */
-          return null;
-      }
-
-      xj /= val;
-      yj /= val;
-      zj /= val;
-
-      /* orthogonalize j axis to i axis, if needed */
-      val = xi * xj + yi * yj + zi * zj;    /* dot product between i and j */
-      if (Math.abs(val) > 1.E-4) {
-          xj -= val * xi;
-          yj -= val * yi;
-          zj -= val * zi;
-          val = Math.sqrt(xj * xj + yj * yj + zj * zj);  /* must renormalize */
-          if (val === 0.0) {              /* j was parallel to i? */
-              return null;
-          }
-          xj /= val;
-          yj /= val;
-          zj /= val;
-      }
-
-      /* normalize k axis; if it is zero, make it the cross product i x j */
-      val = Math.sqrt(xk * xk + yk * yk + zk * zk);
-      if (val === 0.0) {
-          xk = yi * zj - zi * yj;
-          yk = zi * xj - zj * xi;
-          zk = xi * yj - yi * xj;
-      } else {
-          xk /= val;
-          yk /= val;
-          zk /= val;
-      }
-
-      /* orthogonalize k to i */
-      val = xi * xk + yi * yk + zi * zk;    /* dot product between i and k */
-      if (Math.abs(val) > 1.E-4) {
-          xk -= val * xi;
-          yk -= val * yi;
-          zk -= val * zi;
-          val = Math.sqrt(xk * xk + yk * yk + zk * zk);
-          if (val === 0.0) {    /* bad */
-              return null;
-          }
-          xk /= val;
-          yk /= val;
-          zk /= val;
-      }
-
-      /* orthogonalize k to j */
-      val = xj * xk + yj * yk + zj * zk;    /* dot product between j and k */
-      if (Math.abs(val) > 1.e-4) {
-          xk -= val * xj;
-          yk -= val * yj;
-          zk -= val * zj;
-          val = Math.sqrt(xk * xk + yk * yk + zk * zk);
-          if (val === 0.0) {     /* bad */
-              return null;
-          }
-          xk /= val;
-          yk /= val;
-          zk /= val;
-      }
-
-      Q[0][0] = xi;
-      Q[0][1] = xj;
-      Q[0][2] = xk;
-      Q[1][0] = yi;
-      Q[1][1] = yj;
-      Q[1][2] = yk;
-      Q[2][0] = zi;
-      Q[2][1] = zj;
-      Q[2][2] = zk;
-
-      /* at this point, Q is the rotation matrix from the (i,j,k) to (x,y,z) axes */
-
-      detQ = this.nifti_mat33_determ(Q);
-      if (detQ === 0.0) { /* shouldn't happen unless user is a DUFIS */
-          return null;
-      }
-
-      /* Build and test all possible +1/-1 coordinate permutation matrices P;
-       then find the P such that the rotation matrix M=PQ is closest to the
-       identity, in the sense of M having the smallest total rotation angle. */
-
-      /* Despite the formidable looking 6 nested loops, there are
-       only 3*3*3*2*2*2 = 216 passes, which will run very quickly. */
-
-      vbest = -666.0;
-      ibest = pbest = qbest = rbest = 1;
-      jbest = 2;
-      kbest = 3;
-
-      for (i = 1; i <= 3; i += 1) {     /* i = column number to use for row #1 */
-          for (j = 1; j <= 3; j += 1) {    /* j = column number to use for row #2 */
-              if (i !== j) {
-                  for (k = 1; k <= 3; k += 1) {  /* k = column number to use for row #3 */
-                      if (!(i === k || j === k)) {
-                          P[0][0] = P[0][1] = P[0][2] = P[1][0] = P[1][1] = P[1][2] = P[2][0] = P[2][1] = P[2][2] = 0.0;
-                          for (p = -1; p <= 1; p += 2) {    /* p,q,r are -1 or +1      */
-                              for (q = -1; q <= 1; q += 2) {   /* and go into rows #1,2,3 */
-                                  for (r = -1; r <= 1; r += 2) {
-                                      P[0][i - 1] = p;
-                                      P[1][j - 1] = q;
-                                      P[2][k - 1] = r;
-                                      detP = this.nifti_mat33_determ(P);           /* sign of permutation */
-                                      if ((detP * detQ) > 0.0) {
-                                          M = this.nifti_mat33_mul(P, Q);
-
-                                          /* angle of M rotation = 2.0*acos(0.5*sqrt(1.0+trace(M)))       */
-                                          /* we want largest trace(M) == smallest angle == M nearest to I */
-
-                                          val = M[0][0] + M[1][1] + M[2][2]; /* trace */
-                                          if (val > vbest) {
-                                              vbest = val;
-                                              ibest = i;
-                                              jbest = j;
-                                              kbest = k;
-                                              pbest = p;
-                                              qbest = q;
-                                              rbest = r;
-                                          }
-                                      }  /* doesn't match sign of Q */
-                                  }
-                              }
-                          }
-                      }
-                  }
-              }
-          }
-      }
-
-      /* At this point ibest is 1 or 2 or 3; pbest is -1 or +1; etc.
-
-       The matrix P that corresponds is the best permutation approximation
-       to Q-inverse; that is, P (approximately) takes (x,y,z) coordinates
-       to the (i,j,k) axes.
-
-       For example, the first row of P (which contains pbest in column ibest)
-       determines the way the i axis points relative to the anatomical
-       (x,y,z) axes.  If ibest is 2, then the i axis is along the y axis,
-       which is direction P2A (if pbest > 0) or A2P (if pbest < 0).
-
-       So, using ibest and pbest, we can assign the output code for
-       the i axis.  Mutatis mutandis for the j and k axes, of course. */
-
-      iChar = jChar = kChar = iSense = jSense = kSense = 0;
-
-      switch (ibest * pbest) {
-          case 1: /*i = NIFTI_L2R*/
-              iChar = 'X';
-              iSense = '+';
-              break;
-          case -1: /*i = NIFTI_R2L*/
-              iChar = 'X';
-              iSense = '-';
-              break;
-          case 2: /*i = NIFTI_P2A*/
-              iChar = 'Y';
-              iSense = '+';
-              break;
-          case -2: /*i = NIFTI_A2P*/
-              iChar = 'Y';
-              iSense = '-';
-              break;
-          case 3: /*i = NIFTI_I2S*/
-              iChar = 'Z';
-              iSense = '+';
-              break;
-          case -3: /*i = NIFTI_S2I*/
-              iChar = 'Z';
-              iSense = '-';
-              break;
-      }
-
-      switch (jbest * qbest) {
-          case 1: /*j = NIFTI_L2R*/
-              jChar = 'X';
-              jSense = '+';
-              break;
-          case -1: /*j = NIFTI_R2L*/
-              jChar = 'X';
-              jSense = '-';
-              break;
-          case 2: /*j = NIFTI_P2A*/
-              jChar = 'Y';
-              jSense = '+';
-              break;
-          case -2: /*j = NIFTI_A2P*/
-              jChar = 'Y';
-              jSense = '-';
-              break;
-          case 3: /*j = NIFTI_I2S*/
-              jChar = 'Z';
-              jSense = '+';
-              break;
-          case -3: /*j = NIFTI_S2I*/
-              jChar = 'Z';
-              jSense = '-';
-              break;
-      }
-
-      switch (kbest * rbest) {
-          case 1: /*k = NIFTI_L2R*/
-              kChar = 'X';
-              kSense = '+';
-              break;
-          case -1: /*k = NIFTI_R2L*/
-              kChar = 'X';
-              kSense = '-';
-              break;
-          case 2: /*k = NIFTI_P2A*/
-              kChar = 'Y';
-              kSense = '+';
-              break;
-          case -2: /*k = NIFTI_A2P*/
-              kChar = 'Y';
-              kSense = '-';
-              break;
-          case 3: /*k = NIFTI_I2S*/
-              kChar = 'Z';
-              kSense = '+';
-              break;
-          case -3: /*k = NIFTI_S2I*/
-              kChar = 'Z';
-              kSense = '-';
-              break;
-      }
-
-      return (iChar + jChar + kChar + iSense + jSense + kSense);
-  };
-
-
-
-  nifti.NIFTI1.prototype.nifti_mat33_mul = function (A, B) {
-      var C = [[0, 0, 0], [0, 0, 0], [0, 0, 0]],
-          i,
-          j;
-
-      for (i = 0; i < 3; i += 1) {
-          for (j = 0; j < 3; j += 1) {
-              C[i][j] =  A[i][0] * B[0][j]  + A[i][1] * B[1][j] + A[i][2] * B[2][j];
-          }
-      }
-
-      return C;
-  };
-
-
-
-  nifti.NIFTI1.prototype.nifti_mat33_determ = function (R) {
-      var r11, r12, r13, r21, r22, r23, r31, r32, r33;
-      /*  INPUT MATRIX:  */
-      r11 = R[0][0];
-      r12 = R[0][1];
-      r13 = R[0][2];
-      r21 = R[1][0];
-      r22 = R[1][1];
-      r23 = R[1][2];
-      r31 = R[2][0];
-      r32 = R[2][1];
-      r33 = R[2][2];
-
-      return (r11 * r22 * r33 - r11 * r32 * r23 - r21 * r12 * r33 + r21 * r32 * r13 + r31 * r12 * r23 - r31 * r22 * r13);
-  };
-
-
-  /**
-   * Returns the byte index of the extension.
-   * @returns {number}
-   */
-  nifti.NIFTI1.prototype.getExtensionLocation = function() {
-      return nifti.NIFTI1.MAGIC_COOKIE + 4;
-  };
-
-
-  /**
-   * Returns the extension size.
-   * @param {DataView} data
-   * @returns {number}
-   */
-  nifti.NIFTI1.prototype.getExtensionSize = function(data) {
-      return nifti.Utils.getIntAt(data, this.getExtensionLocation(), this.littleEndian);
-  };
-
-
-
-  /**
-   * Returns the extension code.
-   * @param {DataView} data
-   * @returns {number}
-   */
-  nifti.NIFTI1.prototype.getExtensionCode = function(data) {
-      return nifti.Utils.getIntAt(data, this.getExtensionLocation() + 4, this.littleEndian);
-  };
-
-
-
-  /*** Exports ***/
-
-  var moduleType = 'object';
-  if ((moduleType !== 'undefined') && module.exports) {
-      module.exports = nifti.NIFTI1;
-  }
-  });
-
-  var nifti2 = createCommonjsModule(function (module) {
-
-  /*** Imports ***/
-
-  var nifti = nifti || {};
-  nifti.Utils = nifti.Utils || ((typeof commonjsRequire !== 'undefined') ? utilities : null);
-  nifti.NIFTI1 = nifti.NIFTI1 || ((typeof commonjsRequire !== 'undefined') ? nifti1 : null);
-
-
-  /*** Constructor ***/
-
-  /**
-   * The NIFTI2 constructor.
-   * @constructor
-   * @property {boolean} littleEndian
-   * @property {number} dim_info
-   * @property {number[]} dims - image dimensions
-   * @property {number} intent_p1
-   * @property {number} intent_p2
-   * @property {number} intent_p3
-   * @property {number} intent_code
-   * @property {number} datatypeCode
-   * @property {number} numBitsPerVoxel
-   * @property {number} slice_start
-   * @property {number} slice_end
-   * @property {number} slice_code
-   * @property {number[]} pixDims - voxel dimensions
-   * @property {number} vox_offset
-   * @property {number} scl_slope
-   * @property {number} scl_inter
-   * @property {number} xyzt_units
-   * @property {number} cal_max
-   * @property {number} cal_min
-   * @property {number} slice_duration
-   * @property {number} toffset
-   * @property {string} description
-   * @property {string} aux_file
-   * @property {string} intent_name
-   * @property {number} qform_code
-   * @property {number} sform_code
-   * @property {number} quatern_b
-   * @property {number} quatern_c
-   * @property {number} quatern_d
-   * @property {number} quatern_x
-   * @property {number} quatern_y
-   * @property {number} quatern_z
-   * @property {Array.<Array.<number>>} affine
-   * @property {string} magic
-   * @property {number[]} extensionFlag
-   * @type {Function}
-   */
-  nifti.NIFTI2 = nifti.NIFTI2 || function () {
-      this.littleEndian = false;
-      this.dim_info = 0;
-      this.dims = [];
-      this.intent_p1 = 0;
-      this.intent_p2 = 0;
-      this.intent_p3 = 0;
-      this.intent_code = 0;
-      this.datatypeCode = 0;
-      this.numBitsPerVoxel = 0;
-      this.slice_start = 0;
-      this.slice_end = 0;
-      this.slice_code = 0;
-      this.pixDims = [];
-      this.vox_offset = 0;
-      this.scl_slope = 1;
-      this.scl_inter = 0;
-      this.xyzt_units = 0;
-      this.cal_max = 0;
-      this.cal_min = 0;
-      this.slice_duration = 0;
-      this.toffset = 0;
-      this.description = "";
-      this.aux_file = "";
-      this.intent_name = "";
-      this.qform_code = 0;
-      this.sform_code = 0;
-      this.quatern_b = 0;
-      this.quatern_c = 0;
-      this.quatern_d = 0;
-      this.qoffset_x = 0;
-      this.qoffset_y = 0;
-      this.qoffset_z = 0;
-      this.affine = [[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]];
-      this.magic = 0;
-      this.extensionFlag = [0, 0, 0, 0];
-  };
-
-
-
-  /*** Static Pseudo-constants ***/
-
-  nifti.NIFTI2.MAGIC_COOKIE = 540;
-  nifti.NIFTI2.MAGIC_NUMBER_LOCATION = 4;
-  nifti.NIFTI2.MAGIC_NUMBER = [0x6E, 0x2B, 0x32, 0, 0x0D, 0x0A, 0x1A, 0x0A];  // n+2\0
-
-
-
-  /*** Prototype Methods ***/
-
-  /**
-   * Reads the header data.
-   * @param {ArrayBuffer} data
-   */
-  nifti.NIFTI2.prototype.readHeader = function (data) {
-      var rawData = new DataView(data),
-          magicCookieVal = nifti.Utils.getIntAt(rawData, 0, this.littleEndian),
-          ctr,
-          ctrOut,
-          ctrIn,
-          index;
-
-      if (magicCookieVal !== nifti.NIFTI2.MAGIC_COOKIE) {  // try as little endian
-          this.littleEndian = true;
-          magicCookieVal = nifti.Utils.getIntAt(rawData, 0, this.littleEndian);
-      }
-
-      if (magicCookieVal !== nifti.NIFTI2.MAGIC_COOKIE) {
-          throw new Error("This does not appear to be a NIFTI file!");
-      }
-
-      this.datatypeCode = nifti.Utils.getShortAt(rawData, 12, this.littleEndian);
-      this.numBitsPerVoxel = nifti.Utils.getShortAt(rawData, 14, this.littleEndian);
-
-      for (ctr = 0; ctr < 8; ctr += 1) {
-          index = 16 + (ctr * 8);
-          this.dims[ctr] = nifti.Utils.getLongAt(rawData, index, this.littleEndian);
-      }
-
-      this.intent_p1 = nifti.Utils.getDoubleAt(rawData, 80, this.littleEndian);
-      this.intent_p2 = nifti.Utils.getDoubleAt(rawData, 88, this.littleEndian);
-      this.intent_p3 = nifti.Utils.getDoubleAt(rawData, 96, this.littleEndian);
-
-      for (ctr = 0; ctr < 8; ctr += 1) {
-          index = 104 + (ctr * 8);
-          this.pixDims[ctr] = nifti.Utils.getDoubleAt(rawData, index, this.littleEndian);
-      }
-
-      this.vox_offset = nifti.Utils.getLongAt(rawData, 168, this.littleEndian);
-
-      this.scl_slope = nifti.Utils.getDoubleAt(rawData, 176, this.littleEndian);
-      this.scl_inter = nifti.Utils.getDoubleAt(rawData, 184, this.littleEndian);
-
-      this.cal_max = nifti.Utils.getDoubleAt(rawData, 192, this.littleEndian);
-      this.cal_min = nifti.Utils.getDoubleAt(rawData, 200, this.littleEndian);
-
-      this.slice_duration = nifti.Utils.getDoubleAt(rawData, 208, this.littleEndian);
-
-      this.toffset = nifti.Utils.getDoubleAt(rawData, 216, this.littleEndian);
-
-      this.slice_start = nifti.Utils.getLongAt(rawData, 224, this.littleEndian);
-      this.slice_end = nifti.Utils.getLongAt(rawData, 232, this.littleEndian);
-
-      this.description = nifti.Utils.getStringAt(rawData, 240, 240 + 80);
-      this.aux_file = nifti.Utils.getStringAt(rawData, 320, 320 + 24);
-
-      this.qform_code = nifti.Utils.getIntAt(rawData, 344, this.littleEndian);
-      this.sform_code = nifti.Utils.getIntAt(rawData, 348, this.littleEndian);
-
-      this.quatern_b = nifti.Utils.getDoubleAt(rawData, 352, this.littleEndian);
-      this.quatern_c = nifti.Utils.getDoubleAt(rawData, 360, this.littleEndian);
-      this.quatern_d = nifti.Utils.getDoubleAt(rawData, 368, this.littleEndian);
-      this.qoffset_x = nifti.Utils.getDoubleAt(rawData, 376, this.littleEndian);
-      this.qoffset_y = nifti.Utils.getDoubleAt(rawData, 384, this.littleEndian);
-      this.qoffset_z = nifti.Utils.getDoubleAt(rawData, 392, this.littleEndian);
-
-      for (ctrOut = 0; ctrOut < 3; ctrOut += 1) {
-          for (ctrIn = 0; ctrIn < 4; ctrIn += 1) {
-              index = 400 + (((ctrOut * 4) + ctrIn) * 8);
-              this.affine[ctrOut][ctrIn] = nifti.Utils.getDoubleAt(rawData, index, this.littleEndian);
-          }
-      }
-
-      this.affine[3][0] = 0;
-      this.affine[3][1] = 0;
-      this.affine[3][2] = 0;
-      this.affine[3][3] = 1;
-
-      this.slice_code = nifti.Utils.getIntAt(rawData, 496, this.littleEndian);
-      this.xyzt_units = nifti.Utils.getIntAt(rawData, 500, this.littleEndian);
-      this.intent_code = nifti.Utils.getIntAt(rawData, 504, this.littleEndian);
-      this.intent_name = nifti.Utils.getStringAt(rawData, 508, 508 + 16);
-
-      this.dim_info = nifti.Utils.getByteAt(rawData, 524);
-
-      if (rawData.byteLength > nifti.NIFTI2.MAGIC_COOKIE) {
-          this.extensionFlag[0] = nifti.Utils.getByteAt(rawData, 540);
-          this.extensionFlag[1] = nifti.Utils.getByteAt(rawData, 540 + 1);
-          this.extensionFlag[2] = nifti.Utils.getByteAt(rawData, 540 + 2);
-          this.extensionFlag[3] = nifti.Utils.getByteAt(rawData, 540 + 3);
-
-          if (this.extensionFlag[0]) {
-              this.extensionSize = this.getExtensionSize(rawData);
-              this.extensionCode = this.getExtensionCode(rawData);
-          }
-      }
-  };
-
-
-
-  /**
-   * Returns a formatted string of header fields.
-   * @returns {string}
-   */
-  nifti.NIFTI2.prototype.toFormattedString = function () {
-      var fmt = nifti.Utils.formatNumber,
-          string = "";
-
-      string += ("Datatype = " +  + this.datatypeCode + " (" + this.getDatatypeCodeString(this.datatypeCode) + ")\n");
-      string += ("Bits Per Voxel = " + " = " + this.numBitsPerVoxel + "\n");
-      string += ("Image Dimensions" + " (1-8): " +
-          this.dims[0] + ", " +
-          this.dims[1] + ", " +
-          this.dims[2] + ", " +
-          this.dims[3] + ", " +
-          this.dims[4] + ", " +
-          this.dims[5] + ", " +
-          this.dims[6] + ", " +
-          this.dims[7] + "\n");
-
-      string += ("Intent Parameters (1-3): " +
-          this.intent_p1 + ", " +
-          this.intent_p2 + ", " +
-          this.intent_p3) + "\n";
-
-      string += ("Voxel Dimensions (1-8): " +
-          fmt(this.pixDims[0]) + ", " +
-          fmt(this.pixDims[1]) + ", " +
-          fmt(this.pixDims[2]) + ", " +
-          fmt(this.pixDims[3]) + ", " +
-          fmt(this.pixDims[4]) + ", " +
-          fmt(this.pixDims[5]) + ", " +
-          fmt(this.pixDims[6]) + ", " +
-          fmt(this.pixDims[7]) + "\n");
-
-      string += ("Image Offset = " + this.vox_offset + "\n");
-      string += ("Data Scale:  Slope = " + fmt(this.scl_slope) + "  Intercept = " + fmt(this.scl_inter) + "\n");
-      string += ("Display Range:  Max = " + fmt(this.cal_max) + "  Min = " + fmt(this.cal_min) + "\n");
-      string += ("Slice Duration = " + this.slice_duration + "\n");
-      string += ("Time Axis Shift = " + this.toffset + "\n");
-      string += ("Slice Start = " + this.slice_start + "\n");
-      string += ("Slice End = " + this.slice_end + "\n");
-      string += ("Description: \"" + this.description + "\"\n");
-      string += ("Auxiliary File: \"" + this.aux_file + "\"\n");
-      string += ("Q-Form Code = " + this.qform_code + " (" + this.getTransformCodeString(this.qform_code) + ")\n");
-      string += ("S-Form Code = " + this.sform_code + " (" + this.getTransformCodeString(this.sform_code) + ")\n");
-      string += ("Quaternion Parameters:  " +
-      "b = " + fmt(this.quatern_b) + "  " +
-      "c = " + fmt(this.quatern_c) + "  " +
-      "d = " + fmt(this.quatern_d) + "\n");
-
-      string += ("Quaternion Offsets:  " +
-      "x = " + this.qoffset_x + "  " +
-      "y = " + this.qoffset_y + "  " +
-      "z = " + this.qoffset_z + "\n");
-
-      string += ("S-Form Parameters X: " +
-      fmt(this.affine[0][0]) + ", " +
-      fmt(this.affine[0][1]) + ", " +
-      fmt(this.affine[0][2]) + ", " +
-      fmt(this.affine[0][3]) + "\n");
-
-      string += ("S-Form Parameters Y: " +
-      fmt(this.affine[1][0]) + ", " +
-      fmt(this.affine[1][1]) + ", " +
-      fmt(this.affine[1][2]) + ", " +
-      fmt(this.affine[1][3]) + "\n");
-
-      string += ("S-Form Parameters Z: " +
-      fmt(this.affine[2][0]) + ", " +
-      fmt(this.affine[2][1]) + ", " +
-      fmt(this.affine[2][2]) + ", " +
-      fmt(this.affine[2][3]) + "\n");
-
-      string += ("Slice Code = " + this.slice_code + "\n");
-      string += ("Units Code = " + this.xyzt_units + " (" + this.getUnitsCodeString(nifti.NIFTI1.SPATIAL_UNITS_MASK & this.xyzt_units) + ", " + this.getUnitsCodeString(nifti.NIFTI1.TEMPORAL_UNITS_MASK & this.xyzt_units) + ")\n");
-      string += ("Intent Code = " + this.intent_code + "\n");
-      string += ("Intent Name: \"" + this.intent_name + "\"\n");
-
-      string += ("Dim Info = " + this.dim_info + "\n");
-
-      return string;
-  };
-
-
-
-  /**
-   * Returns the byte index of the extension.
-   * @returns {number}
-   */
-  nifti.NIFTI2.prototype.getExtensionLocation = function() {
-      return nifti.NIFTI2.MAGIC_COOKIE + 4;
-  };
-
-
-
-  /**
-   * Returns the extension size.
-   * @param {DataView} data
-   * @returns {number}
-   */
-  nifti.NIFTI2.prototype.getExtensionSize = nifti.NIFTI1.prototype.getExtensionSize;
-
-
-
-  /**
-   * Returns the extension code.
-   * @param {DataView} data
-   * @returns {number}
-   */
-  nifti.NIFTI2.prototype.getExtensionCode = nifti.NIFTI1.prototype.getExtensionCode;
-
-
-
-  /**
-   * Returns a human-readable string of datatype.
-   * @param {number} code
-   * @returns {string}
-   */
-  nifti.NIFTI2.prototype.getDatatypeCodeString = nifti.NIFTI1.prototype.getDatatypeCodeString;
-
-
-
-  /**
-   * Returns a human-readable string of transform type.
-   * @param {number} code
-   * @returns {string}
-   */
-  nifti.NIFTI2.prototype.getTransformCodeString = nifti.NIFTI1.prototype.getTransformCodeString;
-
-
-
-  /**
-   * Returns a human-readable string of spatial and temporal units.
-   * @param {number} code
-   * @returns {string}
-   */
-  nifti.NIFTI2.prototype.getUnitsCodeString = nifti.NIFTI1.prototype.getUnitsCodeString;
-
-
-
-  /**
-   * Returns the qform matrix.
-   * @returns {Array.<Array.<number>>}
-   */
-  nifti.NIFTI2.prototype.getQformMat = nifti.NIFTI1.prototype.getQformMat;
-
-
-
-  /**
-   * Converts qform to an affine.  (See http://nifti.nimh.nih.gov/pub/dist/src/niftilib/nifti1_io.c)
-   * @param {number} qb
-   * @param {number} qc
-   * @param {number} qd
-   * @param {number} qx
-   * @param {number} qy
-   * @param {number} qz
-   * @param {number} dx
-   * @param {number} dy
-   * @param {number} dz
-   * @param {number} qfac
-   * @returns {Array.<Array.<number>>}
-   */
-  nifti.NIFTI2.prototype.convertNiftiQFormToNiftiSForm = nifti.NIFTI1.prototype.convertNiftiQFormToNiftiSForm;
-
-
-
-  /**
-   * Converts sform to an orientation string (e.g., XYZ+--).  (See http://nifti.nimh.nih.gov/pub/dist/src/niftilib/nifti1_io.c)
-   * @param {Array.<Array.<number>>} R
-   * @returns {string}
-   */
-  nifti.NIFTI2.prototype.convertNiftiSFormToNEMA = nifti.NIFTI1.prototype.convertNiftiSFormToNEMA;
-
-
-
-  nifti.NIFTI2.prototype.nifti_mat33_mul = nifti.NIFTI1.prototype.nifti_mat33_mul;
-
-
-
-  nifti.NIFTI2.prototype.nifti_mat33_determ = nifti.NIFTI1.prototype.nifti_mat33_determ;
-
-
-
-  /*** Exports ***/
-
-  var moduleType = 'object';
-  if ((moduleType !== 'undefined') && module.exports) {
-      module.exports = nifti.NIFTI2;
-  }
-  });
-
-  var nifti_1 = createCommonjsModule(function (module) {
-
-  /*** Imports ***/
-
-  /**
-   * nifti
-   * @type {*|{}}
-   */
-  var nifti = nifti || {};
-  nifti.NIFTI1 = nifti.NIFTI1 || ((typeof commonjsRequire !== 'undefined') ? nifti1 : null);
-  nifti.NIFTI2 = nifti.NIFTI2 || ((typeof commonjsRequire !== 'undefined') ? nifti2 : null);
-  nifti.Utils = nifti.Utils || ((typeof commonjsRequire !== 'undefined') ? utilities : null);
-
-  var pako = pako || ((typeof commonjsRequire !== 'undefined') ? pako_1 : null);
-
-
-
-  /*** Static Methods ***/
-
-  /**
-   * Returns true if this data represents a NIFTI-1 header.
-   * @param {ArrayBuffer} data
-   * @returns {boolean}
-   */
-  nifti.isNIFTI1 = function (data) {
-      var buf, mag1, mag2, mag3;
-
-      if (data.byteLength < nifti.NIFTI1.STANDARD_HEADER_SIZE) {
-          return false;
-      }
-
-      buf = new DataView(data);
-
-      if (buf)
-
-      mag1 = buf.getUint8(nifti.NIFTI1.MAGIC_NUMBER_LOCATION);
-      mag2 = buf.getUint8(nifti.NIFTI1.MAGIC_NUMBER_LOCATION + 1);
-      mag3 = buf.getUint8(nifti.NIFTI1.MAGIC_NUMBER_LOCATION + 2);
-
-      return !!((mag1 === nifti.NIFTI1.MAGIC_NUMBER[0]) && (mag2 === nifti.NIFTI1.MAGIC_NUMBER[1]) &&
-          (mag3 === nifti.NIFTI1.MAGIC_NUMBER[2]));
-  };
-
-
-  /**
-   * Returns true if this data represents a NIFTI-2 header.
-   * @param {ArrayBuffer} data
-   * @returns {boolean}
-   */
-  nifti.isNIFTI2 = function (data) {
-      var buf, mag1, mag2, mag3;
-
-      if (data.byteLength < nifti.NIFTI1.STANDARD_HEADER_SIZE) {
-          return false;
-      }
-
-      buf = new DataView(data);
-      mag1 = buf.getUint8(nifti.NIFTI2.MAGIC_NUMBER_LOCATION);
-      mag2 = buf.getUint8(nifti.NIFTI2.MAGIC_NUMBER_LOCATION + 1);
-      mag3 = buf.getUint8(nifti.NIFTI2.MAGIC_NUMBER_LOCATION + 2);
-
-      return !!((mag1 === nifti.NIFTI2.MAGIC_NUMBER[0]) && (mag2 === nifti.NIFTI2.MAGIC_NUMBER[1]) &&
-      (mag3 === nifti.NIFTI2.MAGIC_NUMBER[2]));
-  };
-
-
-
-  /**
-   * Returns true if this data represents a NIFTI header.
-   * @param {ArrayBuffer} data
-   * @returns {boolean}
-   */
-  nifti.isNIFTI = function (data) {
-      return (nifti.isNIFTI1(data) || nifti.isNIFTI2(data));
-  };
-
-
-
-  /**
-   * Returns true if this data is GZIP compressed.
-   * @param {ArrayBuffer} data
-   * @returns {boolean}
-   */
-  nifti.isCompressed = function (data) {
-      var buf, magicCookie1, magicCookie2;
-
-      if (data) {
-          buf = new DataView(data);
-
-          magicCookie1 = buf.getUint8(0);
-          magicCookie2 = buf.getUint8(1);
-
-          if (magicCookie1 === nifti.Utils.GUNZIP_MAGIC_COOKIE1) {
-              return true;
-          }
-
-          if (magicCookie2 === nifti.Utils.GUNZIP_MAGIC_COOKIE2) {
-              return true;
-          }
-      }
-
-      return false;
-  };
-
-
-
-  /**
-   * Returns decompressed data.
-   * @param {ArrayBuffer} data
-   * @returns {ArrayBuffer}
-   */
-  nifti.decompress = function (data) {
-      return pako.inflate(data).buffer;
-  };
-
-
-
-  /**
-   * Reads and returns the header object.
-   * @param {ArrayBuffer} data
-   * @returns {nifti.NIFTI1|nifti.NIFTI2|null}
-   */
-  nifti.readHeader = function (data) {
-      var header = null;
-
-      if (nifti.isCompressed(data)) {
-          data = nifti.decompress(data);
-      }
-
-      if (nifti.isNIFTI1(data)) {
-          header = new nifti.NIFTI1();
-      } else if (nifti.isNIFTI2(data)) {
-          header = new nifti.NIFTI2();
-      }
-
-      if (header) {
-          header.readHeader(data);
-      } else {
-          console.error("That file does not appear to be NIFTI!");
-      }
-
-      return header;
-  };
-
-
-
-  /**
-   * Returns true if this header contains an extension.
-   * @param {nifti.NIFTI1|nifti.NIFTI2} header
-   * @returns {boolean}
-   */
-  nifti.hasExtension = function (header) {
-      return (header.extensionFlag[0] != 0);
-  };
-
-
-
-  /**
-   * Returns the image data.
-   * @param {nifti.NIFTI1|nifti.NIFTI2} header
-   * @param {ArrayBuffer} data
-   * @returns {ArrayBuffer}
-   */
-  nifti.readImage = function (header, data) {
-      var imageOffset = header.vox_offset,
-          timeDim = 1,
-          statDim = 1;
-
-      if (header.dims[4]) {
-          timeDim = header.dims[4];
-      }
-
-      if (header.dims[5]) {
-          statDim = header.dims[5];
-      }
-
-      var imageSize = header.dims[1] * header.dims[2] * header.dims[3] * timeDim * statDim * (header.numBitsPerVoxel / 8);
-      return data.slice(imageOffset, imageOffset + imageSize);
-  };
-
-
-
-  /**
-   * Returns the extension data (including extension header).
-   * @param {nifti.NIFTI1|nifti.NIFTI2} header
-   * @param {ArrayBuffer} data
-   * @returns {ArrayBuffer}
-   */
-  nifti.readExtension = function (header, data) {
-      var loc = header.getExtensionLocation(),
-          size = header.extensionSize;
-
-      return data.slice(loc, loc + size);
-  };
-
-
-
-  /**
-   * Returns the extension data.
-   * @param {nifti.NIFTI1|nifti.NIFTI2} header
-   * @param {ArrayBuffer} data
-   * @returns {ArrayBuffer}
-   */
-  nifti.readExtensionData = function (header, data) {
-      var loc = header.getExtensionLocation(),
-          size = header.extensionSize;
-
-      return data.slice(loc + 8, loc + size - 8);
-  };
-
-
-  /*** Exports ***/
-
-  var moduleType = 'object';
-  if ((moduleType !== 'undefined') && module.exports) {
-      module.exports = nifti;
-  }
-  });
-
-  /*
-  * Author    Jonathan Lurie - http://me.jonathanlurie.fr
-  *
-  * License   MIT
-  * Link      https://github.com/Pixpipe/pixpipejs
-  * Lab       MCIN - Montreal Neurological Institute
-  */
-
-
-  /**
-  * Important information:
-  * NIfTI dataset are using two indexing methods:
-  * - A voxel based system (i, j, k), the most intuitive, where i is the fastest varying dim and k is the sloest varying dim.
-  *   Thus for a given (i, j, k) the value is at (i + j*dim[1] + k*dim[1]*dim[2])
-  * - A subject based system (x, y, z), where +x is right, +y is anterior, +z is superior (right handed coord system).
-  *   This system is CENTER pixel/voxel and is the result of a transformation from (i, j, k) and a scaling given by the size of
-  *   each voxel in a world unit (eg. mm)
-  *
-  * NIfTI provides three alternatives to characterize this transformation:
-  *
-  * METHOD 1 , when header.qform_code = 0
-  * Here, no specific orientation difers in [x, y, z], only spatial scaling based on voxel world dimensions.
-  * This method is NOT the default one, neither it is the most common. It is mainly for bacward compatibility
-  * to ANALYZE 7.5.
-  * Thus we simply have:
-  * x = pixdim[1] * i
-  * y = pixdim[2] * j
-  * z = pixdim[3] * k
-  *
-  * METHOD 2, the "normal" case, when header.qform_code > 0
-  * In this situation, three components are involved in the transformation:
-  * 1. voxel dimensions (header.pixDims[]) for the spatial scaling
-  * 2. a rotation matrix, for orientation
-  * 3. a shift
-  * Thus, we have:
-  * [ x ]   [ R11 R12 R13 ] [        header.pixDims[1] * i ]   [ header.qoffset_x ]
-  * [ y ] = [ R21 R22 R23 ] [        header.pixDims[2] * j ] + [ header.qoffset_y ]
-  * [ z ]   [ R31 R32 R33 ] [ qfac * header.pixDims[3] * k ]   [ header.qoffset_z ]
-  * Info:
-  * The official NIfTI header description ( https://nifti.nimh.nih.gov/pub/dist/src/niftilib/nifti1.h )
-  * was used to interpret the data.
-  */
-  class NiftiDecoderAlt extends Decoder {
-    constructor(){
-      super();
-      this.setMetadata("targetType", Image3DAlt.name);
-      this.addInputValidator(0, ArrayBuffer);
-    }
-
-
-    _run(){
-      var inputBuffer = this._getInput(0);
-
-      if(!inputBuffer){
-        console.warn("NiftiDecoderAlt requires an ArrayBuffer as input \"0\". Unable to continue.");
-        return;
-      }
-
-      if(! nifti_1.isNIFTI( inputBuffer )) {
-        console.warn("Not a NIfTI file");
-        return;
-      }
-
-      var metadata = {};
-      var data = null;
-
-      var header = nifti_1.readHeader(inputBuffer);
-      var rawData = nifti_1.readImage(header, inputBuffer);
-
-      data = this._fetchDataArray(header, rawData);
-
-      if( !data ){
-        console.warn("This NIfTI file is valid but does not contain any readable data.");
-        return;
-      }
-
-      this._scaleData(data, header);
-      var numberOfDimensions = header.dims[0];
-
-      // copying all the original metadata into the field "formatSpecific", for the sake of quality.
-      metadata.formatSpecific = header;
-      metadata.statistics = { upToDate: true, min: "sdfsdf", max: NaN };
-      metadata.ncpp = this._fetchNcpp(header);
-      metadata.description = header.description;
-      metadata.format = "nifti";
-      metadata.spatialUnit = header.getUnitsCodeString(nifti_1.NIFTI1.SPATIAL_UNITS_MASK & header.xyzt_units);
-      metadata.temporalUnit = header.getUnitsCodeString(nifti_1.NIFTI1.TEMPORAL_UNITS_MASK & header.xyzt_units);
-
-      // the transformation
-      var niftiTransfoMatrix = header.getQformMat(); // the default case (METHOD2)
-      if( header.qform_code == 0){  // though sometimes qform_code is 0, then we have to use affine (METHOD3)
-        niftiTransfoMatrix = header.affine;
-      }
-
-      // dimensions info ordered from the fastest varying to the slowest varying
-      var voxelSpaceNames = ['k', 'j', 'i', 't'];
-      var worldSpaceNames = ['x', 'y', 'z', 't'];
-      var dimensions = [];
-
-      for(var d=0; d<numberOfDimensions; d++){
-        // compute the stride based on the previous dim
-        var stride = 1;
-        for(var pd=0; pd<d; pd++){
-          stride *= header.dims[pd + 1];
-        }
-
-        var dimension = {
-          length: header.dims[d + 1],
-          widthDimension: -1, // to be filled later
-          heightDimension: -1, // to be filled later
-          nameVoxelSpace: voxelSpaceNames[d],
-          nameWorldSpace: worldSpaceNames[d],
-          worldUnitSize: header.pixDims[d + 1],
-          stride: stride,
-          step: header.pixDims[d + 1], // same to worldUnitSize but will prob be changed if swapped, except for time
-          //direction: niftiTransfoMatrix[d][d] < 0 ? -1 : 1, // to be filled later
-        };
-        dimensions.push( dimension );
-      }
-
-      if( dimensions.length >= 3){
-        // dim x has for width  y and for heigth z
-        dimensions[0].widthDimension = 1;
-        dimensions[0].heightDimension = 2;
-
-        // dim y has for width  x and for heigth z
-        dimensions[1].widthDimension = 0;
-        dimensions[1].heightDimension = 2;
-
-        // dim z has for width  x and for heigth y
-        dimensions[2].widthDimension = 0;
-        dimensions[2].heightDimension = 1;
-      }
-
-      /*
-      swaping dimensions:
-      In some cases, a NIfTI does not respect the orientation from the specfication.
-      In order to get the proper orientation, we have to swap some dimensions as
-      well as the corresponding rows in the v2w matrix.
-      The criterion to find what dim is suposed to come first, what is supposed to
-      be last is direction cosine fron the matrix:
-      - the 1st row should be the one with the highest absolute value from all 1st columns
-      - the 2nd row should be the one with the highest absolute value from all 2nd columns
-      - the 3rd row should be the one with the highest absolute value from all 3rd columns
-      */
-
-      // give the index of the row that has the highest value among a given col
-      function whichRowHasHighestValueFromGivenCol( arrOfArr, col){
-        var cx = Math.abs(arrOfArr[0][col]);
-        var cy = Math.abs(arrOfArr[1][col]);
-        var cz = Math.abs(arrOfArr[2][col]);
-
-        if( cx > cy && cx > cz){
-          return 0;
-        }else if(cy > cx && cy > cz){
-          return 1;
-        }else{
-          return 2
-        }
-      }
-
-      function getMagnitude( arr ){
-        return Math.sqrt( arr[0]*arr[0] + arr[1]*arr[1] + arr[2]*arr[2] );
-      }
-
-      var shouldBeCol0 = whichRowHasHighestValueFromGivenCol(niftiTransfoMatrix, 0);
-      var shouldBeCol1 = whichRowHasHighestValueFromGivenCol(niftiTransfoMatrix, 1);
-      var shouldBeCol2 = whichRowHasHighestValueFromGivenCol(niftiTransfoMatrix, 2);
-
-      // when we have shouldBeCol[ n ] = m it means that the current original row m
-      // of transfo-matrix should move to the position n
-      var shouldBeCol = [ shouldBeCol0, shouldBeCol1, shouldBeCol2 ];
-      // this is the inverse lookup of shouldBeCol
-      var wasCol = [ shouldBeCol.indexOf(0), shouldBeCol.indexOf(1), shouldBeCol.indexOf(2) ];
-
-      var transfoMatrixToUse = JSON.parse(JSON.stringify(niftiTransfoMatrix));
-      var dimensionsToUse = dimensions;
-
-      // ******************* BEGIN TO SWAP ***************************************
-
-      // if so, the dimension list and the matrix need swapping
-      if( shouldBeCol[0] != 0 || shouldBeCol[1] != 1 || shouldBeCol[2] != 2){
-
-        // swap the matrix cols
-        for (var i = 0; i < 3; i++) {
-          for (var j = 0; j < 4; j++) {
-            var volumeAxis = j;
-            if (j < 3) {
-              volumeAxis = shouldBeCol[j];
-            }
-            transfoMatrixToUse[i][volumeAxis] = niftiTransfoMatrix[i][j];
-          }
-        }
-
-        // just making a safe copy
-        var dimensionsCp = JSON.parse(JSON.stringify(dimensions));
-
-        // renaming it. Then it seems to already be in the correct order. Not sure why?? TODO: see why!
-        dimensionsCp[0].nameVoxelSpace = "k";
-        dimensionsCp[1].nameVoxelSpace = "j";
-        dimensionsCp[2].nameVoxelSpace = "i";
-
-        dimensionsCp[wasCol[0]].nameWorldSpace = "x";
-        dimensionsCp[wasCol[1]].nameWorldSpace = "y";
-        dimensionsCp[wasCol[2]].nameWorldSpace = "z";
-
-        // associating width and height
-        dimensionsCp[wasCol[0]].widthDimension = wasCol[1];
-        dimensionsCp[wasCol[0]].heightDimension = wasCol[2];
-        dimensionsCp[wasCol[1]].widthDimension = wasCol[0];
-        dimensionsCp[wasCol[1]].heightDimension = wasCol[2];
-        dimensionsCp[wasCol[2]].widthDimension = wasCol[0];
-        dimensionsCp[wasCol[2]].heightDimension = wasCol[1];
-
-        dimensionsToUse = dimensionsCp;
-      }
-      // ******************* END OF SWAPING **************************************
-
-      // return the dimsniosn object given its world name ('x', 'y' or 'z')
-      function getDimensionByWorldName( name ){
-        for(var i=0; i<dimensionsToUse.length; i++){
-          if(dimensionsToUse[i].nameWorldSpace === name)
-            return dimensionsToUse[i];
-        }
-        return null;
-      }
-
-      // set the directions
-      for(var i=0; i<3; i++){
-        var stepSize = getMagnitude( transfoMatrixToUse[i] );
-        var directionSign = Math.sign( transfoMatrixToUse[i][i]);
-        //dimensionsToUse[i].step = stepSize * directionSign;
-
-        // so that when i==0, dimension is x, etc.
-        var dimension = getDimensionByWorldName(worldSpaceNames[i]);
-        dimension.step = stepSize * directionSign;
-      }
-
-
-
-      metadata.dimensions = dimensionsToUse;
-
-      var v2wMat = fromValues$3(transfoMatrixToUse[0][0], transfoMatrixToUse[1][0], transfoMatrixToUse[2][0], transfoMatrixToUse[3][0],
-                                   transfoMatrixToUse[0][1], transfoMatrixToUse[1][1], transfoMatrixToUse[2][1], transfoMatrixToUse[3][1],
-                                   transfoMatrixToUse[0][2], transfoMatrixToUse[1][2], transfoMatrixToUse[2][2], transfoMatrixToUse[3][2],
-                                   transfoMatrixToUse[0][3], transfoMatrixToUse[1][3], transfoMatrixToUse[2][3], transfoMatrixToUse[3][3] );
-
-      var w2vMat = create$3();
-      invert$3( w2vMat, v2wMat );
-
-      // register all the transformations available here
-      metadata.transformations = {
-        v2w: v2wMat,
-        w2v: w2vMat
-      };
-
-      metadata.statistics = {
-        upToDate: false,
-        min: 0,
-        max: 0
-      };
-
-      /*
-      // doing that would imply re-setting widthDimension and heightDimension
-      var dims = metadata.dimensions;
-      dims.sort( function(a, b){
-        return a.stride > b.stride;
-      })
-      */
-
-      var output = new Image3DAlt(); 
-      output.setRawData( data );
-      output.setRawMetadata( metadata );
-
-      if(output.metadataIntegrityCheck()){
-        output.scanDataRange();
-        this._output[0] = output;
-      }
-    }
-
-
-    /**
-    * @private
-    * The header field `scl_slope` is used to scale the data, thus if non-0,
-    * we should scale the data.
-    * @param {typed array} data - the nifti data array, WILL BE MODIFIED
-    * @param {Object} header - nifti header
-    */
-    _scaleData( data, header ){
-      // We dont scale in the case RGB24
-      if( header.datatypeCode == nifti_1.NIFTI1.TYPE_RGB24 ){
-        return;
-      }
-
-      // the data scaling wont change anything, thus we dont perform it
-      if( header.scl_slope == 1 && header.scl_inter == 0 ){
-        return;
-      }
-
-      if( header.scl_slope ){
-        for(var i=0; i<data.length; i++){
-          data[i] = data[i] * header.scl_slope + header.scl_inter;
-        }
-      }
-    }
-
-
-    /**
-    * @private
-    * Get the number of components per pixel encoded in the Nifti file
-    * @param {Object} header - Nifti header
-    * @return {number} the ncpp
-    */
-    _fetchNcpp( header ){
-      var ncpp = 0;
-
-      switch ( header.datatypeCode ) {
-        case nifti_1.NIFTI1.TYPE_BINARY:
-          console.warn("The datatype nifti.TYPE_BINARY is not compatible yet.");
-          break;
-        case nifti_1.NIFTI1.TYPE_COMPLEX64:
-          console.warn("The datatype nifti.TYPE_COMPLEX64 is not compatible yet.");
-          break;
-        case nifti_1.NIFTI1.TYPE_COMPLEX128:
-          console.warn("The datatype nifti.TYPE_COMPLEX128 is not compatible yet.");
-          break;
-        case nifti_1.NIFTI1.TYPE_COMPLEX256:
-          console.warn("The datatype nifti.TYPE_COMPLEX256 is not compatible yet.");
-          break;
-        case nifti_1.NIFTI1.TYPE_FLOAT128:
-          console.warn("The datatype nifti.TYPE_FLOAT128 is not compatible yet.");
-          break;
-        case nifti_1.NIFTI1.TYPE_INT64:
-          console.warn("The datatype nifti.TYPE_INT64 is not compatible yet.");
-          break;
-        case nifti_1.NIFTI1.TYPE_NONE:
-          console.warn("The datatype nifti.TYPE_NONE is not compatible.");
-          break;
-        case nifti_1.NIFTI1.TYPE_UINT64:
-          console.warn("The datatype nifti.TYPE_INT64 is not compatible yet.");
-          break;
-
-        case nifti_1.NIFTI1.TYPE_FLOAT32:
-          ncpp = 1;
-          break;
-        case nifti_1.NIFTI1.TYPE_FLOAT64:
-          ncpp = 1;
-          break;
-        case nifti_1.NIFTI1.TYPE_INT8:
-          ncpp = 1;
-          break;
-        case nifti_1.NIFTI1.TYPE_INT16:
-          ncpp = 1;
-          break;
-        case nifti_1.NIFTI1.TYPE_INT32:
-          ncpp = 1;
-          break;
-        case nifti_1.NIFTI1.TYPE_UINT8:
-          ncpp = 1;
-          break;
-        case nifti_1.NIFTI1.TYPE_UINT16:
-          ncpp = 1;
-          break;
-        case nifti_1.NIFTI1.TYPE_UINT32:
-          ncpp = 1;
-          break;
-        case nifti_1.NIFTI1.TYPE_RGB24:
-          ncpp = 3;
-          break;
-
-        default:
-          console.warn("The datatype is unknown.");
-      }
-
-      return ncpp;
-    }
-
-
-    /**
-    * @private
-    * Cast the raw ArrayBuffer into the appropriate type. Some Nifti types are not
-    * compatible with Javascript and cannot be used.
-    * @param {Object} header - the nifti header
-    * @param {ArrayBuffer} rawData - the nifti data buffer
-    * @return {typed array} a typed array with the data
-    */
-    _fetchDataArray( header, rawData ){
-      var typedData = null;
-
-      switch ( header.datatypeCode ) {
-        case nifti_1.NIFTI1.TYPE_BINARY:
-          console.warn("The datatype nifti.TYPE_BINARY is not compatible yet.");
-          break;
-        case nifti_1.NIFTI1.TYPE_COMPLEX64:
-          console.warn("The datatype nifti.TYPE_COMPLEX64 is not compatible yet.");
-          break;
-        case nifti_1.NIFTI1.TYPE_COMPLEX128:
-          console.warn("The datatype nifti.TYPE_COMPLEX128 is not compatible yet.");
-          break;
-        case nifti_1.NIFTI1.TYPE_COMPLEX256:
-          console.warn("The datatype nifti.TYPE_COMPLEX256 is not compatible yet.");
-          break;
-        case nifti_1.NIFTI1.TYPE_FLOAT128:
-          console.warn("The datatype nifti.TYPE_FLOAT128 is not compatible yet.");
-          break;
-        case nifti_1.NIFTI1.TYPE_INT64:
-          console.warn("The datatype nifti.TYPE_INT64 is not compatible yet.");
-          break;
-        case nifti_1.NIFTI1.TYPE_NONE:
-          console.warn("The datatype nifti.TYPE_NONE is not compatible.");
-          break;
-        case nifti_1.NIFTI1.TYPE_UINT64:
-          console.warn("The datatype nifti.TYPE_INT64 is not compatible yet.");
-          break;
-
-        case nifti_1.NIFTI1.TYPE_FLOAT32:
-          typedData = new Float32Array( rawData );
-          break;
-        case nifti_1.NIFTI1.TYPE_FLOAT64:
-          typedData = new Float64Array( rawData );
-          break;
-        case nifti_1.NIFTI1.TYPE_INT8:
-          typedData = new Int8Array( rawData );
-          break;
-        case nifti_1.NIFTI1.TYPE_INT16:
-          typedData = new Int16Array( rawData );
-          break;
-        case nifti_1.NIFTI1.TYPE_INT32:
-          typedData = new Int32Array( rawData );
-          break;
-        case nifti_1.NIFTI1.TYPE_UINT8:
-          typedData = new Uint8Array( rawData );
-          break;
-        case nifti_1.NIFTI1.TYPE_UINT16:
-          typedData = new Uint16Array( rawData );
-          break;
-        case nifti_1.NIFTI1.TYPE_UINT32:
-          typedData = new Uint32Array( rawData );
-          break;
-        case nifti_1.NIFTI1.TYPE_RGB24:
-          typedData = new Uint8Array( rawData );
-          break;
-
-        default:
-          console.warn("The datatype is unknown.");
-      }
-      return typedData;
-    }
-
-
-    _computeSubjsctBasedCoord( header ){
-
-    }
-
-  } /* END of class NiftiDecoderAlt */
-
-  /*
-  * Author    Jonathan Lurie - http://me.jonathanlurie.fr
-  *
-  * License   MIT
-  * Link      https://github.com/Pixpipe/pixpipejs
-  * Lab       MCIN - Montreal Neurological Institute
-  */
-
-
-  /**
-  * A PixpEncoder instance takes an Image2D or Image3D as input with `addInput(...)`
-  * and encode it so that it can be saved as a *.pixp file.
-  * An output filename can be specified using `.setMetadata("filename", "yourName.pixp");`,
-  * by default, the name is "untitled.pixp".
-  * When `update()` is called, a gzip blog is prepared as output[0] and can then be downloaded
-  * when calling the method `.download()`. The gzip blob could also be sent over AJAX
-  * using a third party library.
-  *
-  * **Usage**
-  * - [examples/savePixpFile.html](../examples/savePixpFile.html)
-  */
-  class PixpEncoder extends Filter {
-    constructor(){
-      super();
-      this.setMetadata("filename", "untitled.pixp");
-
-    }
-
-
-    /**
-    * @private
-    * overwrite the original from Filter
-    * Only accept Image2D and Image3D
-    */
-    hasValidInput(){
-      var input = this._getInput();
-      return input && ( input.isOfType(Image2D.TYPE()) || input.isOfType(Image3D.TYPE()) );
-    }
-
-
-    _run(){
-
-      if(! this.hasValidInput() ){
-        console.warn("PixpEncoder can only encode Image2D and Image3D.");
-        return;
-      }
-
-      var input = this._getInput();
-
-      var arrayAndMeta = {
-        dataType: input.getData().constructor.name, // typed array type
-        data: Array.prototype.slice.call( input.getData() ),  // data of pixel/voxel
-        metadata: input.getMetadataCopy(),  // Image2D/Image3D._metadata
-        pixpipeType: input.constructor.name // most likely "Image2D", "Image3D", "MniVolume", "LineString", etc.
-      };
-
-      var pixpString = JSON.stringify( arrayAndMeta );
-
-      var deflator = new pako_1.Deflate({
-        level: 6,
-        //to: 'string',
-        gzip: true,
-        header: {
-            text: true,
-            time: + new Date(),
-            comment: "This file was created by Pixpipe.js"
-          }
-      });
-
-      deflator.push(pixpString, true);
-
-      // making a blob to be saved
-      this._output[0] = new Blob([deflator.result], {type: "application/gzip"} );
-    }
-
-
-    /**
-    * Download the generated file
-    */
-    download(){
-      var output = this.getOutput();
-
-      if(output){
-        FileSaver.saveAs( this.getOutput(), this.getMetadata("filename"));
-      }else{
-        console.warn("No output computed yet.");
-      }
-    }
-
-  } /* END of class PixpEncoder */
-
-  /*
-  * Author    Jonathan Lurie - http://me.jonathanlurie.fr
-  *
-  * License   MIT
-  * Link      https://github.com/Pixpipe/pixpipejs
-  * Lab       MCIN - Montreal Neurological Institute
-  */
-
-
-  /**
-  * A PixpDecoder instance decodes a *.pixp file and output an Image2D or Image3D.
-  * The input, specified by `.addInput(...)` must be an ArrayBuffer
-  * (from an `UrlToArrayBufferFilter`, an `UrlToArrayBufferReader` or anothrer source ).
-  *
-  * **Usage**
-  * - [examples/pixpFileToImage2D.html](../examples/pixpFileToImage2D.html)
-  */
-  class PixpDecoder extends Decoder {
-    constructor(){
-      super();
-      this.setMetadata("targetType", "*");
-      this.addInputValidator(0, ArrayBuffer);
-    }
-
-
-    _run(){
-
-      if(! this.hasValidInput() ){
-        console.warn("PixpDecoder can only decode ArrayBuffer.");
-        return;
-      }
-
-      var input = this._getInput();
-
-      //var pixpString2 = pako.inflate(input /*, { to: 'string' }*/);
-      //var pixpObject = JSON.parse( pixpString2 );
-
-      var inflator = new pako_1.Inflate({
-        level: 6,
-        to: 'string'
-      });
-
-      inflator.push( input, true );
-
-      // quit if not a gz file
-      if( inflator.err ){
-        console.warn("This file is not a Pixp file.");
-        return;
-      }
-
-      var pixpObject = null;
-
-      try{
-        pixpObject = JSON.parse( inflator.result );
-      }catch(e){
-        console.warn("Could not parse pixp file.");
-        console.error(e);
-        return;
-      }
-
-      if( ! (pixpObject.pixpipeType in pixpipe)){
-        console.warn("Unknown type pixpipe." + pixpObject.pixpipeType + ", cannot create any output." );
-        return;
-      }
-
-      var constructorHost = null;
-
-      try{
-        constructorHost = window;
-      }catch( e ){
-        try{
-          constructorHost = GLOBAL;
-        }catch( e ){
-          console.warn( "You are not in a Javascript environment?? Weird." );
-          return;
-        }
-      }
-
-      if(! constructorHost[ pixpObject.dataType ]){
-        console.warn( "Data array from pixp file is unknown: " + pixpObject.dataType );
-        return;
-      }
-
-      var outputRawData = new constructorHost[ pixpObject.dataType ]( pixpObject.data );
-      var output = new pixpipe[ pixpObject.pixpipeType ];
-      output.setRawData( outputRawData );
-      output.setRawMetadata( pixpObject.metadata );
-
-      this._output[0] = output;
-
-    }
-
-
-
-  } /* END of class PixpDecoder */
-
-  /*
-  * Author    Jonathan Lurie - http://me.jonathanlurie.fr
-  *           Robert D. Vincent
-  *
-  * License   MIT
-  * Link      https://github.com/Pixpipe/pixpipejs
-  * Lab       MCIN - Montreal Neurological Institute
-  */
-
-  /**
-  * Decodes a MGH file.
-  * Takes an ArrayBuffer as input (0) and output a `MniVolume` (which inherit `Image3D`).
-  *
-  * **Usage**
-  * - [examples/fileToMgh.html](../examples/fileToMgh.html)
-  */
-  class MghDecoder extends Decoder {
-
-    constructor() {
-      super();
-      this.setMetadata("targetType", MniVolume.name);
-      this.addInputValidator(0, ArrayBuffer);
-      this.setMetadata("debug", false);
-    }
-
-
-    /* Function to parse the basic MGH header. This is a 284-byte binary
-     * object that begins at offset zero in the file.
-     * The resulting header object will contain the following fields:
-     *
-     * header.order[] - An array of strings that gives the order of the
-     * spatial dimensions.
-     * header.xspace - Description of the X axis (patient left to right)
-     * header.yspace - Description of the Y axis (patient posterior to anterior)
-     * header.zspace - Description of the Z axis (patient inferior to superior)
-     * header.time - Description of time axis, if any.
-
-     * Non-standard fields used internally only:
-     *
-     * header.nvoxels - Total number of voxels in the image.
-     * header.datatype - MGH data type of image.
-     * header.little_endian - True if data is little endian (should be false!)
-     */
-    _parseMGHHeader(raw_data, callback) {
-      var header = {
-        order: ["xspace", "yspace", "zspace"],
-        xspace: {},
-        yspace: {},
-        zspace: {}
-      };
-      var dview = new DataView(raw_data, 0, 284);
-      var little_endian = true;
-
-      /* Read the header version, which should always have the value
-       * 0x00000001. We use this to test the endian-ness of the data,
-       * but it should always be big-endian.
-       */
-      var hdr_version = dview.getUint32(0, true);
-      if (hdr_version === 0x00000001) {
-        little_endian = true;
-      } else if (hdr_version === 0x01000000) {
-        little_endian = false;    // Generally files are big-endian.
-      }
-      else {
-        console.warn( "This does not look like an MGH file." );
-        return null;
-      }
-
-      /* Now read the dimension lengths. There are at most 4 dimensions
-       * in the file. The lengths fields are always present, but they
-       * unused dimensions may have the value 0 or 1.
-       */
-      var ndims = 0;
-      var sizes = [0, 0, 0, 0];
-      var header_offset = 4;
-      var nvoxels = 1;
-      for (ndims = 0; ndims < 4; ndims++) {
-        sizes[ndims] = dview.getUint32(header_offset, little_endian);
-        if (sizes[ndims] <= 1) {
-          break;
-        }
-        nvoxels *= sizes[ndims];
-        header_offset += 4;
-      }
-
-      if (ndims < 3 || ndims > 4) {
-        console.warn( "Cannot handle " + ndims + "-dimensional images yet." );
-        return null;
-      }
-
-      var datatype = dview.getUint32(20, little_endian);
-      // IGNORED var dof = dview.getUint32(24, little_endian);
-      var good_transform_flag = dview.getUint16(28, little_endian);
-      var spacing = [1.0, 1.0, 1.0];
-      var i, j;
-      var dircos = [
-        [-1.0,  0.0,  0.0],
-        [ 0.0,  0.0, -1.0],
-        [ 0.0,  1.0,  0.0],
-        [ 0.0,  0.0,  0.0]
-      ];
-      if (good_transform_flag) {
-        header_offset = 30;
-        for (i = 0; i < 3; i++) {
-          spacing[i] = dview.getFloat32(header_offset, little_endian);
-          header_offset += 4;
-        }
-        for (i = 0; i < 4; i++) {
-          for (j = 0; j < 3; j++) {
-            dircos[i][j] = dview.getFloat32(header_offset, little_endian);
-            header_offset += 4;
-          }
-        }
-      }
-
-      if ( this._metadata.debug ) {
-        // Prints out the transform in a format similar to the output
-        // of FreeSurfer's mri_info tool.
-        //
-        for (i = 0; i < 3; i++) {
-          var s1 = "";
-          for (j = 0; j < 4; j++) {
-            s1 += "xyzc"[j] + "_" + "ras"[i] + " " + dircos[j][i] + " ";
-          }
-          console.log(s1);
-        }
-      }
-
-      var axis_index_from_file = [0, 1, 2];
-
-      for ( var axis = 0; axis < 3; axis++) {
-        var spatial_axis = 0;
-        var c_x = Math.abs(dircos[axis][0]);
-        var c_y = Math.abs(dircos[axis][1]);
-        var c_z = Math.abs(dircos[axis][2]);
-
-        header.order[axis] = "xspace";
-        if (c_y > c_x && c_y > c_z) {
-          spatial_axis = 1;
-          header.order[axis] = "yspace";
-        }
-        if (c_z > c_x && c_z > c_y) {
-          spatial_axis = 2;
-          header.order[axis] = "zspace";
-        }
-        axis_index_from_file[axis] = spatial_axis;
-      }
-
-      /* If there are four dimensions, assume the last is the time
-       * dimension. I use default values for step and start because as
-       * far as I know MGH files do not carry any descriptive
-       * information about the 4th dimension.
-       */
-      if (ndims === 4) {
-        if (this._metadata.debug) {
-          console.log("Creating time dimension: " + sizes[3]);
-        }
-        header.time = {
-          space_length: sizes[3],
-          step: 1,
-          start: 0,
-          name: "time"
-        };
-        header.order.push("time");
-      }
-
-      /** This is here because there are two different ways of interpreting
-        * the origin of an MGH file. One can ignore the offsets in the
-        * transform, using the centre of the voxel grid. Or you can correct
-        * these naive grid centres using the values stored in the transform.
-        * The first approach is what is used by surface files, so to get them
-        * to register nicely, we want ignore_offsets to be true. However,
-        * getting volumetric files to register correctly implies setting
-        * ignore_offsets to false.
-        */
-      var ignore_offsets = false;
-      var mgh_xform = [
-        [0, 0, 0, 0],
-        [0, 0, 0, 0],
-        [0, 0, 0, 0]
-      ];
-      for (i = 0; i < 3; i++) {
-        for (j = 0; j < 3; j++) {
-          mgh_xform[i][j] = dircos[j][i] * spacing[i];
-        }
-      }
-
-      for (i = 0; i < 3; i++) {
-        var temp = 0.0;
-        for (j = 0; j < 3; j++) {
-          temp += mgh_xform[i][j] * (sizes[j] / 2.0);
-        }
-
-        if (ignore_offsets) {
-          mgh_xform[i][4 - 1] = -temp;
-        }
-        else {
-          mgh_xform[i][4 - 1] = dircos[4 - 1][i] - temp;
-        }
-      }
-
-      var transform = [
-        [0, 0, 0, 0],
-        [0, 0, 0, 0],
-        [0, 0, 0, 0],
-        [0, 0, 0, 0]
-      ];
-
-      for (i = 0; i < 3; i++) {
-        for (j = 0; j < 4; j++) {
-          var volume_axis = j;
-          if (j < 3) {
-            volume_axis = axis_index_from_file[j];
-          }
-          transform[i][volume_axis] = mgh_xform[i][j];
-        }
-      }
-
-      // Now that we have the transform, need to convert it to MINC-like
-      // steps and direction_cosines.
-
-      MniVolume.transformToMinc(transform, header);
-
-      // Save the datatype so that we can refer to it later.
-      header.datatype = datatype;
-      header.little_endian = little_endian;
-      header.nvoxels = nvoxels;
-
-      // Save the voxel dimension lengths.
-      for (i = 0; i < 3; i++) {
-        header[header.order[i]].space_length = sizes[i];
-      }
-
-      return header;
-    }
-
-
-    _createMGHData(header, raw_data) {
-
-      var native_data = null;
-      var bytes_per_voxel = 1;
-
-      switch (header.datatype) {
-      case 0:                     // Unsigned characters.
-        bytes_per_voxel = 1;
-        break;
-      case 1:                     // 4-byte signed integers.
-      case 3:                     // 4-byte float.
-        bytes_per_voxel = 4;
-        break;
-      case 4:                     // 2-byte signed integers.
-        bytes_per_voxel = 2;
-        break;
-      default:
-        console.warn( "Unsupported data type: " + header.datatype );
-        return null;
-      }
-
-      var nbytes = header.nvoxels * bytes_per_voxel;
-
-      if (bytes_per_voxel > 1 && !header.little_endian) {
-        MniVolume.swapn( new Uint8Array(raw_data, 284, nbytes), bytes_per_voxel );
-      }
-
-      switch (header.datatype) {
-      case 0:                     // unsigned char
-        native_data = new Uint8Array(raw_data, 284, header.nvoxels);
-        break;
-      case 1:                     // signed int
-        native_data = new Int32Array(raw_data, 284, header.nvoxels);
-        break;
-      case 3:
-        native_data = new Float32Array(raw_data, 284, header.nvoxels);
-        break;
-      case 4:                     // signed short
-        native_data = new Int16Array(raw_data, 284, header.nvoxels);
-        break;
-      }
-
-      // Incrementation offsets for each dimension of the volume. MGH
-      // files store the fastest-varying dimension _first_, so the
-      // "first" dimension actually has the smallest offset. That is
-      // why this calculation is different from that for NIfTI-1.
-      //
-      var offset = 1;
-      for (var d = 0; d < header.order.length; d++) {
-        header[header.order[d]].offset = offset;
-        offset *= header[header.order[d]].space_length;
-      }
-      return native_data;
-
-    }
-
-
-    _run(){
-      var inputBuffer = this._getInput(0);
-
-      if(!inputBuffer){
-        console.warn("MghDecoder requires an ArrayBuffer as input \"0\". Unable to continue.");
-        return;
-      }
-
-      var header = null;
-
-      try{
-        header = this._parseMGHHeader( inputBuffer );
-      }catch(e){
-        //console.warn( e );
-      }
-
-
-      // abort if header not valid
-      if(!header){
-        console.log("The input file is not a MGH file.");
-        return;
-      }
-
-
-
-      var dataArray = this._createMGHData(header, inputBuffer);
-
-      if(!dataArray)
-        return null;
-
-      // add the output to this filter
-      this._addOutput(MniVolume);
-      var mniVol = this.getOutput();
-      mniVol.setData(dataArray, header);
-      mniVol.setMetadata("format", "mgh");
-
-    }
-
-  } /* END of class MghDecoder */
-
-  /*
-  * Author    Jonathan Lurie - http://me.jonathanlurie.fr
-  *
-  * License   MIT
-  * Link      https://github.com/Pixpipe/pixpipejs
-  * Lab       MCIN - Montreal Neurological Institute
-  */
-  //import { PixBinDecoder } from './PixBinDecoder.js';
-
-
-  /**
-  * An instance of Image3DGenericDecoder takes a ArrayBuffer 
-  * as input 0 (`.addInput(myArrayBuffer)`) and output an Image3D.
-  * The `update` method will perform several decoding attempts, using the readers
-  * specified in the constructor.
-  * In case of success (one of the registered decoder was compatible to the data)
-  * the metadata `decoderConstructor` and `decoderName` are made accessible and give
-  * information about the file format. If no decoder managed to decode the input buffer,
-  * this filter will not have any output.
-  *
-  * Developers: if a new 3D dataset decoder is added, reference it here.
-  */
-  class Image3DGenericDecoder extends Filter {
-    
-    constructor(){
-      super();
-      
-      this._decoders = [
-        Minc2Decoder,
-        NiftiDecoder,
-        MghDecoder,
-        PixpDecoder,
-        //PixBinDecoder
-      ];
-    }
-    
-    
-    _run(){
-      var inputBuffer = this._getInput(0);
-      
-      if(!inputBuffer){
-        console.warn("The input buffer must not be null.");
-        return;
-      }
-      
-      // try with each decoder
-      for(var d=0; d<this._decoders.length; d++){
-        var decoder = new this._decoders[d]();
-        decoder.addInput( inputBuffer );
-        decoder.update();
-        
-        if(decoder.getNumberOfOutputs()){
-          this._output[0] = decoder.getOutput();
-          this.setMetadata("decoderConstructor", this._decoders[d]);
-          this.setMetadata("decoderName", this._decoders[d].name);
-          break;
-        }
-      }
-    }
-    
-    
-  } /* END of class Image3DGenericDecoder */
-
   class Image3DMetadataConverter {
 
     static convertOld2New( oldMeta ){
@@ -41284,16 +34600,16 @@
   * used for Minc2 file format.
   * The metadata "debug" can be set to true to
   * enable a verbose mode.
-  * Takes an ArrayBuffer as input (0) and output a `MniVolume` (which inherit `Image3D`).
+  * Takes an ArrayBuffer as input (0) and output a `Image3D`
   *
   * **Usage**
   * - [examples/fileToMinc2.html](../examples/fileToMinc2.html)
   */
-  class Minc2DecoderAlt extends Decoder{
+  class Minc2Decoder extends Decoder{
 
     constructor(){
       super();
-      this.setMetadata("targetType", Image3DAlt.name);
+      this.setMetadata("targetType", Image3D.name);
       this.addInputValidator(0, ArrayBuffer);
 
       this.setMetadata("debug", false);
@@ -43916,7 +37232,7 @@
       var inputBuffer = this._getInput(0);
 
       if(!inputBuffer){
-        console.warn("Minc2DecoderAlt requires an ArrayBuffer as input \"0\". Unable to continue.");
+        console.warn("Minc2Decoder requires an ArrayBuffer as input \"0\". Unable to continue.");
         return;
       }
 
@@ -44104,14 +37420,6 @@
       minc_header.format = "minc2";
       var dataArray = this.createMincData(minc_header, new_abuf);
 
-      /*
-      // add the output to this filter
-      this._addOutput(MniVolume);
-      var mniVol = this.getOutput();
-      mniVol.setData(dataArray, minc_header);
-      mniVol.setMetadata("format", "minc2");
-      */
-
       var metadata = Image3DMetadataConverter.convertImage3DMetadata( minc_header );
 
       var dims = metadata.dimensions;
@@ -44119,7 +37427,7 @@
         return a.stride > b.stride;
       });
 
-      var output = new Image3DAlt();
+      var output = new Image3D();
       output.setRawData( dataArray );
       output.setRawMetadata( metadata );
 
@@ -44133,7 +37441,2282 @@
 
 
 
-  } /* END of class Minc2DecoderAlt */
+  } /* END of class Minc2Decoder */
+
+  var utilities = createCommonjsModule(function (module) {
+
+  /*** Imports ***/
+
+  var nifti = nifti || {};
+  nifti.Utils = nifti.Utils || {};
+
+
+
+  /*** Static Pseudo-constants ***/
+
+  nifti.Utils.crcTable = null;
+  nifti.Utils.GUNZIP_MAGIC_COOKIE1 = 31;
+  nifti.Utils.GUNZIP_MAGIC_COOKIE2 = 139;
+
+
+
+  /*** Static methods ***/
+
+  nifti.Utils.getStringAt = function (data, start, end) {
+      var str = "", ctr, ch;
+
+      for (ctr = start; ctr < end; ctr += 1) {
+          ch = data.getUint8(ctr);
+
+          if (ch !== 0) {
+              str += String.fromCharCode(ch);
+          }
+      }
+
+      return str;
+  };
+
+
+
+  nifti.Utils.getByteAt = function (data, start) {
+      return data.getInt8(start);
+  };
+
+
+
+  nifti.Utils.getShortAt = function (data, start, littleEndian) {
+      return data.getInt16(start, littleEndian);
+  };
+
+
+
+  nifti.Utils.getIntAt = function (data, start, littleEndian) {
+      return data.getInt32(start, littleEndian);
+  };
+
+
+
+  nifti.Utils.getFloatAt = function (data, start, littleEndian) {
+      return data.getFloat32(start, littleEndian);
+  };
+
+
+
+  nifti.Utils.getDoubleAt = function (data, start, littleEndian) {
+      return data.getFloat64(start, littleEndian);
+  };
+
+
+
+  nifti.Utils.getLongAt = function (data, start, littleEndian) {
+      var ctr, array = [], value = 0;
+
+      for (ctr = 0; ctr < 8; ctr += 1) {
+          array[ctr] = nifti.Utils.getByteAt(data, start + ctr, littleEndian);
+      }
+
+      for (ctr = array.length - 1; ctr >= 0; ctr--) {
+          value = (value * 256) + array[ctr];
+      }
+
+      return value;
+  };
+
+
+
+  nifti.Utils.toArrayBuffer = function (buffer) {
+      var ab, view, i;
+
+      ab = new ArrayBuffer(buffer.length);
+      view = new Uint8Array(ab);
+      for (i = 0; i < buffer.length; i += 1) {
+          view[i] = buffer[i];
+      }
+      return ab;
+  };
+
+
+
+  nifti.Utils.isString = function (obj) {
+      return (typeof obj === "string" || obj instanceof String);
+  };
+
+
+  nifti.Utils.formatNumber = function (num, shortFormat) {
+      var val = 0;
+
+      if (nifti.Utils.isString(num)) {
+          val = Number(num);
+      } else {
+          val = num;
+      }
+
+      if (shortFormat) {
+          val = val.toPrecision(5);
+      } else {
+          val = val.toPrecision(7);
+      }
+
+      return parseFloat(val);
+  };
+
+
+
+  // http://stackoverflow.com/questions/18638900/javascript-crc32
+  nifti.Utils.makeCRCTable = function(){
+      var c;
+      var crcTable = [];
+      for(var n =0; n < 256; n++){
+          c = n;
+          for(var k =0; k < 8; k++){
+              c = ((c&1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1));
+          }
+          crcTable[n] = c;
+      }
+      return crcTable;
+  };
+
+
+
+  nifti.Utils.crc32 = function(dataView) {
+      var crcTable = nifti.Utils.crcTable || (nifti.Utils.crcTable = nifti.Utils.makeCRCTable());
+      var crc = 0 ^ (-1);
+
+      for (var i = 0; i < dataView.byteLength; i++ ) {
+          crc = (crc >>> 8) ^ crcTable[(crc ^ dataView.getUint8(i)) & 0xFF];
+      }
+
+      return (crc ^ (-1)) >>> 0;
+  };
+
+
+
+  /*** Exports ***/
+
+  var moduleType = 'object';
+  if ((moduleType !== 'undefined') && module.exports) {
+      module.exports = nifti.Utils;
+  }
+  });
+
+  var nifti1 = createCommonjsModule(function (module) {
+
+  /*** Imports ***/
+
+  var nifti = nifti || {};
+  nifti.Utils = nifti.Utils || ((typeof commonjsRequire !== 'undefined') ? utilities : null);
+
+
+
+  /*** Constructor ***/
+
+  /**
+   * The NIFTI1 constructor.
+   * @constructor
+   * @property {boolean} littleEndian
+   * @property {number} dim_info
+   * @property {number[]} dims - image dimensions
+   * @property {number} intent_p1
+   * @property {number} intent_p2
+   * @property {number} intent_p3
+   * @property {number} intent_code
+   * @property {number} datatypeCode
+   * @property {number} numBitsPerVoxel
+   * @property {number} slice_start
+   * @property {number} slice_end
+   * @property {number} slice_code
+   * @property {number[]} pixDims - voxel dimensions
+   * @property {number} vox_offset
+   * @property {number} scl_slope
+   * @property {number} scl_inter
+   * @property {number} xyzt_units
+   * @property {number} cal_max
+   * @property {number} cal_min
+   * @property {number} slice_duration
+   * @property {number} toffset
+   * @property {string} description
+   * @property {string} aux_file
+   * @property {string} intent_name
+   * @property {number} qform_code
+   * @property {number} sform_code
+   * @property {number} quatern_b
+   * @property {number} quatern_c
+   * @property {number} quatern_d
+   * @property {number} quatern_x
+   * @property {number} quatern_y
+   * @property {number} quatern_z
+   * @property {Array.<Array.<number>>} affine
+   * @property {string} magic
+   * @property {boolean} isHDR - if hdr/img format
+   * @property {number[]} extensionFlag
+   * @property {number} extensionSize
+   * @property {number} extensionCode
+   * @type {Function}
+   */
+  nifti.NIFTI1 = nifti.NIFTI1 || function () {
+      this.littleEndian = false;
+      this.dim_info = 0;
+      this.dims = [];
+      this.intent_p1 = 0;
+      this.intent_p2 = 0;
+      this.intent_p3 = 0;
+      this.intent_code = 0;
+      this.datatypeCode = 0;
+      this.numBitsPerVoxel = 0;
+      this.slice_start = 0;
+      this.slice_end = 0;
+      this.slice_code = 0;
+      this.pixDims = [];
+      this.vox_offset = 0;
+      this.scl_slope = 1;
+      this.scl_inter = 0;
+      this.xyzt_units = 0;
+      this.cal_max = 0;
+      this.cal_min = 0;
+      this.slice_duration = 0;
+      this.toffset = 0;
+      this.description = "";
+      this.aux_file = "";
+      this.intent_name = "";
+      this.qform_code = 0;
+      this.sform_code = 0;
+      this.quatern_b = 0;
+      this.quatern_c = 0;
+      this.quatern_d = 0;
+      this.qoffset_x = 0;
+      this.qoffset_y = 0;
+      this.qoffset_z = 0;
+      this.affine = [[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]];
+      this.magic = 0;
+      this.isHDR = false;
+      this.extensionFlag = [0, 0, 0, 0];
+      this.extensionSize = 0;
+      this.extensionCode = 0;
+  };
+
+
+
+  /*** Static Pseudo-constants ***/
+
+  // datatype codes
+  nifti.NIFTI1.TYPE_NONE            = 0;
+  nifti.NIFTI1.TYPE_BINARY          = 1;
+  nifti.NIFTI1.TYPE_UINT8           = 2;
+  nifti.NIFTI1.TYPE_INT16           = 4;
+  nifti.NIFTI1.TYPE_INT32           = 8;
+  nifti.NIFTI1.TYPE_FLOAT32        = 16;
+  nifti.NIFTI1.TYPE_COMPLEX64      = 32;
+  nifti.NIFTI1.TYPE_FLOAT64        = 64;
+  nifti.NIFTI1.TYPE_RGB24         = 128;
+  nifti.NIFTI1.TYPE_INT8          = 256;
+  nifti.NIFTI1.TYPE_UINT16        = 512;
+  nifti.NIFTI1.TYPE_UINT32        = 768;
+  nifti.NIFTI1.TYPE_INT64        = 1024;
+  nifti.NIFTI1.TYPE_UINT64       = 1280;
+  nifti.NIFTI1.TYPE_FLOAT128     = 1536;
+  nifti.NIFTI1.TYPE_COMPLEX128   = 1792;
+  nifti.NIFTI1.TYPE_COMPLEX256   = 2048;
+
+  // transform codes
+  nifti.NIFTI1.XFORM_UNKNOWN        = 0;
+  nifti.NIFTI1.XFORM_SCANNER_ANAT   = 1;
+  nifti.NIFTI1.XFORM_ALIGNED_ANAT   = 2;
+  nifti.NIFTI1.XFORM_TALAIRACH      = 3;
+  nifti.NIFTI1.XFORM_MNI_152        = 4;
+
+  // unit codes
+  nifti.NIFTI1.SPATIAL_UNITS_MASK = 0x07;
+  nifti.NIFTI1.TEMPORAL_UNITS_MASK = 0x38;
+  nifti.NIFTI1.UNITS_UNKNOWN        = 0;
+  nifti.NIFTI1.UNITS_METER          = 1;
+  nifti.NIFTI1.UNITS_MM             = 2;
+  nifti.NIFTI1.UNITS_MICRON         = 3;
+  nifti.NIFTI1.UNITS_SEC            = 8;
+  nifti.NIFTI1.UNITS_MSEC          = 16;
+  nifti.NIFTI1.UNITS_USEC          = 24;
+  nifti.NIFTI1.UNITS_HZ            = 32;
+  nifti.NIFTI1.UNITS_PPM           = 40;
+  nifti.NIFTI1.UNITS_RADS          = 48;
+
+  // nifti1 codes
+  nifti.NIFTI1.MAGIC_COOKIE = 348;
+  nifti.NIFTI1.STANDARD_HEADER_SIZE = 348;
+  nifti.NIFTI1.MAGIC_NUMBER_LOCATION = 344;
+  nifti.NIFTI1.MAGIC_NUMBER = [0x6E, 0x2B, 0x31];  // n+1 (.nii)
+  nifti.NIFTI1.MAGIC_NUMBER2 = [0x6E, 0x69, 0x31];  // ni1 (.hdr/.img)
+  nifti.NIFTI1.EXTENSION_HEADER_SIZE = 8;
+
+
+  /*** Prototype Methods ***/
+
+  /**
+   * Reads the header data.
+   * @param {ArrayBuffer} data
+   */
+  nifti.NIFTI1.prototype.readHeader = function (data) {
+      var rawData = new DataView(data),
+          magicCookieVal = nifti.Utils.getIntAt(rawData, 0, this.littleEndian),
+          ctr,
+          ctrOut,
+          ctrIn,
+          index;
+
+      if (magicCookieVal !== nifti.NIFTI1.MAGIC_COOKIE) {  // try as little endian
+          this.littleEndian = true;
+          magicCookieVal = nifti.Utils.getIntAt(rawData, 0, this.littleEndian);
+      }
+
+      if (magicCookieVal !== nifti.NIFTI1.MAGIC_COOKIE) {
+          throw new Error("This does not appear to be a NIFTI file!");
+      }
+
+      this.dim_info = nifti.Utils.getByteAt(rawData, 39);
+
+      for (ctr = 0; ctr < 8; ctr += 1) {
+          index = 40 + (ctr * 2);
+          this.dims[ctr] = nifti.Utils.getShortAt(rawData, index, this.littleEndian);
+      }
+
+      this.intent_p1 = nifti.Utils.getFloatAt(rawData, 56, this.littleEndian);
+      this.intent_p2 = nifti.Utils.getFloatAt(rawData, 60, this.littleEndian);
+      this.intent_p3 = nifti.Utils.getFloatAt(rawData, 64, this.littleEndian);
+      this.intent_code = nifti.Utils.getShortAt(rawData, 68, this.littleEndian);
+
+      this.datatypeCode = nifti.Utils.getShortAt(rawData, 70, this.littleEndian);
+      this.numBitsPerVoxel = nifti.Utils.getShortAt(rawData, 72, this.littleEndian);
+
+      this.slice_start = nifti.Utils.getShortAt(rawData, 74, this.littleEndian);
+
+      for (ctr = 0; ctr < 8; ctr += 1) {
+          index = 76 + (ctr * 4);
+          this.pixDims[ctr] = nifti.Utils.getFloatAt(rawData, index, this.littleEndian);
+      }
+
+      this.vox_offset = nifti.Utils.getFloatAt(rawData, 108, this.littleEndian);
+
+      this.scl_slope = nifti.Utils.getFloatAt(rawData, 112, this.littleEndian);
+      this.scl_inter = nifti.Utils.getFloatAt(rawData, 116, this.littleEndian);
+
+      this.slice_end = nifti.Utils.getShortAt(rawData, 120, this.littleEndian);
+      this.slice_code = nifti.Utils.getByteAt(rawData, 122);
+
+      this.xyzt_units = nifti.Utils.getByteAt(rawData, 123);
+
+      this.cal_max = nifti.Utils.getFloatAt(rawData, 124, this.littleEndian);
+      this.cal_min = nifti.Utils.getFloatAt(rawData, 128, this.littleEndian);
+
+      this.slice_duration = nifti.Utils.getFloatAt(rawData, 132, this.littleEndian);
+      this.toffset = nifti.Utils.getFloatAt(rawData, 136, this.littleEndian);
+
+      this.description = nifti.Utils.getStringAt(rawData, 148, 228);
+      this.aux_file = nifti.Utils.getStringAt(rawData, 228, 252);
+
+      this.qform_code = nifti.Utils.getShortAt(rawData, 252, this.littleEndian);
+      this.sform_code = nifti.Utils.getShortAt(rawData, 254, this.littleEndian);
+
+      this.quatern_b = nifti.Utils.getFloatAt(rawData, 256, this.littleEndian);
+      this.quatern_c = nifti.Utils.getFloatAt(rawData, 260, this.littleEndian);
+      this.quatern_d = nifti.Utils.getFloatAt(rawData, 264, this.littleEndian);
+      this.qoffset_x = nifti.Utils.getFloatAt(rawData, 268, this.littleEndian);
+      this.qoffset_y = nifti.Utils.getFloatAt(rawData, 272, this.littleEndian);
+      this.qoffset_z = nifti.Utils.getFloatAt(rawData, 276, this.littleEndian);
+
+      for (ctrOut = 0; ctrOut < 3; ctrOut += 1) {
+          for (ctrIn = 0; ctrIn < 4; ctrIn += 1) {
+              index = 280 + (((ctrOut * 4) + ctrIn) * 4);
+              this.affine[ctrOut][ctrIn] = nifti.Utils.getFloatAt(rawData, index, this.littleEndian);
+          }
+      }
+
+      this.affine[3][0] = 0;
+      this.affine[3][1] = 0;
+      this.affine[3][2] = 0;
+      this.affine[3][3] = 1;
+
+      this.intent_name = nifti.Utils.getStringAt(rawData, 328, 344);
+      this.magic = nifti.Utils.getStringAt(rawData, 344, 348);
+
+      this.isHDR = (this.magic === nifti.NIFTI1.MAGIC_NUMBER2);
+
+      if (rawData.byteLength > nifti.NIFTI1.MAGIC_COOKIE) {
+          this.extensionFlag[0] = nifti.Utils.getByteAt(rawData, 348);
+          this.extensionFlag[1] = nifti.Utils.getByteAt(rawData, 348 + 1);
+          this.extensionFlag[2] = nifti.Utils.getByteAt(rawData, 348 + 2);
+          this.extensionFlag[3] = nifti.Utils.getByteAt(rawData, 348 + 3);
+
+          if (this.extensionFlag[0]) {
+              this.extensionSize = this.getExtensionSize(rawData);
+              this.extensionCode = this.getExtensionCode(rawData);
+          }
+      }
+  };
+
+
+  /**
+   * Returns a formatted string of header fields.
+   * @returns {string}
+   */
+  nifti.NIFTI1.prototype.toFormattedString = function () {
+      var fmt = nifti.Utils.formatNumber,
+          string = "";
+
+      string += ("Dim Info = " + this.dim_info + "\n");
+
+      string += ("Image Dimensions (1-8): " +
+          this.dims[0] + ", " +
+          this.dims[1] + ", " +
+          this.dims[2] + ", " +
+          this.dims[3] + ", " +
+          this.dims[4] + ", " +
+          this.dims[5] + ", " +
+          this.dims[6] + ", " +
+          this.dims[7] + "\n");
+
+      string += ("Intent Parameters (1-3): " +
+          this.intent_p1 + ", " +
+          this.intent_p2 + ", " +
+          this.intent_p3) + "\n";
+
+      string += ("Intent Code = " + this.intent_code + "\n");
+      string += ("Datatype = " + this.datatypeCode +  " (" + this.getDatatypeCodeString(this.datatypeCode) + ")\n");
+      string += ("Bits Per Voxel = " + this.numBitsPerVoxel + "\n");
+      string += ("Slice Start = " + this.slice_start + "\n");
+      string += ("Voxel Dimensions (1-8): " +
+          fmt(this.pixDims[0]) + ", " +
+          fmt(this.pixDims[1]) + ", " +
+          fmt(this.pixDims[2]) + ", " +
+          fmt(this.pixDims[3]) + ", " +
+          fmt(this.pixDims[4]) + ", " +
+          fmt(this.pixDims[5]) + ", " +
+          fmt(this.pixDims[6]) + ", " +
+          fmt(this.pixDims[7]) + "\n");
+
+      string += ("Image Offset = " + this.vox_offset + "\n");
+      string += ("Data Scale:  Slope = " + fmt(this.scl_slope) + "  Intercept = " + fmt(this.scl_inter) + "\n");
+      string += ("Slice End = " + this.slice_end + "\n");
+      string += ("Slice Code = " + this.slice_code + "\n");
+      string += ("Units Code = " + this.xyzt_units + " (" + this.getUnitsCodeString(nifti.NIFTI1.SPATIAL_UNITS_MASK & this.xyzt_units) + ", " + this.getUnitsCodeString(nifti.NIFTI1.TEMPORAL_UNITS_MASK & this.xyzt_units) + ")\n");
+      string += ("Display Range:  Max = " + fmt(this.cal_max) + "  Min = " + fmt(this.cal_min) + "\n");
+      string += ("Slice Duration = " + this.slice_duration + "\n");
+      string += ("Time Axis Shift = " + this.toffset + "\n");
+      string += ("Description: \"" + this.description + "\"\n");
+      string += ("Auxiliary File: \"" + this.aux_file + "\"\n");
+      string += ("Q-Form Code = " + this.qform_code + " (" + this.getTransformCodeString(this.qform_code) + ")\n");
+      string += ("S-Form Code = " + this.sform_code + " (" + this.getTransformCodeString(this.sform_code) + ")\n");
+      string += ("Quaternion Parameters:  " +
+          "b = " + fmt(this.quatern_b) + "  " +
+          "c = " + fmt(this.quatern_c) + "  " +
+          "d = " + fmt(this.quatern_d) + "\n");
+
+      string += ("Quaternion Offsets:  " +
+          "x = " + this.qoffset_x + "  " +
+          "y = " + this.qoffset_y + "  " +
+          "z = " + this.qoffset_z + "\n");
+
+      string += ("S-Form Parameters X: " +
+          fmt(this.affine[0][0]) + ", " +
+          fmt(this.affine[0][1]) + ", " +
+          fmt(this.affine[0][2]) + ", " +
+          fmt(this.affine[0][3]) + "\n");
+
+      string += ("S-Form Parameters Y: " +
+          fmt(this.affine[1][0]) + ", " +
+          fmt(this.affine[1][1]) + ", " +
+          fmt(this.affine[1][2]) + ", " +
+          fmt(this.affine[1][3]) + "\n");
+
+      string += ("S-Form Parameters Z: " +
+          fmt(this.affine[2][0]) + ", " +
+          fmt(this.affine[2][1]) + ", " +
+          fmt(this.affine[2][2]) + ", " +
+          fmt(this.affine[2][3]) + "\n");
+
+      string += ("Intent Name: \"" + this.intent_name + "\"\n");
+
+      if (this.extensionFlag[0]) {
+          string += ("Extension: Size = " + this.extensionSize + "  Code = " + this.extensionCode + "\n");
+
+      }
+
+      return string;
+  };
+
+
+  /**
+   * Returns a human-readable string of datatype.
+   * @param {number} code
+   * @returns {string}
+   */
+  nifti.NIFTI1.prototype.getDatatypeCodeString = function (code) {
+      if (code === nifti.NIFTI1.TYPE_UINT8) {
+          return "1-Byte Unsigned Integer";
+      } else if (code === nifti.NIFTI1.TYPE_INT16) {
+          return "2-Byte Signed Integer";
+      } else if (code === nifti.NIFTI1.TYPE_INT32) {
+          return "4-Byte Signed Integer";
+      } else if (code === nifti.NIFTI1.TYPE_FLOAT32) {
+          return "4-Byte Float";
+      } else if (code === nifti.NIFTI1.TYPE_FLOAT64) {
+          return "8-Byte Float";
+      } else if (code === nifti.NIFTI1.TYPE_RGB24) {
+          return "RGB";
+      } else if (code === nifti.NIFTI1.TYPE_INT8) {
+          return "1-Byte Signed Integer";
+      } else if (code === nifti.NIFTI1.TYPE_UINT16) {
+          return "2-Byte Unsigned Integer";
+      } else if (code === nifti.NIFTI1.TYPE_UINT32) {
+          return "4-Byte Unsigned Integer";
+      } else if (code === nifti.NIFTI1.TYPE_INT64) {
+          return "8-Byte Signed Integer";
+      } else if (code === nifti.NIFTI1.TYPE_UINT64) {
+          return "8-Byte Unsigned Integer";
+      } else {
+          return "Unknown";
+      }
+  };
+
+
+  /**
+   * Returns a human-readable string of transform type.
+   * @param {number} code
+   * @returns {string}
+   */
+  nifti.NIFTI1.prototype.getTransformCodeString = function (code) {
+      if (code === nifti.NIFTI1.XFORM_SCANNER_ANAT) {
+          return "Scanner";
+      } else if (code === nifti.NIFTI1.XFORM_ALIGNED_ANAT) {
+          return "Aligned";
+      } else if (code === nifti.NIFTI1.XFORM_TALAIRACH) {
+          return "Talairach";
+      } else if (code === nifti.NIFTI1.XFORM_MNI_152) {
+          return "MNI";
+      } else {
+          return "Unknown";
+      }
+  };
+
+
+  /**
+   * Returns a human-readable string of spatial and temporal units.
+   * @param {number} code
+   * @returns {string}
+   */
+  nifti.NIFTI1.prototype.getUnitsCodeString = function (code) {
+      if (code === nifti.NIFTI1.UNITS_METER) {
+          return "Meters";
+      } else if (code === nifti.NIFTI1.UNITS_MM) {
+          return "Millimeters";
+      } else if (code === nifti.NIFTI1.UNITS_MICRON) {
+          return "Microns";
+      } else if (code === nifti.NIFTI1.UNITS_SEC) {
+          return "Seconds";
+      } else if (code === nifti.NIFTI1.UNITS_MSEC) {
+          return "Milliseconds";
+      } else if (code === nifti.NIFTI1.UNITS_USEC) {
+          return "Microseconds";
+      } else if (code === nifti.NIFTI1.UNITS_HZ) {
+          return "Hz";
+      } else if (code === nifti.NIFTI1.UNITS_PPM) {
+          return "PPM";
+      } else if (code === nifti.NIFTI1.UNITS_RADS) {
+          return "Rads";
+      } else {
+          return "Unknown";
+      }
+  };
+
+
+  /**
+   * Returns the qform matrix.
+   * @returns {Array.<Array.<number>>}
+   */
+  nifti.NIFTI1.prototype.getQformMat = function () {
+      return this.convertNiftiQFormToNiftiSForm(this.quatern_b, this.quatern_c, this.quatern_d, this.qoffset_x,
+          this.qoffset_y, this.qoffset_z, this.pixDims[1], this.pixDims[2], this.pixDims[3], this.pixDims[0]);
+  };
+
+
+
+  /**
+   * Converts qform to an affine.  (See http://nifti.nimh.nih.gov/pub/dist/src/niftilib/nifti1_io.c)
+   * @param {number} qb
+   * @param {number} qc
+   * @param {number} qd
+   * @param {number} qx
+   * @param {number} qy
+   * @param {number} qz
+   * @param {number} dx
+   * @param {number} dy
+   * @param {number} dz
+   * @param {number} qfac
+   * @returns {Array.<Array.<number>>}
+   */
+  nifti.NIFTI1.prototype.convertNiftiQFormToNiftiSForm = function (qb, qc, qd, qx, qy, qz, dx, dy, dz,
+                                                  qfac) {
+      var R = [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]],
+          a,
+          b = qb,
+          c = qc,
+          d = qd,
+          xd,
+          yd,
+          zd;
+
+      // last row is always [ 0 0 0 1 ]
+      R[3][0] = R[3][1] = R[3][2] = 0.0;
+      R[3][3] = 1.0;
+
+      // compute a parameter from b,c,d
+      a = 1.0 - (b * b + c * c + d * d);
+      if (a < 0.0000001) {                   /* special case */
+
+          a = 1.0 / Math.sqrt(b * b + c * c + d * d);
+          b *= a;
+          c *= a;
+          d *= a;        /* normalize (b,c,d) vector */
+          a = 0.0;                        /* a = 0 ==> 180 degree rotation */
+      } else {
+
+          a = Math.sqrt(a);                     /* angle = 2*arccos(a) */
+      }
+
+      // load rotation matrix, including scaling factors for voxel sizes
+      xd = (dx > 0.0) ? dx : 1.0;       /* make sure are positive */
+      yd = (dy > 0.0) ? dy : 1.0;
+      zd = (dz > 0.0) ? dz : 1.0;
+
+      if (qfac < 0.0) {
+          zd = -zd;         /* left handedness? */
+      }
+
+      R[0][0] =       (a * a + b * b - c * c - d * d) * xd;
+      R[0][1] = 2.0 * (b * c - a * d) * yd;
+      R[0][2] = 2.0 * (b * d + a * c) * zd;
+      R[1][0] = 2.0 * (b * c + a * d) * xd;
+      R[1][1] =       (a * a + c * c - b * b - d * d) * yd;
+      R[1][2] = 2.0 * (c * d - a * b) * zd;
+      R[2][0] = 2.0 * (b * d - a * c) * xd;
+      R[2][1] = 2.0 * (c * d + a * b) * yd;
+      R[2][2] =       (a * a + d * d - c * c - b * b) * zd;
+
+      // load offsets
+      R[0][3] = qx;
+      R[1][3] = qy;
+      R[2][3] = qz;
+
+      return R;
+  };
+
+
+
+  /**
+   * Converts sform to an orientation string (e.g., XYZ+--).  (See http://nifti.nimh.nih.gov/pub/dist/src/niftilib/nifti1_io.c)
+   * @param {Array.<Array.<number>>} R
+   * @returns {string}
+   */
+  nifti.NIFTI1.prototype.convertNiftiSFormToNEMA = function (R) {
+      var xi, xj, xk, yi, yj, yk, zi, zj, zk, val, detQ, detP, i, j, k, p, q, r, ibest, jbest, kbest, pbest, qbest, rbest,
+          M, vbest, Q, P, iChar, jChar, kChar, iSense, jSense, kSense;
+      k = 0;
+
+      Q = [[0, 0, 0], [0, 0, 0], [0, 0, 0]];
+      P = [[0, 0, 0], [0, 0, 0], [0, 0, 0]];
+
+      //if( icod == NULL || jcod == NULL || kcod == NULL ) return ; /* bad */
+
+      //*icod = *jcod = *kcod = 0 ; /* this.errorMessage returns, if sh*t happens */
+
+      /* load column vectors for each (i,j,k) direction from matrix */
+
+      /*-- i axis --*/ /*-- j axis --*/ /*-- k axis --*/
+
+      xi = R[0][0];
+      xj = R[0][1];
+      xk = R[0][2];
+
+      yi = R[1][0];
+      yj = R[1][1];
+      yk = R[1][2];
+
+      zi = R[2][0];
+      zj = R[2][1];
+      zk = R[2][2];
+
+      /* normalize column vectors to get unit vectors along each ijk-axis */
+
+      /* normalize i axis */
+      val = Math.sqrt(xi * xi + yi * yi + zi * zi);
+      if (val === 0.0) {  /* stupid input */
+          return null;
+      }
+
+      xi /= val;
+      yi /= val;
+      zi /= val;
+
+      /* normalize j axis */
+      val = Math.sqrt(xj * xj + yj * yj + zj * zj);
+      if (val === 0.0) {  /* stupid input */
+          return null;
+      }
+
+      xj /= val;
+      yj /= val;
+      zj /= val;
+
+      /* orthogonalize j axis to i axis, if needed */
+      val = xi * xj + yi * yj + zi * zj;    /* dot product between i and j */
+      if (Math.abs(val) > 1.E-4) {
+          xj -= val * xi;
+          yj -= val * yi;
+          zj -= val * zi;
+          val = Math.sqrt(xj * xj + yj * yj + zj * zj);  /* must renormalize */
+          if (val === 0.0) {              /* j was parallel to i? */
+              return null;
+          }
+          xj /= val;
+          yj /= val;
+          zj /= val;
+      }
+
+      /* normalize k axis; if it is zero, make it the cross product i x j */
+      val = Math.sqrt(xk * xk + yk * yk + zk * zk);
+      if (val === 0.0) {
+          xk = yi * zj - zi * yj;
+          yk = zi * xj - zj * xi;
+          zk = xi * yj - yi * xj;
+      } else {
+          xk /= val;
+          yk /= val;
+          zk /= val;
+      }
+
+      /* orthogonalize k to i */
+      val = xi * xk + yi * yk + zi * zk;    /* dot product between i and k */
+      if (Math.abs(val) > 1.E-4) {
+          xk -= val * xi;
+          yk -= val * yi;
+          zk -= val * zi;
+          val = Math.sqrt(xk * xk + yk * yk + zk * zk);
+          if (val === 0.0) {    /* bad */
+              return null;
+          }
+          xk /= val;
+          yk /= val;
+          zk /= val;
+      }
+
+      /* orthogonalize k to j */
+      val = xj * xk + yj * yk + zj * zk;    /* dot product between j and k */
+      if (Math.abs(val) > 1.e-4) {
+          xk -= val * xj;
+          yk -= val * yj;
+          zk -= val * zj;
+          val = Math.sqrt(xk * xk + yk * yk + zk * zk);
+          if (val === 0.0) {     /* bad */
+              return null;
+          }
+          xk /= val;
+          yk /= val;
+          zk /= val;
+      }
+
+      Q[0][0] = xi;
+      Q[0][1] = xj;
+      Q[0][2] = xk;
+      Q[1][0] = yi;
+      Q[1][1] = yj;
+      Q[1][2] = yk;
+      Q[2][0] = zi;
+      Q[2][1] = zj;
+      Q[2][2] = zk;
+
+      /* at this point, Q is the rotation matrix from the (i,j,k) to (x,y,z) axes */
+
+      detQ = this.nifti_mat33_determ(Q);
+      if (detQ === 0.0) { /* shouldn't happen unless user is a DUFIS */
+          return null;
+      }
+
+      /* Build and test all possible +1/-1 coordinate permutation matrices P;
+       then find the P such that the rotation matrix M=PQ is closest to the
+       identity, in the sense of M having the smallest total rotation angle. */
+
+      /* Despite the formidable looking 6 nested loops, there are
+       only 3*3*3*2*2*2 = 216 passes, which will run very quickly. */
+
+      vbest = -666.0;
+      ibest = pbest = qbest = rbest = 1;
+      jbest = 2;
+      kbest = 3;
+
+      for (i = 1; i <= 3; i += 1) {     /* i = column number to use for row #1 */
+          for (j = 1; j <= 3; j += 1) {    /* j = column number to use for row #2 */
+              if (i !== j) {
+                  for (k = 1; k <= 3; k += 1) {  /* k = column number to use for row #3 */
+                      if (!(i === k || j === k)) {
+                          P[0][0] = P[0][1] = P[0][2] = P[1][0] = P[1][1] = P[1][2] = P[2][0] = P[2][1] = P[2][2] = 0.0;
+                          for (p = -1; p <= 1; p += 2) {    /* p,q,r are -1 or +1      */
+                              for (q = -1; q <= 1; q += 2) {   /* and go into rows #1,2,3 */
+                                  for (r = -1; r <= 1; r += 2) {
+                                      P[0][i - 1] = p;
+                                      P[1][j - 1] = q;
+                                      P[2][k - 1] = r;
+                                      detP = this.nifti_mat33_determ(P);           /* sign of permutation */
+                                      if ((detP * detQ) > 0.0) {
+                                          M = this.nifti_mat33_mul(P, Q);
+
+                                          /* angle of M rotation = 2.0*acos(0.5*sqrt(1.0+trace(M)))       */
+                                          /* we want largest trace(M) == smallest angle == M nearest to I */
+
+                                          val = M[0][0] + M[1][1] + M[2][2]; /* trace */
+                                          if (val > vbest) {
+                                              vbest = val;
+                                              ibest = i;
+                                              jbest = j;
+                                              kbest = k;
+                                              pbest = p;
+                                              qbest = q;
+                                              rbest = r;
+                                          }
+                                      }  /* doesn't match sign of Q */
+                                  }
+                              }
+                          }
+                      }
+                  }
+              }
+          }
+      }
+
+      /* At this point ibest is 1 or 2 or 3; pbest is -1 or +1; etc.
+
+       The matrix P that corresponds is the best permutation approximation
+       to Q-inverse; that is, P (approximately) takes (x,y,z) coordinates
+       to the (i,j,k) axes.
+
+       For example, the first row of P (which contains pbest in column ibest)
+       determines the way the i axis points relative to the anatomical
+       (x,y,z) axes.  If ibest is 2, then the i axis is along the y axis,
+       which is direction P2A (if pbest > 0) or A2P (if pbest < 0).
+
+       So, using ibest and pbest, we can assign the output code for
+       the i axis.  Mutatis mutandis for the j and k axes, of course. */
+
+      iChar = jChar = kChar = iSense = jSense = kSense = 0;
+
+      switch (ibest * pbest) {
+          case 1: /*i = NIFTI_L2R*/
+              iChar = 'X';
+              iSense = '+';
+              break;
+          case -1: /*i = NIFTI_R2L*/
+              iChar = 'X';
+              iSense = '-';
+              break;
+          case 2: /*i = NIFTI_P2A*/
+              iChar = 'Y';
+              iSense = '+';
+              break;
+          case -2: /*i = NIFTI_A2P*/
+              iChar = 'Y';
+              iSense = '-';
+              break;
+          case 3: /*i = NIFTI_I2S*/
+              iChar = 'Z';
+              iSense = '+';
+              break;
+          case -3: /*i = NIFTI_S2I*/
+              iChar = 'Z';
+              iSense = '-';
+              break;
+      }
+
+      switch (jbest * qbest) {
+          case 1: /*j = NIFTI_L2R*/
+              jChar = 'X';
+              jSense = '+';
+              break;
+          case -1: /*j = NIFTI_R2L*/
+              jChar = 'X';
+              jSense = '-';
+              break;
+          case 2: /*j = NIFTI_P2A*/
+              jChar = 'Y';
+              jSense = '+';
+              break;
+          case -2: /*j = NIFTI_A2P*/
+              jChar = 'Y';
+              jSense = '-';
+              break;
+          case 3: /*j = NIFTI_I2S*/
+              jChar = 'Z';
+              jSense = '+';
+              break;
+          case -3: /*j = NIFTI_S2I*/
+              jChar = 'Z';
+              jSense = '-';
+              break;
+      }
+
+      switch (kbest * rbest) {
+          case 1: /*k = NIFTI_L2R*/
+              kChar = 'X';
+              kSense = '+';
+              break;
+          case -1: /*k = NIFTI_R2L*/
+              kChar = 'X';
+              kSense = '-';
+              break;
+          case 2: /*k = NIFTI_P2A*/
+              kChar = 'Y';
+              kSense = '+';
+              break;
+          case -2: /*k = NIFTI_A2P*/
+              kChar = 'Y';
+              kSense = '-';
+              break;
+          case 3: /*k = NIFTI_I2S*/
+              kChar = 'Z';
+              kSense = '+';
+              break;
+          case -3: /*k = NIFTI_S2I*/
+              kChar = 'Z';
+              kSense = '-';
+              break;
+      }
+
+      return (iChar + jChar + kChar + iSense + jSense + kSense);
+  };
+
+
+
+  nifti.NIFTI1.prototype.nifti_mat33_mul = function (A, B) {
+      var C = [[0, 0, 0], [0, 0, 0], [0, 0, 0]],
+          i,
+          j;
+
+      for (i = 0; i < 3; i += 1) {
+          for (j = 0; j < 3; j += 1) {
+              C[i][j] =  A[i][0] * B[0][j]  + A[i][1] * B[1][j] + A[i][2] * B[2][j];
+          }
+      }
+
+      return C;
+  };
+
+
+
+  nifti.NIFTI1.prototype.nifti_mat33_determ = function (R) {
+      var r11, r12, r13, r21, r22, r23, r31, r32, r33;
+      /*  INPUT MATRIX:  */
+      r11 = R[0][0];
+      r12 = R[0][1];
+      r13 = R[0][2];
+      r21 = R[1][0];
+      r22 = R[1][1];
+      r23 = R[1][2];
+      r31 = R[2][0];
+      r32 = R[2][1];
+      r33 = R[2][2];
+
+      return (r11 * r22 * r33 - r11 * r32 * r23 - r21 * r12 * r33 + r21 * r32 * r13 + r31 * r12 * r23 - r31 * r22 * r13);
+  };
+
+
+  /**
+   * Returns the byte index of the extension.
+   * @returns {number}
+   */
+  nifti.NIFTI1.prototype.getExtensionLocation = function() {
+      return nifti.NIFTI1.MAGIC_COOKIE + 4;
+  };
+
+
+  /**
+   * Returns the extension size.
+   * @param {DataView} data
+   * @returns {number}
+   */
+  nifti.NIFTI1.prototype.getExtensionSize = function(data) {
+      return nifti.Utils.getIntAt(data, this.getExtensionLocation(), this.littleEndian);
+  };
+
+
+
+  /**
+   * Returns the extension code.
+   * @param {DataView} data
+   * @returns {number}
+   */
+  nifti.NIFTI1.prototype.getExtensionCode = function(data) {
+      return nifti.Utils.getIntAt(data, this.getExtensionLocation() + 4, this.littleEndian);
+  };
+
+
+
+  /*** Exports ***/
+
+  var moduleType = 'object';
+  if ((moduleType !== 'undefined') && module.exports) {
+      module.exports = nifti.NIFTI1;
+  }
+  });
+
+  var nifti2 = createCommonjsModule(function (module) {
+
+  /*** Imports ***/
+
+  var nifti = nifti || {};
+  nifti.Utils = nifti.Utils || ((typeof commonjsRequire !== 'undefined') ? utilities : null);
+  nifti.NIFTI1 = nifti.NIFTI1 || ((typeof commonjsRequire !== 'undefined') ? nifti1 : null);
+
+
+  /*** Constructor ***/
+
+  /**
+   * The NIFTI2 constructor.
+   * @constructor
+   * @property {boolean} littleEndian
+   * @property {number} dim_info
+   * @property {number[]} dims - image dimensions
+   * @property {number} intent_p1
+   * @property {number} intent_p2
+   * @property {number} intent_p3
+   * @property {number} intent_code
+   * @property {number} datatypeCode
+   * @property {number} numBitsPerVoxel
+   * @property {number} slice_start
+   * @property {number} slice_end
+   * @property {number} slice_code
+   * @property {number[]} pixDims - voxel dimensions
+   * @property {number} vox_offset
+   * @property {number} scl_slope
+   * @property {number} scl_inter
+   * @property {number} xyzt_units
+   * @property {number} cal_max
+   * @property {number} cal_min
+   * @property {number} slice_duration
+   * @property {number} toffset
+   * @property {string} description
+   * @property {string} aux_file
+   * @property {string} intent_name
+   * @property {number} qform_code
+   * @property {number} sform_code
+   * @property {number} quatern_b
+   * @property {number} quatern_c
+   * @property {number} quatern_d
+   * @property {number} quatern_x
+   * @property {number} quatern_y
+   * @property {number} quatern_z
+   * @property {Array.<Array.<number>>} affine
+   * @property {string} magic
+   * @property {number[]} extensionFlag
+   * @type {Function}
+   */
+  nifti.NIFTI2 = nifti.NIFTI2 || function () {
+      this.littleEndian = false;
+      this.dim_info = 0;
+      this.dims = [];
+      this.intent_p1 = 0;
+      this.intent_p2 = 0;
+      this.intent_p3 = 0;
+      this.intent_code = 0;
+      this.datatypeCode = 0;
+      this.numBitsPerVoxel = 0;
+      this.slice_start = 0;
+      this.slice_end = 0;
+      this.slice_code = 0;
+      this.pixDims = [];
+      this.vox_offset = 0;
+      this.scl_slope = 1;
+      this.scl_inter = 0;
+      this.xyzt_units = 0;
+      this.cal_max = 0;
+      this.cal_min = 0;
+      this.slice_duration = 0;
+      this.toffset = 0;
+      this.description = "";
+      this.aux_file = "";
+      this.intent_name = "";
+      this.qform_code = 0;
+      this.sform_code = 0;
+      this.quatern_b = 0;
+      this.quatern_c = 0;
+      this.quatern_d = 0;
+      this.qoffset_x = 0;
+      this.qoffset_y = 0;
+      this.qoffset_z = 0;
+      this.affine = [[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]];
+      this.magic = 0;
+      this.extensionFlag = [0, 0, 0, 0];
+  };
+
+
+
+  /*** Static Pseudo-constants ***/
+
+  nifti.NIFTI2.MAGIC_COOKIE = 540;
+  nifti.NIFTI2.MAGIC_NUMBER_LOCATION = 4;
+  nifti.NIFTI2.MAGIC_NUMBER = [0x6E, 0x2B, 0x32, 0, 0x0D, 0x0A, 0x1A, 0x0A];  // n+2\0
+
+
+
+  /*** Prototype Methods ***/
+
+  /**
+   * Reads the header data.
+   * @param {ArrayBuffer} data
+   */
+  nifti.NIFTI2.prototype.readHeader = function (data) {
+      var rawData = new DataView(data),
+          magicCookieVal = nifti.Utils.getIntAt(rawData, 0, this.littleEndian),
+          ctr,
+          ctrOut,
+          ctrIn,
+          index;
+
+      if (magicCookieVal !== nifti.NIFTI2.MAGIC_COOKIE) {  // try as little endian
+          this.littleEndian = true;
+          magicCookieVal = nifti.Utils.getIntAt(rawData, 0, this.littleEndian);
+      }
+
+      if (magicCookieVal !== nifti.NIFTI2.MAGIC_COOKIE) {
+          throw new Error("This does not appear to be a NIFTI file!");
+      }
+
+      this.datatypeCode = nifti.Utils.getShortAt(rawData, 12, this.littleEndian);
+      this.numBitsPerVoxel = nifti.Utils.getShortAt(rawData, 14, this.littleEndian);
+
+      for (ctr = 0; ctr < 8; ctr += 1) {
+          index = 16 + (ctr * 8);
+          this.dims[ctr] = nifti.Utils.getLongAt(rawData, index, this.littleEndian);
+      }
+
+      this.intent_p1 = nifti.Utils.getDoubleAt(rawData, 80, this.littleEndian);
+      this.intent_p2 = nifti.Utils.getDoubleAt(rawData, 88, this.littleEndian);
+      this.intent_p3 = nifti.Utils.getDoubleAt(rawData, 96, this.littleEndian);
+
+      for (ctr = 0; ctr < 8; ctr += 1) {
+          index = 104 + (ctr * 8);
+          this.pixDims[ctr] = nifti.Utils.getDoubleAt(rawData, index, this.littleEndian);
+      }
+
+      this.vox_offset = nifti.Utils.getLongAt(rawData, 168, this.littleEndian);
+
+      this.scl_slope = nifti.Utils.getDoubleAt(rawData, 176, this.littleEndian);
+      this.scl_inter = nifti.Utils.getDoubleAt(rawData, 184, this.littleEndian);
+
+      this.cal_max = nifti.Utils.getDoubleAt(rawData, 192, this.littleEndian);
+      this.cal_min = nifti.Utils.getDoubleAt(rawData, 200, this.littleEndian);
+
+      this.slice_duration = nifti.Utils.getDoubleAt(rawData, 208, this.littleEndian);
+
+      this.toffset = nifti.Utils.getDoubleAt(rawData, 216, this.littleEndian);
+
+      this.slice_start = nifti.Utils.getLongAt(rawData, 224, this.littleEndian);
+      this.slice_end = nifti.Utils.getLongAt(rawData, 232, this.littleEndian);
+
+      this.description = nifti.Utils.getStringAt(rawData, 240, 240 + 80);
+      this.aux_file = nifti.Utils.getStringAt(rawData, 320, 320 + 24);
+
+      this.qform_code = nifti.Utils.getIntAt(rawData, 344, this.littleEndian);
+      this.sform_code = nifti.Utils.getIntAt(rawData, 348, this.littleEndian);
+
+      this.quatern_b = nifti.Utils.getDoubleAt(rawData, 352, this.littleEndian);
+      this.quatern_c = nifti.Utils.getDoubleAt(rawData, 360, this.littleEndian);
+      this.quatern_d = nifti.Utils.getDoubleAt(rawData, 368, this.littleEndian);
+      this.qoffset_x = nifti.Utils.getDoubleAt(rawData, 376, this.littleEndian);
+      this.qoffset_y = nifti.Utils.getDoubleAt(rawData, 384, this.littleEndian);
+      this.qoffset_z = nifti.Utils.getDoubleAt(rawData, 392, this.littleEndian);
+
+      for (ctrOut = 0; ctrOut < 3; ctrOut += 1) {
+          for (ctrIn = 0; ctrIn < 4; ctrIn += 1) {
+              index = 400 + (((ctrOut * 4) + ctrIn) * 8);
+              this.affine[ctrOut][ctrIn] = nifti.Utils.getDoubleAt(rawData, index, this.littleEndian);
+          }
+      }
+
+      this.affine[3][0] = 0;
+      this.affine[3][1] = 0;
+      this.affine[3][2] = 0;
+      this.affine[3][3] = 1;
+
+      this.slice_code = nifti.Utils.getIntAt(rawData, 496, this.littleEndian);
+      this.xyzt_units = nifti.Utils.getIntAt(rawData, 500, this.littleEndian);
+      this.intent_code = nifti.Utils.getIntAt(rawData, 504, this.littleEndian);
+      this.intent_name = nifti.Utils.getStringAt(rawData, 508, 508 + 16);
+
+      this.dim_info = nifti.Utils.getByteAt(rawData, 524);
+
+      if (rawData.byteLength > nifti.NIFTI2.MAGIC_COOKIE) {
+          this.extensionFlag[0] = nifti.Utils.getByteAt(rawData, 540);
+          this.extensionFlag[1] = nifti.Utils.getByteAt(rawData, 540 + 1);
+          this.extensionFlag[2] = nifti.Utils.getByteAt(rawData, 540 + 2);
+          this.extensionFlag[3] = nifti.Utils.getByteAt(rawData, 540 + 3);
+
+          if (this.extensionFlag[0]) {
+              this.extensionSize = this.getExtensionSize(rawData);
+              this.extensionCode = this.getExtensionCode(rawData);
+          }
+      }
+  };
+
+
+
+  /**
+   * Returns a formatted string of header fields.
+   * @returns {string}
+   */
+  nifti.NIFTI2.prototype.toFormattedString = function () {
+      var fmt = nifti.Utils.formatNumber,
+          string = "";
+
+      string += ("Datatype = " +  + this.datatypeCode + " (" + this.getDatatypeCodeString(this.datatypeCode) + ")\n");
+      string += ("Bits Per Voxel = " + " = " + this.numBitsPerVoxel + "\n");
+      string += ("Image Dimensions" + " (1-8): " +
+          this.dims[0] + ", " +
+          this.dims[1] + ", " +
+          this.dims[2] + ", " +
+          this.dims[3] + ", " +
+          this.dims[4] + ", " +
+          this.dims[5] + ", " +
+          this.dims[6] + ", " +
+          this.dims[7] + "\n");
+
+      string += ("Intent Parameters (1-3): " +
+          this.intent_p1 + ", " +
+          this.intent_p2 + ", " +
+          this.intent_p3) + "\n";
+
+      string += ("Voxel Dimensions (1-8): " +
+          fmt(this.pixDims[0]) + ", " +
+          fmt(this.pixDims[1]) + ", " +
+          fmt(this.pixDims[2]) + ", " +
+          fmt(this.pixDims[3]) + ", " +
+          fmt(this.pixDims[4]) + ", " +
+          fmt(this.pixDims[5]) + ", " +
+          fmt(this.pixDims[6]) + ", " +
+          fmt(this.pixDims[7]) + "\n");
+
+      string += ("Image Offset = " + this.vox_offset + "\n");
+      string += ("Data Scale:  Slope = " + fmt(this.scl_slope) + "  Intercept = " + fmt(this.scl_inter) + "\n");
+      string += ("Display Range:  Max = " + fmt(this.cal_max) + "  Min = " + fmt(this.cal_min) + "\n");
+      string += ("Slice Duration = " + this.slice_duration + "\n");
+      string += ("Time Axis Shift = " + this.toffset + "\n");
+      string += ("Slice Start = " + this.slice_start + "\n");
+      string += ("Slice End = " + this.slice_end + "\n");
+      string += ("Description: \"" + this.description + "\"\n");
+      string += ("Auxiliary File: \"" + this.aux_file + "\"\n");
+      string += ("Q-Form Code = " + this.qform_code + " (" + this.getTransformCodeString(this.qform_code) + ")\n");
+      string += ("S-Form Code = " + this.sform_code + " (" + this.getTransformCodeString(this.sform_code) + ")\n");
+      string += ("Quaternion Parameters:  " +
+      "b = " + fmt(this.quatern_b) + "  " +
+      "c = " + fmt(this.quatern_c) + "  " +
+      "d = " + fmt(this.quatern_d) + "\n");
+
+      string += ("Quaternion Offsets:  " +
+      "x = " + this.qoffset_x + "  " +
+      "y = " + this.qoffset_y + "  " +
+      "z = " + this.qoffset_z + "\n");
+
+      string += ("S-Form Parameters X: " +
+      fmt(this.affine[0][0]) + ", " +
+      fmt(this.affine[0][1]) + ", " +
+      fmt(this.affine[0][2]) + ", " +
+      fmt(this.affine[0][3]) + "\n");
+
+      string += ("S-Form Parameters Y: " +
+      fmt(this.affine[1][0]) + ", " +
+      fmt(this.affine[1][1]) + ", " +
+      fmt(this.affine[1][2]) + ", " +
+      fmt(this.affine[1][3]) + "\n");
+
+      string += ("S-Form Parameters Z: " +
+      fmt(this.affine[2][0]) + ", " +
+      fmt(this.affine[2][1]) + ", " +
+      fmt(this.affine[2][2]) + ", " +
+      fmt(this.affine[2][3]) + "\n");
+
+      string += ("Slice Code = " + this.slice_code + "\n");
+      string += ("Units Code = " + this.xyzt_units + " (" + this.getUnitsCodeString(nifti.NIFTI1.SPATIAL_UNITS_MASK & this.xyzt_units) + ", " + this.getUnitsCodeString(nifti.NIFTI1.TEMPORAL_UNITS_MASK & this.xyzt_units) + ")\n");
+      string += ("Intent Code = " + this.intent_code + "\n");
+      string += ("Intent Name: \"" + this.intent_name + "\"\n");
+
+      string += ("Dim Info = " + this.dim_info + "\n");
+
+      return string;
+  };
+
+
+
+  /**
+   * Returns the byte index of the extension.
+   * @returns {number}
+   */
+  nifti.NIFTI2.prototype.getExtensionLocation = function() {
+      return nifti.NIFTI2.MAGIC_COOKIE + 4;
+  };
+
+
+
+  /**
+   * Returns the extension size.
+   * @param {DataView} data
+   * @returns {number}
+   */
+  nifti.NIFTI2.prototype.getExtensionSize = nifti.NIFTI1.prototype.getExtensionSize;
+
+
+
+  /**
+   * Returns the extension code.
+   * @param {DataView} data
+   * @returns {number}
+   */
+  nifti.NIFTI2.prototype.getExtensionCode = nifti.NIFTI1.prototype.getExtensionCode;
+
+
+
+  /**
+   * Returns a human-readable string of datatype.
+   * @param {number} code
+   * @returns {string}
+   */
+  nifti.NIFTI2.prototype.getDatatypeCodeString = nifti.NIFTI1.prototype.getDatatypeCodeString;
+
+
+
+  /**
+   * Returns a human-readable string of transform type.
+   * @param {number} code
+   * @returns {string}
+   */
+  nifti.NIFTI2.prototype.getTransformCodeString = nifti.NIFTI1.prototype.getTransformCodeString;
+
+
+
+  /**
+   * Returns a human-readable string of spatial and temporal units.
+   * @param {number} code
+   * @returns {string}
+   */
+  nifti.NIFTI2.prototype.getUnitsCodeString = nifti.NIFTI1.prototype.getUnitsCodeString;
+
+
+
+  /**
+   * Returns the qform matrix.
+   * @returns {Array.<Array.<number>>}
+   */
+  nifti.NIFTI2.prototype.getQformMat = nifti.NIFTI1.prototype.getQformMat;
+
+
+
+  /**
+   * Converts qform to an affine.  (See http://nifti.nimh.nih.gov/pub/dist/src/niftilib/nifti1_io.c)
+   * @param {number} qb
+   * @param {number} qc
+   * @param {number} qd
+   * @param {number} qx
+   * @param {number} qy
+   * @param {number} qz
+   * @param {number} dx
+   * @param {number} dy
+   * @param {number} dz
+   * @param {number} qfac
+   * @returns {Array.<Array.<number>>}
+   */
+  nifti.NIFTI2.prototype.convertNiftiQFormToNiftiSForm = nifti.NIFTI1.prototype.convertNiftiQFormToNiftiSForm;
+
+
+
+  /**
+   * Converts sform to an orientation string (e.g., XYZ+--).  (See http://nifti.nimh.nih.gov/pub/dist/src/niftilib/nifti1_io.c)
+   * @param {Array.<Array.<number>>} R
+   * @returns {string}
+   */
+  nifti.NIFTI2.prototype.convertNiftiSFormToNEMA = nifti.NIFTI1.prototype.convertNiftiSFormToNEMA;
+
+
+
+  nifti.NIFTI2.prototype.nifti_mat33_mul = nifti.NIFTI1.prototype.nifti_mat33_mul;
+
+
+
+  nifti.NIFTI2.prototype.nifti_mat33_determ = nifti.NIFTI1.prototype.nifti_mat33_determ;
+
+
+
+  /*** Exports ***/
+
+  var moduleType = 'object';
+  if ((moduleType !== 'undefined') && module.exports) {
+      module.exports = nifti.NIFTI2;
+  }
+  });
+
+  var nifti_1 = createCommonjsModule(function (module) {
+
+  /*** Imports ***/
+
+  /**
+   * nifti
+   * @type {*|{}}
+   */
+  var nifti = nifti || {};
+  nifti.NIFTI1 = nifti.NIFTI1 || ((typeof commonjsRequire !== 'undefined') ? nifti1 : null);
+  nifti.NIFTI2 = nifti.NIFTI2 || ((typeof commonjsRequire !== 'undefined') ? nifti2 : null);
+  nifti.Utils = nifti.Utils || ((typeof commonjsRequire !== 'undefined') ? utilities : null);
+
+  var pako = pako || ((typeof commonjsRequire !== 'undefined') ? pako_1 : null);
+
+
+
+  /*** Static Methods ***/
+
+  /**
+   * Returns true if this data represents a NIFTI-1 header.
+   * @param {ArrayBuffer} data
+   * @returns {boolean}
+   */
+  nifti.isNIFTI1 = function (data) {
+      var buf, mag1, mag2, mag3;
+
+      if (data.byteLength < nifti.NIFTI1.STANDARD_HEADER_SIZE) {
+          return false;
+      }
+
+      buf = new DataView(data);
+
+      if (buf)
+
+      mag1 = buf.getUint8(nifti.NIFTI1.MAGIC_NUMBER_LOCATION);
+      mag2 = buf.getUint8(nifti.NIFTI1.MAGIC_NUMBER_LOCATION + 1);
+      mag3 = buf.getUint8(nifti.NIFTI1.MAGIC_NUMBER_LOCATION + 2);
+
+      return !!((mag1 === nifti.NIFTI1.MAGIC_NUMBER[0]) && (mag2 === nifti.NIFTI1.MAGIC_NUMBER[1]) &&
+          (mag3 === nifti.NIFTI1.MAGIC_NUMBER[2]));
+  };
+
+
+  /**
+   * Returns true if this data represents a NIFTI-2 header.
+   * @param {ArrayBuffer} data
+   * @returns {boolean}
+   */
+  nifti.isNIFTI2 = function (data) {
+      var buf, mag1, mag2, mag3;
+
+      if (data.byteLength < nifti.NIFTI1.STANDARD_HEADER_SIZE) {
+          return false;
+      }
+
+      buf = new DataView(data);
+      mag1 = buf.getUint8(nifti.NIFTI2.MAGIC_NUMBER_LOCATION);
+      mag2 = buf.getUint8(nifti.NIFTI2.MAGIC_NUMBER_LOCATION + 1);
+      mag3 = buf.getUint8(nifti.NIFTI2.MAGIC_NUMBER_LOCATION + 2);
+
+      return !!((mag1 === nifti.NIFTI2.MAGIC_NUMBER[0]) && (mag2 === nifti.NIFTI2.MAGIC_NUMBER[1]) &&
+      (mag3 === nifti.NIFTI2.MAGIC_NUMBER[2]));
+  };
+
+
+
+  /**
+   * Returns true if this data represents a NIFTI header.
+   * @param {ArrayBuffer} data
+   * @returns {boolean}
+   */
+  nifti.isNIFTI = function (data) {
+      return (nifti.isNIFTI1(data) || nifti.isNIFTI2(data));
+  };
+
+
+
+  /**
+   * Returns true if this data is GZIP compressed.
+   * @param {ArrayBuffer} data
+   * @returns {boolean}
+   */
+  nifti.isCompressed = function (data) {
+      var buf, magicCookie1, magicCookie2;
+
+      if (data) {
+          buf = new DataView(data);
+
+          magicCookie1 = buf.getUint8(0);
+          magicCookie2 = buf.getUint8(1);
+
+          if (magicCookie1 === nifti.Utils.GUNZIP_MAGIC_COOKIE1) {
+              return true;
+          }
+
+          if (magicCookie2 === nifti.Utils.GUNZIP_MAGIC_COOKIE2) {
+              return true;
+          }
+      }
+
+      return false;
+  };
+
+
+
+  /**
+   * Returns decompressed data.
+   * @param {ArrayBuffer} data
+   * @returns {ArrayBuffer}
+   */
+  nifti.decompress = function (data) {
+      return pako.inflate(data).buffer;
+  };
+
+
+
+  /**
+   * Reads and returns the header object.
+   * @param {ArrayBuffer} data
+   * @returns {nifti.NIFTI1|nifti.NIFTI2|null}
+   */
+  nifti.readHeader = function (data) {
+      var header = null;
+
+      if (nifti.isCompressed(data)) {
+          data = nifti.decompress(data);
+      }
+
+      if (nifti.isNIFTI1(data)) {
+          header = new nifti.NIFTI1();
+      } else if (nifti.isNIFTI2(data)) {
+          header = new nifti.NIFTI2();
+      }
+
+      if (header) {
+          header.readHeader(data);
+      } else {
+          console.error("That file does not appear to be NIFTI!");
+      }
+
+      return header;
+  };
+
+
+
+  /**
+   * Returns true if this header contains an extension.
+   * @param {nifti.NIFTI1|nifti.NIFTI2} header
+   * @returns {boolean}
+   */
+  nifti.hasExtension = function (header) {
+      return (header.extensionFlag[0] != 0);
+  };
+
+
+
+  /**
+   * Returns the image data.
+   * @param {nifti.NIFTI1|nifti.NIFTI2} header
+   * @param {ArrayBuffer} data
+   * @returns {ArrayBuffer}
+   */
+  nifti.readImage = function (header, data) {
+      var imageOffset = header.vox_offset,
+          timeDim = 1,
+          statDim = 1;
+
+      if (header.dims[4]) {
+          timeDim = header.dims[4];
+      }
+
+      if (header.dims[5]) {
+          statDim = header.dims[5];
+      }
+
+      var imageSize = header.dims[1] * header.dims[2] * header.dims[3] * timeDim * statDim * (header.numBitsPerVoxel / 8);
+      return data.slice(imageOffset, imageOffset + imageSize);
+  };
+
+
+
+  /**
+   * Returns the extension data (including extension header).
+   * @param {nifti.NIFTI1|nifti.NIFTI2} header
+   * @param {ArrayBuffer} data
+   * @returns {ArrayBuffer}
+   */
+  nifti.readExtension = function (header, data) {
+      var loc = header.getExtensionLocation(),
+          size = header.extensionSize;
+
+      return data.slice(loc, loc + size);
+  };
+
+
+
+  /**
+   * Returns the extension data.
+   * @param {nifti.NIFTI1|nifti.NIFTI2} header
+   * @param {ArrayBuffer} data
+   * @returns {ArrayBuffer}
+   */
+  nifti.readExtensionData = function (header, data) {
+      var loc = header.getExtensionLocation(),
+          size = header.extensionSize;
+
+      return data.slice(loc + 8, loc + size - 8);
+  };
+
+
+  /*** Exports ***/
+
+  var moduleType = 'object';
+  if ((moduleType !== 'undefined') && module.exports) {
+      module.exports = nifti;
+  }
+  });
+
+  /*
+  * Author    Jonathan Lurie - http://me.jonathanlurie.fr
+  *
+  * License   MIT
+  * Link      https://github.com/Pixpipe/pixpipejs
+  * Lab       MCIN - Montreal Neurological Institute
+  */
+
+
+  /**
+  * Important information:
+  * NIfTI dataset are using two indexing methods:
+  * - A voxel based system (i, j, k), the most intuitive, where i is the fastest varying dim and k is the sloest varying dim.
+  *   Thus for a given (i, j, k) the value is at (i + j*dim[1] + k*dim[1]*dim[2])
+  * - A subject based system (x, y, z), where +x is right, +y is anterior, +z is superior (right handed coord system).
+  *   This system is CENTER pixel/voxel and is the result of a transformation from (i, j, k) and a scaling given by the size of
+  *   each voxel in a world unit (eg. mm)
+  *
+  * NIfTI provides three alternatives to characterize this transformation:
+  *
+  * METHOD 1 , when header.qform_code = 0
+  * Here, no specific orientation difers in [x, y, z], only spatial scaling based on voxel world dimensions.
+  * This method is NOT the default one, neither it is the most common. It is mainly for bacward compatibility
+  * to ANALYZE 7.5.
+  * Thus we simply have:
+  * x = pixdim[1] * i
+  * y = pixdim[2] * j
+  * z = pixdim[3] * k
+  *
+  * METHOD 2, the "normal" case, when header.qform_code > 0
+  * In this situation, three components are involved in the transformation:
+  * 1. voxel dimensions (header.pixDims[]) for the spatial scaling
+  * 2. a rotation matrix, for orientation
+  * 3. a shift
+  * Thus, we have:
+  * [ x ]   [ R11 R12 R13 ] [        header.pixDims[1] * i ]   [ header.qoffset_x ]
+  * [ y ] = [ R21 R22 R23 ] [        header.pixDims[2] * j ] + [ header.qoffset_y ]
+  * [ z ]   [ R31 R32 R33 ] [ qfac * header.pixDims[3] * k ]   [ header.qoffset_z ]
+  * Info:
+  * The official NIfTI header description ( https://nifti.nimh.nih.gov/pub/dist/src/niftilib/nifti1.h )
+  * was used to interpret the data.
+  */
+  class NiftiDecoder extends Decoder {
+    constructor(){
+      super();
+      this.setMetadata("targetType", Image3D.name);
+      this.addInputValidator(0, ArrayBuffer);
+    }
+
+
+    _run(){
+      var inputBuffer = this._getInput(0);
+
+      if(!inputBuffer){
+        console.warn("NiftiDecoder requires an ArrayBuffer as input \"0\". Unable to continue.");
+        return;
+      }
+
+      if(! nifti_1.isNIFTI( inputBuffer )) {
+        console.warn("Not a NIfTI file");
+        return;
+      }
+
+      var metadata = {};
+      var data = null;
+
+      var header = nifti_1.readHeader(inputBuffer);
+      var rawData = nifti_1.readImage(header, inputBuffer);
+
+      data = this._fetchDataArray(header, rawData);
+
+      if( !data ){
+        console.warn("This NIfTI file is valid but does not contain any readable data.");
+        return;
+      }
+
+      this._scaleData(data, header);
+      var numberOfDimensions = header.dims[0];
+
+      // copying all the original metadata into the field "formatSpecific", for the sake of quality.
+      metadata.formatSpecific = header;
+      metadata.statistics = { upToDate: true, min: "sdfsdf", max: NaN };
+      metadata.ncpp = this._fetchNcpp(header);
+      metadata.description = header.description;
+      metadata.format = "nifti";
+      metadata.spatialUnit = header.getUnitsCodeString(nifti_1.NIFTI1.SPATIAL_UNITS_MASK & header.xyzt_units);
+      metadata.temporalUnit = header.getUnitsCodeString(nifti_1.NIFTI1.TEMPORAL_UNITS_MASK & header.xyzt_units);
+
+      // the transformation
+      var niftiTransfoMatrix = header.getQformMat(); // the default case (METHOD2)
+      if( header.qform_code == 0){  // though sometimes qform_code is 0, then we have to use affine (METHOD3)
+        niftiTransfoMatrix = header.affine;
+      }
+
+      // dimensions info ordered from the fastest varying to the slowest varying
+      var voxelSpaceNames = ['k', 'j', 'i', 't'];
+      var worldSpaceNames = ['x', 'y', 'z', 't'];
+      var dimensions = [];
+
+      for(var d=0; d<numberOfDimensions; d++){
+        // compute the stride based on the previous dim
+        var stride = 1;
+        for(var pd=0; pd<d; pd++){
+          stride *= header.dims[pd + 1];
+        }
+
+        var dimension = {
+          length: header.dims[d + 1],
+          widthDimension: -1, // to be filled later
+          heightDimension: -1, // to be filled later
+          nameVoxelSpace: voxelSpaceNames[d],
+          nameWorldSpace: worldSpaceNames[d],
+          worldUnitSize: header.pixDims[d + 1],
+          stride: stride,
+          step: header.pixDims[d + 1], // same to worldUnitSize but will prob be changed if swapped, except for time
+          //direction: niftiTransfoMatrix[d][d] < 0 ? -1 : 1, // to be filled later
+        };
+        dimensions.push( dimension );
+      }
+
+      if( dimensions.length >= 3){
+        // dim x has for width  y and for heigth z
+        dimensions[0].widthDimension = 1;
+        dimensions[0].heightDimension = 2;
+
+        // dim y has for width  x and for heigth z
+        dimensions[1].widthDimension = 0;
+        dimensions[1].heightDimension = 2;
+
+        // dim z has for width  x and for heigth y
+        dimensions[2].widthDimension = 0;
+        dimensions[2].heightDimension = 1;
+      }
+
+      /*
+      swaping dimensions:
+      In some cases, a NIfTI does not respect the orientation from the specfication.
+      In order to get the proper orientation, we have to swap some dimensions as
+      well as the corresponding rows in the v2w matrix.
+      The criterion to find what dim is suposed to come first, what is supposed to
+      be last is direction cosine fron the matrix:
+      - the 1st row should be the one with the highest absolute value from all 1st columns
+      - the 2nd row should be the one with the highest absolute value from all 2nd columns
+      - the 3rd row should be the one with the highest absolute value from all 3rd columns
+      */
+
+      // give the index of the row that has the highest value among a given col
+      function whichRowHasHighestValueFromGivenCol( arrOfArr, col){
+        var cx = Math.abs(arrOfArr[0][col]);
+        var cy = Math.abs(arrOfArr[1][col]);
+        var cz = Math.abs(arrOfArr[2][col]);
+
+        if( cx > cy && cx > cz){
+          return 0;
+        }else if(cy > cx && cy > cz){
+          return 1;
+        }else{
+          return 2
+        }
+      }
+
+      function getMagnitude( arr ){
+        return Math.sqrt( arr[0]*arr[0] + arr[1]*arr[1] + arr[2]*arr[2] );
+      }
+
+      var shouldBeCol0 = whichRowHasHighestValueFromGivenCol(niftiTransfoMatrix, 0);
+      var shouldBeCol1 = whichRowHasHighestValueFromGivenCol(niftiTransfoMatrix, 1);
+      var shouldBeCol2 = whichRowHasHighestValueFromGivenCol(niftiTransfoMatrix, 2);
+
+      // when we have shouldBeCol[ n ] = m it means that the current original row m
+      // of transfo-matrix should move to the position n
+      var shouldBeCol = [ shouldBeCol0, shouldBeCol1, shouldBeCol2 ];
+      // this is the inverse lookup of shouldBeCol
+      var wasCol = [ shouldBeCol.indexOf(0), shouldBeCol.indexOf(1), shouldBeCol.indexOf(2) ];
+
+      var transfoMatrixToUse = JSON.parse(JSON.stringify(niftiTransfoMatrix));
+      var dimensionsToUse = dimensions;
+
+      // ******************* BEGIN TO SWAP ***************************************
+
+      // if so, the dimension list and the matrix need swapping
+      if( shouldBeCol[0] != 0 || shouldBeCol[1] != 1 || shouldBeCol[2] != 2){
+
+        // swap the matrix cols
+        for (var i = 0; i < 3; i++) {
+          for (var j = 0; j < 4; j++) {
+            var volumeAxis = j;
+            if (j < 3) {
+              volumeAxis = shouldBeCol[j];
+            }
+            transfoMatrixToUse[i][volumeAxis] = niftiTransfoMatrix[i][j];
+          }
+        }
+
+        // just making a safe copy
+        var dimensionsCp = JSON.parse(JSON.stringify(dimensions));
+
+        // renaming it. Then it seems to already be in the correct order. Not sure why?? TODO: see why!
+        dimensionsCp[0].nameVoxelSpace = "k";
+        dimensionsCp[1].nameVoxelSpace = "j";
+        dimensionsCp[2].nameVoxelSpace = "i";
+
+        dimensionsCp[wasCol[0]].nameWorldSpace = "x";
+        dimensionsCp[wasCol[1]].nameWorldSpace = "y";
+        dimensionsCp[wasCol[2]].nameWorldSpace = "z";
+
+        // associating width and height
+        dimensionsCp[wasCol[0]].widthDimension = wasCol[1];
+        dimensionsCp[wasCol[0]].heightDimension = wasCol[2];
+        dimensionsCp[wasCol[1]].widthDimension = wasCol[0];
+        dimensionsCp[wasCol[1]].heightDimension = wasCol[2];
+        dimensionsCp[wasCol[2]].widthDimension = wasCol[0];
+        dimensionsCp[wasCol[2]].heightDimension = wasCol[1];
+
+        dimensionsToUse = dimensionsCp;
+      }
+      // ******************* END OF SWAPING **************************************
+
+      // return the dimsniosn object given its world name ('x', 'y' or 'z')
+      function getDimensionByWorldName( name ){
+        for(var i=0; i<dimensionsToUse.length; i++){
+          if(dimensionsToUse[i].nameWorldSpace === name)
+            return dimensionsToUse[i];
+        }
+        return null;
+      }
+
+      // set the directions
+      for(var i=0; i<3; i++){
+        var stepSize = getMagnitude( transfoMatrixToUse[i] );
+        var directionSign = Math.sign( transfoMatrixToUse[i][i]);
+        //dimensionsToUse[i].step = stepSize * directionSign;
+
+        // so that when i==0, dimension is x, etc.
+        var dimension = getDimensionByWorldName(worldSpaceNames[i]);
+        dimension.step = stepSize * directionSign;
+      }
+
+
+
+      metadata.dimensions = dimensionsToUse;
+
+      var v2wMat = fromValues$3(transfoMatrixToUse[0][0], transfoMatrixToUse[1][0], transfoMatrixToUse[2][0], transfoMatrixToUse[3][0],
+                                   transfoMatrixToUse[0][1], transfoMatrixToUse[1][1], transfoMatrixToUse[2][1], transfoMatrixToUse[3][1],
+                                   transfoMatrixToUse[0][2], transfoMatrixToUse[1][2], transfoMatrixToUse[2][2], transfoMatrixToUse[3][2],
+                                   transfoMatrixToUse[0][3], transfoMatrixToUse[1][3], transfoMatrixToUse[2][3], transfoMatrixToUse[3][3] );
+
+      var w2vMat = create$3();
+      invert$3( w2vMat, v2wMat );
+
+      // register all the transformations available here
+      metadata.transformations = {
+        v2w: v2wMat,
+        w2v: w2vMat
+      };
+
+      metadata.statistics = {
+        upToDate: false,
+        min: 0,
+        max: 0
+      };
+
+      /*
+      // doing that would imply re-setting widthDimension and heightDimension
+      var dims = metadata.dimensions;
+      dims.sort( function(a, b){
+        return a.stride > b.stride;
+      })
+      */
+
+      var output = new Image3D();
+      output.setRawData( data );
+      output.setRawMetadata( metadata );
+
+      if(output.metadataIntegrityCheck()){
+        output.scanDataRange();
+        this._output[0] = output;
+      }
+    }
+
+
+    /**
+    * @private
+    * The header field `scl_slope` is used to scale the data, thus if non-0,
+    * we should scale the data.
+    * @param {typed array} data - the nifti data array, WILL BE MODIFIED
+    * @param {Object} header - nifti header
+    */
+    _scaleData( data, header ){
+      // We dont scale in the case RGB24
+      if( header.datatypeCode == nifti_1.NIFTI1.TYPE_RGB24 ){
+        return;
+      }
+
+      // the data scaling wont change anything, thus we dont perform it
+      if( header.scl_slope == 1 && header.scl_inter == 0 ){
+        return;
+      }
+
+      if( header.scl_slope ){
+        for(var i=0; i<data.length; i++){
+          data[i] = data[i] * header.scl_slope + header.scl_inter;
+        }
+      }
+    }
+
+
+    /**
+    * @private
+    * Get the number of components per pixel encoded in the Nifti file
+    * @param {Object} header - Nifti header
+    * @return {number} the ncpp
+    */
+    _fetchNcpp( header ){
+      var ncpp = 0;
+
+      switch ( header.datatypeCode ) {
+        case nifti_1.NIFTI1.TYPE_BINARY:
+          console.warn("The datatype nifti.TYPE_BINARY is not compatible yet.");
+          break;
+        case nifti_1.NIFTI1.TYPE_COMPLEX64:
+          console.warn("The datatype nifti.TYPE_COMPLEX64 is not compatible yet.");
+          break;
+        case nifti_1.NIFTI1.TYPE_COMPLEX128:
+          console.warn("The datatype nifti.TYPE_COMPLEX128 is not compatible yet.");
+          break;
+        case nifti_1.NIFTI1.TYPE_COMPLEX256:
+          console.warn("The datatype nifti.TYPE_COMPLEX256 is not compatible yet.");
+          break;
+        case nifti_1.NIFTI1.TYPE_FLOAT128:
+          console.warn("The datatype nifti.TYPE_FLOAT128 is not compatible yet.");
+          break;
+        case nifti_1.NIFTI1.TYPE_INT64:
+          console.warn("The datatype nifti.TYPE_INT64 is not compatible yet.");
+          break;
+        case nifti_1.NIFTI1.TYPE_NONE:
+          console.warn("The datatype nifti.TYPE_NONE is not compatible.");
+          break;
+        case nifti_1.NIFTI1.TYPE_UINT64:
+          console.warn("The datatype nifti.TYPE_INT64 is not compatible yet.");
+          break;
+
+        case nifti_1.NIFTI1.TYPE_FLOAT32:
+          ncpp = 1;
+          break;
+        case nifti_1.NIFTI1.TYPE_FLOAT64:
+          ncpp = 1;
+          break;
+        case nifti_1.NIFTI1.TYPE_INT8:
+          ncpp = 1;
+          break;
+        case nifti_1.NIFTI1.TYPE_INT16:
+          ncpp = 1;
+          break;
+        case nifti_1.NIFTI1.TYPE_INT32:
+          ncpp = 1;
+          break;
+        case nifti_1.NIFTI1.TYPE_UINT8:
+          ncpp = 1;
+          break;
+        case nifti_1.NIFTI1.TYPE_UINT16:
+          ncpp = 1;
+          break;
+        case nifti_1.NIFTI1.TYPE_UINT32:
+          ncpp = 1;
+          break;
+        case nifti_1.NIFTI1.TYPE_RGB24:
+          ncpp = 3;
+          break;
+
+        default:
+          console.warn("The datatype is unknown.");
+      }
+
+      return ncpp;
+    }
+
+
+    /**
+    * @private
+    * Cast the raw ArrayBuffer into the appropriate type. Some Nifti types are not
+    * compatible with Javascript and cannot be used.
+    * @param {Object} header - the nifti header
+    * @param {ArrayBuffer} rawData - the nifti data buffer
+    * @return {typed array} a typed array with the data
+    */
+    _fetchDataArray( header, rawData ){
+      var typedData = null;
+
+      switch ( header.datatypeCode ) {
+        case nifti_1.NIFTI1.TYPE_BINARY:
+          console.warn("The datatype nifti.TYPE_BINARY is not compatible yet.");
+          break;
+        case nifti_1.NIFTI1.TYPE_COMPLEX64:
+          console.warn("The datatype nifti.TYPE_COMPLEX64 is not compatible yet.");
+          break;
+        case nifti_1.NIFTI1.TYPE_COMPLEX128:
+          console.warn("The datatype nifti.TYPE_COMPLEX128 is not compatible yet.");
+          break;
+        case nifti_1.NIFTI1.TYPE_COMPLEX256:
+          console.warn("The datatype nifti.TYPE_COMPLEX256 is not compatible yet.");
+          break;
+        case nifti_1.NIFTI1.TYPE_FLOAT128:
+          console.warn("The datatype nifti.TYPE_FLOAT128 is not compatible yet.");
+          break;
+        case nifti_1.NIFTI1.TYPE_INT64:
+          console.warn("The datatype nifti.TYPE_INT64 is not compatible yet.");
+          break;
+        case nifti_1.NIFTI1.TYPE_NONE:
+          console.warn("The datatype nifti.TYPE_NONE is not compatible.");
+          break;
+        case nifti_1.NIFTI1.TYPE_UINT64:
+          console.warn("The datatype nifti.TYPE_INT64 is not compatible yet.");
+          break;
+
+        case nifti_1.NIFTI1.TYPE_FLOAT32:
+          typedData = new Float32Array( rawData );
+          break;
+        case nifti_1.NIFTI1.TYPE_FLOAT64:
+          typedData = new Float64Array( rawData );
+          break;
+        case nifti_1.NIFTI1.TYPE_INT8:
+          typedData = new Int8Array( rawData );
+          break;
+        case nifti_1.NIFTI1.TYPE_INT16:
+          typedData = new Int16Array( rawData );
+          break;
+        case nifti_1.NIFTI1.TYPE_INT32:
+          typedData = new Int32Array( rawData );
+          break;
+        case nifti_1.NIFTI1.TYPE_UINT8:
+          typedData = new Uint8Array( rawData );
+          break;
+        case nifti_1.NIFTI1.TYPE_UINT16:
+          typedData = new Uint16Array( rawData );
+          break;
+        case nifti_1.NIFTI1.TYPE_UINT32:
+          typedData = new Uint32Array( rawData );
+          break;
+        case nifti_1.NIFTI1.TYPE_RGB24:
+          typedData = new Uint8Array( rawData );
+          break;
+
+        default:
+          console.warn("The datatype is unknown.");
+      }
+      return typedData;
+    }
+
+
+    _computeSubjsctBasedCoord( header ){
+
+    }
+
+  } /* END of class NiftiDecoder */
+
+  /*
+  * Author    Jonathan Lurie - http://me.jonathanlurie.fr
+  *
+  * License   MIT
+  * Link      https://github.com/Pixpipe/pixpipejs
+  * Lab       MCIN - Montreal Neurological Institute
+  */
+
+
+  /**
+  * A PixpEncoder instance takes an Image2D or Image3D as input with `addInput(...)`
+  * and encode it so that it can be saved as a *.pixp file.
+  * An output filename can be specified using `.setMetadata("filename", "yourName.pixp");`,
+  * by default, the name is "untitled.pixp".
+  * When `update()` is called, a gzip blog is prepared as output[0] and can then be downloaded
+  * when calling the method `.download()`. The gzip blob could also be sent over AJAX
+  * using a third party library.
+  *
+  * **Usage**
+  * - [examples/savePixpFile.html](../examples/savePixpFile.html)
+  */
+  class PixpEncoder extends Filter {
+    constructor(){
+      super();
+      this.setMetadata("filename", "untitled.pixp");
+
+    }
+
+
+    /**
+    * @private
+    * overwrite the original from Filter
+    * Only accept Image2D and Image3D
+    */
+    hasValidInput(){
+      var input = this._getInput();
+      return input && ( input.isOfType(Image2D.TYPE()) || input.isOfType(Image3D.TYPE()) );
+    }
+
+
+    _run(){
+
+      if(! this.hasValidInput() ){
+        console.warn("PixpEncoder can only encode Image2D and Image3D.");
+        return;
+      }
+
+      var input = this._getInput();
+
+      var arrayAndMeta = {
+        dataType: input.getData().constructor.name, // typed array type
+        data: Array.prototype.slice.call( input.getData() ),  // data of pixel/voxel
+        metadata: input.getMetadataCopy(),  // Image2D/Image3D._metadata
+        pixpipeType: input.constructor.name // most likely "Image2D", "Image3D", "LineString", etc.
+      };
+
+      var pixpString = JSON.stringify( arrayAndMeta );
+
+      var deflator = new pako_1.Deflate({
+        level: 6,
+        //to: 'string',
+        gzip: true,
+        header: {
+            text: true,
+            time: + new Date(),
+            comment: "This file was created by Pixpipe.js"
+          }
+      });
+
+      deflator.push(pixpString, true);
+
+      // making a blob to be saved
+      this._output[0] = new Blob([deflator.result], {type: "application/gzip"} );
+    }
+
+
+    /**
+    * Download the generated file
+    */
+    download(){
+      var output = this.getOutput();
+
+      if(output){
+        FileSaver.saveAs( this.getOutput(), this.getMetadata("filename"));
+      }else{
+        console.warn("No output computed yet.");
+      }
+    }
+
+  } /* END of class PixpEncoder */
+
+  /*
+  * Author    Jonathan Lurie - http://me.jonathanlurie.fr
+  *
+  * License   MIT
+  * Link      https://github.com/Pixpipe/pixpipejs
+  * Lab       MCIN - Montreal Neurological Institute
+  */
+
+
+  /**
+  * A PixpDecoder instance decodes a *.pixp file and output an Image2D or Image3D.
+  * The input, specified by `.addInput(...)` must be an ArrayBuffer
+  * (from an `UrlToArrayBufferFilter`, an `UrlToArrayBufferReader` or anothrer source ).
+  *
+  * **Usage**
+  * - [examples/pixpFileToImage2D.html](../examples/pixpFileToImage2D.html)
+  */
+  class PixpDecoder extends Decoder {
+    constructor(){
+      super();
+      this.setMetadata("targetType", "*");
+      this.addInputValidator(0, ArrayBuffer);
+    }
+
+
+    _run(){
+
+      if(! this.hasValidInput() ){
+        console.warn("PixpDecoder can only decode ArrayBuffer.");
+        return;
+      }
+
+      var input = this._getInput();
+
+      //var pixpString2 = pako.inflate(input /*, { to: 'string' }*/);
+      //var pixpObject = JSON.parse( pixpString2 );
+
+      var inflator = new pako_1.Inflate({
+        level: 6,
+        to: 'string'
+      });
+
+      inflator.push( input, true );
+
+      // quit if not a gz file
+      if( inflator.err ){
+        console.warn("This file is not a Pixp file.");
+        return;
+      }
+
+      var pixpObject = null;
+
+      try{
+        pixpObject = JSON.parse( inflator.result );
+      }catch(e){
+        console.warn("Could not parse pixp file.");
+        console.error(e);
+        return;
+      }
+
+      if( ! (pixpObject.pixpipeType in pixpipe)){
+        console.warn("Unknown type pixpipe." + pixpObject.pixpipeType + ", cannot create any output." );
+        return;
+      }
+
+      var constructorHost = null;
+
+      try{
+        constructorHost = window;
+      }catch( e ){
+        try{
+          constructorHost = GLOBAL;
+        }catch( e ){
+          console.warn( "You are not in a Javascript environment?? Weird." );
+          return;
+        }
+      }
+
+      if(! constructorHost[ pixpObject.dataType ]){
+        console.warn( "Data array from pixp file is unknown: " + pixpObject.dataType );
+        return;
+      }
+
+      var outputRawData = new constructorHost[ pixpObject.dataType ]( pixpObject.data );
+      var output = new pixpipe[ pixpObject.pixpipeType ];
+      output.setRawData( outputRawData );
+      output.setRawMetadata( pixpObject.metadata );
+
+      this._output[0] = output;
+
+    }
+
+
+
+  } /* END of class PixpDecoder */
 
   /*
   * Author    Jonathan Lurie - http://me.jonathanlurie.fr
@@ -44146,17 +39729,17 @@
 
   /**
   * Decodes a MGH file.
-  * Takes an ArrayBuffer as input (0) and output a `MniVolume` (which inherit `Image3D`).
-  * Some doc can be found [here](https://surfer.nmr.mgh.harvard.edu/fswiki/FsTutorial/MghFormat) 
+  * Takes an ArrayBuffer as input (0) and output a `Image3D`
+  * Some doc can be found [here](https://surfer.nmr.mgh.harvard.edu/fswiki/FsTutorial/MghFormat)
   *
   * **Usage**
   * - [examples/fileToMgh.html](../examples/fileToMgh.html)
   */
-  class MghDecoderAlt extends Decoder {
+  class MghDecoder extends Decoder {
 
     constructor() {
       super();
-      this.setMetadata("targetType", Image3DAlt.name);
+      this.setMetadata("targetType", Image3D.name);
       this.addInputValidator(0, ArrayBuffer);
       this.setMetadata("debug", false);
     }
@@ -44433,7 +40016,7 @@
       var inputBuffer = this._getInput(0);
 
       if(!inputBuffer){
-        console.warn("MghDecoderAlt requires an ArrayBuffer as input \"0\". Unable to continue.");
+        console.warn("MghDecoder requires an ArrayBuffer as input \"0\". Unable to continue.");
         return;
       }
 
@@ -44458,15 +40041,6 @@
 
       if(!dataArray)
         return null;
-
-
-      /*
-      // add the output to this filter
-      this._addOutput(MniVolume);
-      var mniVol = this.getOutput();
-      mniVol.setData(dataArray, header);
-      mniVol.setMetadata("format", "mgh");
-      */
 
 
       var metadata = Image3DMetadataConverter.convertImage3DMetadata( header );
@@ -44503,7 +40077,7 @@
 
 
 
-      var output = new Image3DAlt();
+      var output = new Image3D();
       output.setRawData( dataArray );
       output.setRawMetadata( metadata );
 
@@ -44514,7 +40088,7 @@
 
     }
 
-  } /* END of class MghDecoderAlt */
+  } /* END of class MghDecoder */
 
   /*
   * Author    Jonathan Lurie - http://me.jonathanlurie.fr
@@ -44530,7 +40104,7 @@
   * successive decoding logic. For this reason this filter does not need to have the
   * `_run` method to be reimplemented.
   *
-  * An instance of Image3DGenericDecoderAlt takes a ArrayBuffer
+  * An instance of Image3DGenericDecoder takes a ArrayBuffer
   * as input 0 (`.addInput(myArrayBuffer)`) and output an Image3D.
   * The `update` method will perform several decoding attempts, using the readers
   * specified in the constructor.
@@ -44542,22 +40116,22 @@
   * Developers: if a new 3D dataset decoder is added, reference it here.
   *
   * **Usage**
-  * - [examples/fileToGenericImage3DAlt.html](../examples/fileToGenericImage3DAlt.html)
+  * - [examples/fileToGenericImage3D.html](../examples/fileToGenericImage3D.html)
   */
-  class Image3DGenericDecoderAlt extends GenericDecoderInterface {
+  class Image3DGenericDecoder extends GenericDecoderInterface {
 
     constructor(){
       super();
       this.setMetadata("enablePixBin", true);
 
       this._decoders = [
-        Minc2DecoderAlt,
-        NiftiDecoderAlt,
-        MghDecoderAlt,
+        Minc2Decoder,
+        NiftiDecoder,
+        MghDecoder,
       ];
     }
 
-  } /* END of class Image3DGenericDecoderAlt */
+  } /* END of class Image3DGenericDecoder */
 
   //[4]   	NameStartChar	   ::=   	":" | [A-Z] | "_" | [a-z] | [#xC0-#xD6] | [#xD8-#xF6] | [#xF8-#x2FF] | [#x370-#x37D] | [#x37F-#x1FFF] | [#x200C-#x200D] | [#x2070-#x218F] | [#x2C00-#x2FEF] | [#x3001-#xD7FF] | [#xF900-#xFDCF] | [#xFDF0-#xFFFD] | [#x10000-#xEFFFF]
   //[4a]   	NameChar	   ::=   	NameStartChar | "-" | "." | [0-9] | #xB7 | [#x0300-#x036F] | [#x203F-#x2040]
@@ -56554,7 +52128,7 @@
   * the such or such decoder. This can create a bottel neck and we advise not to use
   * `AllFormatsGenericDecoder` if you know your file will be of a specific type or
   * of a specific modality.
-  * 
+  *
   * Notice: at the moment, `AllFormatsGenericDecoder` does not decode the `pixBin` format.
   */
   class AllFormatsGenericDecoder extends GenericDecoderInterface {
@@ -56564,7 +52138,7 @@
       this._decoders = [
         Signal1DGenericDecoder,
         Image2DGenericDecoder,
-        Image3DGenericDecoderAlt,
+        Image3DGenericDecoder,
         Mesh3DGenericDecoder,
       ];
     }
@@ -63673,7 +59247,7 @@ b"+i+"*=d\
   */
 
   /**
-  * An instance of Mesh3DToVolumetricHullFilter creates a voxel based volume (Image3DAlt)
+  * An instance of Mesh3DToVolumetricHullFilter creates a voxel based volume (Image3D)
   * of a Mesh3D (input). The hull of the mesh is represnted by voxels in the output.
   *
   */
@@ -63693,7 +59267,7 @@ b"+i+"*=d\
       // with a resolutionStep of 2, a distance of 1 in the mesh will be 0.5 voxels
       // with a resolutionStep of 0.5, a distance of 1 in the mesh will be 2 voxels.
       // Notice: a mesh can (and will) have floating point vertex position and floating
-      // point ray intersection while a volume (Image3DAlt) has only integer voxel indices.
+      // point ray intersection while a volume (Image3D) has only integer voxel indices.
       this.setMetadata("resolutionStep", 1);
 
       // The margin is the distance around the mesh bouding box to include in the output volume.
@@ -63788,7 +59362,7 @@ b"+i+"*=d\
 
 
 
-      var outputImage = new Image3DAlt({
+      var outputImage = new Image3D({
         xSize: enlargedBoxSize.x * resolutionStepInverse,
         ySize: enlargedBoxSize.y * resolutionStepInverse,
         zSize: enlargedBoxSize.z * resolutionStepInverse,
@@ -67676,187 +63250,9 @@ b"+i+"*=d\
   */
 
 
+
   /**
   * An instance of Image3DToMosaicFilter takes an Image3D as Input and output a
-  * mosaic composed of each slice. The axis: "xspace", "yspace" or "zspace" can be
-  * specified with `setMetadata("axis", "xspace")`, the default being xspace.
-  * The default output image is 4096x4096 but these boundaries can be changed using
-  * `setMetadata("maxWidth", n)` and `setMetadata("maxHeight", m)`.
-  * These are boundaries so the size of the output image(s) will possibly be lower
-  * to not contain unused space.
-  * If mosaicing the whole given Image3D does not fit in maxWidth*maxHeight, more
-  * Image2D will be created and accessible through `getOutput(n)`.
-  * All output image have the same size so that the last one may have dead space.
-  * To know precisely the size of the output mosaic use `getMetadata("gridWidth")`
-  * and `getMetadata("gridHeight")`, this will give the number of slices used in
-  * horizontal and vertical respectively.
-  *
-  * **Usage**
-  * - [examples/niftiToMosaic.html](../examples/niftiToMosaic.html)
-  */
-  class Image3DToMosaicFilter extends Filter{
-
-    constructor(){
-      super();
-      this.addInputValidator(0, Image3D);
-
-      // default settings
-      this.setMetadata("maxWidth", 4096);
-      this.setMetadata("maxHeight", 4096);
-      this.setMetadata("axis", "xspace");
-      this.setMetadata("time", 0);
-    }
-
-
-    _run(){
-      if(! this.hasValidInput() ){
-        return;
-      }
-
-      var inputImage3D = this._getInput(0);
-      var spaceInfo = inputImage3D.getMetadata( this.getMetadata("axis") );
-
-      if(!spaceInfo){
-        console.warn("Sampling axis for mosaicing was not poperly set. Has to be 'xspace', 'yspace' or 'zspace'.");
-        return;
-      }
-
-      var numOfSlices = spaceInfo.space_length;
-      var width = spaceInfo.width;
-      var height = spaceInfo.height;
-      
-      // dealing with time series
-      var startTime = 0;
-      var endTime = 1;
-      
-      if( inputImage3D.hasMetadata("time") ){
-        var timeInfo = inputImage3D.getMetadata("time");
-        var timeLength = timeInfo.space_length;
-        
-        if(this._metadata.time == -1 ){
-          startTime = 0;
-          endTime = timeLength;
-        }else if( this._metadata.time < timeLength){
-          startTime = this._metadata.time;
-          endTime = startTime + 1;
-        }
-      }
-      
-      var numberOfSlicesWithTime = numOfSlices * (endTime-startTime);
-
-      // number of image we can fit in the with and heigth of an output image
-      var widthFit = Math.floor( this.getMetadata("maxWidth") / width );
-      var heightFit = Math.floor( this.getMetadata("maxHeight") / height );
-
-      // size of the ouput image(s)
-      var outputWidth = widthFit * width;
-      var outputHeight = heightFit * height;
-      var slicePerOutputIm = widthFit * heightFit;
-
-      // Number of output image(s) necessary to cover the whole Image3D dataset
-      //var outputNecessary = Math.ceil( numOfSlices / slicePerOutputIm ); // does not work for time series
-      var outputNecessary = Math.ceil( numberOfSlicesWithTime / slicePerOutputIm );
-
-      // if only one output, maybe it's not filled entirely, so we can make it a bit smaller
-      if( outputNecessary == 1){
-        outputHeight = Math.ceil( numberOfSlicesWithTime / widthFit ) * height;
-      }
-
-      this.setMetadata("gridWidth", outputWidth / width);
-      this.setMetadata("gridHeight", outputHeight / height);
-
-      var outputCounter = 0;
-      var sliceCounter = 0;
-      var sliceIndexCurrentOutput = 0;
-
-      var outImage = null;
-
-      // the 3 following functions are a work around to fetch voxel along the right axis
-      function fetchAlongXspace(i, j, sliceIndex, time){
-        //return inputImage3D.getIntensity_xyz(sliceIndex, i, j, time)
-        return inputImage3D.getIntensity_xyzOrientation(sliceIndex, i, j, time)
-      }
-
-      function fetchAlongYspace(i, j, sliceIndex, time){
-        //return inputImage3D.getIntensity_xyz(i, sliceIndex, j, time)
-        return inputImage3D.getIntensity_xyzOrientation(i, sliceIndex, j, time)
-      }
-
-      function fetchAlongZspace(i, j, sliceIndex, time){
-        //return inputImage3D.getIntensity_xyz(i, j,  sliceIndex, time)
-        return inputImage3D.getIntensity_xyzOrientation(i, j,  sliceIndex, time)
-      }
-
-      var fetchAlongAxis = null;
-
-      if( this._metadata.axis === "xspace")
-        fetchAlongAxis = fetchAlongXspace;
-      else if( this._metadata.axis === "yspace")
-        fetchAlongAxis = fetchAlongYspace;
-      else if( this._metadata.axis === "zspace")
-        fetchAlongAxis = fetchAlongZspace;
-      
-      if( !fetchAlongAxis ){
-        console.warn("The axis to sample along for the mosaic was not properly set.");
-        return;
-      }
-
-      // to make it works no matter the ncpp
-      var initPixel = new Array( inputImage3D.getMetadata("ncpp") ).fill(0);
-      
-      for(var t=startTime; t<endTime; t++){
-
-        // for each slice
-        for(var sliceIndex=0; sliceIndex<numOfSlices; sliceIndex++){
-          
-          // create a new output image when the current is full (or not init)
-          if( sliceCounter%slicePerOutputIm == 0 ){
-            outImage = new Image2D({width: outputWidth, height: outputHeight, color: initPixel});
-            this._output[ outputCounter ] = outImage;
-            sliceIndexCurrentOutput = 0;
-            outputCounter++;
-          }
-
-          var col = sliceIndexCurrentOutput % widthFit;
-          var row = Math.floor( sliceIndexCurrentOutput / widthFit );
-          sliceIndexCurrentOutput ++;
-
-          var offsetPixelCol = col * width;
-          var offsetPixelRow = row * height;
-
-          // for each row of the input slice
-          for(var y=0; y<height; y++){
-            // for each col of the output image
-            for(var x=0; x<width; x++){
-              var voxelValue = [fetchAlongAxis(x, y,  sliceIndex, t)];
-              
-              outImage.setPixel(
-                {x: offsetPixelCol+x, y: offsetPixelRow+(height - y - 1)},
-                voxelValue
-              );
-            }
-          }
-          sliceCounter ++;
-
-        } /* END for each slice*/
-      
-      } /* END for each time sample */
-
-    }
-
-  } /* END of class Image3DToMosaicFilter */
-
-  /*
-  * Author   Jonathan Lurie - http://me.jonathanlurie.fr
-  * License  MIT
-  * Link      https://github.com/Pixpipe/pixpipejs
-  * Lab       MCIN - Montreal Neurological Institute
-  */
-
-
-
-  /**
-  * An instance of Image3DToMosaicFilterAlt takes an Image3D as Input and output a
   * mosaic composed of each slice. The axis: "x", "y" or "z" can be
   * specified with `setMetadata("axis", "x")`, the default being x.
   * The default output image is 4096x4096 but these boundaries can be changed using
@@ -67875,13 +63271,13 @@ b"+i+"*=d\
   * series.
   *
   * **Usage**
-  * - [examples/niftiToMosaicAlt.html](../examples/niftiToMosaicAlt.html)
+  * - [examples/niftiToMosaic.html](../examples/niftiToMosaic.html)
   */
-  class Image3DToMosaicFilterAlt extends Filter{
+  class Image3DToMosaicFilter extends Filter{
 
     constructor(){
       super();
-      this.addInputValidator(0, Image3DAlt);
+      this.addInputValidator(0, Image3D);
 
       // default settings
       this.setMetadata("maxWidth", 4096);
@@ -67894,7 +63290,7 @@ b"+i+"*=d\
     _run(){
 
       if( ! this.hasValidInput()){
-        console.warn("A filter of type Image3DToMosaicFilterAlt requires 1 input of category '0' (Image3DAlt)"); 
+        console.warn("A filter of type Image3DToMosaicFilter requires 1 input of category '0' (Image3D)");
         return;
       }
 
@@ -67994,7 +63390,7 @@ b"+i+"*=d\
     }
 
 
-  } /* END of class Image3DToMosaicFilterAlt */
+  } /* END of class Image3DToMosaicFilter */
 
   setMatrixArrayType( Array );
 
@@ -68005,9 +63401,7 @@ b"+i+"*=d\
   exports.Image2D = Image2D;
   exports.Image3D = Image3D;
   exports.ImageToImageFilter = ImageToImageFilter;
-  exports.MniVolume = MniVolume;
   exports.LineString = LineString;
-  exports.Image3DAlt = Image3DAlt;
   exports.Mesh3D = Mesh3D;
   exports.Decoder = Decoder;
   exports.CanvasImageWriter = CanvasImageWriter;
@@ -68019,21 +63413,17 @@ b"+i+"*=d\
   exports.GenericDecoderInterface = GenericDecoderInterface;
   exports.Minc2Decoder = Minc2Decoder;
   exports.NiftiDecoder = NiftiDecoder;
-  exports.NiftiDecoderAlt = NiftiDecoderAlt;
   exports.PixpEncoder = PixpEncoder;
   exports.PixpDecoder = PixpDecoder;
   exports.Image3DGenericDecoder = Image3DGenericDecoder;
-  exports.Image3DGenericDecoderAlt = Image3DGenericDecoderAlt;
   exports.TiffDecoder = TiffDecoder;
   exports.MghDecoder = MghDecoder;
-  exports.MghDecoderAlt = MghDecoderAlt;
   exports.EegModDecoder = EegModDecoder;
   exports.PixBinEncoder = PixBinEncoder;
   exports.PixBinDecoder = PixBinDecoder;
   exports.JpegDecoder = JpegDecoder;
   exports.PngDecoder = PngDecoder;
   exports.Image2DGenericDecoder = Image2DGenericDecoder;
-  exports.Minc2DecoderAlt = Minc2DecoderAlt;
   exports.MniObjDecoder = MniObjDecoder;
   exports.EdfDecoder = EdfDecoder;
   exports.Mesh3DGenericDecoder = Mesh3DGenericDecoder;
@@ -68077,7 +63467,6 @@ b"+i+"*=d\
   exports.LineStringPrinterOnImage2DHelper = LineStringPrinterOnImage2DHelper;
   exports.Colormap = Colormap;
   exports.Image3DToMosaicFilter = Image3DToMosaicFilter;
-  exports.Image3DToMosaicFilterAlt = Image3DToMosaicFilterAlt;
   exports.Image3DMetadataConverter = Image3DMetadataConverter;
   exports.MatrixTricks = MatrixTricks;
   exports.FunctionGenerator = FunctionGenerator;

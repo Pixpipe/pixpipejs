@@ -34,6 +34,10 @@ In ES6 module:
 ```js
 import pixpipe from 'pixpipe';
 ```
+Or, if you don't want to export the whole bundle, you can select sub-parts of Pixpipe:
+```js
+import { UrlToArrayBufferReader, FileToArrayBufferReader, Image2D } from 'pixpipe/dist/pixpipe.esmodule.js';
+```
 
 
 # Motivations
