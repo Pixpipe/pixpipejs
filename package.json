@@ -52,7 +52,7 @@
     "gl-matrix": "^2.4.0",
     "google-closure-compiler-js": "^20180204.0.0",
     "joi-browser": "^10.6.1",
-    "jpeg-js": "^0.3.3",
+    "jpeg-js": "^0.4.0",
     "js-md5": "^0.7.3",
     "mniobjparser": "^0.1.2",
     "natninter": "^0.1.3",
